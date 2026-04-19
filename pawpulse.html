@@ -1,0 +1,2856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>PawPulse — Lost & Found Pets · Hastings, NE</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --forest:   #2d4a35;
+  --moss:     #7aac82;
+  --amber:    #d4843a;
+  --cream:    #faf5ec;
+  --cream-2:  #f0e8d8;
+  --cream-3:  #dfd0b8;
+  --warm-dk:  #2a1f12;
+  --warm-mid: #6b5540;
+  --lost-r:   #c94f2a;
+  --lost-lt:  #f07040;
+  --found-g:  #3a7d44;
+  --found-lt: #5caa68;
+  --nav-h:    60px;
+  --panel-w:  400px;
+  --font-display: 'Fraunces', serif;
+  --font-body:    'DM Sans', sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);height:100vh;overflow:hidden;user-select:none}
+
+/* NAV */
+#nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;gap:8px;padding:0 12px;height:var(--nav-h);background:var(--forest);box-shadow:0 2px 16px rgba(0,0,0,.3)}
+.nav-logo{font-family:var(--font-display);font-size:1.15rem;font-weight:700;color:var(--cream);letter-spacing:-.02em;display:flex;align-items:center;gap:6px;flex-shrink:0}
+.nav-logo-wrap{display:flex;flex-direction:column}
+.nav-logo-sub{font-family:var(--font-body);font-size:.58rem;font-weight:600;color:var(--moss);letter-spacing:.09em;text-transform:uppercase}
+.nav-spacer{flex:1}
+.nav-report-btn{font-family:var(--font-body);font-size:.78rem;font-weight:700;padding:7px 14px;border-radius:6px;border:none;cursor:pointer;transition:all .15s;flex-shrink:0;background:var(--amber);color:#fff;letter-spacing:.01em}
+.nav-report-btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
+#nav-tabs{display:flex;gap:3px;flex-shrink:0}
+.tab-btn{font-family:var(--font-body);font-size:.68rem;font-weight:600;padding:5px 9px;border-radius:999px;border:1.5px solid rgba(255,255,255,.22);background:rgba(255,255,255,.1);color:var(--cream);cursor:pointer;transition:all .15s;white-space:nowrap}
+.tab-btn.active{background:var(--cream);color:var(--forest);border-color:var(--cream)}
+.tab-btn:hover:not(.active){background:rgba(255,255,255,.18)}
+@media(max-width:760px){.tab-btn .tab-lbl{display:none}.nav-logo-sub{display:none}.nav-report-btn .btn-lbl{display:none}}
+/* Live banner */
+#pp-banner{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:600;background:rgba(45,74,53,.93);backdrop-filter:blur(12px);border:1px solid rgba(122,172,130,.3);border-radius:999px;padding:9px 18px;display:flex;align-items:center;gap:10px;min-width:280px;max-width:460px;box-shadow:0 4px 20px rgba(0,0,0,.28);pointer-events:none;transition:opacity .3s}
+.banner-dot{width:7px;height:7px;border-radius:50%;background:var(--moss);box-shadow:0 0 7px var(--moss);flex-shrink:0;animation:bdot 2s ease-in-out infinite}
+@keyframes bdot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.75)}}
+#banner-txt{font-size:.76rem;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .35s}
+#banner-txt.fade{opacity:0}
+#banner-dot-reunion{background:#f0b840;box-shadow:0 0 8px #f0b840}
+/* Floating filter pills on map — horizontal row at bottom center */
+#map-filters{position:absolute;bottom:54px;left:50%;transform:translateX(-50%);z-index:600;display:flex;flex-direction:row;gap:6px;pointer-events:none;white-space:nowrap}
+#map-filters .filter-btn{pointer-events:auto}
+.filter-btn{font-family:var(--font-body);font-size:.72rem;font-weight:600;padding:6px 13px;border-radius:999px;cursor:pointer;transition:all .15s;border:1.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.88);backdrop-filter:blur(8px);color:var(--warm-mid);box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.filter-btn.active.all{background:var(--amber);color:#fff;border-color:var(--amber)}
+.filter-btn.active.lost{background:var(--lost-r);color:#fff;border-color:var(--lost-r)}
+.filter-btn.active.found{background:var(--found-g);color:#fff;border-color:var(--found-g)}
+.filter-btn.active.adopt{background:#2050a0;color:#fff;border-color:#2050a0}
+.filter-btn:hover{transform:translateY(-1px)}
+/* Reunion burst rings */
+@keyframes rburst1{0%{transform:scale(.3);opacity:.9}100%{transform:scale(4);opacity:0}}
+@keyframes rburst2{0%{transform:scale(.3);opacity:.7}100%{transform:scale(6);opacity:0}}
+@keyframes rburst3{0%{transform:scale(.3);opacity:.5}100%{transform:scale(8);opacity:0}}
+.reunion-ring{position:absolute;border-radius:50%;pointer-events:none;transform-origin:center center;border:3px solid #f0b840}
+/* Print button */
+.print-btn{font-family:var(--font-body);font-size:.74rem;font-weight:600;padding:7px 13px;border-radius:8px;border:1.5px solid var(--cream-3);background:var(--cream-2);color:var(--warm-mid);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px;width:100%;justify-content:center;margin-top:6px}
+.print-btn:hover{border-color:var(--amber);color:var(--amber)}
+
+/* VIEW — position:fixed + inset, same as PublicPulse */
+.view{position:fixed;inset:var(--nav-h) 0 0 0;display:none}
+.view.active{display:flex}
+
+/* MAP CONTAINER — same as PublicPulse */
+#map-container{flex:1;position:relative;overflow:hidden}
+#map{width:100%;height:100%}
+.leaflet-tile{filter:saturate(.82) brightness(1.02) sepia(.06)}
+.leaflet-container{background:#d4c9b0}
+.leaflet-bottom.leaflet-right{bottom:90px !important;right:12px !important}
+.leaflet-bar a{width:32px !important;height:32px !important;line-height:32px !important;font-size:18px !important}
+
+/* SIDE PANEL */
+#side-panel{position:absolute;top:0;right:0;bottom:0;width:var(--panel-w);max-width:100%;background:var(--cream);border-left:1px solid var(--cream-3);z-index:800;display:flex;flex-direction:column;overflow-y:auto;transform:translateX(100%);transition:transform .32s cubic-bezier(.4,0,.2,1);box-shadow:-4px 0 24px rgba(42,31,18,.12)}
+#side-panel.open{transform:translateX(0)}
+#side-panel::-webkit-scrollbar{width:4px}
+#side-panel::-webkit-scrollbar-thumb{background:var(--cream-3);border-radius:99px}
+.panel-hdr{background:var(--cream-2);border-bottom:1px solid var(--cream-3);padding:18px 20px 14px;display:flex;align-items:flex-start;justify-content:space-between;flex-shrink:0}
+.panel-title{font-family:var(--font-display);font-size:1.3rem;font-weight:600;color:var(--warm-dk);line-height:1.2}
+.panel-sub{font-size:.76rem;color:var(--warm-mid);margin-top:4px}
+.panel-close{background:none;border:none;cursor:pointer;font-size:1.25rem;color:var(--warm-mid);line-height:1;padding:2px 5px;border-radius:6px}
+.panel-close:hover{color:var(--warm-dk)}
+.panel-body{padding:18px 20px;flex:1}
+
+/* FORM */
+.fg{margin-bottom:14px}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+label{display:block;font-size:.7rem;font-weight:600;color:var(--warm-mid);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+input[type=text],input[type=email],input[type=tel],select,textarea{width:100%;padding:8px 11px;font-family:var(--font-body);font-size:.86rem;color:var(--warm-dk);background:#fff;border:1.5px solid var(--cream-3);border-radius:8px;outline:none;resize:vertical;transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(212,132,58,.14)}
+textarea{min-height:64px}
+.sl{font-family:var(--font-display);font-size:.9rem;font-weight:600;color:var(--warm-dk);margin-bottom:11px}
+.div{border:none;border-top:1px solid var(--cream-3);margin:16px 0}
+.loc-prompt{background:var(--amber);color:#fff;font-size:.78rem;font-weight:600;padding:8px 12px;border-radius:8px;margin-bottom:12px;display:none;align-items:center;gap:7px}
+.loc-prompt.on{display:flex}
+.loc-set{background:var(--found-g);color:#fff;font-size:.78rem;font-weight:600;padding:8px 12px;border-radius:8px;margin-bottom:12px;display:none;align-items:center;gap:7px}
+.loc-set.on{display:flex}
+.reset-loc{background:var(--cream-2);color:var(--warm-mid);border:1.5px dashed var(--cream-3);font-size:.78rem;font-weight:600;padding:7px 12px;border-radius:8px;cursor:pointer;margin-bottom:12px;display:none;transition:all .15s;font-family:var(--font-body);width:100%}
+.reset-loc:hover{border-color:var(--amber);color:var(--amber)}
+.photo-drop{border:2px dashed var(--cream-3);border-radius:8px;padding:16px;text-align:center;cursor:pointer;background:#fff;transition:border-color .15s;position:relative;overflow:hidden}
+.photo-drop:hover{border-color:var(--amber)}
+.photo-drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.photo-drop-icon{font-size:1.5rem;margin-bottom:3px}
+.photo-drop-txt{font-size:.75rem;color:var(--warm-mid)}
+.photo-prev{width:100%;max-height:130px;object-fit:cover;border-radius:7px;margin-top:8px;display:none}
+.chk-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;cursor:pointer}
+.chk-row input{width:16px;height:16px;accent-color:var(--found-g);flex-shrink:0}
+.chk-row label{font-size:.82rem;font-weight:500;color:var(--warm-dk);text-transform:none;letter-spacing:0;margin:0;cursor:pointer}
+.submit-btn{width:100%;padding:12px;font-family:var(--font-display);font-size:.98rem;font-weight:600;border:none;border-radius:10px;cursor:pointer;transition:all .2s;margin-top:6px}
+.submit-btn.lost{background:var(--lost-r);color:#fff}
+.submit-btn.found{background:var(--found-g);color:#fff}
+.submit-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.22);filter:brightness(1.08)}
+
+/* MAP OVERLAYS */
+#stats-bar{position:absolute;top:58px;left:12px;z-index:700;display:flex;gap:8px}
+.stat-pill{background:rgba(255,255,255,.92);backdrop-filter:blur(8px);padding:5px 12px;border-radius:999px;font-size:.73rem;font-weight:600;box-shadow:0 2px 10px rgba(0,0,0,.12);display:flex;align-items:center;gap:5px;border:1px solid var(--cream-3)}
+.stat-dot{width:8px;height:8px;border-radius:50%}
+.stat-dot.lost{background:var(--lost-r)}
+.stat-dot.found{background:var(--found-g)}
+#drop-hint{display:none;position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:700;background:var(--forest);color:var(--cream);border-radius:999px;padding:9px 16px 9px 14px;font-size:.8rem;font-weight:600;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(0,0,0,.3);white-space:nowrap;animation:hpulse 1.6s ease-in-out infinite}
+#drop-hint.on{display:flex}
+@keyframes hpulse{0%,100%{opacity:.88}50%{opacity:1}}
+#drop-cancel{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);color:rgba(255,255,255,.75);border-radius:999px;padding:3px 10px;font-size:.72rem;font-weight:600;cursor:pointer;font-family:var(--font-body)}
+#drop-cancel:hover{color:#fff}
+#pin-card{display:none;position:absolute;z-index:700;width:268px;background:var(--cream);border:1px solid var(--cream-3);border-radius:14px;overflow:hidden;box-shadow:0 16px 50px rgba(0,0,0,.2)}
+#pin-card.open{display:block;animation:cpop .2s cubic-bezier(.34,1.56,.64,1)}
+@keyframes cpop{from{opacity:0;transform:scale(.9) translateY(6px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.pc-close{position:absolute;top:7px;right:7px;background:rgba(42,31,18,.5);color:#fff;border:none;cursor:pointer;width:22px;height:22px;border-radius:50%;font-size:.75rem;line-height:22px;text-align:center;z-index:1}
+.pc-img{width:100%;height:120px;object-fit:cover;display:block}
+.pc-no-img{width:100%;height:62px;display:flex;align-items:center;justify-content:center;font-size:2rem}
+.pc-body{padding:11px 13px 13px}
+.pc-badge{display:inline-flex;align-items:center;gap:4px;font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:2px 8px;border-radius:999px;margin-bottom:6px}
+.pc-badge.lost{background:#fde8e0;color:var(--lost-r)}
+.pc-badge.found{background:#e0f0e4;color:var(--found-g)}
+.pc-name{font-family:var(--font-display);font-size:1.05rem;font-weight:600;color:var(--warm-dk);margin-bottom:5px}
+.pc-row{font-size:.76rem;color:var(--warm-mid);margin-bottom:2px;display:flex;gap:4px}
+.pc-row strong{color:var(--warm-dk);font-weight:600}
+.pc-contact{margin-top:8px;padding-top:8px;border-top:1px solid var(--cream-3);font-size:.72rem;color:var(--warm-mid)}
+.pc-date{font-size:.65rem;color:#a0907a;margin-top:6px}
+#empty-hint{position:absolute;bottom:98px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.9);backdrop-filter:blur(8px);padding:9px 18px;border-radius:999px;font-size:.8rem;color:var(--warm-mid);box-shadow:0 2px 10px rgba(0,0,0,.1);z-index:600;pointer-events:none;border:1px solid var(--cream-3);transition:opacity .3s}
+#toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(120px);z-index:9999;background:var(--forest);color:var(--cream);padding:11px 20px;border-radius:999px;font-size:.84rem;font-weight:600;box-shadow:0 8px 36px rgba(0,0,0,.25);display:flex;align-items:center;gap:8px;transition:transform .38s cubic-bezier(.34,1.56,.64,1);white-space:nowrap}
+#toast.show{transform:translateX(-50%) translateY(0)}
+#map.placing{cursor:crosshair !important}
+.pc-badge.reunited{background:#ede9e0;color:#8a7a66}
+.reunite-btn{width:100%;margin-top:10px;padding:9px;font-family:var(--font-display);font-size:.88rem;font-weight:600;border:1.5px solid var(--cream-3);border-radius:8px;cursor:pointer;background:var(--cream-2);color:var(--warm-mid);transition:all .18s;display:flex;align-items:center;justify-content:center;gap:6px}
+.reunite-btn:hover{background:#e8f4e9;border-color:var(--found-g);color:var(--found-g)}
+.reunite-btn.done{background:#e8f4e9;border-color:var(--found-g);color:var(--found-g);cursor:default;pointer-events:none}
+/* Match / comment styles */
+.pc-match-banner{background:linear-gradient(135deg,#fff8e8,#fdf3da);border:1.5px solid #d4a035;border-radius:8px;padding:8px 11px;margin-bottom:8px;font-size:.75rem;color:#7a5a10;font-weight:600;display:flex;align-items:center;gap:6px}
+.pc-comments{margin-top:10px;padding-top:10px;border-top:1px solid var(--cream-3)}
+.pc-comment{background:var(--cream-2);border-radius:7px;padding:7px 10px;margin-bottom:6px;font-size:.74rem;color:var(--warm-dk);line-height:1.45}
+.pc-comment-from{font-weight:700;color:var(--found-g);margin-bottom:2px;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em}
+.pc-comment-time{font-size:.62rem;color:var(--warm-mid);margin-top:2px}
+.sh-match-results{margin-top:14px}
+.sh-match-item{background:#fff;border:1px solid var(--cream-3);border-radius:9px;padding:11px 13px;margin-bottom:8px;transition:border-color .15s}
+.sh-match-item.high{border-left:3px solid var(--found-g)}
+.sh-match-item.medium{border-left:3px solid var(--amber)}
+.sh-match-item.low{border-left:3px solid var(--cream-3)}
+.sh-match-conf{display:inline-block;font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;padding:2px 7px;border-radius:999px;margin-bottom:5px}
+.sh-match-conf.high{background:#e0f0e4;color:var(--found-g)}
+.sh-match-conf.medium{background:#fdf0e0;color:var(--amber)}
+.sh-match-conf.low{background:var(--cream-2);color:var(--warm-mid)}
+.sh-match-name{font-family:var(--font-display);font-size:.95rem;font-weight:600;color:var(--warm-dk);margin-bottom:3px}
+.sh-match-reason{font-size:.74rem;color:var(--warm-mid);line-height:1.45;margin-bottom:8px}
+.sh-match-comment-wrap{display:none;margin-top:6px}
+.sh-match-comment-wrap.open{display:block}
+.sh-match-comment-input{width:100%;padding:7px 10px;font-family:var(--font-body);font-size:.8rem;color:var(--warm-dk);background:var(--cream-2);border:1.5px solid var(--cream-3);border-radius:7px;outline:none;resize:none;min-height:52px;transition:border-color .15s;margin-bottom:6px}
+.sh-match-comment-input:focus{border-color:var(--amber)}
+.ai-loading{display:flex;align-items:center;gap:8px;padding:14px 0;color:var(--warm-mid);font-size:.8rem}
+.ai-dot{width:6px;height:6px;border-radius:50%;background:var(--amber);animation:ai-bounce .9s ease-in-out infinite}
+@keyframes ai-bounce{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
+/* Mic button */
+.mic-wrap{display:flex;gap:6px;align-items:flex-start}
+.mic-wrap textarea,.mic-wrap input[type=text],.mic-wrap input[type=tel],.mic-wrap input[type=email]{flex:1;min-width:0}
+.mic-btn{flex-shrink:0;width:32px;height:32px;border-radius:50%;border:1.5px solid var(--cream-3);background:var(--cream-2);cursor:pointer;font-size:.82rem;display:flex;align-items:center;justify-content:center;transition:all .15s;padding:0;line-height:1;color:var(--warm-mid)}
+.mic-btn:hover{border-color:var(--amber);background:#fff8f0;color:var(--amber)}
+.mic-btn.mic-active{background:#ffe8e8;border-color:var(--lost-r);color:var(--lost-r);animation:mic-pulse .7s ease-in-out infinite}
+@keyframes mic-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+.ac-mic-btn{border-color:#a0baf0;background:#f0f4ff;color:#5070a0}
+.ac-mic-btn:hover{border-color:#1e4080;background:#e0eaff;color:#1e4080}
+/* AI identify button */
+.ai-id-btn{width:100%;padding:9px 12px;font-family:var(--font-body);font-size:.82rem;font-weight:600;background:linear-gradient(135deg,#f0e8ff,#e8f0ff);color:#5040a0;border:1.5px solid #c8b8f0;border-radius:8px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px}
+.ai-id-btn:hover{filter:brightness(1.05);border-color:#a090e0}
+.ai-id-btn:disabled{opacity:.6;cursor:not-allowed}
+.ai-id-result{background:#f8f5ff;border:1px solid #d0c0f0;border-radius:8px;padding:9px 12px;margin-top:6px;font-size:.78rem;color:#5040a0;display:none}
+.ai-id-result.show{display:block}
+@media(max-width:600px){:root{--panel-w:100vw}#nav-filters{display:none}.btn-lbl{display:none}}
+/* Shelter operational view */
+#view-shelters{background:var(--cream-2);flex-direction:row;overflow:hidden}
+#view-animalcontrol{background:#f0f4fa;flex-direction:row;overflow:hidden}
+.sh-col{display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--cream-3)}
+.sh-col:last-child{border-right:none}
+.sh-col-left{width:280px;flex-shrink:0}
+.sh-col-right{flex:1;min-width:0;display:flex;flex-direction:column;min-height:0}
+.sh-col-hdr{padding:14px 16px;border-bottom:1px solid var(--cream-3);background:var(--cream);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.sh-col-title{font-family:var(--font-display);font-size:.82rem;font-weight:700;color:var(--warm-mid);text-transform:uppercase;letter-spacing:.06em}
+.sh-col-body{flex:1;overflow-y:auto;padding:10px}
+.sh-col-body::-webkit-scrollbar{width:3px}
+.sh-col-body::-webkit-scrollbar-thumb{background:var(--cream-3);border-radius:99px}
+.sh-select{width:100%;padding:9px 12px;font-family:var(--font-body);font-size:.84rem;font-weight:600;color:var(--warm-dk);background:var(--cream);border:1.5px solid var(--cream-3);border-radius:8px;outline:none;cursor:pointer;margin-bottom:0;appearance:none}
+.sh-select:focus{border-color:var(--amber)}
+.sh-selector-wrap{padding:10px;border-bottom:1px solid var(--cream-3);flex-shrink:0;background:var(--cream)}
+.sh-queue-item{background:#fff;border:1px solid var(--cream-3);border-radius:10px;padding:11px 13px;margin-bottom:8px;cursor:pointer;transition:all .15s}
+.sh-queue-item:hover{border-color:var(--amber);box-shadow:0 2px 8px rgba(42,31,18,.08)}
+.sh-queue-item.selected{border-color:var(--found-g);background:#f5faf6}
+.sh-queue-item.reunited{opacity:.5}
+.sh-qi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.sh-qi-badge{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:2px 8px;border-radius:999px}
+.sh-qi-badge.intake{background:#e0f0e4;color:var(--found-g)}
+.sh-qi-badge.reunited{background:#ede9e0;color:#8a7a66}
+.sh-qi-badge.adopt{background:#e0eaff;color:#3060c0}
+/* Adoption card section */
+.pc-adopt{background:linear-gradient(135deg,#e8f0ff,#dce8ff);border:1.5px solid #a0c0f0;border-radius:8px;padding:8px 11px;margin-top:8px;font-size:.78rem;color:#2050a0;font-weight:600;display:flex;align-items:center;gap:6px}
+.adopt-btn{width:100%;margin-top:8px;padding:9px;font-family:var(--font-display);font-size:.88rem;font-weight:600;background:#2050a0;color:#fff;border:none;border-radius:8px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px}
+.adopt-btn:hover{filter:brightness(1.1)}
+.sh-qi-time{font-size:.68rem;color:var(--warm-mid)}
+.sh-qi-name{font-family:var(--font-display);font-size:.95rem;font-weight:600;color:var(--warm-dk);margin-bottom:2px}
+.sh-qi-desc{font-size:.75rem;color:var(--warm-mid)}
+.sh-empty{padding:32px 16px;text-align:center;color:var(--warm-mid);font-size:.82rem}
+.sh-empty-icon{font-size:2rem;margin-bottom:8px;opacity:.4}
+/* Action panel */
+.sh-action-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--warm-mid);gap:8px;padding:24px;background:var(--cream)}
+.sh-action-empty-icon{font-size:2.2rem;opacity:.25}
+.sh-action-panel{padding:18px 20px;flex:1;overflow-y:auto;min-height:0}
+.sh-action-panel::-webkit-scrollbar{width:3px}
+.sh-action-panel::-webkit-scrollbar-thumb{background:var(--cream-3);border-radius:99px}
+.sh-panel-id{font-size:.7rem;color:var(--warm-mid);margin-bottom:3px}
+.sh-panel-name{font-family:var(--font-display);font-size:1.2rem;font-weight:600;color:var(--warm-dk);margin-bottom:6px}
+.sh-panel-desc{font-size:.82rem;color:var(--warm-mid);line-height:1.55;margin-bottom:12px}
+.sh-sec{font-family:var(--font-display);font-size:.8rem;font-weight:600;color:var(--warm-mid);text-transform:uppercase;letter-spacing:.06em;margin:16px 0 8px}
+.sh-log{background:var(--cream-2);border:1px solid var(--cream-3);border-radius:8px;padding:10px 12px}
+.sh-log-entry{display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--cream-3);font-size:.76rem}
+.sh-log-entry:last-child{border-bottom:none}
+.sh-log-dot{width:6px;height:6px;border-radius:50%;background:var(--found-g);flex-shrink:0;margin-top:4px}
+.sh-log-body{flex:1;color:var(--warm-mid);line-height:1.4}
+.sh-log-time{font-size:.65rem;color:var(--warm-mid);flex-shrink:0}
+.sh-action-btns{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.sh-btn{padding:7px 13px;border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;border:1.5px solid var(--cream-3);background:var(--cream);color:var(--warm-dk);font-family:var(--font-body);transition:all .15s}
+.sh-btn:hover{border-color:var(--amber);color:var(--amber)}
+.sh-btn.primary{background:var(--found-g);border-color:var(--found-g);color:#fff}
+.sh-btn.primary:hover{filter:brightness(1.08);border-color:var(--found-g);color:#fff}
+.sh-btn.danger{border-color:rgba(201,79,42,.3);color:var(--lost-r)}
+.sh-btn.danger:hover{background:rgba(201,79,42,.08)}
+.sh-update-input{width:100%;padding:8px 11px;font-family:var(--font-body);font-size:.84rem;color:var(--warm-dk);background:#fff;border:1.5px solid var(--cream-3);border-radius:8px;outline:none;resize:none;min-height:60px;transition:border-color .15s;margin-bottom:8px}
+.sh-update-input:focus{border-color:var(--amber)}
+/* Log new intake form */
+.sh-intake-form{background:#fff;border:1px solid var(--cream-3);border-radius:10px;padding:14px;margin-bottom:10px;display:none}
+.sh-intake-form.open{display:block}
+.sh-intake-btn{width:100%;padding:10px;font-family:var(--font-display);font-size:.9rem;font-weight:600;background:var(--forest);color:var(--cream);border:none;border-radius:9px;cursor:pointer;transition:all .15s;margin-bottom:10px}
+.sh-intake-btn:hover{filter:brightness(1.1)}
+/* Shelter left col tabs */
+.sh-tab-row{display:flex;border-bottom:1px solid var(--cream-3);flex-shrink:0}
+.sh-tab{flex:1;padding:8px 4px;font-size:.75rem;font-weight:600;color:var(--warm-mid);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:var(--font-body);transition:all .15s}
+.sh-tab:hover{color:var(--warm-dk)}
+.sh-tab.active{color:var(--forest);border-bottom-color:var(--forest)}
+/* Footer action bar */
+.col-footer{padding:10px;border-top:1px solid var(--cream-3);flex-shrink:0;background:var(--cream-2)}
+.col-footer-btn{width:100%;padding:9px;font-family:var(--font-display);font-size:.82rem;font-weight:600;background:var(--forest);color:var(--cream);border:none;border-radius:8px;cursor:pointer;transition:all .15s}
+.col-footer-btn:hover{filter:brightness(1.1)}
+/* Inventory */
+.inv-card{background:#fff;border:1px solid var(--cream-3);border-radius:10px;overflow:hidden;margin-bottom:8px;cursor:pointer;transition:all .15s;display:flex;gap:0}
+.inv-card:hover{border-color:var(--amber);box-shadow:0 2px 8px rgba(42,31,18,.08)}
+.inv-card.selected{border-color:var(--forest);background:#f5faf5}
+.inv-card-photo{width:58px;height:58px;object-fit:cover;flex-shrink:0}
+.inv-card-no-photo{width:58px;height:58px;background:var(--cream-2);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+.inv-card-info{padding:8px 10px;flex:1;min-width:0}
+.inv-card-name{font-family:var(--font-display);font-size:.88rem;font-weight:600;color:var(--warm-dk);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.inv-card-desc{font-size:.72rem;color:var(--warm-mid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.inv-card-date{font-size:.65rem;color:var(--warm-mid);margin-top:2px}
+.inv-add-form{background:#fff;border:1px solid var(--cream-3);border-radius:10px;padding:14px;margin-bottom:10px}
+.inv-photo-drop{border:2px dashed var(--cream-3);border-radius:8px;padding:12px;text-align:center;cursor:pointer;background:var(--cream-2);transition:border-color .15s;position:relative;overflow:hidden;margin-bottom:10px}
+.inv-photo-drop:hover{border-color:var(--amber)}
+.inv-photo-drop input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.inv-preview{width:100%;max-height:120px;object-fit:cover;border-radius:6px;display:none;margin-top:6px}
+/* Inventory detail panel */
+.inv-detail-photo{width:100%;max-height:180px;object-fit:cover;border-radius:10px;margin-bottom:12px;display:block}
+.inv-status-badge{display:inline-flex;align-items:center;gap:4px;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:3px 9px;border-radius:999px;margin-bottom:8px}
+.inv-status-badge.available{background:#e0f0e4;color:var(--found-g)}
+.inv-status-badge.returned{background:#fde8e0;color:var(--lost-r)}
+.inv-status-badge.adopted{background:#ede9e0;color:#8a7a66}
+@media(max-width:700px){.sh-col-left{width:100%}#view-shelters{flex-direction:column}#view-animalcontrol{flex-direction:column}}
+/* Animal Control */
+.ac-log-btn{font-family:var(--font-display);font-size:.9rem;font-weight:600;padding:9px 20px;background:#1e4080;color:#fff;border:none;border-radius:9px;cursor:pointer;transition:all .15s}
+.ac-log-btn:hover{filter:brightness(1.1)}
+.ac-queue-item{background:#fff;border:1px solid #d0daea;border-radius:10px;padding:11px 13px;margin-bottom:8px;cursor:pointer;transition:all .15s}
+.ac-queue-item:hover{border-color:#1e4080;box-shadow:0 2px 8px rgba(30,64,128,.1)}
+.ac-queue-item.selected{border-color:#1e4080;background:#f0f4fa}
+.ac-queue-item.reunited{opacity:.5}
+.ac-badge{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:2px 8px;border-radius:999px;display:inline-block}
+.ac-badge.active{background:#e0eaff;color:#1e4080}
+.ac-badge.matched{background:#fdf0e0;color:var(--amber)}
+.ac-badge.reunited{background:#ede9e0;color:#8a7a66}
+.chip-field-wrap{background:#e8f0ff;border:2px solid #1e4080;border-radius:10px;padding:12px 14px;margin-bottom:14px}
+.chip-field-label{font-size:.7rem;font-weight:800;color:#1e4080;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.chip-field-input{width:100%;padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:600;color:#1e4080;background:#fff;border:1.5px solid #a0baf0;border-radius:8px;outline:none;letter-spacing:.06em;transition:border-color .15s}
+.chip-field-input:focus{border-color:#1e4080;box-shadow:0 0 0 3px rgba(30,64,128,.12)}
+.chip-match-banner{background:linear-gradient(135deg,#e8f0ff,#d0e0ff);border:2px solid #1e4080;border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:.78rem;color:#1e4080;font-weight:600;display:flex;align-items:center;gap:7px}
+.ac-search-btn{width:100%;padding:11px;font-family:var(--font-display);font-size:.92rem;font-weight:600;background:#1e4080;color:#fff;border:none;border-radius:9px;cursor:pointer;transition:all .15s;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:7px}
+.ac-search-btn:hover{filter:brightness(1.1)}
+.ac-search-btn:disabled{opacity:.6;cursor:not-allowed}
+/* Reports view */
+#view-reports{background:var(--cream-2);flex-direction:row;overflow:hidden}
+#rpt-left{width:340px;flex-shrink:0;display:flex;flex-direction:column;border-right:1px solid var(--cream-3);overflow:hidden}
+#rpt-right{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden}
+#rpt-search-wrap{padding:12px 14px;border-bottom:1px solid var(--cream-3);background:var(--cream);flex-shrink:0}
+#rpt-search{width:100%;padding:9px 12px 9px 34px;font-family:var(--font-body);font-size:.86rem;color:var(--warm-dk);background:var(--cream-2);border:1.5px solid var(--cream-3);border-radius:9px;outline:none;transition:border-color .15s;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236b5540' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:10px center}
+#rpt-search:focus{border-color:var(--amber)}
+#rpt-search::placeholder{color:var(--warm-mid)}
+.rpt-chips{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
+.rpt-chip{font-family:var(--font-body);font-size:.72rem;font-weight:600;padding:4px 11px;border-radius:999px;border:1.5px solid var(--cream-3);background:#fff;color:var(--warm-mid);cursor:pointer;transition:all .15s}
+.rpt-chip:hover{border-color:var(--amber);color:var(--amber)}
+.rpt-chip.active{background:var(--forest);color:var(--cream);border-color:var(--forest)}
+.rpt-chip.active.lost{background:var(--lost-r);border-color:var(--lost-r)}
+.rpt-chip.active.found{background:var(--found-g);border-color:var(--found-g)}
+.rpt-chip.active.reunited{background:#8a7a66;border-color:#8a7a66}
+.rpt-chip.active.adopt{background:#2050a0;border-color:#2050a0;color:#fff}
+#rpt-count{font-size:.72rem;color:var(--warm-mid);margin-top:8px;font-weight:500}
+#rpt-list{flex:1;overflow-y:auto;padding:8px}
+#rpt-list::-webkit-scrollbar{width:3px}
+#rpt-list::-webkit-scrollbar-thumb{background:var(--cream-3);border-radius:99px}
+.rpt-row{display:flex;gap:10px;align-items:flex-start;padding:10px 11px;border-radius:10px;border:1px solid var(--cream-3);background:#fff;margin-bottom:7px;cursor:pointer;transition:all .15s}
+.rpt-row:hover{border-color:var(--amber);box-shadow:0 2px 8px rgba(42,31,18,.08)}
+.rpt-row.selected{border-color:var(--forest);background:#f5faf5}
+.rpt-row.reunited{opacity:.55}
+.rpt-thumb{width:54px;height:54px;object-fit:cover;border-radius:7px;flex-shrink:0}
+.rpt-thumb-ph{width:54px;height:54px;border-radius:7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.5rem}
+.rpt-info{flex:1;min-width:0}
+.rpt-top{display:flex;align-items:center;gap:6px;margin-bottom:3px}
+.rpt-badge{font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;padding:2px 7px;border-radius:999px}
+.rpt-badge.lost{background:#fde8e0;color:var(--lost-r)}
+.rpt-badge.found{background:#e0f0e4;color:var(--found-g)}
+.rpt-badge.reunited{background:#ede9e0;color:#8a7a66}
+.rpt-badge.adopt{background:#e0eaff;color:#2050a0}
+.rpt-name{font-family:var(--font-display);font-size:.92rem;font-weight:600;color:var(--warm-dk);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rpt-sub{font-size:.74rem;color:var(--warm-mid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
+.rpt-loc{font-size:.7rem;color:var(--warm-mid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rpt-age{font-size:.66rem;color:#a0907a;margin-left:auto;flex-shrink:0;white-space:nowrap;padding-top:2px}
+.rpt-empty{padding:40px 20px;text-align:center;color:var(--warm-mid)}
+.rpt-empty-icon{font-size:2.5rem;margin-bottom:10px;opacity:.3}
+/* Detail panel */
+#rpt-detail-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--warm-mid);gap:8px;padding:24px;background:var(--cream)}
+#rpt-detail-panel{flex:1;min-height:0;overflow-y:auto;padding:22px;background:var(--cream);display:none}
+#rpt-detail-panel::-webkit-scrollbar{width:3px}
+#rpt-detail-panel::-webkit-scrollbar-thumb{background:var(--cream-3);border-radius:99px}
+@media(max-width:640px){#rpt-left{width:100%}#view-reports{flex-direction:column}#rpt-right{display:none}#rpt-right.show{display:flex;position:fixed;inset:var(--nav-h) 0 0 0;z-index:900;background:var(--cream)}}
+/* Adopt view */
+#view-adopt{background:var(--cream-2);flex-direction:column;overflow:hidden}
+#adopt-hdr{background:var(--cream);border-bottom:1px solid var(--cream-3);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+#adopt-hdr-title{font-family:var(--font-display);font-size:1.1rem;font-weight:600;color:var(--warm-dk)}
+#adopt-hdr-sub{font-size:.76rem;color:var(--warm-mid);margin-top:2px}
+#adopt-add-btn{font-family:var(--font-display);font-size:.82rem;font-weight:600;padding:8px 16px;background:#2050a0;color:#fff;border:none;border-radius:999px;cursor:pointer;transition:all .15s;flex-shrink:0}
+#adopt-add-btn:hover{filter:brightness(1.1)}
+#adopt-search-row{padding:10px 16px;border-bottom:1px solid var(--cream-3);background:var(--cream);flex-shrink:0;display:flex;gap:8px;align-items:center}
+#adopt-search{flex:1;padding:8px 12px 8px 32px;font-family:var(--font-body);font-size:.84rem;color:var(--warm-dk);background:var(--cream-2);border:1.5px solid var(--cream-3);border-radius:8px;outline:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236b5540' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:10px center}
+#adopt-search:focus{border-color:var(--amber)}
+#adopt-body{flex:1;overflow-y:auto;padding:16px 18px}
+#adopt-body::-webkit-scrollbar{width:4px}
+#adopt-body::-webkit-scrollbar-thumb{background:var(--cream-3);border-radius:99px}
+.adopt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.adopt-card{background:#fff;border:1px solid var(--cream-3);border-radius:14px;overflow:hidden;transition:all .18s;cursor:pointer;box-shadow:0 2px 8px rgba(42,31,18,.06)}
+.adopt-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(42,31,18,.12);border-color:#a0c0f0}
+.adopt-card-img{width:100%;height:160px;object-fit:cover;display:block}
+.adopt-card-no-img{width:100%;height:160px;display:flex;align-items:center;justify-content:center;font-size:3rem;background:var(--cream-2)}
+.adopt-card-body{padding:12px 14px 14px}
+.adopt-card-name{font-family:var(--font-display);font-size:1rem;font-weight:600;color:var(--warm-dk);margin-bottom:4px}
+.adopt-card-desc{font-size:.76rem;color:var(--warm-mid);margin-bottom:6px;line-height:1.4}
+.adopt-card-meta{display:flex;align-items:center;justify-content:space-between;font-size:.7rem;color:var(--warm-mid);margin-bottom:10px}
+.adopt-card-days{font-weight:700;color:#2050a0}
+.adopt-ask-btn{width:100%;padding:8px;font-family:var(--font-display);font-size:.82rem;font-weight:600;background:#2050a0;color:#fff;border:none;border-radius:8px;cursor:pointer;transition:all .15s}
+.adopt-ask-btn:hover{filter:brightness(1.1)}
+.adopt-empty{padding:48px 24px;text-align:center;color:var(--warm-mid)}
+.adopt-empty-icon{font-size:3rem;margin-bottom:12px;opacity:.3}
+/* Add to adopt form panel */
+#adopt-form-panel{position:fixed;inset:var(--nav-h) 0 0 0;z-index:900;background:rgba(42,31,18,.5);display:none;align-items:flex-end;justify-content:center}
+#adopt-form-panel.open{display:flex}
+#adopt-form-inner{background:var(--cream);border-radius:18px 18px 0 0;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;padding:20px 22px 32px;animation:slide-up .28s cubic-bezier(.34,1.56,.64,1)}
+@keyframes slide-up{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}
+/* Adoption inquiry form */
+#adopt-inquiry-panel{position:fixed;inset:var(--nav-h) 0 0 0;z-index:950;background:rgba(42,31,18,.55);display:none;align-items:flex-end;justify-content:center}
+#adopt-inquiry-panel.open{display:flex}
+#adopt-inquiry-inner{background:var(--cream);border-radius:18px 18px 0 0;width:100%;max-width:520px;max-height:85vh;overflow-y:auto;padding:22px 22px 32px;animation:slide-up .28s cubic-bezier(.34,1.56,.64,1)}
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <div class="nav-logo">
+    🐾
+    <div class="nav-logo-wrap">
+      PawPulse
+      <span class="nav-logo-sub">Hastings, NE</span>
+    </div>
+  </div>
+  <button class="nav-report-btn" onclick="openReportPicker()">+ Report</button>
+  <!-- Report type picker -->
+  <div id="report-picker" style="display:none;position:fixed;inset:0;z-index:1100;background:rgba(42,31,18,.5);align-items:center;justify-content:center" onclick="if(event.target===this)this.style.display='none'">
+    <div style="background:var(--cream);border-radius:16px;padding:24px;width:260px;box-shadow:0 16px 48px rgba(0,0,0,.28)">
+      <div style="font-family:var(--font-display);font-size:1rem;font-weight:600;color:var(--warm-dk);margin-bottom:16px;text-align:center">What are you reporting?</div>
+      <button onclick="closePicker();openPanel('lost')"  style="width:100%;padding:14px;margin-bottom:10px;font-family:var(--font-display);font-size:.95rem;font-weight:600;background:var(--lost-r);color:#fff;border:none;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">🔴 Lost Pet <span style="font-size:.78rem;opacity:.85;font-weight:400">I lost my pet</span></button>
+      <button onclick="closePicker();openPanel('found')" style="width:100%;padding:14px;font-family:var(--font-display);font-size:.95rem;font-weight:600;background:var(--found-g);color:#fff;border:none;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">🟢 Found Pet <span style="font-size:.78rem;opacity:.85;font-weight:400">I found a stray</span></button>
+    </div>
+  </div>
+  <div class="nav-spacer"></div>
+  <div id="nav-tabs">
+    <button class="tab-btn active" onclick="setView('map',this)">🗺️ <span class="tab-lbl">Map</span></button>
+    <button class="tab-btn"        onclick="setView('shelters',this)">🏠 <span class="tab-lbl">Shelters</span></button>
+    <button class="tab-btn"        onclick="setView('animalcontrol',this)">🚔 <span class="tab-lbl">AC</span></button>
+    <button class="tab-btn"        onclick="setView('reports',this)">📋 <span class="tab-lbl">Reports</span></button>
+    <button class="tab-btn"        onclick="setView('adopt',this)">🏠 <span class="tab-lbl">Adopt</span></button>
+  </div>
+</nav>
+
+<div id="view-shelters" class="view">
+  <!-- Left col -->
+  <div class="sh-col sh-col-left">
+    <div class="sh-col-hdr">
+      <div class="sh-col-title" id="sh-col-title">Intake Queue</div>
+      <div id="sh-queue-badge" style="font-size:.7rem;font-weight:700;background:var(--cream-2);color:var(--warm-mid);padding:2px 9px;border-radius:999px;border:1px solid var(--cream-3)">0 active</div>
+    </div>
+    <div class="sh-selector-wrap">
+      <select class="sh-select" id="sh-selector" onchange="setShelter(this.value)">
+        <option value="Adams County Humane Society">🏠 Adams County Humane Society</option>
+        <option value="Heartland Pet Connection">🐾 Heartland Pet Connection</option>
+        <option value="Start Over Rover">🐕 Start Over Rover</option>
+      </select>
+    </div>
+    <div class="sh-tab-row">
+      <button class="sh-tab active" id="sh-tab-queue" onclick="setShelterTab('queue',this)">📋 Queue</button>
+      <button class="sh-tab"        id="sh-tab-inv"   onclick="setShelterTab('inventory',this)">🐾 Inventory</button>
+    </div>
+    <div class="sh-col-body" id="sh-queue" style="display:flex;flex-direction:column">
+      <div class="sh-empty"><div class="sh-empty-icon">🐾</div>No intake yet</div>
+    </div>
+    <div class="sh-col-body" id="sh-inventory" style="display:none;flex-direction:column">
+      <div class="sh-empty"><div class="sh-empty-icon">📋</div>No inventory yet<br><span style="font-size:.72rem">Add animals below</span></div>
+    </div>
+    <div class="col-footer" id="sh-col-footer">
+      <button class="col-footer-btn" id="sh-footer-btn" onclick="handleShelterFooterBtn()">+ Log New Intake</button>
+    </div>
+  </div>
+  <!-- Right col -->
+  <div class="sh-col sh-col-right">
+    <div class="sh-col-hdr"><div class="sh-col-title" id="sh-panel-title">Action Panel</div></div>
+    <div id="sh-action-empty" class="sh-action-empty">
+      <div class="sh-action-empty-icon">🏠</div>
+      <div style="font-size:.85rem;color:var(--warm-mid);text-align:center">Select a record or use the buttons in the left column</div>
+    </div>
+    <div id="sh-action-panel" style="flex:1;min-height:0;display:none;flex-direction:column">
+      <div class="sh-action-panel" id="sh-action-panel-body"></div>
+    </div>
+  </div>
+</div>
+
+<div id="view-animalcontrol" class="view">
+  <!-- Left col: pickup queue -->
+  <div class="sh-col sh-col-left" style="border-top:3px solid #1e4080">
+    <div class="sh-col-hdr" style="background:#1e4080">
+      <div class="sh-col-title" style="color:#c8d8f0">Active Pickups</div>
+      <div id="ac-queue-badge" style="font-size:.7rem;font-weight:700;background:rgba(255,255,255,.15);color:#c8d8f0;padding:2px 9px;border-radius:999px">0 active</div>
+    </div>
+    <div class="sh-col-body" id="ac-queue">
+      <div class="sh-empty"><div class="sh-empty-icon">🚔</div>No pickups logged<br><span style="font-size:.72rem">Log a pickup to search for owner</span></div>
+    </div>
+  </div>
+  <!-- Right col: action panel -->
+  <div class="sh-col sh-col-right">
+    <div class="sh-col-hdr" style="background:#f0f4fa;border-bottom:1px solid #d0daea">
+      <div class="sh-col-title" style="color:#1e4080">Hastings Animal Control</div>
+      <div style="font-size:.7rem;color:#5070a0;font-weight:600">317 S Burlington Ave · (402) 461-2380</div>
+    </div>
+    <div id="ac-action-empty" class="sh-action-empty" style="background:#f8fafc">
+      <div class="sh-action-empty-icon">🔍</div>
+      <div style="font-size:.85rem;color:#5070a0">Log a pickup to search for the owner</div>
+      <button class="ac-log-btn" style="margin-top:10px" onclick="toggleACForm()">+ Log New Pickup</button>
+    </div>
+    <div id="ac-action-panel" style="flex:1;min-height:0;display:none;flex-direction:column">
+      <div class="sh-action-panel" id="ac-action-panel-body"></div>
+    </div>
+  </div>
+</div>
+
+<div id="view-adopt" class="view">
+  <div id="adopt-hdr">
+    <div>
+      <div id="adopt-hdr-title">🏠 Animals Available for Adoption</div>
+      <div id="adopt-hdr-sub">Hastings, NE area shelters · <span id="adopt-count">0</span> available</div>
+    </div>
+    <button id="adopt-add-btn" onclick="openAdoptForm()">+ Add Animal</button>
+  </div>
+  <div id="adopt-search-row">
+    <input id="adopt-search" type="text" placeholder="Search by species, breed, color, shelter…" oninput="renderAdoptView()" autocomplete="off">
+  </div>
+  <div id="adopt-body">
+    <div class="adopt-grid" id="adopt-grid"></div>
+  </div>
+</div>
+
+<!-- Add to adopt slide-up form -->
+<div id="adopt-form-panel" onclick="closeAdoptForm(event)">
+  <div id="adopt-form-inner">
+    <div style="font-family:var(--font-display);font-size:1.1rem;font-weight:600;color:var(--warm-dk);margin-bottom:4px">🏠 Post Animal for Adoption</div>
+    <div style="font-size:.76rem;color:var(--warm-mid);margin-bottom:16px">This will create a Found report and mark it adoption-ready, visible on the map and in the Adopt tab.</div>
+    <div class="inv-photo-drop" onclick="document.getElementById('af-photo-in').click()" style="margin-bottom:12px">
+      <input type="file" id="af-photo-in" accept="image/*" onchange="previewAdoptPhoto(this)">
+      <div id="af-photo-icon" style="font-size:1.6rem;margin-bottom:3px">📷</div>
+      <div id="af-photo-txt" style="font-size:.74rem;color:var(--warm-mid)">Tap to upload photo (strongly recommended)</div>
+      <img id="af-prev" class="inv-preview" alt="">
+    </div>
+    <div id="af-ai-wrap" style="display:none;margin-bottom:12px">
+      <button class="ai-id-btn" id="af-ai-btn" onclick="applyAIIdentify('af')">✨ Identify breed &amp; color with AI</button>
+      <div class="ai-id-result" id="af-ai-result"></div>
+    </div>
+    <div class="fr">
+      <div class="fg" style="margin:0"><label>Species</label><select id="af-species" onchange="updateBreedField('af-species','af-breed-wrap')"><option value="">Select…</option><option>Dog</option><option>Cat</option><option>Bird</option><option>Rabbit</option><option>Other</option></select></div>
+      <div class="fg" style="margin:0"><label>Sex</label><select id="af-sex"><option value="">Unknown</option><option>Male</option><option>Female</option></select></div>
+    </div>
+    <div class="fr" style="margin-top:10px">
+      <div class="fg" style="margin:0"><label>Breed</label><div id="af-breed-wrap"><input type="text" id="af-breed" placeholder="Select species first"></div></div>
+      <div class="fg" style="margin:0"><label>Color</label><input type="text" id="af-color" placeholder="e.g. Golden, white"></div>
+    </div>
+    <div class="fg" style="margin-top:10px"><label>Name (if known)</label><input type="text" id="af-name" placeholder="Leave blank if unknown"></div>
+    <div class="fg"><label>Age Estimate</label><select id="af-age"><option value="">Unknown</option><option>Puppy/Kitten</option><option>Young (1-2yr)</option><option>Adult (3-7yr)</option><option>Senior (8yr+)</option></select></div>
+    <div class="fg"><label>Description</label><textarea id="af-desc" placeholder="Personality, behavior, good with kids/pets, any special needs…" style="min-height:64px"></textarea></div>
+    <div class="fg"><label>Shelter / Contact</label><input type="text" id="af-shelter" placeholder="e.g. Adams County Humane Society"></div>
+    <div class="fg"><label>Phone</label><input type="tel" id="af-phone" placeholder="(402) 462-7387"></div>
+    <div style="display:flex;gap:8px;margin-top:6px">
+      <button class="adopt-ask-btn" style="flex:1;padding:12px;font-size:.9rem" onclick="submitAdoptListing()">✓ Post for Adoption</button>
+      <button class="sh-btn" onclick="closeAdoptForm(null)" style="padding:12px 18px">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="view-reports" class="view">
+  <!-- Left: search + list -->
+  <div id="rpt-left">
+    <div id="rpt-search-wrap">
+      <input id="rpt-search" type="text" placeholder="Search by name, breed, color, location…" oninput="renderReportsList()" autocomplete="off">
+      <div class="rpt-chips">
+        <button class="rpt-chip active"    id="rchip-all"     onclick="setRptFilter('all',this)">All</button>
+        <button class="rpt-chip lost"      id="rchip-lost"    onclick="setRptFilter('lost',this)">🔴 Lost</button>
+        <button class="rpt-chip found"     id="rchip-found"   onclick="setRptFilter('found',this)">🟢 Found</button>
+        <button class="rpt-chip reunited"  id="rchip-reunited" onclick="setRptFilter('reunited',this)">🎉 Reunited</button>
+        <button class="rpt-chip" id="rchip-adopt" onclick="setRptFilter('adopt',this)" style="color:#3060c0;border-color:#a0c0f0">🏠 Adopt</button>
+      </div>
+      <div id="rpt-count"></div>
+    </div>
+    <div id="rpt-list"></div>
+  </div>
+  <!-- Right: detail -->
+  <div id="rpt-right">
+    <div id="rpt-detail-empty">
+      <div style="font-size:2.5rem;opacity:.2">📋</div>
+      <div style="font-size:.88rem">Select a report to see details</div>
+    </div>
+    <div id="rpt-detail-panel"></div>
+  </div>
+</div>
+
+<div id="view-map" class="view active">
+  <div id="map-container">
+    <div id="map"></div>
+
+    <!-- Live banner -->
+    <div id="pp-banner">
+      <div class="banner-dot" id="banner-dot"></div>
+      <div id="banner-txt">🐾 PawPulse is live in Hastings</div>
+    </div>
+
+    <!-- Floating filter pills -->
+    <div id="map-filters">
+      <button class="filter-btn all active" onclick="setFilter('all')">All</button>
+      <button class="filter-btn lost"       onclick="setFilter('lost')">🔴 Lost</button>
+      <button class="filter-btn found"      onclick="setFilter('found')">🟢 Found</button>
+    </div>
+
+    <div id="stats-bar">
+      <div class="stat-pill"><div class="stat-dot lost"></div><span id="cnt-lost">0</span>&nbsp;lost</div>
+      <div class="stat-pill"><div class="stat-dot found"></div><span id="cnt-found">0</span>&nbsp;found</div>
+    </div>
+
+    <div id="drop-hint">
+      📍 Click the map to place pin
+      <button id="drop-cancel" onclick="cancelPlace()">✕ Cancel</button>
+    </div>
+
+    <div id="pin-card">
+      <button class="pc-close" onclick="closeCard()">✕</button>
+      <div id="pin-card-body"></div>
+    </div>
+
+    <div id="empty-hint">🐾 No reports yet — tap "Lost Pet" or "Found Pet" above to add one</div>
+
+    <div id="side-panel">
+      <div class="panel-hdr">
+        <div>
+          <div class="panel-title" id="panel-title">Report a Lost Pet</div>
+          <div class="panel-sub"  id="panel-sub">Help your community find them 🐶</div>
+        </div>
+        <button class="panel-close" onclick="closePanel()">✕</button>
+      </div>
+      <div class="panel-body">
+
+        <!-- LOST FORM -->
+        <div id="form-lost">
+          <div class="sl">📋 Pet Information</div>
+          <div class="fr">
+            <div class="fg" style="margin:0"><label>Pet Name</label><input type="text" id="l-name" placeholder="e.g. Biscuit"></div>
+            <div class="fg" style="margin:0"><label>Species</label><select id="l-species" onchange="updateBreedField('l-species','l-breed-wrap')"><option value="">Select…</option><option>Dog</option><option>Cat</option><option>Bird</option><option>Rabbit</option><option>Other</option></select></div>
+          </div>
+          <div class="fr">
+            <div class="fg" style="margin:0"><label>Breed</label><div id="l-breed-wrap"><input type="text" id="l-breed" placeholder="Select species first"></div></div>
+            <div class="fg" style="margin:0"><label>Color</label><input type="text" id="l-color" placeholder="e.g. Golden, white"></div>
+          </div>
+          <hr class="div">
+          <div class="sl">📍 Last Seen Location</div>
+          <div class="loc-prompt on" id="l-prompt">🗺️ Click the map to place the last-seen pin</div>
+          <div class="loc-set"       id="l-locset">✅ <span id="l-loctxt">Location set</span></div>
+          <button class="reset-loc"  id="l-resetbtn" onclick="startPlace('lost')">📍 Move pin</button>
+          <div class="fg"><label>Landmark / Address (optional)</label><input type="text" id="l-address" placeholder="e.g. Near Brickyard Park"></div>
+          <hr class="div">
+          <div class="sl">🖼️ Photo</div>
+          <div class="photo-drop">
+            <input type="file" id="l-photo" accept="image/*" onchange="previewPhoto(this,'l-prev','l-dicon','l-dtxt');showAIBtn('l')">
+            <div class="photo-drop-icon" id="l-dicon">📷</div>
+            <div class="photo-drop-txt"  id="l-dtxt">Tap to upload a photo</div>
+            <img id="l-prev" class="photo-prev" alt="preview">
+          </div>
+          <div id="l-ai-wrap" style="display:none;margin-top:8px">
+            <button class="ai-id-btn" id="l-ai-btn" onclick="applyAIIdentify('l')">✨ Identify breed &amp; color with AI</button>
+            <div class="ai-id-result" id="l-ai-result"></div>
+          </div>
+          <hr class="div">
+          <div class="sl">👤 Owner Contact</div>
+          <div class="fg"><label>Your Name</label><input type="text" id="l-owner" placeholder="Full name"></div>
+          <div class="fr">
+            <div class="fg" style="margin:0"><label>Phone</label><input type="tel" id="l-phone" placeholder="555-0100"></div>
+            <div class="fg" style="margin:0"><label>Email</label><input type="email" id="l-email" placeholder="you@email.com"></div>
+          </div>
+          <div class="fg"><label>Microchip # (optional)</label><input type="text" id="l-chip" placeholder="15-digit number"></div>
+          <div class="fg"><label>Additional Details</label><textarea id="l-notes" placeholder="Collar, markings, behavior…"></textarea></div>
+          <button class="submit-btn lost" onclick="submitLost()">🔴 Submit Lost Pet Report</button>
+        </div>
+
+        <!-- FOUND FORM -->
+        <div id="form-found" style="display:none">
+          <div class="sl">📋 Pet Description</div>
+          <div class="fr">
+            <div class="fg" style="margin:0"><label>Species</label><select id="f-species"><option value="">Select…</option><option>Dog</option><option>Cat</option><option>Bird</option><option>Rabbit</option><option>Other</option></select></div>
+            <div class="fg" style="margin:0"><label>Color / Markings</label><input type="text" id="f-color" placeholder="e.g. Black &amp; tan"></div>
+          </div>
+          <div class="fg"><label>Description</label><textarea id="f-desc" placeholder="Size, age, collar, behavior…"></textarea></div>
+          <hr class="div">
+          <div class="sl">📍 Where Found</div>
+          <div class="loc-prompt on" id="f-prompt">🗺️ Click the map to place where you found them</div>
+          <div class="loc-set"       id="f-locset">✅ <span id="f-loctxt">Location set</span></div>
+          <button class="reset-loc"  id="f-resetbtn" onclick="startPlace('found')">📍 Move pin</button>
+          <div class="fg"><label>Landmark / Address (optional)</label><input type="text" id="f-address" placeholder="e.g. Near the fairgrounds"></div>
+          <hr class="div">
+          <div class="sl">🖼️ Photo</div>
+          <div class="photo-drop">
+            <input type="file" id="f-photo" accept="image/*" onchange="previewPhoto(this,'f-prev','f-dicon','f-dtxt')">
+            <div class="photo-drop-icon" id="f-dicon">📷</div>
+            <div class="photo-drop-txt"  id="f-dtxt">Tap to upload a photo</div>
+            <img id="f-prev" class="photo-prev" alt="preview">
+          </div>
+          <hr class="div">
+          <div class="sl">📞 Your Contact</div>
+          <div class="fr">
+            <div class="fg" style="margin:0"><label>Your Name</label><input type="text" id="f-finder" placeholder="Your name"></div>
+            <div class="fg" style="margin:0"><label>Phone</label><input type="tel" id="f-phone" placeholder="555-0100"></div>
+          </div>
+          <div class="chk-row">
+            <input type="checkbox" id="f-shelter" onchange="document.getElementById('f-sgrp').style.display=this.checked?'':'none'">
+            <label for="f-shelter">🏠 Pet is at a shelter or vet</label>
+          </div>
+          <div id="f-sgrp" style="display:none" class="fg">
+            <label>Shelter / Vet Name</label>
+            <input type="text" id="f-sname" placeholder="e.g. Adams County Humane Society">
+          </div>
+          <button class="submit-btn found" onclick="submitFound()">🟢 Submit Found Pet Report</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast">🔔 <span id="toast-msg"></span></div>
+
+<script>
+var HASTINGS = [40.5888, -98.3910];
+
+/* Map — same init pattern as PublicPulse */
+var map = L.map('map', { center: HASTINGS, zoom: 14, zoomControl: false });
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+  maxZoom: 19
+}).addTo(map);
+L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+var reports  = JSON.parse(localStorage.getItem('pawpulse-v2') || '[]');
+var lMarkers = [];
+var curFilter = 'all';
+var placing   = null;
+var pLat = {}, pLng = {};
+var tmpMarker = null;
+
+function save() { localStorage.setItem('pawpulse-v2', JSON.stringify(reports)); }
+
+function pinIcon(type, reunited, matched, adoptReady) {
+  var fill, shine, opacity, pulse;
+  if (reunited) {
+    fill = '#b0a898'; shine = '#d0c9be'; opacity = '0.45'; pulse = '';
+  } else if (adoptReady) {
+    fill = '#2050a0'; shine = '#6090e0'; opacity = '1';
+    pulse = '<circle cx="15" cy="12" r="10" fill="none" stroke="#6090e0" stroke-width="1.5" opacity=".5"><animate attributeName="r" values="10;14;10" dur="2.5s" repeatCount="indefinite"/><animate attributeName="opacity" values=".5;0;.5" dur="2.5s" repeatCount="indefinite"/></circle>';
+  } else if (matched) {
+    fill = '#c8841a'; shine = '#f0aa40'; opacity = '1';
+    pulse = '<circle cx="15" cy="12" r="11" fill="none" stroke="#f0aa40" stroke-width="1.5" opacity=".5"><animate attributeName="r" values="11;16;11" dur="1.8s" repeatCount="indefinite"/><animate attributeName="opacity" values=".5;0;.5" dur="1.8s" repeatCount="indefinite"/></circle>';
+  } else {
+    fill  = type === 'lost' ? '#c94f2a' : '#3a7d44';
+    shine = type === 'lost' ? '#f07040' : '#5caa68';
+    opacity = '1'; pulse = '';
+  }
+  var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="30" height="40" viewBox="0 0 30 40">'
+    + pulse
+    + '<path d="M15 1C8.9 1 4 5.9 4 12c0 9 11 27 11 27S26 21 26 12C26 5.9 21.1 1 15 1z" fill="'
+    + fill + '" stroke="#fff" stroke-width="1.2"/>'
+    + '<circle cx="15" cy="12" r="6" fill="' + shine + '" opacity=".85"/></svg>';
+  return L.divIcon({
+    html: '<div style="filter:drop-shadow(0 2px 5px rgba(0,0,0,.22));opacity:' + opacity + '">' + svg + '</div>',
+    iconSize: [30,40], iconAnchor: [15,40], popupAnchor: [0,-42], className: ''
+  });
+}
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ── Adoption helpers ───────────────────────── */
+function daysSince(iso) {
+  if (!iso) return 0;
+  return (Date.now() - new Date(iso).getTime()) / 86400000;
+}
+
+function setAdoptionStatus(id, status) {
+  var r = reports.find(function(x){ return x.id===id; });
+  if (!r) return;
+  r.adoptionStatus = status;
+  if (status === 'available' && !r.dateAvailable) r.dateAvailable = new Date().toISOString();
+  if (!r.shelterLog) r.shelterLog = [];
+  r.shelterLog.push({ body: 'Adoption status set to: ' + status, time: 'Just now' });
+  save(); renderMarkers();
+  /* Refresh whichever panel is open */
+  if (selectedIntakeId === id) selectIntake(id);
+  if (selectedACId      === id) selectACPickup(id);
+}
+
+var _inquiryReportId = null;
+
+function contactShelterForAdoption(id) {
+  _inquiryReportId = id;
+  var r = reports.find(function(x){ return x.id===id; });
+  var name    = r ? (r.name || r.species || 'this pet') : 'this pet';
+  var shelter = r ? (r.shelterName || r.finder || 'the shelter') : 'the shelter';
+  var desc    = document.getElementById('inq-animal-desc');
+  if (desc) desc.textContent = 'Interested in adopting ' + name + ' from ' + shelter + '. We\'ll pass your details along to arrange a meeting.';
+  /* Reset form */
+  ['inq-name','inq-phone','inq-email','inq-msg'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('inq-success').style.display = 'none';
+  document.getElementById('inq-btns').style.display    = 'flex';
+  document.getElementById('adopt-inquiry-panel').classList.add('open');
+  setTimeout(function(){ injectMicButtons(document.getElementById('adopt-inquiry-inner')); }, 80);
+}
+
+function closeInquiryPanel(e) {
+  if (e && e.target !== document.getElementById('adopt-inquiry-panel')) return;
+  document.getElementById('adopt-inquiry-panel').classList.remove('open');
+  _inquiryReportId = null;
+}
+
+function submitInquiry() {
+  var name  = (document.getElementById('inq-name') ||{}).value.trim();
+  var phone = (document.getElementById('inq-phone')||{}).value.trim();
+  var email = (document.getElementById('inq-email')||{}).value.trim();
+  var msg   = (document.getElementById('inq-msg')  ||{}).value.trim();
+  if (!name) { document.getElementById('inq-name').focus(); return; }
+  if (!phone && !email) { alert('Please add a phone number or email so the shelter can reach you.'); return; }
+  /* Save inquiry to report record */
+  if (_inquiryReportId) {
+    var r = reports.find(function(x){ return x.id===_inquiryReportId; });
+    if (r) {
+      if (!r.inquiries) r.inquiries = [];
+      r.inquiries.push({ name:name, phone:phone, email:email, msg:msg, time:new Date().toISOString() });
+      if (!r.shelterLog) r.shelterLog = [];
+      r.shelterLog.push({ body:'Adoption inquiry from ' + name + (phone?' · '+phone:'') + (email?' · '+email:''), time:'Just now' });
+      if (r.adoptionStatus === 'available') r.adoptionStatus = 'pending';
+      save();
+    }
+  }
+  document.getElementById('inq-success').style.display = 'block';
+  document.getElementById('inq-btns').style.display    = 'none';
+  setTimeout(function(){ closeInquiryPanel(null); renderAdoptView(); }, 2800);
+}
+
+function cardHTML(r) {
+  var lost     = r.type === 'lost';
+  var reunited = r.reunited === true;
+  var matched  = !reunited && r.possibleMatch;
+  var bg = reunited ? '#f7f4ef' : matched ? '#fffbf0' : (lost ? '#fff8f5' : '#f5faf6');
+  var img = r.photo
+    ? '<img class="pc-img" src="' + r.photo + '" alt="pet"' + (reunited ? ' style="filter:grayscale(.6)"' : '') + '>'
+    : '<div class="pc-no-img" style="background:' + bg + '">' + (reunited ? '🐾' : lost ? '🐕' : '🐈') + '</div>';
+  var rows = '';
+  if (lost) {
+    if (r.species) rows += '<div class="pc-row"><strong>Species:</strong> ' + esc(r.species) + '</div>';
+    if (r.breed)   rows += '<div class="pc-row"><strong>Breed:</strong> '   + esc(r.breed)   + '</div>';
+    if (r.color)   rows += '<div class="pc-row"><strong>Color:</strong> '   + esc(r.color)   + '</div>';
+    if (r.address) rows += '<div class="pc-row"><strong>Last seen:</strong> ' + esc(r.address) + '</div>';
+    if (r.chip)    rows += '<div class="pc-row"><strong>Chip #:</strong> '  + esc(r.chip)    + '</div>';
+    if (r.notes)   rows += '<div class="pc-row" style="margin-top:4px">'   + esc(r.notes)   + '</div>';
+  } else {
+    if (r.species) rows += '<div class="pc-row"><strong>Species:</strong> '    + esc(r.species) + '</div>';
+    if (r.color)   rows += '<div class="pc-row"><strong>Color:</strong> '      + esc(r.color)   + '</div>';
+    if (r.desc)    rows += '<div class="pc-row" style="margin-top:4px">'      + esc(r.desc)    + '</div>';
+    if (r.address) rows += '<div class="pc-row"><strong>Found near:</strong> ' + esc(r.address) + '</div>';
+    if (r.shelter) rows += '<div class="pc-row"><strong>🏠 Shelter:</strong> ' + esc(r.shelterName||'Yes') + '</div>';
+  }
+  var contact = lost
+    ? (r.owner  ? '<div class="pc-contact">📞 ' + esc(r.owner)  + (r.phone  ? ' · ' + esc(r.phone)  : '') + '</div>' : '')
+    : (r.finder ? '<div class="pc-contact">📞 ' + esc(r.finder) + (r.fphone ? ' · ' + esc(r.fphone) : '') + '</div>' : '');
+  var name = lost && r.name ? esc(r.name) : esc(r.species||'Unknown') + (lost ? '' : ' found');
+  var date = r.date ? new Date(r.date).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
+
+  var badge = reunited
+    ? '<span class="pc-badge reunited">🎉 Reunited</span>'
+    : '<span class="pc-badge ' + r.type + '">' + (lost ? '🔴 Lost' : '🟢 Found') + '</span>';
+
+  var matchBanner = matched
+    ? '<div class="pc-match-banner">🏠 Possible match at ' + esc(r.possibleMatch.shelterName) + ' — ' + r.possibleMatch.confidence + ' confidence</div>'
+    : '';
+
+  var comments = '';
+  if (r.comments && r.comments.length) {
+    comments = '<div class="pc-comments">'
+      + r.comments.map(function(c) {
+          return '<div class="pc-comment">'
+            + '<div class="pc-comment-from">🏠 ' + esc(c.from) + '</div>'
+            + esc(c.text)
+            + '<div class="pc-comment-time">' + c.time + '</div>'
+            + '</div>';
+        }).join('')
+      + '</div>';
+  }
+
+  var reuniteBtn = reunited
+    ? '<button class="reunite-btn done">🎉 Marked as Reunited</button>'
+    : '<button class="reunite-btn" onclick="markReunited(' + r.id + ')">🎉 Mark as Reunited</button>';
+
+  /* Adoption section — only for found, not reunited */
+  var adoptSection = '';
+  if (!lost && !reunited) {
+    var isAdoptAvail = r.adoptionStatus === 'available';
+    var isAdoptPend  = r.adoptionStatus === 'pending';
+    var isAdopted    = r.adoptionStatus === 'adopted';
+    if (isAdoptAvail) {
+      var daysWaiting = r.dateAvailable ? Math.floor(daysSince(r.dateAvailable)) : 0;
+      adoptSection = '<div class="pc-adopt">🏠 Available for Adoption'
+        + (daysWaiting > 0 ? ' · ' + daysWaiting + ' day' + (daysWaiting!==1?'s':'') + ' waiting' : '') + '</div>'
+        + '<button class="adopt-btn" onclick="contactShelterForAdoption(' + r.id + ')">💬 Ask About Adoption</button>';
+    } else if (isAdoptPend) {
+      adoptSection = '<div class="pc-adopt" style="background:linear-gradient(135deg,#fff8e8,#fdf3da);border-color:#d4a035;color:#7a5a10">⏳ Adoption Pending</div>';
+    } else if (isAdopted) {
+      adoptSection = '<div class="pc-adopt" style="background:linear-gradient(135deg,#e8f4e9,#d8eeda);border-color:#5caa68;color:#2d6a35">🎉 Adopted!</div>';
+    }
+  }
+
+  return img
+    + '<div class="pc-body" style="background:' + bg + '">'
+    + badge
+    + (matched ? '<div style="margin-bottom:4px"></div>' : '')
+    + matchBanner
+    + '<div class="pc-name" style="' + (reunited ? 'color:#9a8a78' : '') + '">' + name + '</div>'
+    + rows + contact
+    + (date ? '<div class="pc-date">Reported ' + date + '</div>' : '')
+    + comments
+    + adoptSection
+    + reuniteBtn
+    + '<button class="print-btn" onclick="printReport(' + r.id + ')">🖨️ Print Report</button>'
+    + '</div>';
+}
+
+function openCard(r, cp) {
+  var card = document.getElementById('pin-card');
+  document.getElementById('pin-card-body').innerHTML = cardHTML(r);
+  card.style.visibility = 'hidden';
+  card.className = 'open';
+  requestAnimationFrame(function() {
+    var mc = document.getElementById('map-container');
+    var cw = card.offsetWidth, ch = card.offsetHeight;
+    var mw = mc.offsetWidth,   mh = mc.offsetHeight;
+    var M = 12;
+    var left = Math.max(M, Math.min(cp.x - cw/2, mw - cw - M));
+    var top  = cp.y - ch - 16;
+    if (top < M) top = cp.y + 22;
+    top = Math.max(M, Math.min(top, mh - ch - M));
+    card.style.left = left + 'px';
+    card.style.top  = top  + 'px';
+    card.style.visibility = '';
+  });
+}
+
+function closeCard() {
+  var c = document.getElementById('pin-card');
+  c.className = '';
+  c.style.display = '';
+}
+
+/* ── Banner system ──────────────────────────── */
+var bannerEvents = [
+  { text:'🐾 PawPulse is live — helping Hastings pets get home', dot:'var(--moss)' },
+  { text:'🔴 Lost a pet? Tap "Lost Pet" to alert the community',  dot:'var(--moss)' },
+  { text:'🟢 Found a stray? Tap "Found Pet" to post it on the map', dot:'var(--moss)' },
+  { text:'🏠 Shelters can log intake and search for owners in the Shelters tab', dot:'var(--moss)' },
+  { text:'🔬 Animal Control officers — use the AC tab to log pickups', dot:'var(--moss)' }
+];
+var bannerIdx = 0;
+
+function pushBannerEvent(text, dotColor) {
+  bannerEvents.push({ text: text, dot: dotColor || 'var(--moss)', expires: Date.now() + 120000 });
+}
+
+function rotateBanner() {
+  /* Prune expired events, keep permanent ones */
+  bannerEvents = bannerEvents.filter(function(e){ return !e.expires || e.expires > Date.now(); });
+  /* Also build from live reports */
+  var liveMsgs = [];
+  var lostActive = reports.filter(function(r){ return r.type==='lost' && !r.reunited; });
+  var foundActive = reports.filter(function(r){ return r.type==='found' && !r.reunited && !r.acPickup; });
+  if (lostActive.length) {
+    var r = lostActive[Math.floor(Math.random()*lostActive.length)];
+    var name = r.name ? r.name : (r.species || 'A pet');
+    liveMsgs.push({ text: '🔴 ' + name + ' is still missing' + (r.address ? ' — last seen near ' + r.address : '') + '. Can you help?', dot:'var(--lost-lt)' });
+  }
+  if (foundActive.length) {
+    var rf = foundActive[Math.floor(Math.random()*foundActive.length)];
+    liveMsgs.push({ text: '🟢 ' + (rf.species||'A pet') + ' found near ' + (rf.address||'Hastings') + ' — do you know this animal?', dot:'var(--found-lt)' });
+  }
+  var pool = bannerEvents.concat(liveMsgs);
+  /* Adoption messages */
+  var adoptable = reports.filter(function(r){ return r.adoptionStatus==='available' && !r.reunited; });
+  if (adoptable.length) {
+    var longest = adoptable.slice().sort(function(a,b){ return daysSince(b.dateAvailable)-daysSince(a.dateAvailable); })[0];
+    var dw = longest.dateAvailable ? Math.floor(daysSince(longest.dateAvailable)) : 0;
+    var sh = longest.shelterName || longest.finder || 'a shelter';
+    pool.push({ text: '🏠 ' + adoptable.length + ' pet' + (adoptable.length>1?'s are':' is') + ' ready for adoption' + (adoptable.length===1?' at ' + sh:'') + ' — tap 🏠 Adopt to see them', dot:'#6090e0' });
+    if (dw >= 7) pool.push({ text: '🐾 This ' + (longest.species||'pet') + ' has been waiting ' + dw + ' days for a home — ask about adoption', dot:'#6090e0' });
+  }
+  if (!pool.length) return;
+  var next = pool[bannerIdx % pool.length];
+  bannerIdx++;
+
+  var txtEl  = document.getElementById('banner-txt');
+  var dotEl  = document.getElementById('banner-dot');
+  if (!txtEl) return;
+  txtEl.classList.add('fade');
+  setTimeout(function() {
+    txtEl.textContent = next.text;
+    if (dotEl) dotEl.style.background = next.dot || 'var(--moss)';
+    txtEl.classList.remove('fade');
+  }, 350);
+}
+
+setInterval(rotateBanner, 5000);
+setTimeout(rotateBanner, 1500);
+
+function markReunited(id) {
+  var r = reports.find(function(x){ return x.id === id; });
+  if (!r || r.reunited) return;
+  r.reunited = true;
+  r.reunitedDate = new Date().toISOString();
+  save();
+  /* Re-render card */
+  var cardBody = document.getElementById('pin-card-body');
+  if (cardBody) cardBody.innerHTML = cardHTML(r);
+  /* Gray the marker */
+  renderMarkers();
+  /* Burst animation on map at pin location */
+  fireBurst(r.lat, r.lng);
+  /* Push to banner */
+  var petName = r.type==='lost' && r.name ? r.name : (r.species || 'A pet');
+  pushBannerEvent('🎉 ' + petName + ' is home! Reunited in Hastings 🐾', '#f0b840');
+  /* Toast */
+  var el = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = '🎉 ' + petName + ' is home! Wonderful news 🐾';
+  el.style.background = '#3a7d44';
+  el.classList.add('show');
+  setTimeout(function(){ el.classList.remove('show'); setTimeout(function(){ el.style.background=''; }, 400); }, 5500);
+}
+
+function fireBurst(lat, lng) {
+  try {
+    var pt  = map.latLngToContainerPoint([lat, lng]);
+    var mc  = document.getElementById('map-container');
+    var sz  = 40;
+    var durations = [900, 1300, 1700];
+    var anims     = ['rburst1', 'rburst2', 'rburst3'];
+    durations.forEach(function(dur, i) {
+      var ring = document.createElement('div');
+      ring.className = 'reunion-ring';
+      ring.style.cssText = 'width:' + sz + 'px;height:' + sz + 'px;'
+        + 'left:' + (pt.x - sz/2) + 'px;top:' + (pt.y - sz/2) + 'px;'
+        + 'animation:' + anims[i] + ' ' + dur + 'ms ease-out forwards;'
+        + 'z-index:650;border-color:' + (i===0?'#f0b840':i===1?'#5caa68':'#f07040') + ';';
+      mc.appendChild(ring);
+      setTimeout(function(){ if (ring.parentNode) ring.parentNode.removeChild(ring); }, dur + 100);
+    });
+    /* Emoji pop */
+    var pop = document.createElement('div');
+    pop.style.cssText = 'position:absolute;left:' + (pt.x - 16) + 'px;top:' + (pt.y - 40) + 'px;'
+      + 'font-size:2rem;z-index:651;pointer-events:none;'
+      + 'animation:card-pop .4s cubic-bezier(.34,1.56,.64,1) forwards;';
+    pop.textContent = '🎉';
+    mc.appendChild(pop);
+    setTimeout(function(){ pop.style.opacity='0'; pop.style.transition='opacity .5s'; setTimeout(function(){ if(pop.parentNode) pop.parentNode.removeChild(pop); }, 600); }, 1800);
+  } catch(e) {}
+}
+
+function renderMarkers() {
+  lMarkers.forEach(function(m){ map.removeLayer(m); });
+  lMarkers = [];
+
+  /* Auto-trigger adoption: found + sheltered + not reunited + >5 days */
+  reports.forEach(function(r) {
+    if (r.type==='found' && r.shelter && !r.reunited && !r.adoptionStatus && daysSince(r.date) > 5) {
+      r.adoptionStatus = 'available';
+      if (!r.dateAvailable) r.dateAvailable = new Date().toISOString();
+    }
+  });
+
+  reports.filter(function(r) {
+    if (curFilter === 'all')   return !r.reunited;
+    if (curFilter === 'lost')  return r.type==='lost'  && !r.reunited;
+    if (curFilter === 'found') return r.type==='found' && !r.reunited;
+    if (curFilter === 'adopt') return r.adoptionStatus === 'available' && !r.reunited;
+    return true;
+  }).forEach(function(r){
+    var adoptReady = r.adoptionStatus === 'available' && !r.reunited;
+    var m = L.marker([r.lat,r.lng],{icon:pinIcon(r.type, r.reunited, r.possibleMatch && !r.reunited, adoptReady)}).addTo(map);
+    m.on('click', function(e){ closeCard(); openCard(r,e.containerPoint); L.DomEvent.stopPropagation(e); });
+    lMarkers.push(m);
+  });
+  document.getElementById('cnt-lost').textContent  = reports.filter(function(r){return r.type==='lost'  && !r.reunited;}).length;
+  document.getElementById('cnt-found').textContent = reports.filter(function(r){return r.type==='found' && !r.reunited;}).length;
+  document.getElementById('empty-hint').style.opacity = reports.length ? '0' : '1';
+  /* Keep reports list fresh */
+  var rptView = document.getElementById('view-reports');
+  if (rptView && rptView.classList.contains('active')) renderReportsList();
+  var adoptView = document.getElementById('view-adopt');
+  if (adoptView && adoptView.classList.contains('active')) renderAdoptView();
+}
+
+function setFilter(f) {
+  curFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(function(b){
+    b.classList.toggle('active', b.classList.contains(f));
+    if (f === 'adopt') b.classList.toggle('active', b.textContent.trim().indexOf('Adopt') > -1);
+  });
+  renderMarkers();
+}
+
+function openReportPicker() {
+  closeCard();
+  document.getElementById('report-picker').style.display = 'flex';
+}
+function closePicker() {
+  document.getElementById('report-picker').style.display = 'none';
+}
+
+function openPanel(type) {
+  closeCard();
+  cancelPlace();
+  /* Pre-set which form is visible so it's ready when panel opens */
+  document.getElementById('form-lost').style.display  = type==='lost'  ? '' : 'none';
+  document.getElementById('form-found').style.display = type==='found' ? '' : 'none';
+  document.getElementById('panel-title').textContent  = type==='lost'  ? 'Report a Lost Pet'  : 'Report a Found Pet';
+  document.getElementById('panel-sub').textContent    = type==='lost'  ? 'Help your community find them 🐶' : 'Help this pet get home 🏡';
+
+  if (window.innerWidth <= 600) {
+    /* Mobile: skip the panel entirely — just enter placing mode.
+       Panel opens after the pin is placed (in map.on click). */
+    startPlace(type);
+    return;
+  }
+
+  /* Desktop: open panel then start placing */
+  document.getElementById('side-panel').classList.add('open');
+  setTimeout(function(){ map.invalidateSize(); }, 340);
+  setTimeout(function(){ startPlace(type); }, 360);
+  setTimeout(function(){ injectMicButtons(document.getElementById('side-panel')); }, 420);
+}
+
+function closePanel() {
+  document.getElementById('side-panel').classList.remove('open');
+  cancelPlace();
+  setTimeout(function(){ map.invalidateSize(); }, 340);
+}
+
+function startPlace(type) {
+  cancelPlace();
+  closeCard();
+  placing = type;
+  map.getContainer().classList.add('placing');
+  document.getElementById('drop-hint').classList.add('on');
+}
+
+function cancelPlace() {
+  placing = null;
+  map.getContainer().classList.remove('placing');
+  document.getElementById('drop-hint').classList.remove('on');
+  if (tmpMarker) { map.removeLayer(tmpMarker); tmpMarker = null; }
+}
+
+map.on('click', function(e) {
+  if (!placing) { closeCard(); return; }
+  var t = placing;
+  pLat[t] = e.latlng.lat;
+  pLng[t] = e.latlng.lng;
+  if (tmpMarker) map.removeLayer(tmpMarker);
+  tmpMarker = L.circleMarker([pLat[t],pLng[t]], {
+    radius:9, color: t==='lost'?'#c94f2a':'#3a7d44',
+    fillColor: t==='lost'?'#f07040':'#5caa68', fillOpacity:.75, weight:2
+  }).addTo(map);
+  var pre = t==='lost' ? 'l' : 'f';
+  document.getElementById(pre+'-prompt').classList.remove('on');
+  document.getElementById(pre+'-locset').classList.add('on');
+  document.getElementById(pre+'-loctxt').textContent = 'Placed at ' + pLat[t].toFixed(4) + ', ' + pLng[t].toFixed(4);
+  document.getElementById(pre+'-resetbtn').style.display = 'block';
+  cancelPlace();
+  /* Open panel now — on mobile this is the first time it opens (no flash) */
+  document.getElementById('side-panel').classList.add('open');
+  setTimeout(function(){ map.invalidateSize(); }, 340);
+  setTimeout(function(){ injectMicButtons(document.getElementById('side-panel')); }, 380);
+});
+
+function previewPhoto(input, imgId, iconId, txtId) {
+  var file = input.files[0]; if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = document.getElementById(imgId);
+    img.src = e.target.result; img.style.display = 'block';
+    document.getElementById(iconId).style.display = 'none';
+    document.getElementById(txtId).style.display  = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ── Breed data ─────────────────────────────── */
+var DOG_BREEDS = ['Labrador Retriever','German Shepherd','Golden Retriever','French Bulldog','Bulldog','Poodle (Standard)','Poodle (Miniature)','Beagle','Rottweiler','Dachshund','German Shorthaired Pointer','Pembroke Welsh Corgi','Australian Shepherd','Border Collie','Yorkshire Terrier','Boxer','Shih Tzu','Siberian Husky','Doberman Pinscher','Great Dane','Miniature Schnauzer','Cocker Spaniel','Chihuahua','Pit Bull / Am. Staffordshire','American Bulldog','Basset Hound','Weimaraner','Mastiff','Maltese','Pomeranian','Bichon Frise','Cavalier King Charles','Mixed Breed'];
+var CAT_BREEDS = ['Domestic Shorthair','Domestic Longhair','Domestic Medium Hair','Tabby — Brown','Tabby — Grey','Tabby — Orange','Calico','Tortoiseshell','Tuxedo (Black & White)','Solid Black','Solid White','Solid Grey','Siamese','Persian','Maine Coon','Ragdoll','Bengal','Russian Blue','Sphynx','Scottish Fold','Birman','Himalayan','Mixed Breed'];
+
+function breedOptionsHTML(species) {
+  var list = species === 'Dog' ? DOG_BREEDS : species === 'Cat' ? CAT_BREEDS : null;
+  if (!list) return null;
+  return '<option value="">Select breed…</option>'
+    + list.map(function(b){ return '<option value="'+b+'">'+b+'</option>'; }).join('')
+    + '<option value="Other">Other / Unknown</option>';
+}
+
+function updateBreedField(speciesId, wrapId) {
+  var species = (document.getElementById(speciesId)||{}).value;
+  var wrap    = document.getElementById(wrapId);
+  if (!wrap) return;
+  var opts = breedOptionsHTML(species);
+  if (opts) {
+    /* Current value to preserve if re-selecting same species */
+    var curVal = (wrap.querySelector('select') || wrap.querySelector('input') || {}).value || '';
+    wrap.innerHTML = '<select id="' + wrapId.replace('-wrap','') + '">' + opts + '</select>';
+    if (curVal) { var sel = wrap.querySelector('select'); if (sel) sel.value = curVal; }
+    /* Listen for "Other" to reveal text input */
+    wrap.querySelector('select').addEventListener('change', function() {
+      var existing = wrap.querySelector('input.other-input');
+      if (this.value === 'Other') {
+        if (!existing) {
+          var inp = document.createElement('input');
+          inp.type = 'text'; inp.className = 'other-input';
+          inp.placeholder = 'Describe breed…';
+          inp.style.cssText = 'margin-top:6px;width:100%;padding:8px 11px;font-family:var(--font-body);font-size:.86rem;border:1.5px solid var(--cream-3);border-radius:8px;outline:none';
+          wrap.appendChild(inp);
+        }
+      } else {
+        if (existing) existing.remove();
+      }
+    });
+  } else {
+    wrap.innerHTML = '<input type="text" id="' + wrapId.replace('-wrap','') + '" placeholder="e.g. Lab mix">';
+  }
+}
+
+function getBreedValue(wrapId) {
+  var wrap = document.getElementById(wrapId);
+  if (!wrap) return '';
+  var sel = wrap.querySelector('select');
+  var txt = wrap.querySelector('input.other-input') || wrap.querySelector('input');
+  if (sel && sel.value === 'Other') return (txt ? txt.value.trim() : 'Other');
+  if (sel) return sel.value;
+  if (txt) return txt.value.trim();
+  return '';
+}
+
+function showAIBtn(prefix) {
+  var wrap = document.getElementById(prefix + '-ai-wrap');
+  if (wrap) wrap.style.display = 'block';
+}
+
+async function identifyPetFromPhoto(dataUrl) {
+  var parts = dataUrl.split(',');
+  var mime  = (parts[0].match(/:(.*?);/) || ['','image/jpeg'])[1];
+  var b64   = parts[1];
+  var resp  = await fetch('/api/anthropic', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      model:'claude-sonnet-4-20250514', max_tokens:300,
+      messages:[{ role:'user', content:[
+        { type:'image', source:{ type:'base64', media_type:mime, data:b64 } },
+        { type:'text',  text:'Identify this pet. Return ONLY valid JSON: {"species":"Dog|Cat|Bird|Rabbit|Other","breed":"specific breed or Mixed Breed","color":"color and markings description","estimatedAge":"Puppy/Kitten|Young 1-2yr|Adult 3-7yr|Senior 8yr+|Unknown","notes":"one sentence about distinctive features"}' }
+      ]}]
+    })
+  });
+  var data = await resp.json();
+  var text = (data.content||[]).map(function(b){ return b.text||''; }).join('').trim();
+  return JSON.parse(text.replace(/```json|```/g,'').trim());
+}
+
+async function applyAIIdentify(prefix) {
+  var imgEl = document.getElementById(prefix+'-prev');
+  if (!imgEl || !imgEl.src || !imgEl.src.startsWith('data:')) return;
+  var btn = document.getElementById(prefix+'-ai-btn');
+  if (btn) { btn.disabled=true; btn.textContent='✨ Identifying…'; }
+  try {
+    var result = await identifyPetFromPhoto(imgEl.src);
+    if (!result) throw new Error('no result');
+    /* Fill species */
+    var speciesEl = document.getElementById(prefix+'-species');
+    if (speciesEl && result.species) {
+      speciesEl.value = result.species;
+      /* Trigger breed field update */
+      var wrapId = prefix+'-breed-wrap';
+      if (document.getElementById(wrapId)) {
+        updateBreedField(prefix+'-species', wrapId);
+        /* Set breed value */
+        setTimeout(function(){
+          var sel = document.querySelector('#'+wrapId+' select');
+          var inp = document.querySelector('#'+wrapId+' input');
+          if (sel && result.breed) {
+            /* Try to match existing option */
+            var matched = false;
+            for (var i=0; i<sel.options.length; i++) {
+              if (sel.options[i].value.toLowerCase() === result.breed.toLowerCase()) {
+                sel.value = sel.options[i].value; matched = true; break;
+              }
+            }
+            if (!matched) { sel.value='Other'; sel.dispatchEvent(new Event('change'));
+              setTimeout(function(){ var oi=document.querySelector('#'+wrapId+' input.other-input'); if(oi) oi.value=result.breed; },50);
+            }
+          } else if (inp && result.breed) { inp.value = result.breed; }
+        }, 50);
+      } else {
+        /* plain text input */
+        var bi = document.getElementById(prefix+'-breed');
+        if (bi && result.breed) bi.value = result.breed;
+      }
+    }
+    /* Fill color */
+    var colorEl = document.getElementById(prefix+'-color');
+    if (colorEl && result.color) colorEl.value = result.color;
+    /* Fill description/notes */
+    var descEl = document.getElementById(prefix+'-desc') || document.getElementById(prefix+'-notes');
+    if (descEl && result.notes && !descEl.value) descEl.value = result.notes;
+    /* Fill age for inventory */
+    var ageEl = document.getElementById(prefix+'-age');
+    if (ageEl && result.estimatedAge) ageEl.value = result.estimatedAge;
+    /* Show result banner */
+    var resultEl = document.getElementById(prefix+'-ai-result');
+    if (resultEl) {
+      resultEl.textContent = '✓ AI identified: ' + [result.species, result.breed].filter(Boolean).join(' · ') + (result.estimatedAge?' · '+result.estimatedAge:'');
+      resultEl.classList.add('show');
+    }
+    if (btn) { btn.textContent='✨ Re-identify'; btn.disabled=false; }
+  } catch(e) {
+    if (btn) { btn.textContent='✨ Identify breed & color with AI'; btn.disabled=false; }
+    var resultEl = document.getElementById(prefix+'-ai-result');
+    if (resultEl) { resultEl.textContent='Could not identify — check connection or try a clearer photo.'; resultEl.classList.add('show'); }
+  }
+}
+
+function getPhoto(id) {
+  var el = document.getElementById(id);
+  return el && el.src && el.src.startsWith('data:') ? el.src : null;
+}
+
+/* ── Mic system ─────────────────────────────── */
+var _micActive = null, _micBtn = null, _micRec = null;
+
+function toggleMic(targetId, btnEl) {
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    var t = document.getElementById(targetId);
+    if (t) { t.placeholder = 'Voice input not supported in this browser'; t.focus(); }
+    return;
+  }
+  if (_micActive === targetId) { stopMic(); return; }
+  if (_micActive) stopMic();
+
+  var target = document.getElementById(targetId);
+  if (!target) return;
+  _micActive = targetId;
+  _micBtn = btnEl;
+
+  _micRec = new SR();
+  _micRec.lang = 'en-US';
+  _micRec.continuous = false;
+  _micRec.interimResults = true;
+  var base = target.value;
+
+  _micRec.onstart = function() {
+    btnEl.classList.add('mic-active');
+    btnEl.textContent = '⏹';
+  };
+  _micRec.onresult = function(e) {
+    var interim = '', final = '';
+    for (var i = e.resultIndex; i < e.results.length; i++) {
+      var t2 = e.results[i][0].transcript;
+      if (e.results[i].isFinal) final += t2; else interim += t2;
+    }
+    var sep = base.trim() ? ' ' : '';
+    target.value = base + sep + (final || interim).trim();
+  };
+  _micRec.onerror = function() { stopMic(); };
+  _micRec.onend   = function() { stopMic(); };
+  _micRec.start();
+}
+
+function stopMic() {
+  if (_micRec) { try { _micRec.stop(); } catch(e){} _micRec = null; }
+  if (_micBtn) { _micBtn.classList.remove('mic-active'); _micBtn.textContent = '🎤'; }
+  _micActive = null; _micBtn = null;
+}
+
+/* Auto-inject mic buttons into any textarea or text input that doesn't have one yet.
+   Call this after any form opens or panel renders. */
+function injectMicButtons(scopeEl) {
+  var root = scopeEl || document;
+  root.querySelectorAll('textarea:not([data-has-mic]), input[type=text]:not([data-has-mic]), input[type=tel]:not([data-has-mic])').forEach(function(el) {
+    if (!el.id) return;
+    el.setAttribute('data-has-mic', '1');
+    var parent = el.parentNode;
+    /* Don't double-wrap */
+    if (parent && parent.classList && parent.classList.contains('mic-wrap')) return;
+    var wrap = document.createElement('div');
+    wrap.className = 'mic-wrap';
+    parent.insertBefore(wrap, el);
+    wrap.appendChild(el);
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'mic-btn';
+    btn.textContent = '🎤';
+    btn.title = 'Tap to dictate';
+    /* Detect AC context for blue styling */
+    var inAC = !!el.closest('#view-animalcontrol');
+    if (inAC) btn.classList.add('ac-mic-btn');
+    btn.addEventListener('click', function(e) { e.preventDefault(); toggleMic(el.id, btn); });
+    wrap.appendChild(btn);
+  });
+}
+
+function v(id) { var el=document.getElementById(id); return el ? el.value.trim() : ''; }
+
+function submitLost() {
+  if (!pLat.lost) { alert('Please click the map to set a location first.'); startPlace('lost'); return; }
+  var r = { id:Date.now(), type:'lost', date:new Date().toISOString(),
+    lat:pLat.lost, lng:pLng.lost,
+    name:v('l-name'), species:v('l-species'), breed:v('l-breed'), color:v('l-color'),
+    address:v('l-address'), owner:v('l-owner'), phone:v('l-phone'),
+    email:v('l-email'), chip:v('l-chip'), notes:v('l-notes'), photo:getPhoto('l-prev') };
+  reports.push(r); save(); renderMarkers();
+  closePanel(); resetForm('lost');
+  pLat.lost = null; pLng.lost = null;
+  showToast('lost');
+}
+
+function submitFound() {
+  if (!pLat.found) { alert('Please click the map to set a location first.'); startPlace('found'); return; }
+  var shelter = document.getElementById('f-shelter').checked;
+  var r = { id:Date.now(), type:'found', date:new Date().toISOString(),
+    lat:pLat.found, lng:pLng.found,
+    species:v('f-species'), color:v('f-color'), desc:v('f-desc'),
+    address:v('f-address'), finder:v('f-finder'), fphone:v('f-phone'),
+    shelter:shelter, shelterName:shelter?v('f-sname'):'', photo:getPhoto('f-prev') };
+  reports.push(r); save(); renderMarkers();
+  closePanel(); resetForm('found');
+  pLat.found = null; pLng.found = null;
+  showToast('found');
+}
+
+function resetForm(type) {
+  var ids = type==='lost'
+    ? ['l-name','l-species','l-breed','l-color','l-address','l-owner','l-phone','l-email','l-chip','l-notes']
+    : ['f-species','f-color','f-desc','f-address','f-finder','f-phone','f-sname'];
+  ids.forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+  var pre = type==='lost' ? 'l' : 'f';
+  var img = document.getElementById(pre+'-prev');
+  if (img) { img.src=''; img.style.display='none'; }
+  document.getElementById(pre+'-dicon').style.display = '';
+  document.getElementById(pre+'-dtxt').style.display  = '';
+  document.getElementById(pre+'-prompt').classList.add('on');
+  document.getElementById(pre+'-locset').classList.remove('on');
+  document.getElementById(pre+'-resetbtn').style.display = 'none';
+  if (type==='found') {
+    document.getElementById('f-shelter').checked = false;
+    document.getElementById('f-sgrp').style.display = 'none';
+  }
+}
+
+function showToast(type) {
+  var n = Math.floor(Math.random()*55)+20;
+  document.getElementById('toast-msg').textContent = type==='lost'
+    ? '🔴 Alert sent — ' + n + ' neighbors notified'
+    : '🟢 Report shared — ' + n + ' people in this area notified';
+  var el = document.getElementById('toast');
+  el.classList.add('show');
+  setTimeout(function(){ el.classList.remove('show'); }, 4500);
+}
+
+/* Demo seed */
+(function seed() {
+  if (reports.length) return;
+  reports = [
+    {id:1,type:'lost', date:new Date(Date.now()-172800000).toISOString(),lat:40.5932,lng:-98.3875,name:'Biscuit',species:'Dog',breed:'Golden Retriever Mix',color:'Golden, white belly',address:'Near Brickyard Park',owner:'Sarah M.',phone:'402-555-0142',notes:'Friendly. Red collar, responds to name.',chip:'985112004567890',photo:null},
+    {id:2,type:'lost', date:new Date(Date.now()-86400000).toISOString(), lat:40.5845,lng:-98.3955,name:'Pepper', species:'Cat',breed:'Tabby',color:'Grey & black stripes',address:'Burlington Ave area',owner:'James K.',phone:'402-555-0198',notes:'Indoor cat, very shy. No collar.',photo:null},
+    {id:3,type:'found',date:new Date(Date.now()-18000000).toISOString(), lat:40.5870,lng:-98.3830,species:'Dog',color:'Black & tan, medium',desc:'Found near fairgrounds. Well-fed, worn tags.',address:'State Fair Grounds',finder:'Maria L.',fphone:'402-555-0177',shelter:true,shelterName:'Adams County Humane Society',photo:null},
+    {id:4,type:'found',date:new Date(Date.now()-7200000).toISOString(),  lat:40.5910,lng:-98.3980,species:'Cat',color:'Orange tabby, white paws',desc:'Friendly young cat, meowing on my porch.',address:'3rd & Hastings Ave',finder:'Tom B.',fphone:'402-555-0133',shelter:false,photo:null}
+  ];
+  save();
+})();
+
+var shelters = [
+  { name:'Adams County Humane Society', address:'1000 S Baltimore Ave, Hastings, NE', phone:'(402) 462-7387', lat:40.5845, lng:-98.3892, type:'shelter' },
+  { name:'Heartland Pet Connection',    address:'Hastings, NE',                        phone:'',               lat:40.5870, lng:-98.3940, type:'shelter' },
+  { name:'Start Over Rover',            address:'Hastings, NE',                        phone:'',               lat:40.5900, lng:-98.3870, type:'shelter' }
+];
+
+var activeShelter = shelters[0].name;
+var selectedIntakeId = null;
+var shelterTab = 'queue';       // 'queue' | 'inventory'
+var selectedInvId = null;
+var inventory = JSON.parse(localStorage.getItem('pawpulse-inv-v1') || '[]');
+
+function saveInv() { localStorage.setItem('pawpulse-inv-v1', JSON.stringify(inventory)); }
+
+function setShelterTab(tab, btn) {
+  shelterTab = tab;
+  document.querySelectorAll('.sh-tab').forEach(function(b){ b.classList.remove('active'); });
+  if (btn) btn.classList.add('active');
+  document.getElementById('sh-queue').style.display     = tab==='queue'     ? 'flex' : 'none';
+  document.getElementById('sh-inventory').style.display = tab==='inventory' ? 'flex' : 'none';
+  // Update footer button label
+  var fb = document.getElementById('sh-footer-btn');
+  if (fb) fb.textContent = tab==='queue' ? '+ Log New Intake' : '+ Add to Inventory';
+  // Reset right panel
+  document.getElementById('sh-action-empty').style.display = 'flex';
+  document.getElementById('sh-action-panel').style.display = 'none';
+  document.getElementById('sh-panel-title').textContent = tab==='queue' ? 'Action Panel' : 'Animal Detail';
+  if (tab==='inventory') renderInventoryList();
+}
+
+function handleShelterFooterBtn() {
+  if (shelterTab === 'queue') toggleIntakeForm();
+  else showAddInventoryForm();
+}
+
+function setShelter(name) {
+  activeShelter = name;
+  selectedIntakeId = null;
+  selectedInvId = null;
+  document.getElementById('sh-action-empty').style.display = 'flex';
+  document.getElementById('sh-action-panel').style.display = 'none';
+  renderShelterQueue();
+  if (shelterTab === 'inventory') renderInventoryList();
+}
+
+function getShelterIntakes() {
+  return reports.filter(function(r) {
+    return r.type === 'found' && r.shelter && r.shelterName === activeShelter;
+  });
+}
+
+function renderShelterQueue() {
+  var items = getShelterIntakes();
+  var active = items.filter(function(r){ return !r.reunited; });
+  document.getElementById('sh-queue-badge').textContent = active.length + ' active';
+  var el = document.getElementById('sh-queue');
+  if (!items.length) {
+    el.innerHTML = '<div class="sh-empty"><div class="sh-empty-icon">🐾</div>No intake logged yet<br><span style="font-size:.72rem">Use "Log New Intake" to add a pet</span></div>';
+    return;
+  }
+  el.innerHTML = items.slice().reverse().map(function(r) {
+    var name = r.species || 'Unknown';
+    if (r.color) name += ' · ' + r.color;
+    var date = r.date ? new Date(r.date).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
+    var badgeCls = r.reunited ? 'reunited' : r.adoptionStatus==='available' ? 'adopt' : 'intake';
+    var badgeTxt = r.reunited ? '🎉 Reunited' : r.adoptionStatus==='available' ? '🏠 Adoption Ready' : '🏠 In Care';
+    return '<div class="sh-queue-item ' + (r.reunited?'reunited':'') + ' ' + (selectedIntakeId===r.id?'selected':'') + '" onclick="selectIntake(' + r.id + ')">'
+      + '<div class="sh-qi-top"><span class="sh-qi-badge ' + badgeCls + '">' + badgeTxt + '</span><span class="sh-qi-time">' + date + '</span></div>'
+      + '<div class="sh-qi-name">' + esc(name) + '</div>'
+      + (r.desc ? '<div class="sh-qi-desc">' + esc(r.desc.slice(0,60)) + (r.desc.length>60?'…':'') + '</div>' : '')
+      + '</div>';
+  }).join('');
+}
+
+function selectIntake(id) {
+  selectedIntakeId = id;
+  renderShelterQueue();
+  var r = reports.find(function(x){ return x.id===id; });
+  if (!r) return;
+  document.getElementById('sh-action-empty').style.display = 'none';
+  var panel = document.getElementById('sh-action-panel');
+  panel.style.display = 'flex';
+  var log = (r.shelterLog || []).slice().reverse().map(function(e) {
+    return '<div class="sh-log-entry"><div class="sh-log-dot"></div><div class="sh-log-body">' + esc(e.body) + '</div><div class="sh-log-time">' + e.time + '</div></div>';
+  }).join('') || '<div style="font-size:.75rem;color:var(--warm-mid);padding:6px 0">No updates yet</div>';
+
+  var name = r.species || 'Unknown pet';
+  if (r.color) name += ' — ' + r.color;
+
+  document.getElementById('sh-action-panel-body').innerHTML =
+    '<div class="sh-panel-id">Intake #' + String(r.id).slice(-5) + ' · ' + activeShelter + '</div>'
+    + '<div class="sh-panel-name">' + esc(name) + '</div>'
+    + (r.desc ? '<div class="sh-panel-desc">' + esc(r.desc) + '</div>' : '')
+    + (r.address ? '<div style="font-size:.78rem;color:var(--warm-mid);margin-bottom:12px">📍 Found near: ' + esc(r.address) + '</div>' : '')
+    + (r.finder ? '<div style="font-size:.78rem;color:var(--warm-mid);margin-bottom:14px">📞 Reported by: ' + esc(r.finder) + (r.fphone?' · '+esc(r.fphone):'') + '</div>' : '')
+    + '<div class="sh-sec">AI Match Search</div>'
+    + '<button class="sh-btn primary" style="width:100%;margin-bottom:6px" onclick="searchMatches(' + r.id + ')">🔍 Search Lost Pets for Matches</button>'
+    + '<div id="sh-match-results-' + r.id + '" class="sh-match-results"></div>'
+    + '<div class="sh-sec" style="margin-top:14px">Post Update</div>'
+    + '<textarea class="sh-update-input" id="sh-update-txt" placeholder="Describe condition, vet visits, microchip scan results…"></textarea>'
+    + '<div class="sh-action-btns">'
+    + '<button class="sh-btn primary" onclick="postShelterUpdate(' + r.id + ')">📢 Post Update</button>'
+    + (!r.reunited ? '<button class="sh-btn" onclick="shMarkReunited(' + r.id + ')">🎉 Mark Reunited / Claimed</button>' : '<span style="font-size:.78rem;color:var(--found-g);font-weight:600">🎉 Reunited</span>')
+    + '</div>'
+    + (!r.reunited ? '<div class="sh-sec" style="margin-top:14px">Adoption Status</div>'
+      + '<div class="sh-action-btns" style="margin-bottom:4px">'
+      + '<button class="sh-btn' + (r.adoptionStatus==='available'?' primary':'') + '" onclick="setAdoptionStatus(' + r.id + ',\'available\')">🏠 Available</button>'
+      + '<button class="sh-btn' + (r.adoptionStatus==='pending'?' primary':'') + '"   onclick="setAdoptionStatus(' + r.id + ',\'pending\')">⏳ Pending</button>'
+      + '<button class="sh-btn' + (r.adoptionStatus==='adopted'?' primary':'') + '"   onclick="setAdoptionStatus(' + r.id + ',\'adopted\')">🎉 Adopted</button>'
+      + '</div>'
+      + (r.adoptionStatus === 'available'
+          ? '<div style="font-size:.74rem;color:#3060c0;margin-bottom:10px">🏠 Visible on map as adoption-ready · Blue pin</div>'
+          : '<div style="font-size:.74rem;color:var(--warm-mid);margin-bottom:10px">Mark "Available" to surface on the public map</div>')
+      : '')
+    + '<div class="sh-sec">Activity Log</div>'
+    + '<div class="sh-log">' + log + '</div>';
+  setTimeout(function(){ injectMicButtons(document.getElementById('sh-action-panel-body')); }, 50);
+}
+
+async function searchMatches(intakeId) {
+  var intake = reports.find(function(x){ return x.id===intakeId; });
+  if (!intake) return;
+  var btn = document.querySelector('[onclick="searchMatches(' + intakeId + ')"]');
+  var resultsEl = document.getElementById('sh-match-results-' + intakeId);
+  if (!resultsEl) return;
+
+  resultsEl.innerHTML = '<div class="ai-loading">'
+    + '<div class="ai-dot"></div>'
+    + '<div class="ai-dot" style="animation-delay:.2s"></div>'
+    + '<div class="ai-dot" style="animation-delay:.4s"></div>'
+    + '<span style="margin-left:4px">Searching lost pet reports…</span></div>';
+  if (btn) { btn.disabled = true; btn.textContent = 'Searching…'; }
+
+  var lostPets = reports.filter(function(r){ return r.type==='lost' && !r.reunited; });
+
+  if (!lostPets.length) {
+    resultsEl.innerHTML = '<div style="font-size:.78rem;color:var(--warm-mid);padding:8px 0">No active lost pet reports to compare against.</div>';
+    if (btn) { btn.disabled=false; btn.textContent='🔍 Search Lost Pets for Matches'; }
+    return;
+  }
+
+  var intakeDesc = [
+    intake.species && 'Species: ' + intake.species,
+    intake.color   && 'Color/Markings: ' + intake.color,
+    intake.desc    && 'Description: ' + intake.desc,
+    intake.address && 'Found near: ' + intake.address
+  ].filter(Boolean).join('. ');
+
+  var lostList = lostPets.map(function(r, i) {
+    return (i+1) + '. ID:' + r.id
+      + (r.name    ? ' Name:' + r.name      : '')
+      + (r.species ? ' Species:' + r.species : '')
+      + (r.breed   ? ' Breed:' + r.breed    : '')
+      + (r.color   ? ' Color:' + r.color    : '')
+      + (r.notes   ? ' Notes:' + r.notes    : '')
+      + (r.address ? ' Last seen:' + r.address : '');
+  }).join('\n');
+
+  try {
+    var resp = await fetch('/api/anthropic', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: 'You are a pet matching assistant for an animal shelter in Hastings, Nebraska. Compare a shelter intake against lost pet reports and identify potential matches. Return ONLY valid JSON — an array of up to 3 match objects. Each object must have: id (number, the lost pet report ID), confidence ("high", "medium", or "low"), reason (1-2 sentences explaining why they might match). Only include genuine possible matches. If nothing matches, return an empty array [].',
+        messages: [{
+          role: 'user',
+          content: 'SHELTER INTAKE:\n' + intakeDesc + '\n\nACTIVE LOST PET REPORTS:\n' + lostList + '\n\nReturn JSON array of matches.'
+        }]
+      })
+    });
+    var data = await resp.json();
+    var text = (data.content||[]).map(function(b){ return b.text||''; }).join('').trim();
+    var matches = JSON.parse(text.replace(/```json|```/g,'').trim());
+    renderMatchResults(intakeId, matches, lostPets);
+  } catch(e) {
+    /* Fallback: simple keyword match if API unavailable */
+    var fallback = lostPets.filter(function(r) {
+      var iStr = (intakeDesc).toLowerCase();
+      var rStr = [r.species,r.color,r.breed,r.notes].filter(Boolean).join(' ').toLowerCase();
+      return intake.species && r.species && intake.species.toLowerCase()===r.species.toLowerCase();
+    }).slice(0,3).map(function(r) {
+      return { id: r.id, confidence: 'medium', reason: 'Same species. Review details manually to confirm.' };
+    });
+    renderMatchResults(intakeId, fallback, lostPets);
+  }
+  if (btn) { btn.disabled=false; btn.textContent='🔍 Search Again'; }
+}
+
+function renderMatchResults(intakeId, matches, lostPets) {
+  var el = document.getElementById('sh-match-results-' + intakeId);
+  if (!el) return;
+  if (!matches || !matches.length) {
+    el.innerHTML = '<div style="font-size:.78rem;color:var(--warm-mid);padding:8px 0;font-style:italic">No close matches found in current lost pet reports.</div>';
+    return;
+  }
+  el.innerHTML = '<div style="font-size:.72rem;font-weight:700;color:var(--warm-mid);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">' + matches.length + ' possible match' + (matches.length>1?'es':'') + ' found</div>'
+    + matches.map(function(m) {
+        var lost = lostPets.find(function(r){ return r.id === m.id; });
+        if (!lost) return '';
+        var lname = lost.name ? lost.name : ((lost.species||'Unknown') + (lost.color?' · '+lost.color:''));
+        return '<div class="sh-match-item ' + m.confidence + '" id="sh-match-' + m.id + '">'
+          + '<span class="sh-match-conf ' + m.confidence + '">' + m.confidence + ' match</span>'
+          + '<div class="sh-match-name">' + esc(lname) + '</div>'
+          + '<div class="sh-match-reason">' + esc(m.reason) + '</div>'
+          + '<div style="display:flex;gap:6px;flex-wrap:wrap">'
+          + '<button class="sh-btn" style="font-size:.72rem;padding:5px 10px" onclick="toggleMatchComment(' + m.id + ',' + intakeId + ')">💬 Post Comment to Owner</button>'
+          + '</div>'
+          + '<div class="sh-match-comment-wrap" id="sh-comment-wrap-' + m.id + '">'
+          + '<textarea class="sh-match-comment-input" id="sh-comment-txt-' + m.id + '" placeholder="e.g. We may have your pet. Golden retriever, red collar, found near fairgrounds. Please call (402) 462-7387."></textarea>'
+          + '<div style="display:flex;gap:6px">'
+          + '<button class="sh-btn primary" style="flex:1;font-size:.72rem" onclick="postMatchComment(' + lost.id + ',' + intakeId + ')">Send & Notify Owner</button>'
+          + '<button class="sh-btn" style="font-size:.72rem" onclick="toggleMatchComment(' + m.id + ',' + intakeId + ')">Cancel</button>'
+          + '</div></div>'
+          + '</div>';
+      }).join('');
+}
+
+function toggleMatchComment(lostId, intakeId) {
+  var wrap = document.getElementById('sh-comment-wrap-' + lostId);
+  if (wrap) wrap.classList.toggle('open');
+}
+
+function postMatchComment(lostId, intakeId) {
+  var txt = document.getElementById('sh-comment-txt-' + lostId);
+  if (!txt || !txt.value.trim()) return;
+  var lost   = reports.find(function(x){ return x.id===lostId; });
+  var intake = reports.find(function(x){ return x.id===intakeId; });
+  if (!lost) return;
+
+  /* Add comment to lost pet */
+  if (!lost.comments) lost.comments = [];
+  lost.comments.push({ from: activeShelter, text: txt.value.trim(), time: 'Just now' });
+
+  /* Mark as possible match */
+  var matchEl = document.getElementById('sh-match-results-' + intakeId);
+  var confEl  = matchEl && matchEl.querySelector('.sh-match-conf');
+  var conf    = confEl ? confEl.classList.contains('high') ? 'high' : confEl.classList.contains('medium') ? 'medium' : 'low' : 'medium';
+  lost.possibleMatch = { shelterName: activeShelter, intakeId: intakeId, confidence: conf };
+
+  /* Log on intake too */
+  if (intake) {
+    if (!intake.shelterLog) intake.shelterLog = [];
+    intake.shelterLog.push({ body: 'Comment posted to lost pet report #' + String(lostId).slice(-5) + ' — owner notified', time: 'Just now' });
+  }
+
+  save();
+  renderMarkers();
+
+  /* Owner notification toast */
+  var ownerName = lost.owner || 'the owner';
+  var petName   = lost.name  || (lost.species || 'their pet');
+  var el = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = '📬 ' + ownerName + ' notified — possible match found for ' + petName + ' at ' + activeShelter;
+  el.style.background = '#c8841a';
+  el.classList.add('show');
+  setTimeout(function(){ el.classList.remove('show'); setTimeout(function(){ el.style.background=''; },400); }, 5500);
+
+  /* Close comment box, show confirmation */
+  var wrap = document.getElementById('sh-comment-wrap-' + lostId);
+  if (wrap) { wrap.classList.remove('open'); wrap.innerHTML = '<div style="font-size:.75rem;color:var(--found-g);font-weight:600;padding:4px 0">✓ Comment posted · Owner notified · Pin updated on map</div>'; }
+  selectIntake(intakeId);
+}
+
+function toggleIntakeForm() {
+  var existing = document.getElementById('sh-inline-intake');
+  if (existing) { existing.remove(); return; }
+  document.getElementById('sh-action-empty').style.display = 'none';
+  document.getElementById('sh-action-panel').style.display = 'flex';
+  document.getElementById('sh-panel-title').textContent = 'Log New Intake';
+  document.getElementById('sh-action-panel-body').innerHTML =
+    '<div style="font-family:var(--font-display);font-size:1rem;font-weight:600;color:var(--warm-dk);margin-bottom:14px">🐾 Log New Intake</div>'
+    + '<div class="inv-photo-drop" onclick="document.getElementById(\'si-photo-in\').click()" style="margin-bottom:8px">'
+    + '<input type="file" id="si-photo-in" accept="image/*" onchange="previewSIPhoto(this);showAIBtn(\'si\')">'
+    + '<div id="si-photo-icon" style="font-size:1.5rem;margin-bottom:3px">📷</div>'
+    + '<div id="si-photo-txt" style="font-size:.74rem;color:var(--warm-mid)">Tap to upload photo (optional)</div>'
+    + '<img id="si-prev" class="inv-preview" alt="">'
+    + '</div>'
+    + '<div id="si-ai-wrap" style="display:none;margin-bottom:12px">'
+    + '<button class="ai-id-btn" id="si-ai-btn" onclick="applyAIIdentify(\'si\')">✨ Identify breed &amp; color with AI</button>'
+    + '<div class="ai-id-result" id="si-ai-result"></div>'
+    + '</div>'
+    + '<div class="fr"><div class="fg" style="margin:0"><label>Species</label><select id="si-species" onchange="updateBreedField(\'si-species\',\'si-breed-wrap\')"><option value="">Select…</option><option>Dog</option><option>Cat</option><option>Bird</option><option>Rabbit</option><option>Other</option></select></div>'
+    + '<div class="fg" style="margin:0"><label>Color / Markings</label><input type="text" id="si-color" placeholder="e.g. Black & tan"></div></div>'
+    + '<div class="fr" style="margin-top:10px"><div class="fg" style="margin:0"><label>Breed</label><div id="si-breed-wrap"><input type="text" id="si-breed" placeholder="Select species first"></div></div>'
+    + '<div class="fg" style="margin:0"><label>Sex</label><select id="si-sex"><option value="">Unknown</option><option>Male</option><option>Female</option></select></div></div>'
+    + '<div class="fg" style="margin-top:10px"><label>Description / Condition</label><textarea id="si-desc" placeholder="Age estimate, condition, behavior, collar…" style="min-height:52px"></textarea></div>'
+    + '<div class="fg"><label>Where Found</label><input type="text" id="si-address" placeholder="Street or landmark"></div>'
+    + '<div style="display:flex;gap:8px">'
+    + '<button class="sh-btn primary" style="flex:1" onclick="submitIntake()">✓ Log Intake</button>'
+    + '<button class="sh-btn" onclick="cancelShelterPanel()">Cancel</button>'
+    + '</div>';
+  setTimeout(function(){ injectMicButtons(document.getElementById('sh-action-panel-body')); }, 50);
+}
+
+function previewSIPhoto(input) {
+  var file = input.files[0]; if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = document.getElementById('si-prev');
+    img.src = e.target.result; img.style.display = 'block';
+    document.getElementById('si-photo-icon').style.display = 'none';
+    document.getElementById('si-photo-txt').style.display  = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function cancelShelterPanel() {
+  document.getElementById('sh-action-empty').style.display = 'flex';
+  document.getElementById('sh-action-panel').style.display = 'none';
+  document.getElementById('sh-panel-title').textContent = shelterTab==='inventory' ? 'Animal Detail' : 'Action Panel';
+}
+
+function submitIntake() {
+  var shelter = shelters.find(function(s){ return s.name===activeShelter; });
+  var photoEl = document.getElementById('si-prev');
+  var r = {
+    id: Date.now(), type: 'found', date: new Date().toISOString(),
+    lat: shelter ? shelter.lat + (Math.random()-.5)*.003 : HASTINGS[0],
+    lng: shelter ? shelter.lng + (Math.random()-.5)*.003 : HASTINGS[1],
+    species: (document.getElementById('si-species')||{}).value,
+    color:   ((document.getElementById('si-color')||{}).value||'').trim(),
+    breed:   getBreedValue('si-breed-wrap'),
+    sex:     (document.getElementById('si-sex')||{}).value,
+    desc:    ((document.getElementById('si-desc')||{}).value||'').trim(),
+    address: ((document.getElementById('si-address')||{}).value||'').trim() || (shelter ? shelter.address : ''),
+    finder: activeShelter, fphone: shelter ? shelter.phone : '',
+    shelter: true, shelterName: activeShelter,
+    shelterLog: [{ body: 'Intake logged by ' + activeShelter, time: 'Just now' }],
+    photo: (photoEl && photoEl.src && photoEl.src.startsWith('data:')) ? photoEl.src : null
+  };
+  reports.push(r); save(); renderMarkers();
+  cancelShelterPanel();
+  renderShelterQueue();
+  selectIntake(r.id);
+  showToast('found');
+}
+
+/* ── INVENTORY ─────────────────────────────── */
+function getShelterInventory() {
+  return inventory.filter(function(i){ return i.shelterName === activeShelter; });
+}
+
+function renderInventoryList() {
+  var items = getShelterInventory();
+  var el = document.getElementById('sh-inventory');
+  if (!items.length) {
+    el.innerHTML = '<div class="sh-empty"><div class="sh-empty-icon">📋</div>No inventory yet<br><span style="font-size:.72rem">Tap "+ Add to Inventory" below</span></div>';
+    return;
+  }
+  el.innerHTML = items.slice().reverse().map(function(it) {
+    var photoEl = it.photo
+      ? '<img class="inv-card-photo" src="' + it.photo + '" alt="">'
+      : '<div class="inv-card-no-photo">' + (it.species==='Dog'?'🐕':it.species==='Cat'?'🐈':'🐾') + '</div>';
+    var desc = [it.breed, it.color].filter(Boolean).join(' · ') || it.description || '';
+    var date = it.dateIn ? new Date(it.dateIn).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
+    return '<div class="inv-card ' + (selectedInvId===it.id?'selected':'') + '" onclick="selectInventoryItem(' + it.id + ')">'
+      + photoEl
+      + '<div class="inv-card-info">'
+      + '<div class="inv-card-name">' + esc(it.name || (it.species||'Unknown')) + '</div>'
+      + '<div class="inv-card-desc">' + esc(desc.slice(0,40)) + '</div>'
+      + '<div class="inv-card-date">' + (date?'In since '+date:'') + '</div>'
+      + '</div></div>';
+  }).join('');
+}
+
+function showAddInventoryForm() {
+  document.getElementById('sh-action-empty').style.display = 'none';
+  document.getElementById('sh-action-panel').style.display = 'flex';
+  document.getElementById('sh-panel-title').textContent = 'Add to Inventory';
+  document.getElementById('sh-action-panel-body').innerHTML =
+    '<div style="font-family:var(--font-display);font-size:1rem;font-weight:600;color:var(--warm-dk);margin-bottom:14px">🐾 Add Animal to Inventory</div>'
+    + '<div class="inv-photo-drop" onclick="document.getElementById(\'inv-photo-in\').click()">'
+    + '<input type="file" id="inv-photo-in" accept="image/*" onchange="previewInvPhoto(this);showAIBtn(\'inv\')">'
+    + '<div id="inv-photo-icon" style="font-size:1.6rem;margin-bottom:4px">📷</div>'
+    + '<div id="inv-photo-txt" style="font-size:.75rem;color:var(--warm-mid)">Tap to upload photo</div>'
+    + '<img id="inv-prev" class="inv-preview" alt="">'
+    + '</div>'
+    + '<div id="inv-ai-wrap" style="display:none;margin-bottom:10px">'
+    + '<button class="ai-id-btn" id="inv-ai-btn" onclick="applyAIIdentify(\'inv\')">✨ Identify breed, color &amp; age with AI</button>'
+    + '<div class="ai-id-result" id="inv-ai-result"></div>'
+    + '</div>'
+    + '<div class="fr"><div class="fg" style="margin:0"><label>Species</label><select id="inv-species" onchange="updateBreedField(\'inv-species\',\'inv-breed-wrap\')"><option value="">Select…</option><option>Dog</option><option>Cat</option><option>Bird</option><option>Rabbit</option><option>Other</option></select></div>'
+    + '<div class="fg" style="margin:0"><label>Sex</label><select id="inv-sex"><option value="">Unknown</option><option>Male</option><option>Female</option></select></div></div>'
+    + '<div class="fr" style="margin-top:10px"><div class="fg" style="margin:0"><label>Breed</label><div id="inv-breed-wrap"><input type="text" id="inv-breed" placeholder="Select species first"></div></div>'
+    + '<div class="fg" style="margin:0"><label>Color</label><input type="text" id="inv-color" placeholder="e.g. Black & white"></div></div>'
+    + '<div class="fg" style="margin-top:10px"><label>Name (if known)</label><input type="text" id="inv-name" placeholder="Leave blank if unknown"></div>'
+    + '<div class="fg"><label>Age Estimate</label><select id="inv-age"><option value="">Unknown</option><option>Puppy/Kitten</option><option>Young (1-2yr)</option><option>Adult (3-7yr)</option><option>Senior (8yr+)</option></select></div>'
+    + '<div class="fg"><label>Description / Notes</label><textarea id="inv-desc" placeholder="Markings, behavior, condition, microchip status…" style="min-height:60px"></textarea></div>'
+    + '<div style="display:flex;gap:8px;margin-top:4px">'
+    + '<button class="sh-btn primary" style="flex:1" onclick="submitInventoryItem()">✓ Add to Inventory</button>'
+    + '<button class="sh-btn" onclick="cancelInvForm()">Cancel</button>'
+    + '</div>';
+  setTimeout(function(){ injectMicButtons(document.getElementById('sh-action-panel-body')); }, 50);
+}
+
+function previewInvPhoto(input) {
+  var file = input.files[0]; if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = document.getElementById('inv-prev');
+    img.src = e.target.result; img.style.display='block';
+    document.getElementById('inv-photo-icon').style.display='none';
+    document.getElementById('inv-photo-txt').style.display='none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function submitInventoryItem() {
+  var photoEl = document.getElementById('inv-prev');
+  var it = {
+    id: Date.now(),
+    shelterName: activeShelter,
+    dateIn: new Date().toISOString(),
+    species:     (document.getElementById('inv-species')||{}).value,
+    sex:         (document.getElementById('inv-sex')||{}).value,
+    breed:       getBreedValue('inv-breed-wrap'),
+    color:       ((document.getElementById('inv-color')||{}).value||'').trim(),
+    name:        ((document.getElementById('inv-name')||{}).value||'').trim(),
+    age:         (document.getElementById('inv-age')||{}).value,
+    description: ((document.getElementById('inv-desc')||{}).value||'').trim(),
+    photo:       (photoEl && photoEl.src && photoEl.src.startsWith('data:')) ? photoEl.src : null,
+    status:      'available'
+  };
+  inventory.push(it); saveInv();
+  renderInventoryList();
+  selectInventoryItem(it.id);
+}
+
+function cancelInvForm() {
+  selectedInvId = null;
+  document.getElementById('sh-action-empty').style.display = 'flex';
+  document.getElementById('sh-action-panel').style.display = 'none';
+  document.getElementById('sh-panel-title').textContent = 'Animal Detail';
+}
+
+function selectInventoryItem(id) {
+  selectedInvId = id;
+  renderInventoryList();
+  var it = inventory.find(function(x){ return x.id===id; });
+  if (!it) return;
+  document.getElementById('sh-action-empty').style.display = 'none';
+  document.getElementById('sh-action-panel').style.display = 'flex';
+  document.getElementById('sh-panel-title').textContent = 'Animal Detail';
+
+  var statusBadge = '<span class="inv-status-badge ' + (it.status||'available') + '">'
+    + (it.status==='adopted'?'🎉 Adopted':it.status==='returned'?'🏡 Returned to Owner':'🟢 Available') + '</span>';
+
+  var details = [
+    it.species && ('<div class="pc-row"><strong>Species:</strong> ' + esc(it.species) + (it.breed?' · '+esc(it.breed):'') + '</div>'),
+    it.color   && ('<div class="pc-row"><strong>Color:</strong> '   + esc(it.color)   + '</div>'),
+    it.sex     && ('<div class="pc-row"><strong>Sex:</strong> '     + esc(it.sex)     + '</div>'),
+    it.age     && ('<div class="pc-row"><strong>Age:</strong> '     + esc(it.age)     + '</div>'),
+    it.description && ('<div class="pc-row" style="margin-top:4px">' + esc(it.description) + '</div>'),
+    it.dateIn  && ('<div class="pc-date">In since ' + new Date(it.dateIn).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) + '</div>')
+  ].filter(Boolean).join('');
+
+  document.getElementById('sh-action-panel-body').innerHTML =
+    (it.photo ? '<img class="inv-detail-photo" src="' + it.photo + '" alt="animal photo">' : '')
+    + statusBadge
+    + '<div class="sh-panel-name">' + esc(it.name || (it.species||'Unknown animal')) + '</div>'
+    + details
+
+    + '<div class="sh-sec">Update Status</div>'
+    + '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">'
+    + '<button class="sh-btn' + (it.status==='available'?' primary':'') + '" onclick="setInvStatus('+it.id+',\'available\')">🟢 Available</button>'
+    + '<button class="sh-btn' + (it.status==='returned'?' primary':'') + '" onclick="setInvStatus('+it.id+',\'returned\')">🏡 Returned</button>'
+    + '<button class="sh-btn' + (it.status==='adopted'?' primary':'') + '"  onclick="setInvStatus('+it.id+',\'adopted\')">🎉 Adopted</button>'
+    + '</div>'
+
+    + '<div class="sh-sec">Edit Details</div>'
+    + '<div class="fr"><div class="fg" style="margin:0"><label>Name</label><input type="text" id="inv-edit-name" value="' + esc(it.name||'') + '" placeholder="Name if known"></div>'
+    + '<div class="fg" style="margin:0"><label>Breed</label><input type="text" id="inv-edit-breed" value="' + esc(it.breed||'') + '" placeholder="Breed"></div></div>'
+    + '<div class="fg" style="margin-top:10px"><label>Notes / Description</label>'
+    + '<textarea id="inv-edit-desc" style="min-height:52px">' + esc(it.description||'') + '</textarea></div>'
+    + '<div style="display:flex;gap:6px;margin-bottom:16px">'
+    + '<button class="sh-btn primary" style="flex:1" onclick="saveInvEdit('+it.id+')">💾 Save Changes</button>'
+    + '</div>'
+
+    + '<div class="sh-sec">Search Lost Reports</div>'
+    + '<button class="sh-btn primary" style="width:100%;margin-bottom:6px" onclick="searchInvMatches('+it.id+')">🔍 AI Match Against Lost Pets</button>'
+    + '<div id="inv-match-results-' + it.id + '"></div>'
+
+    + '<hr style="border:none;border-top:1px solid var(--cream-3);margin:16px 0">'
+    + '<button class="sh-btn danger" style="width:100%;font-size:.78rem" onclick="confirmRemoveInv('+it.id+')">🗑 Remove from Inventory</button>'
+    + '<div id="inv-delete-confirm-'+it.id+'" style="display:none;margin-top:8px;background:#fff0ee;border:1px solid #f0c0b0;border-radius:8px;padding:10px 12px">'
+    + '<div style="font-size:.78rem;color:var(--lost-r);font-weight:600;margin-bottom:8px">Remove this animal from inventory?</div>'
+    + '<div style="display:flex;gap:6px">'
+    + '<button class="sh-btn danger" style="flex:1" onclick="removeInvItem('+it.id+')">Yes, remove</button>'
+    + '<button class="sh-btn" onclick="document.getElementById(\'inv-delete-confirm-'+it.id+'\').style.display=\'none\'">Cancel</button>'
+    + '</div></div>';
+  setTimeout(function(){ injectMicButtons(document.getElementById('sh-action-panel-body')); }, 50);
+}
+
+function saveInvEdit(id) {
+  var it = inventory.find(function(x){ return x.id===id; });
+  if (!it) return;
+  var nameEl = document.getElementById('inv-edit-name');
+  var breedEl = document.getElementById('inv-edit-breed');
+  var descEl  = document.getElementById('inv-edit-desc');
+  if (nameEl)  it.name        = nameEl.value.trim();
+  if (breedEl) it.breed       = breedEl.value.trim();
+  if (descEl)  it.description = descEl.value.trim();
+  saveInv();
+  renderInventoryList();
+  selectInventoryItem(id);
+}
+
+function confirmRemoveInv(id) {
+  var el = document.getElementById('inv-delete-confirm-' + id);
+  if (el) el.style.display = 'block';
+}
+
+function setInvStatus(id, status) {
+  var it = inventory.find(function(x){ return x.id===id; });
+  if (!it) return;
+  it.status = status;
+  saveInv();
+  selectInventoryItem(id);
+  renderInventoryList();
+}
+
+function removeInvItem(id) {
+  inventory = inventory.filter(function(x){ return x.id!==id; });
+  saveInv();
+  renderInventoryList();
+  cancelInvForm();
+}
+
+async function searchInvMatches(invId) {
+  var it = inventory.find(function(x){ return x.id===invId; });
+  if (!it) return;
+  var btn = document.querySelector('[onclick="searchInvMatches(' + invId + ')"]');
+  var resultsEl = document.getElementById('inv-match-results-' + invId);
+  if (!resultsEl) return;
+
+  resultsEl.innerHTML = '<div class="ai-loading"><div class="ai-dot"></div><div class="ai-dot" style="animation-delay:.2s"></div><div class="ai-dot" style="animation-delay:.4s"></div><span style="margin-left:4px">Searching lost pet reports…</span></div>';
+  if (btn) { btn.disabled=true; btn.textContent='Searching…'; }
+
+  var lostPets = reports.filter(function(r){ return r.type==='lost' && !r.reunited; });
+  if (!lostPets.length) {
+    resultsEl.innerHTML = '<div style="font-size:.78rem;color:var(--warm-mid);padding:8px 0;font-style:italic">No active lost reports to compare.</div>';
+    if (btn) { btn.disabled=false; btn.textContent='🔍 AI Match Against Lost Pets'; }
+    return;
+  }
+
+  var itDesc = [
+    it.species      && 'Species: '  + it.species,
+    it.breed        && 'Breed: '    + it.breed,
+    it.color        && 'Color: '    + it.color,
+    it.sex          && 'Sex: '      + it.sex,
+    it.age          && 'Age: '      + it.age,
+    it.description  && 'Notes: '   + it.description
+  ].filter(Boolean).join('. ');
+
+  var lostList = lostPets.map(function(r,i){
+    return (i+1) + '. ID:' + r.id
+      + (r.name    ? ' Name:'    + r.name    : '')
+      + (r.species ? ' Species:' + r.species : '')
+      + (r.breed   ? ' Breed:'   + r.breed   : '')
+      + (r.color   ? ' Color:'   + r.color   : '')
+      + (r.notes   ? ' Notes:'   + r.notes   : '');
+  }).join('\n');
+
+  try {
+    var resp = await fetch('/api/anthropic', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514', max_tokens:600,
+        system:'You are a pet matching assistant at a shelter in Hastings, Nebraska. Compare a shelter inventory animal against lost pet reports. Return ONLY valid JSON — array of up to 3 objects with: id (number), confidence ("high","medium","low"), reason (1-2 sentences). Return [] if no genuine matches.',
+        messages:[{role:'user', content:'SHELTER ANIMAL:\n'+itDesc+'\n\nLOST PET REPORTS:\n'+lostList+'\n\nReturn JSON.'}]
+      })
+    });
+    var data = await resp.json();
+    var text = (data.content||[]).map(function(b){ return b.text||''; }).join('').trim();
+    var matches = JSON.parse(text.replace(/```json|```/g,'').trim());
+    renderMatchResults(invId, matches, lostPets);
+    /* Re-wire comment buttons to use postMatchComment */
+    setTimeout(function(){
+      if (!matches || !matches.length) return;
+      matches.forEach(function(m){
+        var commentBtn = document.querySelector('[onclick="postMatchComment(' + m.id + ',' + invId + ')"]');
+        /* already wired via renderMatchResults */
+      });
+    }, 100);
+  } catch(e) {
+    resultsEl.innerHTML = '<div style="font-size:.78rem;color:var(--warm-mid);padding:8px 0;font-style:italic">Could not complete search. Check connection.</div>';
+  }
+  if (btn) { btn.disabled=false; btn.textContent='🔍 Search Again'; }
+}
+
+function postShelterUpdate(id) {
+  var r = reports.find(function(x){ return x.id===id; });
+  var txt = document.getElementById('sh-update-txt');
+  if (!r || !txt || !txt.value.trim()) return;
+  if (!r.shelterLog) r.shelterLog = [];
+  r.shelterLog.push({ body: txt.value.trim(), time: 'Just now' });
+  txt.value = '';
+  save();
+  selectIntake(id);
+}
+
+function shMarkReunited(id) {
+  markReunited(id);
+  renderShelterQueue();
+  selectIntake(id);
+}
+
+/* ── ANIMAL CONTROL ─────────────────────────── */
+var selectedACId = null;
+
+function getACPickups() {
+  return reports.filter(function(r){ return r.acPickup === true; });
+}
+
+function renderACQueue() {
+  var items = getACPickups();
+  var active = items.filter(function(r){ return !r.reunited; });
+  document.getElementById('ac-queue-badge').textContent = active.length + ' active';
+  var el = document.getElementById('ac-queue');
+  if (!items.length) {
+    el.innerHTML = '<div class="sh-empty"><div class="sh-empty-icon">🚔</div>No pickups logged<br><span style="font-size:.72rem">Log a pickup to search for owner</span></div>';
+    return;
+  }
+  el.innerHTML = '<button class="ac-log-btn" style="width:100%;margin-bottom:10px;font-size:.8rem;padding:8px" onclick="toggleACForm()">+ Log New Pickup</button>'
+    + items.slice().reverse().map(function(r) {
+        var name = r.species || 'Unknown';
+        if (r.color) name += ' · ' + r.color;
+        var bc = r.reunited ? 'reunited' : r.possibleMatch ? 'matched' : 'active';
+        var bt = r.reunited ? '🎉 Reunited' : r.possibleMatch ? '⚡ Match Found' : '🚔 In Custody';
+        var date = r.date ? new Date(r.date).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
+        return '<div class="ac-queue-item ' + (r.reunited?'reunited':'') + ' ' + (selectedACId===r.id?'selected':'') + '" onclick="selectACPickup(' + r.id + ')">'
+          + '<div class="sh-qi-top"><span class="ac-badge ' + bc + '">' + bt + '</span><span class="sh-qi-time">' + date + '</span></div>'
+          + '<div class="sh-qi-name">' + esc(name) + '</div>'
+          + (r.chip ? '<div class="sh-qi-desc">🔬 Chip: ' + esc(r.chip) + '</div>' : '')
+          + '</div>';
+      }).join('');
+}
+
+function toggleACForm() {
+  var existing = document.getElementById('ac-inline-form');
+  if (existing) { existing.remove(); return; }
+  document.getElementById('ac-action-empty').style.display = 'none';
+  document.getElementById('ac-action-panel').style.display = 'flex';
+  document.getElementById('ac-action-panel-body').innerHTML =
+    '<div style="font-family:var(--font-display);font-size:.95rem;font-weight:600;color:#1e4080;margin-bottom:12px">🚔 Log New Pickup</div>'
+    /* Photo + AI */
+    + '<div class="inv-photo-drop" onclick="document.getElementById(\'ac-photo-in\').click()" style="margin-bottom:8px;border-color:#a0baf0;background:#f8faff">'
+    + '<input type="file" id="ac-photo-in" accept="image/*" onchange="previewACPhoto(this);showAIBtn(\'ac\')">'
+    + '<div id="ac-photo-icon" style="font-size:1.5rem;margin-bottom:3px">📷</div>'
+    + '<div id="ac-photo-txt" style="font-size:.74rem;color:#7090c0">Tap to upload photo (optional)</div>'
+    + '<img id="ac-prev" class="inv-preview" alt="">'
+    + '</div>'
+    + '<div id="ac-ai-wrap" style="display:none;margin-bottom:12px">'
+    + '<button class="ai-id-btn" id="ac-ai-btn" onclick="applyAIIdentify(\'ac\')" style="background:linear-gradient(135deg,#e8f0ff,#d8e8ff);color:#1e4080;border-color:#a0baf0">✨ Identify breed &amp; color with AI</button>'
+    + '<div class="ai-id-result" id="ac-ai-result" style="border-color:#c0d0f0;background:#f0f4ff;color:#1e4080"></div>'
+    + '</div>'
+    /* Description fields */
+    + '<div class="fr"><div class="fg" style="margin:0"><label>Species</label><select id="ac-species" onchange="updateBreedField(\'ac-species\',\'ac-breed-wrap\')"><option value="">Select…</option><option>Dog</option><option>Cat</option><option>Bird</option><option>Rabbit</option><option>Other</option></select></div>'
+    + '<div class="fg" style="margin:0"><label>Color / Markings</label><input type="text" id="ac-color" placeholder="e.g. Black & tan"></div></div>'
+    + '<div class="fr" style="margin-top:10px"><div class="fg" style="margin:0"><label>Breed</label><div id="ac-breed-wrap"><input type="text" id="ac-breed" placeholder="Select species first"></div></div>'
+    + '<div class="fg" style="margin:0"><label>Sex</label><select id="ac-sex"><option value="">Unknown</option><option>Male</option><option>Female</option></select></div></div>'
+    + '<div class="fg" style="margin-top:10px"><label>Description / Condition</label><textarea id="ac-desc" placeholder="Size, age, behavior, collar, markings…" style="min-height:52px"></textarea></div>'
+    + '<div class="fg"><label>ID Tag Info (if any)</label><input type="text" id="ac-tag" placeholder="Name, phone, or address on tag"></div>'
+    + '<div class="fg"><label>Where Picked Up</label><input type="text" id="ac-address" placeholder="Street or intersection"></div>'
+    + '<div class="fg"><label>Officer</label><input type="text" id="ac-officer" placeholder="Officer name or badge #"></div>'
+    /* Chip — optional, bottom */
+    + '<details style="margin-bottom:12px"><summary style="font-size:.75rem;color:#5070a0;cursor:pointer;list-style:none;display:flex;align-items:center;gap:5px;padding:4px 0">🔬 Microchip # <span style="font-size:.68rem;opacity:.7">(optional — scan if available)</span></summary>'
+    + '<div class="chip-field-wrap" style="margin-top:8px;margin-bottom:0"><input class="chip-field-input" type="text" id="ac-chip" placeholder="15-digit chip number" maxlength="20"></div></details>'
+    + '<div style="display:flex;gap:8px">'
+    + '<button class="ac-log-btn" style="flex:1;font-size:.82rem" onclick="submitACPickup()">✓ Log Pickup</button>'
+    + '<button class="sh-btn" onclick="cancelACPanel()">Cancel</button>'
+    + '</div>';
+  setTimeout(function(){ injectMicButtons(document.getElementById('ac-action-panel-body')); }, 50);
+}
+
+function previewACPhoto(input) {
+  var file = input.files[0]; if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = document.getElementById('ac-prev');
+    img.src = e.target.result; img.style.display = 'block';
+    document.getElementById('ac-photo-icon').style.display = 'none';
+    document.getElementById('ac-photo-txt').style.display  = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function cancelACPanel() {
+  document.getElementById('ac-action-empty').style.display = 'flex';
+  document.getElementById('ac-action-panel').style.display = 'none';
+}
+
+function submitACPickup() {
+  var chip    = ((document.getElementById('ac-chip')||{}).value||'').replace(/\s/g,'');
+  var photoEl = document.getElementById('ac-prev');
+  var r = {
+    id: Date.now(), type: 'found', acPickup: true,
+    date: new Date().toISOString(),
+    lat: 40.5888 + (Math.random()-.5)*.01,
+    lng: -98.3910 + (Math.random()-.5)*.01,
+    chip:    chip,
+    species: (document.getElementById('ac-species')||{}).value,
+    color:   ((document.getElementById('ac-color')||{}).value||'').trim(),
+    breed:   getBreedValue('ac-breed-wrap'),
+    sex:     (document.getElementById('ac-sex')||{}).value,
+    tag:     ((document.getElementById('ac-tag')||{}).value||'').trim(),
+    desc:    ((document.getElementById('ac-desc')||{}).value||'').trim(),
+    address: ((document.getElementById('ac-address')||{}).value||'').trim() || '317 S Burlington Ave',
+    officer: ((document.getElementById('ac-officer')||{}).value||'').trim(),
+    finder:  'Hastings Animal Control', fphone: '(402) 461-2380',
+    shelter: true, shelterName: 'Hastings Animal Control',
+    shelterLog: [{ body: 'Pickup logged' + (chip ? ' — Chip: ' + chip : ' — no chip'), time: 'Just now' }],
+    photo: (photoEl && photoEl.src && photoEl.src.startsWith('data:')) ? photoEl.src : null
+  };
+  reports.push(r); save(); renderMarkers();
+  cancelACPanel();
+  renderACQueue();
+  selectACPickup(r.id);
+}
+
+function selectACPickup(id) {
+  selectedACId = id;
+  renderACQueue();
+  var r = reports.find(function(x){ return x.id===id; });
+  if (!r) return;
+  document.getElementById('ac-action-empty').style.display = 'none';
+  var panel = document.getElementById('ac-action-panel');
+  panel.style.display = 'flex';
+
+  var name = r.species || 'Unknown';
+  if (r.color) name += ' — ' + r.color;
+  if (r.breed) name += ' (' + r.breed + ')';
+
+  var log = (r.shelterLog||[]).slice().reverse().map(function(e){
+    return '<div class="sh-log-entry"><div class="sh-log-dot" style="background:#1e4080"></div><div class="sh-log-body">' + esc(e.body) + '</div><div class="sh-log-time">' + e.time + '</div></div>';
+  }).join('') || '<div style="font-size:.75rem;color:var(--warm-mid);padding:6px 0">No updates yet</div>';
+
+  document.getElementById('ac-action-panel-body').innerHTML =
+    '<div class="sh-panel-id" style="color:#1e4080">Pickup #' + String(r.id).slice(-5) + ' · Hastings Animal Control</div>'
+    + '<div class="sh-panel-name">' + esc(name) + '</div>'
+    + (r.chip
+        ? '<div class="chip-field-wrap" style="margin-bottom:12px"><div class="chip-field-label">🔬 Microchip Number</div><div style="font-size:1rem;font-weight:700;color:#1e4080;letter-spacing:.08em">' + esc(r.chip) + '</div></div>'
+        : '')
+    + (r.tag  ? '<div style="font-size:.78rem;color:var(--warm-mid);margin-bottom:6px">🏷️ ID Tag: ' + esc(r.tag) + '</div>' : '')
+    + (r.desc ? '<div class="sh-panel-desc">' + esc(r.desc) + '</div>' : '')
+    + (r.address ? '<div style="font-size:.78rem;color:var(--warm-mid);margin-bottom:4px">📍 Picked up: ' + esc(r.address) + '</div>' : '')
+    + (r.officer ? '<div style="font-size:.78rem;color:var(--warm-mid);margin-bottom:14px">👮 Officer: ' + esc(r.officer) + '</div>' : '')
+    + '<button class="ac-search-btn" id="ac-search-btn-' + r.id + '" onclick="searchACMatches(' + r.id + ')">🔍 Search for Owner</button>'
+    + '<div id="ac-match-results-' + r.id + '"></div>'
+    + '<div class="sh-sec" style="color:#1e4080;margin-top:14px">Field Notes</div>'
+    + '<textarea class="sh-update-input" id="ac-update-txt" placeholder="Condition update, vet visit, additional ID info…"></textarea>'
+    + '<div class="sh-action-btns">'
+    + '<button class="sh-btn" style="border-color:#1e4080;color:#1e4080" onclick="postACUpdate(' + r.id + ')">📋 Save Notes</button>'
+    + (!r.reunited ? '<button class="sh-btn primary" onclick="shMarkReunited(' + r.id + ')">🎉 Mark Claimed / Reunited</button>' : '<span style="font-size:.78rem;color:var(--found-g);font-weight:600">🎉 Claimed</span>')
+    + '</div>'
+    + (!r.reunited ? '<div class="sh-sec" style="color:#1e4080;margin-top:14px">Adoption Status</div>'
+      + '<div class="sh-action-btns" style="margin-bottom:4px">'
+      + '<button class="sh-btn' + (r.adoptionStatus==='available'?' primary':'') + '" onclick="setAdoptionStatus(' + r.id + ',\'available\')">🏠 Mark Available</button>'
+      + '<button class="sh-btn' + (r.adoptionStatus==='adopted'?' primary':'') + '"   onclick="setAdoptionStatus(' + r.id + ',\'adopted\')">🎉 Adopted</button>'
+      + '</div>'
+      + (r.adoptionStatus === 'available' ? '<div style="font-size:.74rem;color:#3060c0;margin-bottom:10px">🏠 Surfaced on public map as adoption-ready</div>' : '')
+      : '')
+    + '<div class="sh-sec" style="color:#1e4080;margin-top:14px">Activity Log</div>'
+    + '<div class="sh-log">' + log + '</div>';
+  setTimeout(function(){ injectMicButtons(document.getElementById('ac-action-panel-body')); }, 50);
+}
+
+async function searchACMatches(pickupId) {
+  var pickup = reports.find(function(x){ return x.id===pickupId; });
+  if (!pickup) return;
+  var btn = document.getElementById('ac-search-btn-' + pickupId);
+  var resultsEl = document.getElementById('ac-match-results-' + pickupId);
+  if (!resultsEl) return;
+
+  /* ── STEP 1: Exact chip match — instant, no AI needed ── */
+  if (pickup.chip) {
+    var chipMatch = reports.find(function(r){
+      return r.type==='lost' && !r.reunited && r.chip &&
+        r.chip.replace(/\s/g,'').toLowerCase() === pickup.chip.toLowerCase();
+    });
+    if (chipMatch) {
+      renderACMatchResults(pickupId, [{id: chipMatch.id, confidence:'chip', reason:'Exact microchip match: ' + pickup.chip + '. This is a definitive identification.'}], [chipMatch]);
+      return;
+    }
+  }
+
+  /* ── STEP 2: AI fuzzy match on description ── */
+  var lostPets = reports.filter(function(r){ return r.type==='lost' && !r.reunited; });
+  if (!lostPets.length) {
+    resultsEl.innerHTML = '<div style="font-size:.78rem;color:var(--warm-mid);padding:8px 0;font-style:italic">No active lost pet reports to compare.</div>';
+    return;
+  }
+
+  resultsEl.innerHTML = '<div class="ai-loading"><div class="ai-dot" style="background:#1e4080"></div><div class="ai-dot" style="background:#1e4080;animation-delay:.2s"></div><div class="ai-dot" style="background:#1e4080;animation-delay:.4s"></div><span style="margin-left:4px;color:#1e4080">Scanning lost pet reports…</span></div>';
+  if (btn) { btn.disabled=true; btn.textContent='Searching…'; }
+
+  var pickupDesc = [
+    pickup.species && 'Species: ' + pickup.species,
+    pickup.color   && 'Color/Markings: ' + pickup.color,
+    pickup.breed   && 'Breed: ' + pickup.breed,
+    pickup.desc    && 'Description: ' + pickup.desc,
+    pickup.tag     && 'ID Tag: ' + pickup.tag,
+    pickup.address && 'Picked up near: ' + pickup.address
+  ].filter(Boolean).join('. ');
+
+  var lostList = lostPets.map(function(r, i){
+    return (i+1) + '. ID:' + r.id
+      + (r.name    ? ' Name:'    + r.name    : '')
+      + (r.species ? ' Species:' + r.species : '')
+      + (r.breed   ? ' Breed:'   + r.breed   : '')
+      + (r.color   ? ' Color:'   + r.color   : '')
+      + (r.chip    ? ' Chip:'    + r.chip    : '')
+      + (r.notes   ? ' Notes:'   + r.notes   : '')
+      + (r.address ? ' LastSeen:'+ r.address : '');
+  }).join('\n');
+
+  try {
+    var resp = await fetch('/api/anthropic', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 800,
+        system: 'You are an animal control officer\'s assistant in Hastings, Nebraska. Compare a pickup description against lost pet reports to find the owner. Return ONLY valid JSON — an array of up to 3 objects with: id (number), confidence ("high", "medium", or "low"), reason (1-2 sentences). Only include genuine possible matches. Return [] if nothing is close.',
+        messages:[{ role:'user', content:'PICKUP:\n' + pickupDesc + '\n\nLOST PET REPORTS:\n' + lostList + '\n\nReturn JSON matches.' }]
+      })
+    });
+    var data = await resp.json();
+    var text = (data.content||[]).map(function(b){ return b.text||''; }).join('').trim();
+    var matches = JSON.parse(text.replace(/```json|```/g,'').trim());
+    renderACMatchResults(pickupId, matches, lostPets);
+  } catch(e) {
+    var fallback = lostPets.filter(function(r){
+      return pickup.species && r.species && pickup.species.toLowerCase()===r.species.toLowerCase();
+    }).slice(0,2).map(function(r){
+      return { id:r.id, confidence:'medium', reason:'Same species. Review manually to confirm.' };
+    });
+    renderACMatchResults(pickupId, fallback, lostPets);
+  }
+  if (btn) { btn.disabled=false; btn.textContent='🔍 Search Again'; }
+}
+
+function renderACMatchResults(pickupId, matches, lostPets) {
+  var el = document.getElementById('ac-match-results-' + pickupId);
+  if (!el) return;
+  if (!matches || !matches.length) {
+    el.innerHTML = '<div style="font-size:.78rem;color:var(--warm-mid);padding:8px 0;font-style:italic">No matches found in current lost reports.</div>';
+    return;
+  }
+  var isChipMatch = matches[0] && matches[0].confidence === 'chip';
+  el.innerHTML = (isChipMatch
+    ? '<div class="chip-match-banner">🔬 Definitive chip match — owner can be contacted immediately</div>'
+    : '<div style="font-size:.72rem;font-weight:700;color:#1e4080;margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">' + matches.length + ' possible match' + (matches.length>1?'es':'') + '</div>')
+    + matches.map(function(m){
+        var lost = lostPets.find(function(r){ return r.id===m.id; });
+        if (!lost) return '';
+        var lname = lost.name || ((lost.species||'Unknown') + (lost.color?' · '+lost.color:''));
+        var confColor = isChipMatch ? '#1e4080' : m.confidence==='high' ? 'var(--found-g)' : m.confidence==='medium' ? 'var(--amber)' : 'var(--warm-mid)';
+        var confLabel = isChipMatch ? '🔬 CHIP MATCH' : m.confidence.toUpperCase() + ' MATCH';
+        return '<div class="sh-match-item ' + (isChipMatch?'high':m.confidence) + '" id="ac-match-' + m.id + '" style="border-left-color:' + confColor + '">'
+          + '<span class="sh-match-conf" style="background:' + confColor + '22;color:' + confColor + '">' + confLabel + '</span>'
+          + '<div class="sh-match-name">' + esc(lname) + '</div>'
+          + (lost.owner ? '<div style="font-size:.74rem;color:var(--warm-mid);margin-bottom:3px">Owner: ' + esc(lost.owner) + (lost.phone?' · '+esc(lost.phone):'') + '</div>' : '')
+          + '<div class="sh-match-reason">' + esc(m.reason) + '</div>'
+          + '<div class="sh-match-comment-wrap ' + (isChipMatch?'open':'') + '" id="ac-comment-wrap-' + m.id + '">'
+          + '<textarea class="sh-match-comment-input" id="ac-comment-txt-' + m.id + '" style="border-color:' + confColor + '66" placeholder="e.g. We have your pet in our care at 317 S Burlington Ave. Please call (402) 461-2380 to arrange pickup."></textarea>'
+          + '<div style="display:flex;gap:6px">'
+          + '<button class="ac-log-btn" style="flex:1;font-size:.75rem;padding:7px" onclick="postACMatchComment(' + lost.id + ',' + pickupId + ')">📬 Notify Owner · Update Map</button>'
+          + (!isChipMatch ? '<button class="sh-btn" style="font-size:.72rem" onclick="document.getElementById(\'ac-comment-wrap-' + m.id + '\').classList.toggle(\'open\')">Cancel</button>' : '')
+          + '</div></div>'
+          + (!isChipMatch ? '<button class="sh-btn" style="font-size:.72rem;margin-top:6px" onclick="document.getElementById(\'ac-comment-wrap-' + m.id + '\').classList.toggle(\'open\')">💬 Contact Owner</button>' : '')
+          + '</div>';
+      }).join('');
+}
+
+function postACMatchComment(lostId, pickupId) {
+  var txt = document.getElementById('ac-comment-txt-' + lostId);
+  if (!txt || !txt.value.trim()) return;
+  var lost   = reports.find(function(x){ return x.id===lostId; });
+  var pickup = reports.find(function(x){ return x.id===pickupId; });
+  if (!lost) return;
+
+  if (!lost.comments) lost.comments = [];
+  lost.comments.push({ from:'Hastings Animal Control', text: txt.value.trim(), time:'Just now' });
+  lost.possibleMatch = { shelterName:'Hastings Animal Control', intakeId: pickupId, confidence: pickup && pickup.chip ? 'chip' : 'match' };
+
+  if (pickup) {
+    if (!pickup.shelterLog) pickup.shelterLog=[];
+    pickup.shelterLog.push({ body:'Owner notification sent for lost report #' + String(lostId).slice(-5), time:'Just now' });
+  }
+
+  save(); renderMarkers();
+
+  var petName   = lost.name || (lost.species || 'pet');
+  var ownerName = lost.owner || 'the owner';
+  var el = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = '📬 ' + ownerName + ' notified — ' + petName + ' may be at Animal Control';
+  el.style.background = '#1e4080';
+  el.classList.add('show');
+  setTimeout(function(){ el.classList.remove('show'); setTimeout(function(){ el.style.background=''; },400); }, 6000);
+
+  var wrap = document.getElementById('ac-comment-wrap-' + lostId);
+  if (wrap) { wrap.classList.remove('open'); wrap.innerHTML='<div style="font-size:.75rem;color:var(--found-g);font-weight:600;padding:4px 0">✓ Owner notified · Pin updated · No shelter visit needed</div>'; }
+  renderACQueue();
+  selectACPickup(pickupId);
+}
+
+function postACUpdate(id) {
+  var r   = reports.find(function(x){ return x.id===id; });
+  var txt = document.getElementById('ac-update-txt');
+  if (!r || !txt || !txt.value.trim()) return;
+  if (!r.shelterLog) r.shelterLog=[];
+  r.shelterLog.push({ body: txt.value.trim(), time:'Just now' });
+  txt.value = '';
+  save();
+  selectACPickup(id);
+}
+
+/* ── REPORTS LIST VIEW ──────────────────────── */
+var rptFilter = 'all';
+var selectedRptId = null;
+
+function setRptFilter(f, btn) {
+  rptFilter = f;
+  document.querySelectorAll('.rpt-chip').forEach(function(b){ b.classList.remove('active'); });
+  if (btn) btn.classList.add('active');
+  renderReportsList();
+}
+
+function timeAgo(iso) {
+  if (!iso) return '';
+  var diff = Date.now() - new Date(iso).getTime();
+  var m = Math.floor(diff / 60000);
+  if (m < 1)  return 'Just now';
+  if (m < 60) return m + 'm ago';
+  var h = Math.floor(m / 60);
+  if (h < 24) return h + 'h ago';
+  var d = Math.floor(h / 24);
+  if (d < 7)  return d + 'd ago';
+  return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+}
+
+function getFilteredReports() {
+  var q = ((document.getElementById('rpt-search')||{}).value||'').toLowerCase().trim();
+  var list = reports.slice().sort(function(a,b){ return new Date(b.date)-new Date(a.date); });
+
+  /* Filter by tab */
+  if (rptFilter === 'lost')    list = list.filter(function(r){ return r.type==='lost'  && !r.reunited; });
+  if (rptFilter === 'found')   list = list.filter(function(r){ return r.type==='found' && !r.reunited; });
+  if (rptFilter === 'reunited') list = list.filter(function(r){ return r.reunited; });
+  if (rptFilter === 'adopt')   list = list.filter(function(r){ return r.adoptionStatus==='available' && !r.reunited; });
+
+  /* Search */
+  if (q) {
+    list = list.filter(function(r) {
+      var hay = [r.name,r.species,r.breed,r.color,r.address,r.notes,r.desc,
+                 r.owner,r.finder,r.shelterName,r.tag].filter(Boolean).join(' ').toLowerCase();
+      return q.split(' ').every(function(word){ return hay.indexOf(word) > -1; });
+    });
+  }
+  return list;
+}
+
+function renderReportsList() {
+  var list = getFilteredReports();
+  var el = document.getElementById('rpt-list');
+  var countEl = document.getElementById('rpt-count');
+  if (countEl) countEl.textContent = list.length + ' report' + (list.length !== 1 ? 's' : '');
+
+  /* Adoption upload button when on adopt filter */
+  var adoptHeader = rptFilter === 'adopt'
+    ? '<button onclick="showAdoptUpload()" style="width:100%;padding:10px;font-family:var(--font-display);font-size:.88rem;font-weight:600;background:#2050a0;color:#fff;border:none;border-radius:9px;cursor:pointer;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:7px">🏠 + List Pet for Adoption</button>'
+    : '';
+
+  if (!list.length) {
+    el.innerHTML = adoptHeader + '<div class="rpt-empty"><div class="rpt-empty-icon">' + (rptFilter==='adopt'?'🏠':'🐾') + '</div><div>' + (rptFilter==='adopt'?'No pets listed for adoption yet':'No reports match') + '</div></div>';
+    return;
+  }
+
+  el.innerHTML = adoptHeader + list.map(function(r) {
+    var isLost     = r.type === 'lost';
+    var isReunited = r.reunited;
+    var bg = isReunited ? '#f0ece6' : isLost ? '#fff8f5' : '#f5faf6';
+    var thumbHTML = r.photo
+      ? '<img class="rpt-thumb" src="' + r.photo + '" alt="">'
+      : '<div class="rpt-thumb-ph" style="background:' + bg + '">' + (isReunited?'🐾':isLost?'🐕':'🐈') + '</div>';
+    var badgeTxt = isReunited ? '🎉 Reunited' : isLost ? '🔴 Lost' : r.adoptionStatus==='available' ? '🏠 Adopt' : '🟢 Found';
+    var badgeCls = isReunited ? 'reunited' : r.adoptionStatus==='available' ? 'adopt' : r.type;
+    var name = isLost && r.name ? esc(r.name) : esc(r.species || 'Unknown');
+    var sub  = [r.breed, r.color].filter(Boolean).map(esc).join(' · ') || (r.desc ? esc(r.desc.slice(0,40)) : '');
+    var loc  = r.address ? '📍 ' + esc(r.address) : '';
+    var shelter = r.shelterName ? '🏠 ' + esc(r.shelterName) : '';
+    return '<div class="rpt-row ' + (isReunited?'reunited':'') + ' ' + (selectedRptId===r.id?'selected':'') + '" onclick="selectReport(' + r.id + ')">'
+      + thumbHTML
+      + '<div class="rpt-info">'
+      + '<div class="rpt-top"><span class="rpt-badge ' + badgeCls + '">' + badgeTxt + '</span><div class="rpt-age">' + timeAgo(r.date) + '</div></div>'
+      + '<div class="rpt-name">' + name + '</div>'
+      + (sub  ? '<div class="rpt-sub">'  + sub  + '</div>' : '')
+      + (loc  ? '<div class="rpt-loc">'  + loc  + '</div>' : '')
+      + (shelter ? '<div class="rpt-loc">' + shelter + '</div>' : '')
+      + '</div></div>';
+  }).join('');
+}
+
+function selectReport(id) {
+  selectedRptId = id;
+  renderReportsList();
+  var r = reports.find(function(x){ return x.id === id; });
+  if (!r) return;
+
+  document.getElementById('rpt-detail-empty').style.display = 'none';
+  var panel = document.getElementById('rpt-detail-panel');
+  panel.style.display = 'block';
+
+  /* On mobile, show right panel as overlay */
+  var rptRight = document.getElementById('rpt-right');
+  if (window.innerWidth <= 640) rptRight.classList.add('show');
+
+  var isLost = r.type === 'lost';
+  var bg = r.reunited ? '#f7f4ef' : isLost ? '#fff8f5' : '#f5faf6';
+
+  /* Build full detail */
+  var rows = '';
+  if (isLost) {
+    if (r.species) rows += '<div class="pc-row"><strong>Species:</strong> ' + esc(r.species) + (r.breed?' · '+esc(r.breed):'') + '</div>';
+    if (r.color)   rows += '<div class="pc-row"><strong>Color:</strong> '   + esc(r.color)   + '</div>';
+    if (r.sex)     rows += '<div class="pc-row"><strong>Sex:</strong> '     + esc(r.sex)     + '</div>';
+    if (r.address) rows += '<div class="pc-row"><strong>Last seen:</strong> ' + esc(r.address) + '</div>';
+    if (r.chip)    rows += '<div class="pc-row"><strong>Microchip:</strong> ' + esc(r.chip)  + '</div>';
+    if (r.notes)   rows += '<div class="pc-row" style="margin-top:6px">'    + esc(r.notes)   + '</div>';
+  } else {
+    if (r.species) rows += '<div class="pc-row"><strong>Species:</strong> '    + esc(r.species) + (r.breed?' · '+esc(r.breed):'') + '</div>';
+    if (r.color)   rows += '<div class="pc-row"><strong>Color:</strong> '      + esc(r.color)   + '</div>';
+    if (r.sex)     rows += '<div class="pc-row"><strong>Sex:</strong> '        + esc(r.sex)     + '</div>';
+    if (r.desc)    rows += '<div class="pc-row" style="margin-top:6px">'      + esc(r.desc)    + '</div>';
+    if (r.address) rows += '<div class="pc-row"><strong>Found near:</strong> ' + esc(r.address) + '</div>';
+    if (r.shelter && r.shelterName) rows += '<div class="pc-row"><strong>🏠 At:</strong> ' + esc(r.shelterName) + '</div>';
+  }
+
+  var contact = isLost
+    ? (r.owner  ? '<div class="pc-contact">📞 ' + esc(r.owner)  + (r.phone  ? ' · '+esc(r.phone)  : '') + (r.email?' · '+esc(r.email):'') + '</div>' : '')
+    : (r.finder ? '<div class="pc-contact">📞 ' + esc(r.finder) + (r.fphone ? ' · '+esc(r.fphone) : '') + '</div>' : '');
+
+  var matchBanner = (!r.reunited && r.possibleMatch)
+    ? '<div class="pc-match-banner">🏠 Possible match at ' + esc(r.possibleMatch.shelterName) + ' — ' + r.possibleMatch.confidence + ' confidence</div>'
+    : '';
+
+  var comments = '';
+  if (r.comments && r.comments.length) {
+    comments = '<div class="pc-comments">'
+      + r.comments.map(function(c){
+          return '<div class="pc-comment"><div class="pc-comment-from">🏠 ' + esc(c.from) + '</div>' + esc(c.text) + '<div class="pc-comment-time">' + c.time + '</div></div>';
+        }).join('') + '</div>';
+  }
+
+  var reuniteBtn = r.reunited
+    ? '<button class="reunite-btn done" style="margin-top:14px">🎉 Marked as Reunited</button>'
+    : '<button class="reunite-btn" style="margin-top:14px" onclick="markReunitedFromReport(' + r.id + ')">🎉 Mark as Reunited</button>';
+
+  var viewOnMapBtn = '<button onclick="jumpToMap(' + r.id + ')" style="width:100%;margin-top:8px;padding:9px;font-family:var(--font-display);font-size:.88rem;font-weight:600;background:var(--cream-2);color:var(--warm-dk);border:1.5px solid var(--cream-3);border-radius:9px;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor=\'var(--amber)\'" onmouseout="this.style.borderColor=\'var(--cream-3)\'">🗺️ View on Map</button>';
+  var printBtn = '<button class="print-btn" onclick="printReport(' + r.id + ')">🖨️ Print Report</button>';
+
+  var backBtn = window.innerWidth <= 640
+    ? '<button onclick="closeRptDetail()" style="font-size:.78rem;color:var(--amber);background:none;border:none;cursor:pointer;padding:0 0 14px 0;font-family:var(--font-body);font-weight:600">← Back to list</button>'
+    : '';
+
+  panel.innerHTML =
+    backBtn
+    + (r.photo ? '<img src="' + r.photo + '" style="width:100%;max-height:200px;object-fit:cover;border-radius:10px;margin-bottom:14px;display:block" alt="pet photo">' : '')
+    + '<div style="background:' + bg + ';border-radius:10px;padding:14px 16px;border:1px solid var(--cream-3)">'
+    + '<span class="rpt-badge ' + (r.reunited?'reunited':r.type) + '" style="margin-bottom:8px;display:inline-block">' + (r.reunited?'🎉 Reunited':isLost?'🔴 Lost':'🟢 Found') + '</span>'
+    + matchBanner
+    + '<div style="font-family:var(--font-display);font-size:1.2rem;font-weight:600;color:' + (r.reunited?'#9a8a78':'var(--warm-dk)') + ';margin-bottom:8px">'
+    + (isLost && r.name ? esc(r.name) : esc(r.species||'Unknown') + (isLost?'':' found')) + '</div>'
+    + rows + contact + comments
+    + '<div class="pc-date" style="margin-top:8px">Reported ' + timeAgo(r.date) + '</div>'
+    + '</div>'
+    + reuniteBtn
+    + viewOnMapBtn
+    + printBtn;
+}
+
+function showAdoptUpload() {
+  document.getElementById('rpt-detail-empty').style.display = 'none';
+  var panel = document.getElementById('rpt-detail-panel');
+  panel.style.display = 'block';
+  if (window.innerWidth <= 640) document.getElementById('rpt-right').classList.add('show');
+  panel.innerHTML =
+    '<div style="font-family:var(--font-display);font-size:1.05rem;font-weight:600;color:var(--warm-dk);margin-bottom:14px">🏠 List a Pet for Adoption</div>'
+    + '<div class="inv-photo-drop" onclick="document.getElementById(\'adopt-photo-in\').click()" style="margin-bottom:10px">'
+    + '<input type="file" id="adopt-photo-in" accept="image/*" onchange="previewAdoptPhoto(this)">'
+    + '<div id="adopt-photo-icon" style="font-size:1.6rem;margin-bottom:3px">📷</div>'
+    + '<div id="adopt-photo-txt" style="font-size:.74rem;color:var(--warm-mid)">Upload a photo (strongly recommended)</div>'
+    + '<img id="adopt-prev" class="inv-preview" alt="">'
+    + '</div>'
+    + '<div id="adopt-ai-wrap" style="display:none;margin-bottom:10px">'
+    + '<button class="ai-id-btn" id="adopt-ai-btn" onclick="applyAIIdentify(\'adopt\')">✨ Identify breed &amp; color with AI</button>'
+    + '<div class="ai-id-result" id="adopt-ai-result"></div>'
+    + '</div>'
+    + '<div class="fr"><div class="fg" style="margin:0"><label>Pet Name (if known)</label><input type="text" id="adopt-name" placeholder="e.g. Daisy"></div>'
+    + '<div class="fg" style="margin:0"><label>Species</label><select id="adopt-species" onchange="updateBreedField(\'adopt-species\',\'adopt-breed-wrap\')"><option value="">Select…</option><option>Dog</option><option>Cat</option><option>Bird</option><option>Rabbit</option><option>Other</option></select></div></div>'
+    + '<div class="fr" style="margin-top:10px"><div class="fg" style="margin:0"><label>Breed</label><div id="adopt-breed-wrap"><input type="text" id="adopt-breed" placeholder="Select species first"></div></div>'
+    + '<div class="fg" style="margin:0"><label>Color</label><input type="text" id="adopt-color" placeholder="e.g. Golden"></div></div>'
+    + '<div class="fr" style="margin-top:10px"><div class="fg" style="margin:0"><label>Age</label><select id="adopt-age"><option value="">Unknown</option><option>Puppy/Kitten</option><option>Young (1-2yr)</option><option>Adult (3-7yr)</option><option>Senior (8yr+)</option></select></div>'
+    + '<div class="fg" style="margin:0"><label>Sex</label><select id="adopt-sex"><option value="">Unknown</option><option>Male</option><option>Female</option></select></div></div>'
+    + '<div class="fg" style="margin-top:10px"><label>Description</label><textarea id="adopt-desc" placeholder="Personality, good with kids/dogs/cats, special needs…" style="min-height:64px"></textarea></div>'
+    + '<div class="fg"><label>Contact Name / Shelter</label><input type="text" id="adopt-contact" placeholder="Your name or shelter name"></div>'
+    + '<div class="fg"><label>Phone</label><input type="tel" id="adopt-phone" placeholder="555-0100"></div>'
+    + '<div style="display:flex;gap:8px;margin-top:4px">'
+    + '<button class="adopt-btn" style="flex:1" onclick="submitAdoptUpload()">🏠 List for Adoption</button>'
+    + '<button class="sh-btn" onclick="closeAdoptUpload()">Cancel</button>'
+    + '</div>';
+  setTimeout(function(){ injectMicButtons(panel); }, 50);
+}
+
+function previewAdoptPhoto(input) {
+  var file = input.files[0]; if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = document.getElementById('adopt-prev');
+    img.src = e.target.result; img.style.display = 'block';
+    document.getElementById('adopt-photo-icon').style.display = 'none';
+    document.getElementById('adopt-photo-txt').style.display  = 'none';
+    document.getElementById('adopt-ai-wrap').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+function submitAdoptUpload() {
+  var photoEl = document.getElementById('adopt-prev');
+  var shelter = shelters[0]; /* Default to first shelter coords */
+  var r = {
+    id: Date.now(), type: 'found', date: new Date().toISOString(),
+    lat: HASTINGS[0] + (Math.random()-.5)*.008,
+    lng: HASTINGS[1] + (Math.random()-.5)*.008,
+    name:    ((document.getElementById('adopt-name')||{}).value||'').trim(),
+    species: (document.getElementById('adopt-species')||{}).value,
+    breed:   getBreedValue('adopt-breed-wrap'),
+    color:   ((document.getElementById('adopt-color')||{}).value||'').trim(),
+    age:     (document.getElementById('adopt-age')||{}).value,
+    sex:     (document.getElementById('adopt-sex')||{}).value,
+    desc:    ((document.getElementById('adopt-desc')||{}).value||'').trim(),
+    finder:  ((document.getElementById('adopt-contact')||{}).value||'').trim() || 'PawPulse Community',
+    fphone:  ((document.getElementById('adopt-phone')||{}).value||'').trim(),
+    shelter: false,
+    adoptionStatus: 'available',
+    dateAvailable:  new Date().toISOString(),
+    photo: (photoEl && photoEl.src && photoEl.src.startsWith('data:')) ? photoEl.src : null
+  };
+  reports.push(r); save(); renderMarkers();
+  pushBannerEvent('🏠 New adoption listing: ' + (r.name || r.species || 'A pet') + ' is looking for a home', '#6090e0');
+  closeAdoptUpload();
+  renderReportsList();
+  selectReport(r.id);
+  /* Show a toast */
+  document.getElementById('toast-msg').textContent = '🏠 Listed for adoption — visible on the map';
+  var t = document.getElementById('toast');
+  t.style.background = '#2050a0';
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); setTimeout(function(){ t.style.background=''; },400); }, 4000);
+}
+
+function closeAdoptUpload() {
+  document.getElementById('rpt-detail-empty').style.display = 'flex';
+  document.getElementById('rpt-detail-panel').style.display = 'none';
+  document.getElementById('rpt-right').classList.remove('show');
+}
+
+function closeRptDetail() {
+  document.getElementById('rpt-right').classList.remove('show');
+  selectedRptId = null;
+  document.getElementById('rpt-detail-empty').style.display = 'flex';
+  document.getElementById('rpt-detail-panel').style.display = 'none';
+}
+
+function markReunitedFromReport(id) {
+  markReunited(id);
+  selectReport(id);     /* Refresh detail panel */
+  renderReportsList();  /* Refresh list */
+}
+
+function jumpToMap(id) {
+  var r = reports.find(function(x){ return x.id===id; });
+  if (!r) return;
+  /* Switch to map, fly to pin, open card */
+  var mapBtn = document.querySelector('.tab-btn[onclick*="\'map\'"]');
+  setView('map', mapBtn);
+  setTimeout(function() {
+    map.flyTo([r.lat, r.lng], 16, { duration: 0.8 });
+    setTimeout(function() {
+      var cp = map.latLngToContainerPoint([r.lat, r.lng]);
+      openCard(r, cp);
+    }, 900);
+  }, 250);
+}
+
+/* ── Print ──────────────────────────────────── */
+function printReport(id) {
+  var r = reports.find(function(x){ return x.id===id; });
+  if (!r) return;
+  var isLost = r.type === 'lost';
+  var name   = isLost && r.name ? r.name : (r.species||'Unknown pet') + (isLost ? '' : ' found');
+  var rows = [];
+  if (isLost) {
+    if (r.species) rows.push(['Species', r.species + (r.breed?' · '+r.breed:'')]);
+    if (r.color)   rows.push(['Color',   r.color]);
+    if (r.sex)     rows.push(['Sex',     r.sex]);
+    if (r.address) rows.push(['Last seen', r.address]);
+    if (r.chip)    rows.push(['Microchip #', r.chip]);
+    if (r.notes)   rows.push(['Notes',   r.notes]);
+    if (r.owner)   rows.push(['Owner',   r.owner + (r.phone?' · '+r.phone:'') + (r.email?' · '+r.email:'')]);
+  } else {
+    if (r.species) rows.push(['Species', r.species + (r.breed?' · '+r.breed:'')]);
+    if (r.color)   rows.push(['Color',   r.color]);
+    if (r.sex)     rows.push(['Sex',     r.sex]);
+    if (r.desc)    rows.push(['Description', r.desc]);
+    if (r.address) rows.push(['Found near', r.address]);
+    if (r.shelterName) rows.push(['At shelter', r.shelterName]);
+    if (r.finder)  rows.push(['Contact', r.finder + (r.fphone?' · '+r.fphone:'')]);
+  }
+  var date  = r.date ? new Date(r.date).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) : '';
+  var color = isLost ? '#c94f2a' : (r.reunited ? '#8a7a66' : '#3a7d44');
+  var label = r.reunited ? '🎉 Reunited' : isLost ? '🔴 LOST PET' : '🟢 FOUND PET';
+  var html  = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>PawPulse — ' + name + '</title>'
+    + '<style>body{font-family:Georgia,serif;max-width:600px;margin:32px auto;padding:0 24px;color:#2a1f12}'
+    + 'h1{font-size:2rem;margin:0 0 6px;color:' + color + '}'
+    + '.badge{display:inline-block;background:' + color + ';color:#fff;font-size:.85rem;font-weight:700;padding:4px 14px;border-radius:999px;margin-bottom:18px;font-family:sans-serif;letter-spacing:.04em}'
+    + '.photo{width:100%;max-height:280px;object-fit:cover;border-radius:10px;margin-bottom:18px;display:block}'
+    + 'table{width:100%;border-collapse:collapse;margin-bottom:20px}'
+    + 'td{padding:8px 10px;border-bottom:1px solid #e0d0b8;font-size:.95rem;vertical-align:top}'
+    + 'td:first-child{font-weight:700;width:36%;color:#6b5540}'
+    + '.footer{font-size:.8rem;color:#9a8a72;margin-top:24px;padding-top:14px;border-top:1px solid #e0d0b8;text-align:center}'
+    + '@media print{body{margin:0}}'
+    + '</style></head><body>'
+    + '<div class="badge">' + label + '</div>'
+    + '<h1>' + name + '</h1>'
+    + (r.photo ? '<img class="photo" src="' + r.photo + '" alt="pet photo">' : '')
+    + '<table>' + rows.map(function(row){ return '<tr><td>'+row[0]+'</td><td>'+row[1]+'</td></tr>'; }).join('') + '</table>'
+    + (date ? '<div class="footer">Reported ' + date + ' · PawPulse — Hastings, NE</div>' : '')
+    + '</body></html>';
+  var w = window.open('', '_blank', 'width=680,height=780');
+  w.document.write(html);
+  w.document.close();
+  w.focus();
+  setTimeout(function(){ w.print(); }, 400);
+}
+function getAdoptable() {
+  var q = ((document.getElementById('adopt-search')||{}).value||'').toLowerCase().trim();
+  var list = reports.filter(function(r){
+    return r.type==='found' && !r.reunited && r.adoptionStatus==='available';
+  }).sort(function(a,b){ return daysSince(b.dateAvailable||b.date) - daysSince(a.dateAvailable||a.date); });
+  if (q) list = list.filter(function(r){
+    return [r.name,r.species,r.breed,r.color,r.desc,r.shelterName,r.finder].filter(Boolean).join(' ').toLowerCase().indexOf(q) > -1;
+  });
+  return list;
+}
+
+function renderAdoptView() {
+  var list = getAdoptable();
+  var countEl = document.getElementById('adopt-count');
+  if (countEl) countEl.textContent = list.length;
+  var grid = document.getElementById('adopt-grid');
+  if (!grid) return;
+  if (!list.length) {
+    grid.innerHTML = '<div class="adopt-empty" style="grid-column:1/-1"><div class="adopt-empty-icon">🐾</div><div style="font-size:.9rem;font-weight:600;margin-bottom:6px">No animals available for adoption yet</div><div style="font-size:.8rem">Shelters can mark animals as adoption-ready from the Shelters or AC tabs.</div></div>';
+    return;
+  }
+  grid.innerHTML = list.map(function(r) {
+    var name  = r.name || (r.species || 'Unknown');
+    var desc  = [r.breed, r.color, r.sex, r.age].filter(Boolean).join(' · ') || r.desc || '';
+    var days  = Math.floor(daysSince(r.dateAvailable || r.date));
+    var shelter = r.shelterName || r.finder || '';
+    var phone   = r.fphone || r.phone || '';
+    var imgHTML = r.photo
+      ? '<img class="adopt-card-img" src="' + r.photo + '" alt="pet photo">'
+      : '<div class="adopt-card-no-img">' + (r.species==='Dog'?'🐕':r.species==='Cat'?'🐈':'🐾') + '</div>';
+    return '<div class="adopt-card">'
+      + imgHTML
+      + '<div class="adopt-card-body">'
+      + '<div class="adopt-card-name">' + esc(name) + '</div>'
+      + (desc ? '<div class="adopt-card-desc">' + esc(desc.slice(0,70)) + '</div>' : '')
+      + '<div class="adopt-card-meta">'
+      + '<span>' + esc(shelter) + '</span>'
+      + '<span class="adopt-card-days">' + days + 'd waiting</span>'
+      + '</div>'
+      + '<button class="adopt-ask-btn" onclick="contactShelterForAdoption(' + r.id + ')">💬 Ask About Adoption</button>'
+      + '</div></div>';
+  }).join('');
+}
+
+function openAdoptForm() {
+  document.getElementById('adopt-form-panel').classList.add('open');
+  setTimeout(function(){ injectMicButtons(document.getElementById('adopt-form-inner')); }, 80);
+}
+
+function closeAdoptForm(e) {
+  if (e && e.target !== document.getElementById('adopt-form-panel')) return;
+  document.getElementById('adopt-form-panel').classList.remove('open');
+}
+
+function previewAdoptPhoto(input) {
+  var file = input.files[0]; if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    var img = document.getElementById('af-prev');
+    img.src = ev.target.result; img.style.display = 'block';
+    document.getElementById('af-photo-icon').style.display = 'none';
+    document.getElementById('af-photo-txt').style.display  = 'none';
+    showAIBtn('af');
+  };
+  reader.readAsDataURL(file);
+}
+
+function submitAdoptListing() {
+  var photoEl = document.getElementById('af-prev');
+  var shelterName = ((document.getElementById('af-shelter')||{}).value||'').trim() || 'Local Shelter';
+  var shelter = shelters.find(function(s){ return s.name === shelterName; });
+  var r = {
+    id: Date.now(), type: 'found', date: new Date().toISOString(),
+    lat: shelter ? shelter.lat + (Math.random()-.5)*.003 : HASTINGS[0] + (Math.random()-.5)*.01,
+    lng: shelter ? shelter.lng + (Math.random()-.5)*.003 : HASTINGS[1] + (Math.random()-.5)*.01,
+    name:        ((document.getElementById('af-name')||{}).value||'').trim(),
+    species:     (document.getElementById('af-species')||{}).value,
+    breed:       getBreedValue('af-breed-wrap'),
+    color:       ((document.getElementById('af-color')||{}).value||'').trim(),
+    sex:         (document.getElementById('af-sex')||{}).value,
+    age:         (document.getElementById('af-age')||{}).value,
+    desc:        ((document.getElementById('af-desc')||{}).value||'').trim(),
+    finder:      shelterName,
+    fphone:      ((document.getElementById('af-phone')||{}).value||'').trim(),
+    shelter:     true,
+    shelterName: shelterName,
+    adoptionStatus: 'available',
+    dateAvailable:  new Date().toISOString(),
+    shelterLog: [{ body: 'Posted for adoption by ' + shelterName, time: 'Just now' }],
+    photo: (photoEl && photoEl.src && photoEl.src.startsWith('data:')) ? photoEl.src : null
+  };
+  reports.push(r); save(); renderMarkers();
+  closeAdoptForm(null);
+  renderAdoptView();
+  /* Reset form */
+  ['af-name','af-species','af-sex','af-age','af-color','af-desc','af-shelter','af-phone'].forEach(function(id){
+    var el = document.getElementById(id); if (el) el.value = '';
+  });
+  var bw = document.getElementById('af-breed-wrap');
+  if (bw) bw.innerHTML = '<input type="text" id="af-breed" placeholder="Select species first">';
+  var img = document.getElementById('af-prev');
+  if (img) { img.src=''; img.style.display='none'; }
+  document.getElementById('af-photo-icon').style.display = '';
+  document.getElementById('af-photo-txt').style.display  = '';
+  document.getElementById('af-ai-wrap').style.display    = 'none';
+  /* Push banner */
+  pushBannerEvent('🏠 New animal posted for adoption in Hastings — tap 🏠 Adopt to see them', '#6090e0');
+  showToast('found');
+}
+
+function setView(v, btn) {
+  document.querySelectorAll('.view').forEach(function(x){ x.classList.remove('active'); });
+  var el = document.getElementById('view-' + v);
+  if (!el) return;
+  el.classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+  if (btn) btn.classList.add('active');
+  if (v === 'map')          setTimeout(function(){ map.invalidateSize(); }, 200);
+  if (v === 'shelters')     { renderShelterQueue(); if (shelterTab==='inventory') renderInventoryList(); }
+  if (v === 'animalcontrol') renderACQueue();
+  if (v === 'reports')       renderReportsList();
+  if (v === 'adopt')         renderAdoptView();
+}
+
+renderMarkers();
+renderShelterQueue();
+renderACQueue();
+/* Inject mic buttons into static HTML forms on load */
+setTimeout(function(){ injectMicButtons(document.getElementById('side-panel')); }, 100);
+</script>
+
+<!-- Adoption inquiry slide-up -->
+<div id="adopt-inquiry-panel" onclick="closeInquiryPanel(event)">
+  <div id="adopt-inquiry-inner">
+    <div style="font-family:var(--font-display);font-size:1.1rem;font-weight:600;color:var(--warm-dk);margin-bottom:4px">💬 Express Adoption Interest</div>
+    <div style="font-size:.76rem;color:var(--warm-mid);margin-bottom:16px" id="inq-animal-desc">We'll pass your details to the shelter to arrange a meeting.</div>
+    <div class="fg"><label>Your Name</label><input type="text" id="inq-name" placeholder="Full name"></div>
+    <div class="fr">
+      <div class="fg" style="margin:0"><label>Phone</label><input type="tel" id="inq-phone" placeholder="(402) 555-0100"></div>
+      <div class="fg" style="margin:0"><label>Email</label><input type="email" id="inq-email" placeholder="you@email.com"></div>
+    </div>
+    <div class="fg"><label>Message (optional)</label><textarea id="inq-msg" placeholder="Tell them about yourself, your home, other pets…" style="min-height:72px"></textarea></div>
+    <div id="inq-success" style="display:none;background:#e8f4e9;border:1px solid var(--found-g);border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:.84rem;color:#2d6a35;font-weight:600">✓ Interest sent! The shelter will be in touch soon.</div>
+    <div style="display:flex;gap:8px" id="inq-btns">
+      <button class="adopt-ask-btn" style="flex:1;padding:11px;font-size:.9rem" onclick="submitInquiry()">📬 Send Interest</button>
+      <button class="sh-btn" onclick="closeInquiryPanel(null)" style="padding:11px 16px">Cancel</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
