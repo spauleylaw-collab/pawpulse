@@ -504,7 +504,7 @@ textarea{min-height:64px}
 <div id="login-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:var(--cream);flex-direction:column;align-items:center;justify-content:center;padding:32px">
   <div style="font-size:2.2rem;margin-bottom:8px">🐾</div>
   <div style="font-family:var(--font-display);font-size:1.4rem;font-weight:700;color:var(--warm-dk);margin-bottom:4px">PawPulse</div>
-  <div style="font-size:.8rem;color:var(--warm-mid);margin-bottom:32px">Hastings, NE · Shelter & Rescue Operations</div>
+  <div style="font-size:.8rem;color:var(--warm-mid);margin-bottom:32px">Hastings, NE · Shelter &amp; Rescue Operations</div>
   <div style="width:100%;max-width:320px">
     <div class="fg"><label>Email</label><input type="email" id="login-email" placeholder="staff@shelter.org" autocomplete="email" style="width:100%;padding:10px 12px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.9rem"></div>
     <div class="fg"><label>Password</label><input type="password" id="login-pw" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()" style="width:100%;padding:10px 12px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.9rem"></div>
@@ -512,6 +512,15 @@ textarea{min-height:64px}
     <button id="login-btn" onclick="doLogin()" style="width:100%;padding:12px;font-family:var(--font-display);font-size:.92rem;font-weight:700;background:var(--forest);color:var(--cream);border:none;border-radius:10px;cursor:pointer;margin-top:4px">Sign In</button>
     <button onclick="doGuestView()" style="width:100%;padding:10px;font-family:var(--font-body);font-size:.8rem;background:none;border:none;cursor:pointer;color:var(--warm-mid);margin-top:8px;text-decoration:underline">View public map only</button>
   </div>
+</div>
+
+<!-- Shelter picker — shown after sign-in before app loads -->
+<div id="shelter-picker-overlay" style="display:none;position:fixed;inset:0;z-index:9998;background:var(--cream);flex-direction:column;align-items:center;justify-content:center;padding:32px">
+  <div style="font-size:2rem;margin-bottom:8px">🏠</div>
+  <div style="font-family:var(--font-display);font-size:1.2rem;font-weight:700;color:var(--warm-dk);margin-bottom:6px">Which shelter are you signing in for?</div>
+  <div style="font-size:.78rem;color:var(--warm-mid);margin-bottom:28px;text-align:center">Your session will show only this shelter's animals.</div>
+  <div style="width:100%;max-width:360px;display:flex;flex-direction:column;gap:10px" id="shelter-picker-list"></div>
+  <button onclick="doSignOut()" style="margin-top:20px;padding:8px 16px;font-family:var(--font-body);font-size:.78rem;background:none;border:none;cursor:pointer;color:var(--warm-mid);text-decoration:underline">Sign out</button>
 </div>
 
 <!-- Staff badge shown when signed in -->
@@ -541,12 +550,11 @@ textarea{min-height:64px}
     <button class="tab-btn tab-public"        onclick="setView('adopt',this)" title="Adoption">🏠 <span class="tab-lbl">Adopt</span></button>
     <!-- OPERATIONS MODE -->
     <div class="nav-mode-sep"></div>
-    <button class="tab-btn tab-ops" onclick="setView('shelters',this)" title="Intake">📋 <span class="tab-lbl">Intake</span></button>
     <button class="tab-btn tab-ops" onclick="setView('incare',this)"   title="In Care">🏥 <span class="tab-lbl">In Care</span> <span id="nav-incare-count" style="display:none;background:var(--found-g);color:#fff;border-radius:999px;font-size:.6rem;padding:1px 5px;margin-left:2px"></span></button>
     <!-- ADMIN MODE -->
     <div class="nav-mode-sep"></div>
-    <button class="tab-btn tab-admin" onclick="setView('admin',this)"   title="Enforcement">⚖️ <span class="tab-lbl">Enforce</span></button>
-    <button class="tab-btn tab-admin" onclick="setView('reports',this)" title="Reports">📄 <span class="tab-lbl">Reports</span></button>
+    <button class="tab-btn tab-admin" onclick="setView('admin',this)"   title="Admin Holds">🔒 <span class="tab-lbl">Holds</span></button>
+    <button class="tab-btn tab-admin" onclick="setView('reports',this)" title="Reports & Admin">📊 <span class="tab-lbl">Reports</span></button>
   </div>
 </nav>
 
@@ -673,30 +681,54 @@ textarea{min-height:64px}
 
 <!-- IN CARE VIEW -->
 <div id="view-incare" class="view" style="background:var(--cream-2);flex-direction:column;overflow:hidden">
-  <div class="mode-banner ops"><div class="mode-banner-dot" style="background:#3a7d44"></div>Shelter / Rescue Operations — In Care</div>
-  <div style="padding:14px 16px;background:var(--cream);border-bottom:1px solid var(--cream-3);flex-shrink:0;display:flex;align-items:center;justify-content:space-between">
+  <div class="mode-banner ops"><div class="mode-banner-dot" style="background:#3a7d44"></div>Shelter / Rescue Operations</div>
+  <!-- Header with shelter name + intake button -->
+  <div style="padding:12px 16px;background:var(--cream);border-bottom:1px solid var(--cream-3);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:12px">
     <div>
-      <div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--warm-dk)">🏥 Animals In Care</div>
-      <div style="font-size:.72rem;color:var(--warm-mid);margin-top:2px">Strays and found animals currently at shelter — not on hold</div>
+      <div style="font-family:var(--font-display);font-size:.95rem;font-weight:700;color:var(--warm-dk)" id="incare-shelter-label">Animals In Care</div>
+      <div style="font-size:.7rem;color:var(--warm-mid);margin-top:1px">Tap an animal to manage · <span id="incare-count" style="font-weight:700;color:var(--forest)">0</span> in care</div>
     </div>
-    <div id="incare-count" style="font-family:var(--font-display);font-size:1.4rem;font-weight:700;color:var(--forest)">0</div>
+    <button onclick="openIntakeModal()" style="flex-shrink:0;padding:9px 16px;font-family:var(--font-display);font-size:.82rem;font-weight:700;background:var(--forest);color:var(--cream);border:none;border-radius:9px;cursor:pointer">+ Intake</button>
   </div>
   <!-- Filter chips -->
-  <div style="padding:10px 14px;border-bottom:1px solid var(--cream-3);background:var(--cream);flex-shrink:0;display:flex;gap:6px;flex-wrap:wrap">
+  <div style="padding:9px 14px;border-bottom:1px solid var(--cream-3);background:var(--cream);flex-shrink:0;display:flex;gap:5px;flex-wrap:wrap;align-items:center">
     <button class="rpt-chip active" id="ic-chip-all"       onclick="setIncareFilter('all',this)">All</button>
     <button class="rpt-chip"        id="ic-chip-dog"       onclick="setIncareFilter('dog',this)">🐕 Dogs</button>
     <button class="rpt-chip"        id="ic-chip-cat"       onclick="setIncareFilter('cat',this)">🐈 Cats</button>
-    <button class="rpt-chip"        id="ic-chip-adopt"     onclick="setIncareFilter('adopt',this)">🏠 Adoption Ready</button>
-    <button class="rpt-chip"        id="ic-chip-long"      onclick="setIncareFilter('long',this)" style="border-color:var(--lost-r);color:var(--lost-r)">🔴 30+ Days</button>
+    <button class="rpt-chip"        id="ic-chip-hold"      onclick="setIncareFilter('hold',this)">⚠️ On Hold</button>
+    <button class="rpt-chip"        id="ic-chip-adopt"     onclick="setIncareFilter('adopt',this)">🌟 Adoption Ready</button>
+    <button class="rpt-chip"        id="ic-chip-long"      onclick="setIncareFilter('long',this)">🔴 30+ Days</button>
   </div>
   <div id="incare-list" style="flex:1;overflow-y:auto;padding:12px;min-height:0;-webkit-overflow-scrolling:touch"></div>
 </div>
 
+<!-- Intake modal overlay -->
+<div id="intake-modal-overlay" style="display:none;position:fixed;inset:0;z-index:910;background:rgba(42,31,18,.55);align-items:flex-end;justify-content:center">
+  <div id="intake-modal-inner" style="background:var(--cream);border-radius:18px 18px 0 0;width:100%;max-width:600px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden" onclick="event.stopPropagation()">
+    <div style="padding:14px 20px 10px;border-bottom:1px solid var(--cream-3);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+      <div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--warm-dk)">New Animal Intake</div>
+      <button onclick="closeIntakeModal()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--warm-mid)">✕</button>
+    </div>
+    <div id="intake-modal-body" style="flex:1;overflow-y:auto;padding:16px 20px 32px;-webkit-overflow-scrolling:touch"></div>
+  </div>
+</div>
+
+<!-- Animal edit modal -->
+<div id="animal-edit-overlay" style="display:none;position:fixed;inset:0;z-index:920;background:rgba(42,31,18,.55);align-items:flex-end;justify-content:center">
+  <div style="background:var(--cream);border-radius:18px 18px 0 0;width:100%;max-width:600px;max-height:94vh;display:flex;flex-direction:column;overflow:hidden" onclick="event.stopPropagation()">
+    <div style="padding:14px 20px 10px;border-bottom:1px solid var(--cream-3);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+      <div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--warm-dk)" id="animal-edit-title">Edit Animal Record</div>
+      <button onclick="closeAnimalEdit()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--warm-mid)">✕</button>
+    </div>
+    <div id="animal-edit-body" style="flex:1;overflow-y:auto;padding:16px 20px 32px;-webkit-overflow-scrolling:touch"></div>
+  </div>
+</div>
+
 <div id="view-admin" class="view">
-  <div class="mode-banner admin"><div class="mode-banner-dot" style="background:#c8841a"></div>Admin & Enforcement — Internal Only</div>
+  <div class="mode-banner admin"><div class="mode-banner-dot" style="background:#c8841a"></div>Admin Holds — Internal Only</div>
   <div id="admin-body">
-    <div class="admin-hdr">⚖️ Enforcement & Admin Dashboard</div>
-    <div class="admin-sub">Internal data — enforcement, cost tracking, and reporting. Not visible to the public.</div>
+    <div class="admin-hdr">🔒 Admin Holds Dashboard</div>
+    <div class="admin-sub">Hold tracking, cost exposure, enforcement. Internal use only — not public-facing.</div>
     <div id="dash-report-btns" style="margin-bottom:18px"></div>
 
     <!-- KPI cards -->
@@ -737,28 +769,77 @@ textarea{min-height:64px}
 </div>
 
 <div id="view-reports" class="view">
-  <div class="mode-banner admin"><div class="mode-banner-dot" style="background:#c8841a"></div>Admin & Enforcement — Reports</div>
+  <div class="mode-banner admin"><div class="mode-banner-dot" style="background:#c8841a"></div>Reports &amp; Admin</div>
   <div id="rpt-row">
-  <!-- Left: search + list -->
-  <div id="rpt-left">
+  <!-- Left: report type list -->
+  <div id="rpt-left" style="display:flex;flex-direction:column">
+    <!-- Animal record search stays -->
     <div id="rpt-search-wrap">
-      <input id="rpt-search" type="text" placeholder="Search by name, breed, color, location…" oninput="renderReportsList()" autocomplete="off">
+      <input id="rpt-search" type="text" placeholder="Search animals by name, breed, color…" oninput="renderReportsList()" autocomplete="off">
       <div class="rpt-chips">
         <button class="rpt-chip active"    id="rchip-all"     onclick="setRptFilter('all',this)">All</button>
         <button class="rpt-chip lost"      id="rchip-lost"    onclick="setRptFilter('lost',this)">🔴 Lost</button>
         <button class="rpt-chip found"     id="rchip-found"   onclick="setRptFilter('found',this)">🟢 Found</button>
         <button class="rpt-chip reunited"  id="rchip-reunited" onclick="setRptFilter('reunited',this)">🎉 Reunited</button>
-        <button class="rpt-chip" id="rchip-adopt" onclick="setRptFilter('adopt',this)" style="color:#3060c0;border-color:#a0c0f0">🏠 Adopt</button>
+        <button class="rpt-chip" id="rchip-adopt" onclick="setRptFilter('adopt',this)" style="color:#3060c0;border-color:#a0c0f0">🌟 Adopt</button>
       </div>
       <div id="rpt-count"></div>
     </div>
-    <div id="rpt-list"></div>
+    <!-- Report type picker -->
+    <div style="padding:10px 12px 4px;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--warm-mid);border-top:1px solid var(--cream-3);margin-top:4px">Generate Report</div>
+    <div id="report-type-list" style="padding:0 8px 8px;flex-shrink:0"></div>
+    <div style="border-top:1px solid var(--cream-3)"></div>
+    <div id="rpt-list" style="flex:1;overflow-y:auto"></div>
   </div>
-  <!-- Right: detail -->
+  <!-- Right: report viewer or detail -->
   <div id="rpt-right">
-    <div id="rpt-detail-empty">
-      <div style="font-size:2.5rem;opacity:.2">📋</div>
-      <div style="font-size:.88rem">Select a report to see details</div>
+    <div id="rpt-detail-empty" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--warm-mid);gap:8px">
+      <div style="font-size:2.5rem;opacity:.2">📊</div>
+      <div style="font-size:.9rem;font-weight:600">Select a report type or animal record</div>
+      <div style="font-size:.76rem">Reports pull from live shelter data</div>
+    </div>
+    <!-- Report viewer panel -->
+    <div id="rpt-report-panel" style="display:none;flex-direction:column;height:100%">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--cream-3);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--cream)">
+        <div>
+          <div style="font-family:var(--font-display);font-size:.95rem;font-weight:700;color:var(--warm-dk)" id="rpt-panel-title">Report</div>
+          <div style="font-size:.7rem;color:var(--warm-mid)" id="rpt-panel-sub"></div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button onclick="printActiveReport()" style="padding:6px 12px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body)">🖨️ Print</button>
+          <button onclick="copyActiveReport()" style="padding:6px 12px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid var(--forest);background:var(--forest);color:#fff;cursor:pointer;font-family:var(--font-body)">📋 Copy</button>
+          <button onclick="closeReportPanel()" style="padding:6px 10px;font-size:.8rem;border-radius:7px;border:none;background:var(--cream-2);cursor:pointer">✕</button>
+        </div>
+      </div>
+      <!-- Filters row -->
+      <div id="rpt-filters-row" style="padding:10px 16px;border-bottom:1px solid var(--cream-3);background:var(--cream-2);flex-shrink:0;display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+        <select id="rpt-filter-species" onchange="runActiveReport()" style="font-size:.76rem;padding:4px 8px;border-radius:6px;border:1px solid var(--cream-3);font-family:var(--font-body)">
+          <option value="">All Species</option>
+          <option>Dog</option><option>Cat</option><option>Bird</option><option>Rabbit</option><option>Other</option>
+        </select>
+        <select id="rpt-filter-status" onchange="runActiveReport()" style="font-size:.76rem;padding:4px 8px;border-radius:6px;border:1px solid var(--cream-3);font-family:var(--font-body)">
+          <option value="">All Statuses</option>
+          <option value="hold">On Hold</option>
+          <option value="stray">In Care (Stray)</option>
+          <option value="adopt">Adoption Ready</option>
+          <option value="lost">Lost</option>
+          <option value="reunited">Reunited</option>
+        </select>
+        <select id="rpt-filter-days" onchange="runActiveReport()" style="font-size:.76rem;padding:4px 8px;border-radius:6px;border:1px solid var(--cream-3);font-family:var(--font-body)">
+          <option value="">All Time</option>
+          <option value="30">Last 30 days</option>
+          <option value="60">Last 60 days</option>
+          <option value="90">Last 90 days</option>
+          <option value="365">This Year</option>
+        </select>
+        <select id="rpt-filter-shelter" onchange="runActiveReport()" style="font-size:.76rem;padding:4px 8px;border-radius:6px;border:1px solid var(--cream-3);font-family:var(--font-body)">
+          <option value="">All Shelters</option>
+          <option>Adams County Humane Society</option>
+          <option>Heartland Pet Connection</option>
+          <option>Start Over Rover</option>
+        </select>
+      </div>
+      <div id="rpt-report-body" style="flex:1;overflow-y:auto;padding:20px;font-family:Georgia,serif;font-size:.86rem;line-height:1.7;color:var(--warm-dk)"></div>
     </div>
     <div id="rpt-detail-panel"></div>
   </div>
@@ -953,11 +1034,8 @@ function deleteFromFirestore(id) {
 }
 
 function initFirebase() {
-  if (!USE_FIREBASE) { bootApp(); return; }
-
-  /* Show login overlay */
+  if (!USE_FIREBASE) { showShelterPicker(); return; }
   document.getElementById('login-overlay').style.display = 'flex';
-
   auth.onAuthStateChanged(function(user) {
     if (user) {
       _isStaff = true;
@@ -965,16 +1043,13 @@ function initFirebase() {
       document.getElementById('staff-badge').style.display = 'block';
       startFirestoreListener();
     }
-    /* If no user, login overlay stays visible */
   });
 }
 
 function startFirestoreListener() {
   db.collection('reports').onSnapshot(function(snapshot) {
     if (!_fbReady) {
-      /* First load — check if Firestore is empty and migrate localStorage data */
       if (snapshot.empty && reports.length > 0) {
-        console.log('Migrating ' + reports.length + ' records from localStorage to Firestore…');
         syncReportsToFirestore();
       } else if (!snapshot.empty) {
         reports = [];
@@ -982,22 +1057,53 @@ function startFirestoreListener() {
         localStorage.setItem('pawpulse-v2', JSON.stringify(reports));
       }
       _fbReady = true;
-      bootApp();
+      showShelterPicker();
     } else {
-      /* Subsequent real-time updates from other devices */
       reports = [];
       snapshot.forEach(function(doc) { reports.push(doc.data()); });
       localStorage.setItem('pawpulse-v2', JSON.stringify(reports));
       renderMarkers();
-      renderShelterQueue();
       renderIncareView();
     }
   }, function(err) {
     console.warn('Firestore listener error:', err);
-    /* Fall back to localStorage if Firestore fails */
     _fbReady = true;
-    bootApp();
+    showShelterPicker();
   });
+}
+
+function showShelterPicker() {
+  /* If only one shelter or already selected this session, skip */
+  var saved = sessionStorage.getItem('pp-shelter');
+  if (saved) { activeShelter = saved; bootApp(); return; }
+  if (!_isStaff) { bootApp(); return; }
+
+  var el = document.getElementById('shelter-picker-overlay');
+  var list = document.getElementById('shelter-picker-list');
+  if (!el || !list) { bootApp(); return; }
+
+  list.innerHTML = shelters.map(function(s) {
+    return '<button onclick="selectShelterSession(\'' + s.name.replace(/'/g,"\\'") + '\')" '
+      + 'style="width:100%;padding:14px 18px;text-align:left;border-radius:12px;border:2px solid var(--cream-3);background:#fff;font-family:var(--font-display);font-size:.92rem;font-weight:600;color:var(--warm-dk);cursor:pointer;display:flex;align-items:center;gap:12px">'
+      + '<span style="font-size:1.3rem">' + (s.name.includes('Adams')?'🏠':s.name.includes('Heartland')?'🐾':'🐕') + '</span>'
+      + '<div><div>' + s.name + '</div><div style="font-size:.72rem;color:var(--warm-mid);font-weight:400;margin-top:2px">' + s.address + '</div></div>'
+      + '</button>';
+  }).join('');
+  el.style.display = 'flex';
+}
+
+function selectShelterSession(name) {
+  activeShelter = name;
+  sessionStorage.setItem('pp-shelter', name);
+  var el = document.getElementById('shelter-picker-overlay');
+  if (el) el.style.display = 'none';
+  /* Update shelter selector if visible */
+  var sel = document.getElementById('sh-selector');
+  if (sel) sel.value = name;
+  /* Update staff badge to show shelter */
+  var badge = document.getElementById('staff-badge');
+  if (badge) badge.innerHTML = '🔐 ' + name.split(' ')[0] + ' · Sign Out';
+  bootApp();
 }
 
 function doLogin() {
@@ -1017,36 +1123,526 @@ function doLogin() {
 }
 
 function doGuestView() {
-  /* Public read-only — hides staff tabs, shows map only */
   _isStaff = false;
   document.getElementById('login-overlay').style.display = 'none';
-  /* Hide ops/admin nav tabs */
   document.querySelectorAll('.tab-ops,.tab-admin').forEach(function(el){ el.style.display='none'; });
-  /* If Firebase configured, still load public data */
-  if (USE_FIREBASE) {
-    startFirestoreListener();
-  } else {
-    bootApp();
-  }
+  if (USE_FIREBASE) { startFirestoreListener(); } else { bootApp(); }
 }
 
 function doSignOut() {
+  sessionStorage.removeItem('pp-shelter');
   if (!USE_FIREBASE) return;
   auth.signOut().then(function() {
     _isStaff = false;
     document.getElementById('staff-badge').style.display = 'none';
     document.getElementById('login-overlay').style.display = 'flex';
-    /* Show ops/admin tabs again for next login */
     document.querySelectorAll('.tab-ops,.tab-admin').forEach(function(el){ el.style.display=''; });
   });
 }
 
 function bootApp() {
-  /* Run all startup renders */
+  /* Update incare shelter label */
+  var lbl = document.getElementById('incare-shelter-label');
+  if (lbl) lbl.textContent = activeShelter + ' — Animals In Care';
+  /* Pre-set shelter filter */
+  var sel = document.getElementById('rpt-filter-shelter');
+  if (sel && activeShelter) sel.value = activeShelter;
   renderMarkers();
-  renderShelterQueue();
   renderIncareView();
+  renderReportTypeList();
+  updateNavCounts();
 }
+
+/* ── INTAKE MODAL (replaces separate Intake tab) ─────────────────────── */
+function openIntakeModal() {
+  var overlay = document.getElementById('intake-modal-overlay');
+  var body    = document.getElementById('intake-modal-body');
+  if (!overlay || !body) return;
+  overlay.style.display = 'flex';
+  /* Render source picker into modal */
+  body.innerHTML =
+    '<div style="font-size:.82rem;color:var(--warm-mid);margin-bottom:14px">Select the intake source — this determines what we collect.</div>'
+    + srcBtn('ac',        '🚔', 'Brought by Animal Control', 'Animal dropped off by AC officer. Hold tracking starts immediately.','#fff8f0','var(--amber)','#8a5010')
+    + srcBtn('surrender', '👤', 'Owner Surrender', 'Owner is relinquishing the animal.','#f8f0ff','#9060c0','#5a2070')
+    + srcBtn('citizen',   '🐾', 'Found by Citizen / Stray', 'Stray brought in or from a public found report.','#f5faf6','var(--found-g)','#2a6030')
+    + srcBtn('other',     '🏛️', 'Transfer / Other Agency', 'Transfer from another shelter, rescue, or organization.','#f0f4fa','#3060a0','#1a3060');
+  /* Redirect srcBtn onclick to modal version */
+  body.querySelectorAll('button[onclick]').forEach(function(btn) {
+    var src = btn.getAttribute('onclick').match(/'(\w+)'/);
+    if (src) {
+      btn.setAttribute('onclick', 'openIntakeForm(\'' + src[1] + '\')');
+    }
+  });
+  setTimeout(function(){ injectMicButtons(body); }, 50);
+}
+
+function closeIntakeModal() {
+  var overlay = document.getElementById('intake-modal-overlay');
+  if (overlay) overlay.style.display = 'none';
+}
+
+function openIntakeForm(intakeSource) {
+  var body = document.getElementById('intake-modal-body');
+  if (!body) return;
+  var isHold = intakeSource === 'ac';
+  var today  = new Date().toISOString().slice(0,10);
+  var srcMeta = {
+    ac:        { label:'🚔 Animal Control',   color:'var(--amber)',   bg:'#fff8f0', txt:'#8a5010' },
+    surrender: { label:'👤 Owner Surrender',  color:'#9060c0',       bg:'#f8f0ff', txt:'#5a2070' },
+    citizen:   { label:'🐾 Found by Citizen', color:'var(--found-g)',bg:'#f5faf6', txt:'#2a6030' },
+    other:     { label:'🏛️ Transfer / Other', color:'#3060a0',       bg:'#f0f4fa', txt:'#1a3060' }
+  };
+  var sm = srcMeta[intakeSource] || srcMeta.citizen;
+
+  body.innerHTML =
+    '<input type="hidden" id="si-intake-type" value="' + (isHold?'hold':'stray') + '">'
+    + '<input type="hidden" id="si-intake-source" value="' + intakeSource + '">'
+    + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">'
+    + '<div style="padding:5px 12px;border-radius:999px;font-size:.75rem;font-weight:700;border:1.5px solid ' + sm.color + ';background:' + sm.bg + ';color:' + sm.txt + '">' + sm.label + '</div>'
+    + '<button onclick="openIntakeModal()" style="font-size:.72rem;color:var(--warm-mid);background:none;border:none;cursor:pointer;text-decoration:underline">Change</button></div>'
+
+    + '<div style="background:var(--cream-2);border:1.5px solid var(--cream-3);border-radius:9px;padding:10px 12px;margin-bottom:12px;display:flex;align-items:center;gap:10px">'
+    + '<div style="font-size:1.1rem">🏷️</div>'
+    + '<div style="flex:1"><label style="margin-bottom:3px">Shelter Animal ID / Tag #</label>'
+    + '<input type="text" id="si-animal-id" placeholder="e.g. A-2024-001 or 1042" style="width:100%;padding:7px 10px;font-size:.88rem;border:1.5px solid var(--cream-3);border-radius:7px;font-family:var(--font-body);font-weight:600;letter-spacing:.03em"></div></div>'
+
+    + '<div class="inv-photo-drop" onclick="document.getElementById(\'si-photo-in\').click()" style="margin-bottom:8px">'
+    + '<input type="file" id="si-photo-in" accept="image/*" onchange="previewSIPhoto(this);showAIBtn(\'si\')">'
+    + '<div id="si-photo-icon" style="font-size:1.5rem;margin-bottom:3px">📷</div>'
+    + '<div id="si-photo-txt" style="font-size:.74rem;color:var(--warm-mid)">Tap to upload photo (optional)</div>'
+    + '<img id="si-prev" class="inv-preview" alt=""></div>'
+    + '<div id="si-ai-wrap" style="display:none;margin-bottom:10px">'
+    + '<button class="ai-id-btn" id="si-ai-btn" onclick="applyAIIdentify(\'si\')">✨ Identify breed &amp; color with AI</button>'
+    + '<div class="ai-id-result" id="si-ai-result"></div></div>'
+
+    + '<div class="fr"><div class="fg" style="margin:0"><label>Species</label>'
+    + '<select id="si-species" onchange="updateBreedField(\'si-species\',\'si-breed-wrap\')"><option value="">Select…</option><option>Dog</option><option>Cat</option><option>Bird</option><option>Rabbit</option><option>Other</option></select></div>'
+    + '<div class="fg" style="margin:0"><label>Sex</label><select id="si-sex"><option value="">Unknown</option><option>Male</option><option>Female</option></select></div></div>'
+    + '<div class="fr" style="margin-top:10px"><div class="fg" style="margin:0"><label>Breed</label><div id="si-breed-wrap"><input type="text" id="si-breed" placeholder="Select species first"></div></div>'
+    + '<div class="fg" style="margin:0"><label>Color / Markings</label><input type="text" id="si-color" placeholder="e.g. Black &amp; tan"></div></div>'
+    + '<div class="fg" style="margin-top:10px"><label>Name (if known)</label><input type="text" id="si-name" placeholder="Leave blank if unknown"></div>'
+    + '<div class="fg"><label>Description / Condition</label>'
+    + '<textarea id="si-desc" placeholder="Age estimate, condition, behavior, collar, tags…" style="min-height:52px"></textarea></div>'
+    + '<div class="fg"><label>' + (isHold?'Where Did AC Pick Up This Animal?':intakeSource==='surrender'?'Owner Address (optional)':'Where Was Animal Found?') + '</label>'
+    + '<input type="text" id="si-address" placeholder="Street or landmark"></div>'
+
+    + (isHold
+      ? '<div style="background:#fff8f0;border:1.5px solid var(--amber);border-radius:10px;padding:12px 14px;margin-top:4px">'
+        + '<div style="font-size:.76rem;font-weight:700;color:#8a5010;margin-bottom:10px">🚔 Hold Details</div>'
+        + '<div class="fg" style="margin-bottom:10px"><label>Case Type (select all that apply)</label>'
+        + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'
+        + '<button type="button" id="ct-standard" onclick="toggleCaseType(\'standard\')" style="padding:9px 8px;border-radius:8px;border:1.5px solid var(--cream-3);background:#fff;font-family:var(--font-body);font-size:.78rem;font-weight:600;color:var(--warm-mid);cursor:pointer">🚔 Standard Hold</button>'
+        + '<button type="button" id="ct-stray-ac" onclick="toggleCaseType(\'stray-ac\')" style="padding:9px 8px;border-radius:8px;border:1.5px solid var(--cream-3);background:#fff;font-family:var(--font-body);font-size:.78rem;font-weight:600;color:var(--warm-mid);cursor:pointer">🐾 AC Stray</button>'
+        + '<button type="button" id="ct-bite" onclick="toggleCaseType(\'bite\')" style="padding:9px 8px;border-radius:8px;border:1.5px solid var(--cream-3);background:#fff;font-family:var(--font-body);font-size:.78rem;font-weight:600;color:var(--warm-mid);cursor:pointer">🦷 Bite Case</button>'
+        + '<button type="button" id="ct-dangerous" onclick="toggleCaseType(\'dangerous\')" style="padding:9px 8px;border-radius:8px;border:1.5px solid var(--cream-3);background:#fff;font-family:var(--font-body);font-size:.78rem;font-weight:600;color:var(--warm-mid);cursor:pointer">⚠️ Dangerous Animal</button>'
+        + '</div><input type="hidden" id="si-casetype" value=""></div>'
+        + '<div class="fr"><div class="fg" style="margin:0"><label>Hold Start Date</label><input type="date" id="si-holdstart" value="' + today + '" style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-3);border-radius:8px;font-family:var(--font-body);font-size:.86rem"></div>'
+        + '<div class="fg" style="margin:0"><label>Daily Rate ($)</label><input type="number" id="si-dailyrate" value="' + DAILY_RATE + '" min="0" step="1" style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-3);border-radius:8px;font-family:var(--font-body);font-size:.86rem"></div></div>'
+        + '<div class="fg" style="margin-top:10px"><label>AC Officer / Citation # (optional)</label>'
+        + '<input type="text" id="si-officer" placeholder="Officer name or citation number"></div>'
+        + '</div>'
+      : intakeSource==='surrender'
+      ? '<div style="background:#f8f0ff;border:1.5px solid #9060c0;border-radius:10px;padding:12px 14px;margin-top:4px">'
+        + '<div style="font-size:.76rem;font-weight:700;color:#5a2070;margin-bottom:10px">👤 Surrender Details</div>'
+        + '<div class="fr"><div class="fg" style="margin:0"><label>Owner Name</label><input type="text" id="si-owner-name" placeholder="Full name"></div>'
+        + '<div class="fg" style="margin:0"><label>Owner Phone</label><input type="tel" id="si-owner-phone" placeholder="(402) 555-0100"></div></div>'
+        + '<div class="fg" style="margin-top:10px"><label>Reason for Surrender (optional)</label>'
+        + '<textarea id="si-surrender-reason" placeholder="Moving, allergies, behavioral, financial…" style="min-height:48px"></textarea></div>'
+        + '</div>'
+      : '')
+
+    + '<div style="display:flex;gap:8px;margin-top:16px">'
+    + '<button class="sh-btn primary" style="flex:1" onclick="submitIntakeFromModal()">✓ Log Intake</button>'
+    + '<button class="sh-btn" onclick="closeIntakeModal()">Cancel</button>'
+    + '</div>';
+
+  setTimeout(function(){ injectMicButtons(body); }, 50);
+}
+
+function submitIntakeFromModal() {
+  /* Reads from modal form and submits */
+  var typeEl      = document.getElementById('si-intake-type');
+  var sourceEl    = document.getElementById('si-intake-source');
+  var intakeType  = typeEl   ? typeEl.value   : 'stray';
+  var intakeSource= sourceEl ? sourceEl.value : 'citizen';
+  var isHold      = intakeType === 'hold';
+  var shelter     = shelters.find(function(s){ return s.name===activeShelter; });
+
+  var holdStart   = isHold ? (document.getElementById('si-holdstart')||{}).value : null;
+  var dailyRate   = isHold ? parseFloat((document.getElementById('si-dailyrate')||{}).value) || DAILY_RATE : null;
+  var officer     = isHold ? ((document.getElementById('si-officer')||{}).value||'').trim() : '';
+  var caseType    = isHold ? ((document.getElementById('si-casetype')||{}).value || 'standard') : '';
+  var animalId    = ((document.getElementById('si-animal-id')||{}).value||'').trim();
+  var ownerName   = intakeSource==='surrender' ? ((document.getElementById('si-owner-name')||{}).value||'').trim() : '';
+  var ownerPhone  = intakeSource==='surrender' ? ((document.getElementById('si-owner-phone')||{}).value||'').trim() : '';
+  var surReason   = intakeSource==='surrender' ? ((document.getElementById('si-surrender-reason')||{}).value||'').trim() : '';
+  var srcLabels   = { ac:'Brought by Animal Control', surrender:'Owner Surrender', citizen:'Found by Citizen', other:'Transfer / Other Agency' };
+  var srcLabel    = srcLabels[intakeSource] || 'Unknown';
+  var holdType    = 'none';
+  if (isHold) {
+    if (caseType.indexOf('bite')>-1) holdType='bite';
+    else if (caseType.indexOf('dangerous')>-1) holdType='dangerous';
+    else holdType='standard';
+  }
+
+  var r = {
+    id: Date.now(), type: 'found', date: new Date().toISOString(),
+    lat: shelter ? shelter.lat + (Math.random()-.5)*.005 : HASTINGS[0] + (Math.random()-.5)*.01,
+    lng: shelter ? shelter.lng + (Math.random()-.5)*.005 : HASTINGS[1] + (Math.random()-.5)*.01,
+    name:        ((document.getElementById('si-name')||{}).value||'').trim(),
+    species:     (document.getElementById('si-species')||{}).value,
+    color:       ((document.getElementById('si-color')||{}).value||'').trim(),
+    breed:       getBreedValue('si-breed-wrap'),
+    sex:         (document.getElementById('si-sex')||{}).value,
+    desc:        ((document.getElementById('si-desc')||{}).value||'').trim(),
+    address:     ((document.getElementById('si-address')||{}).value||'').trim() || (shelter?shelter.address:''),
+    finder:      activeShelter, fphone: shelter?shelter.phone:'',
+    animalId:    animalId, intakeSource: intakeSource, intakeSourceLabel: srcLabel,
+    owner:       ownerName||undefined, phone: ownerPhone||undefined,
+    surrenderReason: surReason||undefined,
+    shelter:     true, shelterName: activeShelter, intakeType: intakeType, holdType: holdType,
+    shelterHoldStart: isHold ? (holdStart?holdStart+'T00:00:00':new Date().toISOString()) : null,
+    enforcement: isHold ? { internalStatus:(holdType==='bite'||holdType==='dangerous')?'AC Review':'Shelter Hold Active', acInvolved:intakeSource==='ac', dailyCost:dailyRate, courtDateStatus:'none', caseType:caseType } : null,
+    caseType:    caseType,
+    shelterLog:  [{ body: srcLabel + (officer?' — Officer: '+officer:'') + ' · Logged at ' + activeShelter, time: 'Just now' }],
+    photo:       null
+  };
+  var photoEl = document.getElementById('si-prev');
+  if (photoEl && photoEl.src && photoEl.src.startsWith('data:')) r.photo = photoEl.src;
+
+  reports.push(r); save(); renderMarkers(); renderIncareView(); updateNavCounts();
+  closeIntakeModal();
+  pushBannerEvent((isHold?'⚠️ Animal on hold logged at ':'🐾 New animal received at ') + activeShelter, isHold?'#d4843a':'var(--found-g)');
+}
+
+/* ── ANIMAL EDIT MODAL ───────────────────────────────────────────────── */
+function openAnimalEdit(id) {
+  var r = reports.find(function(x){ return x.id===id; });
+  if (!r) return;
+  var overlay = document.getElementById('animal-edit-overlay');
+  var body    = document.getElementById('animal-edit-body');
+  var title   = document.getElementById('animal-edit-title');
+  if (!overlay || !body) return;
+  title.textContent = 'Edit · ' + (r.name||r.species||'Animal Record');
+  overlay.style.display = 'flex';
+
+  var today = new Date().toISOString().slice(0,10);
+  body.innerHTML =
+    '<div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--warm-mid);margin-bottom:12px">Animal Information</div>'
+    + '<div class="fr"><div class="fg" style="margin:0"><label>Name</label><input type="text" id="ae-name" value="' + esc(r.name||'') + '" placeholder="Leave blank if unknown"></div>'
+    + '<div class="fg" style="margin:0"><label>Animal ID / Tag #</label><input type="text" id="ae-animalid" value="' + esc(r.animalId||'') + '"></div></div>'
+    + '<div class="fr" style="margin-top:10px"><div class="fg" style="margin:0"><label>Species</label>'
+    + '<select id="ae-species"><option value="">Select…</option><option' + (r.species==='Dog'?' selected':'') + '>Dog</option><option' + (r.species==='Cat'?' selected':'') + '>Cat</option><option' + (r.species==='Bird'?' selected':'') + '>Bird</option><option' + (r.species==='Rabbit'?' selected':'') + '>Rabbit</option><option' + (r.species==='Other'?' selected':'') + '>Other</option></select></div>'
+    + '<div class="fg" style="margin:0"><label>Sex</label>'
+    + '<select id="ae-sex"><option value="">Unknown</option><option' + (r.sex==='Male'?' selected':'') + '>Male</option><option' + (r.sex==='Female'?' selected':'') + '>Female</option></select></div></div>'
+    + '<div class="fr" style="margin-top:10px"><div class="fg" style="margin:0"><label>Breed</label><input type="text" id="ae-breed" value="' + esc(r.breed||'') + '"></div>'
+    + '<div class="fg" style="margin:0"><label>Color / Markings</label><input type="text" id="ae-color" value="' + esc(r.color||'') + '"></div></div>'
+    + '<div class="fg" style="margin-top:10px"><label>Description / Condition</label>'
+    + '<textarea id="ae-desc" style="min-height:60px">' + esc(r.desc||'') + '</textarea></div>'
+    + '<div class="fg"><label>Location Found / Address</label><input type="text" id="ae-address" value="' + esc(r.address||'') + '"></div>'
+
+    + '<div style="margin-top:16px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--warm-mid);margin-bottom:10px">Status</div>'
+    + '<div class="fr"><div class="fg" style="margin:0"><label>Adoption Status</label>'
+    + '<select id="ae-adopt"><option value="">None</option><option value="available"' + (r.adoptionStatus==='available'?' selected':'') + '>Adoption Ready</option><option value="pending"' + (r.adoptionStatus==='pending'?' selected':'') + '>Pending</option><option value="adopted"' + (r.adoptionStatus==='adopted'?' selected':'') + '>Adopted</option></select></div>'
+    + '<div class="fg" style="margin:0"><label>Internal Status</label>'
+    + '<select id="ae-intstatus"><option value="Intake Logged"' + ((r.enforcement&&r.enforcement.internalStatus)==='Intake Logged'?' selected':'') + '>Intake Logged</option><option value="Shelter Hold Active"' + ((r.enforcement&&r.enforcement.internalStatus)==='Shelter Hold Active'?' selected':'') + '>Shelter Hold Active</option><option value="AC Review"' + ((r.enforcement&&r.enforcement.internalStatus)==='AC Review'?' selected':'') + '>AC Review</option><option value="Citation Issued"' + ((r.enforcement&&r.enforcement.internalStatus)==='Citation Issued'?' selected':'') + '>Citation Issued</option><option value="Court Pending"' + ((r.enforcement&&r.enforcement.internalStatus)==='Court Pending'?' selected':'') + '>Court Pending</option><option value="Adjudicated"' + ((r.enforcement&&r.enforcement.internalStatus)==='Adjudicated'?' selected':'') + '>Adjudicated</option><option value="Closed"' + ((r.enforcement&&r.enforcement.internalStatus)==='Closed'?' selected':'') + '>Closed</option></select></div></div>'
+
+    + '<div style="margin-top:16px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--warm-mid);margin-bottom:10px">Dates &amp; Notes</div>'
+    + '<div class="fr"><div class="fg" style="margin:0"><label>Intake Date</label><input type="date" id="ae-intakedate" value="' + (r.date?r.date.slice(0,10):today) + '"></div>'
+    + '<div class="fg" style="margin:0"><label>Hold Start Date</label><input type="date" id="ae-holdstart" value="' + (r.shelterHoldStart?r.shelterHoldStart.slice(0,10):'') + '" ' + (r.intakeType!=='hold'?'disabled style="opacity:.5"':'') + '></div></div>'
+    + '<div class="fg" style="margin-top:10px"><label>About (adoption description)</label>'
+    + '<textarea id="ae-about" style="min-height:52px">' + esc(r.about||'') + '</textarea></div>'
+    + '<div class="fg"><label>Tags (comma separated)</label><input type="text" id="ae-tags" value="' + esc(r.tags||'') + '" placeholder="e.g. Friendly, House-trained, Good with kids"></div>'
+    + (r.intakeType==='hold'
+      ? '<div class="fg"><label>Daily Hold Rate ($)</label><input type="number" id="ae-dailyrate" value="' + ((r.enforcement&&r.enforcement.dailyCost!=null)?r.enforcement.dailyCost:DAILY_RATE) + '" min="0" step="1"></div>'
+      : '')
+
+    + '<div style="display:flex;gap:8px;margin-top:20px">'
+    + '<button onclick="saveAnimalEdit(' + r.id + ')" class="sh-btn primary" style="flex:1">✓ Save Changes</button>'
+    + '<button onclick="closeAnimalEdit()" class="sh-btn">Cancel</button>'
+    + '</div>';
+
+  setTimeout(function(){ injectMicButtons(body); }, 50);
+}
+
+function saveAnimalEdit(id) {
+  var r = reports.find(function(x){ return x.id===id; });
+  if (!r) return;
+  r.name       = ((document.getElementById('ae-name')||{}).value||'').trim();
+  r.animalId   = ((document.getElementById('ae-animalid')||{}).value||'').trim();
+  r.species    = (document.getElementById('ae-species')||{}).value;
+  r.sex        = (document.getElementById('ae-sex')||{}).value;
+  r.breed      = ((document.getElementById('ae-breed')||{}).value||'').trim();
+  r.color      = ((document.getElementById('ae-color')||{}).value||'').trim();
+  r.desc       = ((document.getElementById('ae-desc')||{}).value||'').trim();
+  r.address    = ((document.getElementById('ae-address')||{}).value||'').trim();
+  r.about      = ((document.getElementById('ae-about')||{}).value||'').trim();
+  r.tags       = ((document.getElementById('ae-tags')||{}).value||'').trim();
+  var newAdopt = (document.getElementById('ae-adopt')||{}).value;
+  if (newAdopt !== r.adoptionStatus) {
+    r.adoptionStatus = newAdopt || undefined;
+    if (newAdopt==='available' && !r.dateAvailable) r.dateAvailable = new Date().toISOString();
+  }
+  var newStatus = (document.getElementById('ae-intstatus')||{}).value;
+  if (newStatus) {
+    if (!r.enforcement) r.enforcement = {};
+    r.enforcement.internalStatus = newStatus;
+  }
+  var hd = document.getElementById('ae-holdstart');
+  if (hd && hd.value) r.shelterHoldStart = hd.value + 'T00:00:00';
+  var dr = document.getElementById('ae-dailyrate');
+  if (dr && r.enforcement) r.enforcement.dailyCost = parseFloat(dr.value) || DAILY_RATE;
+  var id2 = document.getElementById('ae-intakedate');
+  if (id2 && id2.value) r.date = id2.value + 'T00:00:00';
+
+  save(); renderMarkers(); renderIncareView(); renderAdoptView(); updateNavCounts();
+  closeAnimalEdit();
+  showToast('found');
+}
+
+function closeAnimalEdit() {
+  var overlay = document.getElementById('animal-edit-overlay');
+  if (overlay) overlay.style.display = 'none';
+}
+
+/* ── REPORTS WORKSPACE ───────────────────────────────────────────────── */
+var REPORT_TYPES = [
+  { id:'incare',    icon:'🏥', label:'Animals Currently In Care' },
+  { id:'intake30',  icon:'📅', label:'Intake — Last 30 Days' },
+  { id:'intake60',  icon:'📅', label:'Intake — Last 60 Days' },
+  { id:'holds',     icon:'⚠️', label:'Active Holds Summary' },
+  { id:'costs',     icon:'💰', label:'Cost Breakdown (Holds)' },
+  { id:'adopt',     icon:'🌟', label:'Adoption Pipeline' },
+  { id:'los',       icon:'📊', label:'Length of Stay Report' },
+  { id:'outcomes',  icon:'🎉', label:'Outcomes Report' },
+  { id:'species',   icon:'🐾', label:'Species Breakdown' },
+  { id:'internal',  icon:'📄', label:'Full Internal Report' },
+  { id:'council',   icon:'🏛️', label:'City Council Report' },
+  { id:'donor',     icon:'💜', label:'Donor / Grant Report' },
+];
+
+var _activeReportId = null;
+
+function renderReportTypeList() {
+  var el = document.getElementById('report-type-list');
+  if (!el) return;
+  el.innerHTML = REPORT_TYPES.map(function(rt) {
+    return '<button onclick="runReport(\'' + rt.id + '\')" '
+      + 'style="width:100%;text-align:left;padding:7px 10px;margin-bottom:3px;border-radius:7px;border:none;background:' + (_activeReportId===rt.id?'var(--forest)':'transparent') + ';color:' + (_activeReportId===rt.id?'#fff':'var(--warm-dk)') + ';font-family:var(--font-body);font-size:.8rem;cursor:pointer;display:flex;gap:8px;align-items:center">'
+      + '<span>' + rt.icon + '</span><span>' + rt.label + '</span></button>';
+  }).join('');
+}
+
+function runReport(typeId) {
+  _activeReportId = typeId;
+  renderReportTypeList();
+
+  var panel    = document.getElementById('rpt-report-panel');
+  var empty    = document.getElementById('rpt-detail-empty');
+  var detail   = document.getElementById('rpt-detail-panel');
+  var titleEl  = document.getElementById('rpt-panel-title');
+  var subEl    = document.getElementById('rpt-panel-sub');
+  var bodyEl   = document.getElementById('rpt-report-body');
+  if (!panel || !bodyEl) return;
+
+  if (empty)  empty.style.display  = 'none';
+  if (detail) detail.style.display = 'none';
+  panel.style.display = 'flex';
+
+  var rt = REPORT_TYPES.find(function(r){ return r.id===typeId; });
+  if (titleEl) titleEl.textContent = rt ? rt.label : typeId;
+  if (subEl)   subEl.textContent   = 'Generated ' + new Date().toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
+
+  runActiveReport();
+}
+
+function runActiveReport() {
+  if (!_activeReportId) return;
+  var bodyEl = document.getElementById('rpt-report-body');
+  if (!bodyEl) return;
+
+  /* Read filters */
+  var fSpecies  = (document.getElementById('rpt-filter-species')||{}).value || '';
+  var fStatus   = (document.getElementById('rpt-filter-status')||{}).value || '';
+  var fDays     = parseInt((document.getElementById('rpt-filter-days')||{}).value) || 0;
+  var fShelter  = (document.getElementById('rpt-filter-shelter')||{}).value || activeShelter || '';
+
+  var now = new Date();
+  var cutoff = fDays ? new Date(now - fDays*86400000).toISOString() : null;
+
+  function filterRecs(recs) {
+    return recs.filter(function(r) {
+      if (fSpecies && (r.species||'').toLowerCase() !== fSpecies.toLowerCase()) return false;
+      if (fShelter && r.shelterName !== fShelter && r.finder !== fShelter) return false;
+      if (cutoff && r.date < cutoff) return false;
+      if (fStatus === 'hold'    && r.intakeType !== 'hold') return false;
+      if (fStatus === 'stray'   && (r.intakeType === 'hold' || !r.shelter)) return false;
+      if (fStatus === 'adopt'   && r.adoptionStatus !== 'available') return false;
+      if (fStatus === 'lost'    && r.type !== 'lost') return false;
+      if (fStatus === 'reunited'&& !r.reunited) return false;
+      return true;
+    });
+  }
+
+  var html = '';
+  var id = _activeReportId;
+
+  if (id === 'incare') {
+    var recs = filterRecs(reports.filter(function(r){ return r.shelter && !r.reunited && !r.euthanized && r.adoptionStatus!=='adopted' && !(r.enforcement&&r.enforcement.holdOutcome); }));
+    html = reportTable('Animals Currently In Care (' + recs.length + ')',
+      ['Animal','ID / Tag','Species','Color','Intake Source','Days In Care','Status'],
+      recs.map(function(r){
+        return [esc(r.name||'—'), esc(r.animalId||'—'), esc(r.species||'—'), esc(r.color||'—'),
+          esc(r.intakeSourceLabel||'—'), daysSince(r.date)+'d', esc((r.enforcement&&r.enforcement.internalStatus)||'Intake Logged')];
+      }));
+
+  } else if (id === 'intake30' || id === 'intake60') {
+    var days2 = id==='intake30' ? 30 : 60;
+    var cut2 = new Date(now - days2*86400000).toISOString();
+    var recs2 = filterRecs(reports.filter(function(r){ return r.shelter && r.date >= cut2; }));
+    html = reportTable('Intake — Last ' + days2 + ' Days (' + recs2.length + ' animals)',
+      ['Animal','Species','Color','Intake Source','Intake Date','Status'],
+      recs2.map(function(r){
+        return [esc(r.name||r.species||'Unknown'), esc(r.species||'—'), esc(r.color||'—'),
+          esc(r.intakeSourceLabel||'—'), r.date?new Date(r.date).toLocaleDateString():'—',
+          esc(r.reunited?'Reunited':r.adoptionStatus==='adopted'?'Adopted':r.adoptionStatus==='available'?'Adoption Ready':(r.enforcement&&r.enforcement.internalStatus)||'In Care')];
+      }));
+
+  } else if (id === 'holds') {
+    var holds = filterRecs(reports.filter(function(r){ return r.intakeType==='hold' && !r.reunited && !r.euthanized && !(r.enforcement&&r.enforcement.holdOutcome); }));
+    html = reportTable('Active Holds (' + holds.length + ')',
+      ['Animal','ID / Tag','Hold Type','Days Held','Daily Rate','Est. Cost','Status'],
+      holds.map(function(r){
+        var e = r.enforcement||{};
+        var d = daysSince(r.shelterHoldStart||r.date);
+        var rate = e.dailyCost!=null?e.dailyCost:DAILY_RATE;
+        return [esc(r.name||r.species||'Unknown'), esc(r.animalId||'—'), esc(r.holdType||'standard'),
+          d+'d', '$'+rate+'/day', fmtMoney(d*rate), esc(e.internalStatus||'Active')];
+      }));
+
+  } else if (id === 'costs') {
+    var cost_holds = filterRecs(reports.filter(function(r){ return r.intakeType==='hold' && !r.reunited && !(r.enforcement&&r.enforcement.holdOutcome); }));
+    var totalCost = cost_holds.reduce(function(s,r){
+      var e=r.enforcement||{}; var d=daysSince(r.shelterHoldStart||r.date);
+      return s+(d*(e.dailyCost!=null?e.dailyCost:DAILY_RATE));
+    },0);
+    html = '<div style="background:#fff8f0;border-radius:10px;padding:14px;margin-bottom:16px">'
+      + '<div style="font-size:.76rem;color:var(--warm-mid)">Total Hold Cost Exposure</div>'
+      + '<div style="font-family:var(--font-display);font-size:2rem;font-weight:800;color:#8a5010">' + fmtMoney(totalCost) + '</div>'
+      + '</div>'
+      + reportTable('Cost Breakdown by Animal',
+        ['Animal','Days','Rate','Hold Cost','Med Cost','Total'],
+        cost_holds.map(function(r){
+          var e=r.enforcement||{}; var m=getMed(r)||{};
+          var d=daysSince(r.shelterHoldStart||r.date);
+          var rate=e.dailyCost!=null?e.dailyCost:DAILY_RATE;
+          var hold=d*rate; var med=(m.spayNeuterCost||0)+(m.vaccinationCost||0)+(m.vetCost||0)+(m.otherCost||0);
+          return [esc(r.name||r.species||'Unknown'), d+'d', '$'+rate, fmtMoney(hold), fmtMoney(med), fmtMoney(hold+med)];
+        }));
+
+  } else if (id === 'adopt') {
+    var avail = filterRecs(reports.filter(function(r){ return r.adoptionStatus==='available'; }));
+    html = reportTable('Adoption Pipeline (' + avail.length + ' available)',
+      ['Animal','Species','Breed','Color','Days Waiting','Tags'],
+      avail.sort(function(a,b){ return daysSince(b.dateAvailable||b.date)-daysSince(a.dateAvailable||a.date); })
+        .map(function(r){
+          var d=Math.floor(daysSince(r.dateAvailable||r.date));
+          return [esc(r.name||r.species||'Unknown'), esc(r.species||'—'), esc(r.breed||'—'), esc(r.color||'—'),
+            d+'d'+(d>=30?' 🔴':d>=14?' 🟡':''), esc(r.tags||'—')];
+        }));
+
+  } else if (id === 'los') {
+    var los_recs = filterRecs(reports.filter(function(r){ return r.shelter; }));
+    var avg = los_recs.length ? Math.round(los_recs.reduce(function(s,r){ return s+daysSince(r.date); },0)/los_recs.length) : 0;
+    html = '<div style="background:#f0f8f0;border-radius:10px;padding:14px;margin-bottom:16px">'
+      + '<div style="font-size:.76rem;color:var(--warm-mid)">Average Length of Stay</div>'
+      + '<div style="font-family:var(--font-display);font-size:2rem;font-weight:800;color:var(--forest)">' + avg + ' days</div>'
+      + '</div>'
+      + reportTable('Length of Stay by Animal',
+        ['Animal','Species','Intake Date','Days In Care','Status'],
+        los_recs.sort(function(a,b){ return daysSince(b.date)-daysSince(a.date); })
+          .map(function(r){
+            return [esc(r.name||r.species||'Unknown'), esc(r.species||'—'),
+              r.date?new Date(r.date).toLocaleDateString():'—', daysSince(r.date)+'d',
+              esc(r.reunited?'Reunited':r.adoptionStatus==='adopted'?'Adopted':r.adoptionStatus==='available'?'Adoption Ready':'In Care')];
+          }));
+
+  } else if (id === 'outcomes') {
+    var all_s = filterRecs(reports.filter(function(r){ return r.shelter; }));
+    var adopted_r  = all_s.filter(function(r){ return r.adoptionStatus==='adopted'; });
+    var reunited_r = all_s.filter(function(r){ return r.reunited; });
+    var euth_r     = all_s.filter(function(r){ return r.euthanized; });
+    html = '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">'
+      + '<div style="background:#f0f8f0;border-radius:10px;padding:12px;text-align:center"><div style="font-size:1.6rem;font-weight:800;color:var(--forest)">' + adopted_r.length + '</div><div style="font-size:.76rem;color:var(--warm-mid)">Adopted</div></div>'
+      + '<div style="background:#f0f8f0;border-radius:10px;padding:12px;text-align:center"><div style="font-size:1.6rem;font-weight:800;color:var(--forest)">' + reunited_r.length + '</div><div style="font-size:.76rem;color:var(--warm-mid)">Reunited</div></div>'
+      + '<div style="background:#fff5f5;border-radius:10px;padding:12px;text-align:center"><div style="font-size:1.6rem;font-weight:800;color:var(--lost-r)">' + euth_r.length + '</div><div style="font-size:.76rem;color:var(--warm-mid)">Resolved</div></div>'
+      + '</div>'
+      + reportTable('Outcomes Detail',['Animal','Species','Outcome','Date'],
+        [...adopted_r.map(function(r){ return [esc(r.name||r.species||'Unknown'),esc(r.species||'—'),'🌟 Adopted','—']; }),
+         ...reunited_r.map(function(r){ return [esc(r.name||r.species||'Unknown'),esc(r.species||'—'),'🎉 Reunited',r.reunitedDate?new Date(r.reunitedDate).toLocaleDateString():'—']; }),
+         ...euth_r.map(function(r){ return [esc(r.name||r.species||'Unknown'),esc(r.species||'—'),'⚫ Resolved','—']; })]);
+
+  } else if (id === 'species') {
+    var sp_recs = filterRecs(reports.filter(function(r){ return r.shelter; }));
+    var counts = {};
+    sp_recs.forEach(function(r){ var s=r.species||'Unknown'; counts[s]=(counts[s]||0)+1; });
+    html = '<div style="margin-bottom:16px">' + Object.keys(counts).map(function(sp){
+      var pct = Math.round(counts[sp]/sp_recs.length*100);
+      return '<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:.84rem;margin-bottom:4px"><span>' + sp + '</span><span style="font-weight:700">' + counts[sp] + ' (' + pct + '%)</span></div>'
+        + '<div style="background:var(--cream-2);border-radius:999px;height:8px"><div style="background:var(--forest);height:8px;border-radius:999px;width:' + pct + '%"></div></div></div>';
+    }).join('') + '</div>';
+
+  } else {
+    /* Fall through to existing generateReport for complex reports */
+    generateReport(id==='internal'?'internal':id==='council'?'council':id==='donor'?'donor':'community');
+    return;
+  }
+
+  bodyEl.innerHTML = html;
+}
+
+function reportTable(title, headers, rows) {
+  return '<h3 style="font-family:var(--font-display);font-size:.9rem;margin:0 0 10px">' + title + '</h3>'
+    + '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:.8rem">'
+    + '<thead><tr>' + headers.map(function(h){ return '<th style="text-align:left;padding:6px 10px;background:var(--cream-2);border-bottom:2px solid var(--cream-3);white-space:nowrap">' + h + '</th>'; }).join('') + '</tr></thead>'
+    + '<tbody>' + rows.map(function(row,i){
+        return '<tr style="background:' + (i%2===0?'#fff':'var(--cream-2)') + '">'
+          + row.map(function(cell){ return '<td style="padding:6px 10px;border-bottom:1px solid var(--cream-3)">' + cell + '</td>'; }).join('') + '</tr>';
+      }).join('') + '</tbody></table></div>';
+}
+
+function closeReportPanel() {
+  _activeReportId = null;
+  var panel = document.getElementById('rpt-report-panel');
+  var empty = document.getElementById('rpt-detail-empty');
+  if (panel) panel.style.display = 'none';
+  if (empty) empty.style.display = 'flex';
+  renderReportTypeList();
+}
+
+function printActiveReport() {
+  var body = document.getElementById('rpt-report-body');
+  if (!body) return;
+  var rt = REPORT_TYPES.find(function(r){ return r.id===_activeReportId; }) || {label:'Report'};
+  var w = window.open('','_blank','width=720,height=700');
+  w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>' + rt.label + '</title>'
+    + '<style>body{font-family:Georgia,serif;max-width:720px;margin:40px auto;padding:0 24px;font-size:13px;line-height:1.6}h3{font-size:1rem}table{width:100%;border-collapse:collapse;margin-bottom:20px}th,td{padding:6px 10px;border-bottom:1px solid #ddd;text-align:left}th{background:#f5f5f5}@media print{body{margin:0}}</style></head><body>'
+    + '<h2 style="font-size:1.1rem;margin-bottom:4px">' + rt.label + '</h2>'
+    + '<p style="color:#666;font-size:.8rem;margin-top:0">' + (activeShelter||'All Shelters') + ' · Generated ' + new Date().toLocaleDateString() + '</p>'
+    + body.innerHTML + '</body></html>');
+  w.document.close(); w.focus(); setTimeout(function(){ w.print(); }, 400);
+}
+
+function copyActiveReport() {
+  var body = document.getElementById('rpt-report-body');
+  if (!body) return;
+  navigator.clipboard.writeText(body.innerText).then(function(){
+    var btn = document.querySelector('#rpt-report-panel button:nth-child(2)');
+    if (btn) { btn.textContent = '✓ Copied!'; setTimeout(function(){ btn.textContent = '📋 Copy'; },2000); }
+  });
+}
+
+
 
 /* ── INVENTORY SAVE ───────────────────────────────────────────────────── */
 
@@ -3976,21 +4572,16 @@ function renderAdminDashboard() {
   /* Report buttons */
   var repEl = document.getElementById('dash-report-btns');
   if (repEl) repEl.innerHTML =
-    '<div style="font-family:var(--font-display);font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--warm-mid);margin-bottom:8px">📊 Internal Reports</div>'
-    + '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">'
-    + '<button onclick="generateReport(\'internal\')" style="padding:9px 13px;font-family:var(--font-display);font-size:.79rem;font-weight:600;background:var(--forest);color:#fff;border:none;border-radius:8px;cursor:pointer">📄 Internal</button>'
-    + '<button onclick="generateReport(\'council\')" style="padding:9px 13px;font-family:var(--font-display);font-size:.79rem;font-weight:600;background:#2050a0;color:#fff;border:none;border-radius:8px;cursor:pointer">🏛️ City Council</button>'
-    + '<button onclick="generateReport(\'ac\')" style="padding:9px 13px;font-family:var(--font-display);font-size:.79rem;font-weight:600;background:var(--amber);color:#fff;border:none;border-radius:8px;cursor:pointer">⚖️ Enforcement</button>'
-    + '<button onclick="generateReport(\'donor\')" style="padding:9px 13px;font-family:var(--font-display);font-size:.79rem;font-weight:600;background:#7a3a8a;color:#fff;border:none;border-radius:8px;cursor:pointer">💜 Donor / Grant</button>'
-    + '<button onclick="generateReport(\'community\')" style="padding:9px 13px;font-family:var(--font-display);font-size:.79rem;font-weight:600;background:var(--found-g);color:#fff;border:none;border-radius:8px;cursor:pointer">🌍 Community</button>'
+    '<div style="font-size:.76rem;color:var(--warm-mid);margin-bottom:10px;line-height:1.4">View detailed reports in the <strong>Reports</strong> tab. Quick links:</div>'
+    + '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">'
+    + '<button onclick="setView(\'reports\',document.querySelector(\'.tab-btn[onclick*=\\\"reports\\\"]\'));setTimeout(function(){runReport(\'holds\');},100)" style="padding:7px 12px;font-size:.76rem;font-weight:600;background:#fff8f0;color:#8a5010;border:1.5px solid #e8c090;border-radius:7px;cursor:pointer;font-family:var(--font-body)">⚠️ Active Holds</button>'
+    + '<button onclick="setView(\'reports\',document.querySelector(\'.tab-btn[onclick*=\\\"reports\\\"]\'));setTimeout(function(){runReport(\'costs\');},100)" style="padding:7px 12px;font-size:.76rem;font-weight:600;background:#fff8f0;color:#8a5010;border:1.5px solid #e8c090;border-radius:7px;cursor:pointer;font-family:var(--font-body)">💰 Cost Breakdown</button>'
+    + '<button onclick="setView(\'reports\',document.querySelector(\'.tab-btn[onclick*=\\\"reports\\\"]\'));setTimeout(function(){runReport(\'incare\');},100)" style="padding:7px 12px;font-size:.76rem;font-weight:600;background:var(--cream-2);color:var(--warm-dk);border:1.5px solid var(--cream-3);border-radius:7px;cursor:pointer;font-family:var(--font-body)">🏥 In Care Report</button>'
+    + '<button onclick="setView(\'reports\',document.querySelector(\'.tab-btn[onclick*=\\\"reports\\\"]\'));setTimeout(function(){runReport(\'outcomes\');},100)" style="padding:7px 12px;font-size:.76rem;font-weight:600;background:var(--cream-2);color:var(--warm-dk);border:1.5px solid var(--cream-3);border-radius:7px;cursor:pointer;font-family:var(--font-body)">🎉 Outcomes</button>'
     + '</div>'
-    + '<div style="border-top:1.5px solid var(--cream-3);padding-top:12px;margin-bottom:8px">'
-    + '<div style="font-family:var(--font-display);font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--warm-mid);margin-bottom:4px">📤 Public Output</div>'
-    + '<div style="font-size:.72rem;color:var(--warm-mid);margin-bottom:10px;line-height:1.45">Generated from current data. Paste to Facebook, email, or the local paper.</div>'
-    + '</div>'
-    + '<div style="display:flex;flex-wrap:wrap;gap:8px">'
-    + '<button onclick="openContentGen(\'press\')" style="padding:8px 14px;font-family:var(--font-display);font-size:.76rem;font-weight:600;background:#fff;color:#c0392b;border:1.5px solid #e0a090;border-radius:8px;cursor:pointer">📣 Public Transparency Report</button>'
-    + '<button onclick="openContentGen(\'fund\')" style="padding:8px 14px;font-family:var(--font-display);font-size:.76rem;font-weight:600;background:#fff;color:#b06010;border:1.5px solid #e0c090;border-radius:8px;cursor:pointer">💛 Funding Narrative</button>'
+    + '<div style="border-top:1px solid var(--cream-3);padding-top:10px;display:flex;flex-wrap:wrap;gap:6px">'
+    + '<button onclick="openContentGen(\'press\')" style="padding:7px 12px;font-size:.76rem;font-weight:600;background:#fff;color:#c0392b;border:1.5px solid #e0a090;border-radius:7px;cursor:pointer;font-family:var(--font-body)">📣 Public Transparency Report</button>'
+    + '<button onclick="openContentGen(\'fund\')" style="padding:7px 12px;font-size:.76rem;font-weight:600;background:#fff;color:#b06010;border:1.5px solid #e0c090;border-radius:7px;cursor:pointer;font-family:var(--font-body)">💛 Funding Narrative</button>'
     + '</div>';
 
   /* Holds table */
@@ -4268,8 +4859,8 @@ function printCGOutput() {
 function jumpToCase(id) {
   var r = reports.find(function(x){ return x.id===id; });
   if (!r) return;
-  setView('shelters', document.querySelector('.tab-btn[onclick*="shelters"]'));
-  setTimeout(function(){ selectIntake(id); }, 200);
+  setView('incare', document.querySelector('.tab-btn[onclick*="incare"]'));
+  setTimeout(function(){ openAnimalEdit(id); }, 200);
 }
 
 function generateReport(type) {
@@ -4732,7 +5323,8 @@ function submitAdoptListing() {
 
 function updateNavCounts() {
   var inCareCount = reports.filter(function(r){
-    return r.shelter && r.intakeType !== 'hold'
+    return r.shelter
+      && (r.shelterName === activeShelter || r.finder === activeShelter)
       && !r.reunited && !r.euthanized
       && r.adoptionStatus !== 'adopted'
       && !(r.enforcement && r.enforcement.holdOutcome);
@@ -4759,9 +5351,10 @@ function renderIncareView() {
   if (!el) return;
   updateNavCounts();
 
-  /* In care = sheltered strays, not on hold, not reunited, not euthanized, not adopted */
+  /* All sheltered animals for this shelter — includes strays AND holds */
   var all = reports.filter(function(r){
-    return r.shelter && r.intakeType !== 'hold'
+    return r.shelter
+      && (r.shelterName === activeShelter || r.finder === activeShelter)
       && !r.reunited && !r.euthanized
       && r.adoptionStatus !== 'adopted'
       && !(r.enforcement && r.enforcement.holdOutcome);
@@ -4770,76 +5363,108 @@ function renderIncareView() {
   if (cntEl) cntEl.textContent = all.length;
 
   var filtered = all;
-  if (incareFilter === 'dog')       filtered = all.filter(function(r){ return (r.species||'').toLowerCase()==='dog'; });
-  if (incareFilter === 'cat')       filtered = all.filter(function(r){ return (r.species||'').toLowerCase()==='cat'; });
-  if (incareFilter === 'adopt')     filtered = all.filter(function(r){ return r.adoptionStatus === 'available'; });
-  if (incareFilter === 'long')      filtered = all.filter(function(r){ return daysSince(r.date) >= 30; });
+  if (incareFilter === 'dog')   filtered = all.filter(function(r){ return (r.species||'').toLowerCase()==='dog'; });
+  if (incareFilter === 'cat')   filtered = all.filter(function(r){ return (r.species||'').toLowerCase()==='cat'; });
+  if (incareFilter === 'hold')  filtered = all.filter(function(r){ return r.intakeType === 'hold'; });
+  if (incareFilter === 'adopt') filtered = all.filter(function(r){ return r.adoptionStatus === 'available'; });
+  if (incareFilter === 'long')  filtered = all.filter(function(r){ return daysSince(r.date) >= 30; });
 
   if (!filtered.length) {
-    el.innerHTML = '<div style="text-align:center;padding:32px 16px;color:var(--warm-mid)"><div style="font-size:2rem;margin-bottom:8px">' + (all.length ? '🔍' : '🐾') + '</div><div style="font-size:.88rem;font-weight:600;margin-bottom:6px;color:var(--warm-dk)">' + (all.length ? 'No animals match this filter.' : 'No animals currently in care.') + '</div>' + (all.length ? '<div style="font-size:.76rem;margin-bottom:12px">Try a different filter above.</div><button onclick="setIncareFilter(\'all\',document.getElementById(\'ic-chip-all\'))" style="padding:6px 16px;border-radius:7px;border:1.5px solid var(--cream-3);background:#fff;font-family:var(--font-body);font-size:.76rem;cursor:pointer;color:var(--warm-mid)">Clear filter</button>' : '<div style="font-size:.76rem;line-height:1.5;margin-bottom:12px">All have been placed, reunited, or released.</div><button onclick="setView(\'shelters\',document.querySelector(\'.tab-btn[onclick*=\\\"shelters\\\"]\'));setTimeout(function(){toggleIntakeForm();},200)" style="padding:8px 18px;border-radius:8px;border:none;background:var(--forest);color:var(--cream);font-family:var(--font-display);font-size:.8rem;font-weight:700;cursor:pointer">+ Log New Intake</button>') + '</div>';
+    el.innerHTML = '<div style="text-align:center;padding:32px 16px;color:var(--warm-mid)">'
+      + '<div style="font-size:2rem;margin-bottom:8px">' + (all.length ? '🔍' : '🐾') + '</div>'
+      + '<div style="font-size:.88rem;font-weight:600;margin-bottom:6px;color:var(--warm-dk)">'
+      + (all.length ? 'No animals match this filter.' : 'No animals currently in care.') + '</div>'
+      + (all.length
+        ? '<div style="font-size:.76rem;margin-bottom:12px">Try a different filter above.</div>'
+          + '<button onclick="setIncareFilter(\'all\',document.getElementById(\'ic-chip-all\'))" style="padding:6px 16px;border-radius:7px;border:1.5px solid var(--cream-3);background:#fff;font-family:var(--font-body);font-size:.76rem;cursor:pointer;color:var(--warm-mid)">Clear filter</button>'
+        : '<div style="font-size:.76rem;line-height:1.5;margin-bottom:14px">All have been placed, reunited, or released.</div>'
+          + '<button onclick="openIntakeModal()" style="padding:9px 20px;border-radius:9px;border:none;background:var(--forest);color:var(--cream);font-family:var(--font-display);font-size:.82rem;font-weight:700;cursor:pointer">+ Log New Intake</button>')
+      + '</div>';
     return;
   }
 
-  /* Sort: adoption-ready first, then by days descending */
+  /* Sort: holds first, then adoption-ready, then by days descending */
   filtered.sort(function(a,b){
+    if (a.intakeType==='hold' && b.intakeType!=='hold') return -1;
+    if (b.intakeType==='hold' && a.intakeType!=='hold') return 1;
     if (a.adoptionStatus==='available' && b.adoptionStatus!=='available') return -1;
     if (b.adoptionStatus==='available' && a.adoptionStatus!=='available') return 1;
     return daysSince(a.date) < daysSince(b.date) ? 1 : -1;
   });
 
   el.innerHTML = filtered.map(function(r) {
-    var days = Math.floor(daysSince(r.shelterHoldStart || r.date));
+    var isHold  = r.intakeType === 'hold';
+    var isAdopt = r.adoptionStatus === 'available';
+    var days    = Math.floor(daysSince(isHold ? r.shelterHoldStart||r.date : r.date));
     var urgencyColor = days >= 30 ? 'var(--lost-r)' : days >= 14 ? 'var(--amber)' : 'var(--found-g)';
     var daysLabel = days === 0 ? '🟢 Just arrived'
-      : days <= 3  ? '🟢 New · ' + days + ' day' + (days !== 1 ? 's' : '')
-      : days < 14  ? '⚪ In care ' + days + ' days'
-      : days < 30  ? '🟡 Waiting ' + days + ' days'
-      : '🔴 ' + days + ' days — urgent';
-    var isAdopt = r.adoptionStatus === 'available';
-    var m = getMed(r);
-    var hasMedical = m.spayNeuter || m.vaccinations || m.vetVisit || m.otherCare;
+      : days <= 3  ? '🟢 New · ' + days + ' day' + (days!==1?'s':'')
+      : days < 14  ? '⚪ ' + days + ' days'
+      : days < 30  ? '🟡 ' + days + ' days'
+      : '🔴 ' + days + ' days';
     var tags = r.tags ? r.tags.split(',').filter(Boolean) : [];
-    return '<div style="background:#fff;border:1px solid var(--cream-3);border-radius:12px;margin-bottom:10px;overflow:hidden">'
-      + '<div style="height:3px;background:' + urgencyColor + '"></div>'
-      + '<div style="padding:12px 14px">'
-      + '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">'
-      + '<div>'
-      + '<div style="font-family:var(--font-display);font-size:.95rem;font-weight:700;color:var(--warm-dk)">' + esc(r.name || r.species || 'Unknown') + '</div>'
-      + (r.animalId ? '<div style="margin-bottom:2px"><span style="font-size:.67rem;font-weight:800;color:var(--forest);background:#e8f0e8;border:1px solid #c0d8c0;border-radius:4px;padding:1px 7px;letter-spacing:.04em">🏷️ ' + esc(r.animalId) + '</span></div>' : '')
-      + (lifecycleTrail(r) ? '<div style="font-size:.63rem;color:var(--warm-mid);margin-bottom:2px">' + esc(lifecycleTrail(r)) + '</div>' : '')
-      + '<div style="font-size:.72rem;color:var(--warm-mid)">' + [r.breed,r.color,r.sex].filter(Boolean).join(' · ') + '</div>'
+    var holdBadge = isHold
+      ? '<span style="font-size:.67rem;font-weight:700;padding:2px 8px;border-radius:999px;background:#fff8f0;color:#8a5010;border:1px solid #e8c090;margin-right:4px">⚠️ On Hold' + (r.holdType&&r.holdType!=='standard'?' · '+r.holdType:'') + '</span>'
+      : '';
+    var adoptBadge = isAdopt
+      ? '<span style="font-size:.67rem;font-weight:700;padding:2px 8px;border-radius:999px;background:#e8f0ff;color:#2050a0;border:1px solid #a0c0f0">🌟 Adoption Ready</span>'
+      : '';
+    var src = r.intakeSource||'citizen';
+    var srcLabel = src==='ac'?'Animal Control':src==='surrender'?'Owner Surrender':src==='other'?'Transfer':'';
+
+    return '<div style="background:#fff;border:1px solid var(--cream-3);border-radius:12px;margin-bottom:8px;overflow:hidden">'
+      + '<div style="height:3px;background:' + (isHold?'var(--amber)':urgencyColor) + '"></div>'
+      + '<div style="padding:11px 13px">'
+      + '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px">'
+      + '<div style="flex:1;min-width:0">'
+      + '<div style="font-family:var(--font-display);font-size:.92rem;font-weight:700;color:var(--warm-dk)">' + esc(r.name||r.species||'Unknown') + '</div>'
+      + (r.animalId?'<div style="margin-bottom:3px"><span style="font-size:.65rem;font-weight:800;color:var(--forest);background:#e8f0e8;border:1px solid #c0d8c0;border-radius:4px;padding:1px 6px">🏷️ ' + esc(r.animalId) + '</span></div>':'')
+      + '<div style="font-size:.7rem;color:var(--warm-mid);margin-bottom:3px">' + [r.breed,r.color,r.sex].filter(Boolean).join(' · ') + '</div>'
+      + (holdBadge||adoptBadge ? '<div style="margin-bottom:3px">' + holdBadge + adoptBadge + '</div>' : '')
+      + (srcLabel?'<div style="font-size:.63rem;color:var(--warm-mid)">' + srcLabel + '</div>':'')
       + '</div>'
-      + '<div style="text-align:right">'
-      + '<div style="font-size:1rem;font-weight:800;color:' + urgencyColor + '">' + days + 'd</div>'
-      + '<div style="font-size:.65rem;color:var(--warm-mid)">in care</div>'
+      + '<div style="text-align:right;flex-shrink:0;margin-left:10px">'
+      + '<div style="font-size:.95rem;font-weight:800;color:' + urgencyColor + '">' + daysLabel + '</div>'
       + '</div></div>'
-      + '<div style="font-size:.72rem;color:var(--warm-mid);margin-bottom:4px">📍 ' + esc(r.shelterName || r.finder || 'Unknown shelter') + '</div>'
-      + (function(){
-          var src = r.intakeSource || 'citizen';
-          if (src === 'citizen') return '';
-          var lbl = src === 'ac' ? 'Animal Control' : src === 'surrender' ? 'Owner Surrender' : src === 'other' ? 'Transfer' : '';
-          return lbl ? '<div style="font-size:.65rem;color:var(--warm-mid);margin-bottom:4px">' + lbl + '</div>' : '';
-        })()
-      + (isAdopt ? '<div style="display:inline-block;padding:3px 10px;border-radius:999px;background:#e8f0ff;color:#2050a0;font-size:.7rem;font-weight:700;margin-bottom:6px">🏠 Adoption Ready</div>' : '')
-      + (hasMedical ? '<div style="display:inline-block;padding:3px 10px;border-radius:999px;background:#f0fff4;color:var(--found-g);font-size:.7rem;font-weight:700;margin-bottom:6px;margin-left:4px">🏥 Receiving Care</div>' : '')
-      + (tags.length ? '<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px">' + tags.map(function(t){ return '<span style="font-size:.64rem;padding:2px 7px;border-radius:999px;background:var(--cream-2);color:var(--warm-mid);border:1px solid var(--cream-3)">' + esc(t) + '</span>'; }).join('') + '</div>' : '')
+      + '<div style="display:flex;gap:6px;margin-top:8px">'
+      + '<button onclick="openAnimalEdit(' + r.id + ')" style="flex:1;padding:6px;font-size:.76rem;font-weight:600;border-radius:7px;border:1.5px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body)">✏️ Edit</button>'
+      + (!isAdopt&&!isHold ? '<button onclick="quickAdoptReady(' + r.id + ')" style="flex:1;padding:6px;font-size:.76rem;font-weight:600;border-radius:7px;border:1.5px solid #a0c0f0;background:#f0f4ff;color:#2050a0;cursor:pointer;font-family:var(--font-body)">🌟 Mark Adoption Ready</button>' : '')
+      + (isAdopt ? '<button onclick="openAnimalEdit(' + r.id + ')" style="flex:1;padding:6px;font-size:.76rem;font-weight:600;border-radius:7px;border:1.5px solid var(--found-g);background:#f0fff4;color:var(--found-g);cursor:pointer;font-family:var(--font-body)">📋 Manage</button>' : '')
+      + '</div>'
       + '</div></div>';
   }).join('');
 }
 
+function quickAdoptReady(id) {
+  var r = reports.find(function(x){ return x.id===id; });
+  if (!r) return;
+  r.adoptionStatus = 'available';
+  r.dateAvailable  = new Date().toISOString();
+  save(); renderIncareView(); renderAdoptView(); updateNavCounts();
+  pushBannerEvent('🌟 ' + (r.name||r.species||'Animal') + ' is now listed for adoption!', 'var(--found-g)');
+}
+
+
+
 function setView(v, btn) {
+  /* Redirect old shelters tab to incare */
+  if (v === 'shelters') v = 'incare';
   document.querySelectorAll('.view').forEach(function(x){ x.classList.remove('active'); });
   var el = document.getElementById('view-' + v);
   if (!el) return;
   el.classList.add('active');
   document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
   if (btn) btn.classList.add('active');
-  if (v === 'map')          setTimeout(function(){ map.invalidateSize(); }, 200);
-  if (v === 'shelters')     { renderShelterQueue(); if (shelterTab==='inventory') renderInventoryList(); }
-  if (v === 'incare')       renderIncareView();
-  if (v === 'reports')      renderReportsList();
-  if (v === 'adopt')        renderAdoptView();
-  if (v === 'admin')        renderAdminDashboard();
+  /* Ensure correct tab button is highlighted for incare */
+  if (v === 'incare') {
+    var incareBtn = document.querySelector('.tab-btn[onclick*="incare"]');
+    if (incareBtn) incareBtn.classList.add('active');
+  }
+  if (v === 'map')     setTimeout(function(){ map.invalidateSize(); }, 200);
+  if (v === 'incare')  renderIncareView();
+  if (v === 'reports') { renderReportsList(); renderReportTypeList(); }
+  if (v === 'adopt')   renderAdoptView();
+  if (v === 'admin')   renderAdminDashboard();
 }
 
 /* ── BOOT ─────────────────────────────────────────────────────────────── */
