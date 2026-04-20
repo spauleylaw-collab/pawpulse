@@ -500,6 +500,12 @@ textarea{min-height:64px}
 </head>
 <body>
 
+<!-- App loading screen — covers map flash during auth/shelter picker -->
+<div id="app-loading" style="position:fixed;inset:0;z-index:9990;background:var(--cream);display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
+  <div style="font-size:2rem;margin-bottom:6px">🐾</div>
+  <div style="font-family:var(--font-display);font-size:1rem;font-weight:600;color:var(--warm-mid)">PawPulse</div>
+</div>
+
 <!-- Login overlay — shown when Firebase is configured and user not signed in -->
 <div id="login-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:var(--cream);flex-direction:column;align-items:center;justify-content:center;padding:32px">
   <div style="font-size:2.2rem;margin-bottom:8px">🐾</div>
@@ -1127,6 +1133,8 @@ function doLogin() {
 function doGuestView() {
   _isStaff = false;
   document.getElementById('login-overlay').style.display = 'none';
+  var loading = document.getElementById('app-loading');
+  if (loading && loading.parentNode) loading.parentNode.removeChild(loading);
   document.querySelectorAll('.tab-ops,.tab-admin').forEach(function(el){ el.style.display='none'; });
   if (USE_FIREBASE) { startFirestoreListener(); } else { bootApp(); }
 }
@@ -1143,6 +1151,13 @@ function doSignOut() {
 }
 
 function bootApp() {
+  /* Dismiss the loading screen */
+  var loading = document.getElementById('app-loading');
+  if (loading) {
+    loading.style.opacity = '0';
+    loading.style.transition = 'opacity .25s ease';
+    setTimeout(function(){ if (loading.parentNode) loading.parentNode.removeChild(loading); }, 280);
+  }
   /* Update incare shelter label */
   var lbl = document.getElementById('incare-shelter-label');
   if (lbl) lbl.textContent = activeShelter + ' — Animals In Care';
