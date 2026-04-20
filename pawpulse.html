@@ -692,9 +692,11 @@ textarea{min-height:64px}
   </div>
   <!-- Filter chips -->
   <div style="padding:9px 14px;border-bottom:1px solid var(--cream-3);background:var(--cream);flex-shrink:0;display:flex;gap:5px;flex-wrap:wrap;align-items:center">
+    <span style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--warm-mid);margin-right:2px">Species:</span>
     <button class="rpt-chip active" id="ic-chip-all"       onclick="setIncareFilter('all',this)">All</button>
     <button class="rpt-chip"        id="ic-chip-dog"       onclick="setIncareFilter('dog',this)">🐕 Dogs</button>
     <button class="rpt-chip"        id="ic-chip-cat"       onclick="setIncareFilter('cat',this)">🐈 Cats</button>
+    <span style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--warm-mid);margin-left:6px;margin-right:2px">Status:</span>
     <button class="rpt-chip"        id="ic-chip-hold"      onclick="setIncareFilter('hold',this)">⚠️ On Hold</button>
     <button class="rpt-chip"        id="ic-chip-adopt"     onclick="setIncareFilter('adopt',this)">🌟 Adoption Ready</button>
     <button class="rpt-chip"        id="ic-chip-long"      onclick="setIncareFilter('long',this)">🔴 30+ Days</button>
@@ -5392,47 +5394,44 @@ function renderIncareView() {
     return daysSince(a.date) < daysSince(b.date) ? 1 : -1;
   });
 
-  el.innerHTML = filtered.map(function(r) {
+  el.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px">'
+    + filtered.map(function(r) {
     var isHold  = r.intakeType === 'hold';
     var isAdopt = r.adoptionStatus === 'available';
     var days    = Math.floor(daysSince(isHold ? r.shelterHoldStart||r.date : r.date));
     var urgencyColor = days >= 30 ? 'var(--lost-r)' : days >= 14 ? 'var(--amber)' : 'var(--found-g)';
-    var daysLabel = days === 0 ? '🟢 Just arrived'
-      : days <= 3  ? '🟢 New · ' + days + ' day' + (days!==1?'s':'')
-      : days < 14  ? '⚪ ' + days + ' days'
-      : days < 30  ? '🟡 ' + days + ' days'
-      : '🔴 ' + days + ' days';
-    var tags = r.tags ? r.tags.split(',').filter(Boolean) : [];
-    var holdBadge = isHold
-      ? '<span style="font-size:.67rem;font-weight:700;padding:2px 8px;border-radius:999px;background:#fff8f0;color:#8a5010;border:1px solid #e8c090;margin-right:4px">⚠️ On Hold' + (r.holdType&&r.holdType!=='standard'?' · '+r.holdType:'') + '</span>'
-      : '';
-    var adoptBadge = isAdopt
-      ? '<span style="font-size:.67rem;font-weight:700;padding:2px 8px;border-radius:999px;background:#e8f0ff;color:#2050a0;border:1px solid #a0c0f0">🌟 Adoption Ready</span>'
-      : '';
+    var daysLabel = days === 0 ? 'Just arrived'
+      : days <= 3  ? 'New · ' + days + 'd'
+      : days < 14  ? days + ' days'
+      : days < 30  ? days + ' days'
+      : days + ' days';
     var src = r.intakeSource||'citizen';
-    var srcLabel = src==='ac'?'Animal Control':src==='surrender'?'Owner Surrender':src==='other'?'Transfer':'';
+    var srcLabel = src==='ac'?'AC':src==='surrender'?'Surrender':src==='other'?'Transfer':'';
 
-    return '<div style="background:#fff;border:1px solid var(--cream-3);border-radius:12px;margin-bottom:8px;overflow:hidden">'
+    return '<div style="background:#fff;border:1px solid var(--cream-3);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;cursor:pointer" onclick="openAnimalEdit(' + r.id + ')">'
       + '<div style="height:3px;background:' + (isHold?'var(--amber)':urgencyColor) + '"></div>'
-      + '<div style="padding:11px 13px">'
-      + '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px">'
-      + '<div style="flex:1;min-width:0">'
-      + '<div style="font-family:var(--font-display);font-size:.92rem;font-weight:700;color:var(--warm-dk)">' + esc(r.name||r.species||'Unknown') + '</div>'
-      + (r.animalId?'<div style="margin-bottom:3px"><span style="font-size:.65rem;font-weight:800;color:var(--forest);background:#e8f0e8;border:1px solid #c0d8c0;border-radius:4px;padding:1px 6px">🏷️ ' + esc(r.animalId) + '</span></div>':'')
-      + '<div style="font-size:.7rem;color:var(--warm-mid);margin-bottom:3px">' + [r.breed,r.color,r.sex].filter(Boolean).join(' · ') + '</div>'
-      + (holdBadge||adoptBadge ? '<div style="margin-bottom:3px">' + holdBadge + adoptBadge + '</div>' : '')
-      + (srcLabel?'<div style="font-size:.63rem;color:var(--warm-mid)">' + srcLabel + '</div>':'')
+      + '<div style="padding:10px 11px;flex:1">'
+      /* Name + ID */
+      + '<div style="font-family:var(--font-display);font-size:.86rem;font-weight:700;color:var(--warm-dk);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(r.name||r.species||'Unknown') + '</div>'
+      + (r.animalId?'<div style="font-size:.62rem;font-weight:700;color:var(--forest);margin-bottom:4px">🏷️ ' + esc(r.animalId) + '</div>':'')
+      /* Species/breed/color */
+      + '<div style="font-size:.7rem;color:var(--warm-mid);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + ([r.species,r.breed,r.color].filter(Boolean).join(' · ')||'Unknown') + '</div>'
+      /* Status badges */
+      + '<div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:6px">'
+      + (isHold?'<span style="font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:999px;background:#fff8f0;color:#8a5010;border:1px solid #e8c090">⚠️ Hold</span>':'')
+      + (isAdopt?'<span style="font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:999px;background:#e8f0ff;color:#2050a0">🌟 Adopt</span>':'')
+      + (srcLabel?'<span style="font-size:.6rem;padding:2px 6px;border-radius:999px;background:var(--cream-2);color:var(--warm-mid)">' + srcLabel + '</span>':'')
       + '</div>'
-      + '<div style="text-align:right;flex-shrink:0;margin-left:10px">'
-      + '<div style="font-size:.95rem;font-weight:800;color:' + urgencyColor + '">' + daysLabel + '</div>'
-      + '</div></div>'
-      + '<div style="display:flex;gap:6px;margin-top:8px">'
-      + '<button onclick="openAnimalEdit(' + r.id + ')" style="flex:1;padding:6px;font-size:.76rem;font-weight:600;border-radius:7px;border:1.5px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body)">✏️ Edit</button>'
-      + (!isAdopt&&!isHold ? '<button onclick="quickAdoptReady(' + r.id + ')" style="flex:1;padding:6px;font-size:.76rem;font-weight:600;border-radius:7px;border:1.5px solid #a0c0f0;background:#f0f4ff;color:#2050a0;cursor:pointer;font-family:var(--font-body)">🌟 Mark Adoption Ready</button>' : '')
-      + (isAdopt ? '<button onclick="openAnimalEdit(' + r.id + ')" style="flex:1;padding:6px;font-size:.76rem;font-weight:600;border-radius:7px;border:1.5px solid var(--found-g);background:#f0fff4;color:var(--found-g);cursor:pointer;font-family:var(--font-body)">📋 Manage</button>' : '')
+      /* Days counter */
+      + '<div style="font-size:.72rem;font-weight:700;color:' + urgencyColor + '">' + daysLabel + '</div>'
       + '</div>'
-      + '</div></div>';
-  }).join('');
+      /* Action bar */
+      + '<div style="padding:7px 10px;border-top:1px solid var(--cream-3);background:var(--cream-2);display:flex;gap:5px">'
+      + '<button onclick="event.stopPropagation();openAnimalEdit(' + r.id + ')" style="flex:1;padding:4px 6px;font-size:.68rem;font-weight:600;border-radius:6px;border:1px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body)">✏️ Edit</button>'
+      + (!isAdopt&&!isHold?'<button onclick="event.stopPropagation();quickAdoptReady(' + r.id + ')" style="flex:1;padding:4px 6px;font-size:.68rem;font-weight:600;border-radius:6px;border:1px solid #a0c0f0;background:#f0f4ff;color:#2050a0;cursor:pointer;font-family:var(--font-body)">🌟</button>':'')
+      + '</div>'
+      + '</div>';
+  }).join('') + '</div>';
 }
 
 function quickAdoptReady(id) {
