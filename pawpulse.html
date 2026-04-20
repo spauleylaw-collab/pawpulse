@@ -530,7 +530,29 @@ textarea{min-height:64px}
 </div>
 
 <!-- Staff badge shown when signed in -->
-<div id="staff-badge" style="display:none;position:fixed;bottom:16px;left:16px;z-index:800;background:var(--forest);color:var(--cream);border-radius:999px;padding:5px 12px;font-size:.7rem;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2)" onclick="doSignOut()">🔐 Staff · Sign Out</div>
+<div id="staff-badge" style="display:none;position:fixed;bottom:16px;left:16px;z-index:800;display:none;flex-direction:column;gap:5px">
+  <div id="staff-name-badge" style="background:var(--forest);color:var(--cream);border-radius:999px;padding:5px 12px;font-size:.7rem;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.2);white-space:nowrap">🔐 Staff</div>
+  <div style="display:flex;gap:5px">
+    <button onclick="openChangePw()" style="flex:1;padding:4px 10px;font-size:.66rem;font-weight:600;border-radius:999px;border:1px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body);color:var(--warm-mid)">🔑 Change PW</button>
+    <button onclick="doSignOut()" style="flex:1;padding:4px 10px;font-size:.66rem;font-weight:600;border-radius:999px;border:1px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body);color:var(--warm-mid)">Sign Out</button>
+  </div>
+</div>
+
+<!-- Change Password modal -->
+<div id="change-pw-overlay" style="display:none;position:fixed;inset:0;z-index:9997;background:rgba(42,31,18,.55);align-items:center;justify-content:center">
+  <div style="background:var(--cream);border-radius:16px;width:100%;max-width:340px;padding:24px;margin:16px" onclick="event.stopPropagation()">
+    <div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--warm-dk);margin-bottom:4px">🔑 Change Password</div>
+    <div style="font-size:.76rem;color:var(--warm-mid);margin-bottom:16px" id="cpw-sub">Enter a new password for your account.</div>
+    <div class="fg"><label>New Password</label><input type="password" id="cpw-new" placeholder="At least 6 characters" style="width:100%;padding:10px 12px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.9rem"></div>
+    <div class="fg"><label>Confirm Password</label><input type="password" id="cpw-confirm" placeholder="Repeat new password" style="width:100%;padding:10px 12px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.9rem"></div>
+    <div id="cpw-err" style="display:none;font-size:.76rem;color:var(--lost-r);margin-bottom:10px"></div>
+    <div id="cpw-ok" style="display:none;font-size:.76rem;color:var(--found-g);font-weight:600;margin-bottom:10px">✓ Password updated successfully.</div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button id="cpw-btn" onclick="doChangePw()" style="flex:1;padding:10px;font-family:var(--font-display);font-size:.88rem;font-weight:700;background:var(--forest);color:var(--cream);border:none;border-radius:9px;cursor:pointer">Update Password</button>
+      <button onclick="closeChangePw()" style="padding:10px 16px;font-family:var(--font-body);font-size:.82rem;border-radius:9px;border:1.5px solid var(--cream-3);background:#fff;cursor:pointer">Cancel</button>
+    </div>
+  </div>
+</div>
 
 <nav id="nav">
   <div class="nav-logo">
@@ -1048,7 +1070,7 @@ function initFirebase() {
     if (user) {
       _isStaff = true;
       document.getElementById('login-overlay').style.display = 'none';
-      document.getElementById('staff-badge').style.display = 'block';
+      document.getElementById('staff-badge').style.display = 'flex';
       startFirestoreListener();
     }
   });
@@ -1108,9 +1130,12 @@ function selectShelterSession(name) {
   /* Update shelter selector if visible */
   var sel = document.getElementById('sh-selector');
   if (sel) sel.value = name;
-  /* Update staff badge to show shelter */
   var badge = document.getElementById('staff-badge');
-  if (badge) badge.innerHTML = '🔐 ' + name.split(' ')[0] + ' · Sign Out';
+  if (badge) {
+    badge.style.display = 'flex';
+    var nameBadge = document.getElementById('staff-name-badge');
+    if (nameBadge) nameBadge.textContent = '🔐 ' + name.split(' ')[0];
+  }
   bootApp();
 }
 
@@ -1149,6 +1174,63 @@ function doSignOut() {
     document.querySelectorAll('.tab-ops,.tab-admin').forEach(function(el){ el.style.display=''; });
   });
 }
+
+function openChangePw() {
+  document.getElementById('cpw-new').value = '';
+  document.getElementById('cpw-confirm').value = '';
+  document.getElementById('cpw-err').style.display = 'none';
+  document.getElementById('cpw-ok').style.display = 'none';
+  document.getElementById('cpw-btn').textContent = 'Update Password';
+  document.getElementById('cpw-btn').disabled = false;
+  document.getElementById('change-pw-overlay').style.display = 'flex';
+  setTimeout(function(){ document.getElementById('cpw-new').focus(); }, 100);
+}
+
+function closeChangePw() {
+  document.getElementById('change-pw-overlay').style.display = 'none';
+}
+
+function doChangePw() {
+  var newPw  = document.getElementById('cpw-new').value;
+  var confPw = document.getElementById('cpw-confirm').value;
+  var errEl  = document.getElementById('cpw-err');
+  var okEl   = document.getElementById('cpw-ok');
+  var btn    = document.getElementById('cpw-btn');
+  errEl.style.display = 'none';
+  okEl.style.display  = 'none';
+  if (!newPw || newPw.length < 6) {
+    errEl.textContent = 'Password must be at least 6 characters.';
+    errEl.style.display = 'block'; return;
+  }
+  if (newPw !== confPw) {
+    errEl.textContent = 'Passwords do not match.';
+    errEl.style.display = 'block'; return;
+  }
+  if (!USE_FIREBASE || !auth.currentUser) {
+    errEl.textContent = 'Not signed in.';
+    errEl.style.display = 'block'; return;
+  }
+  btn.textContent = 'Updating…'; btn.disabled = true;
+  auth.currentUser.updatePassword(newPw)
+    .then(function() {
+      btn.textContent = 'Update Password'; btn.disabled = false;
+      okEl.style.display = 'block';
+      document.getElementById('cpw-new').value = '';
+      document.getElementById('cpw-confirm').value = '';
+      setTimeout(closeChangePw, 2000);
+    })
+    .catch(function(e) {
+      btn.textContent = 'Update Password'; btn.disabled = false;
+      /* If session is stale Firebase requires re-auth */
+      if (e.code === 'auth/requires-recent-login') {
+        errEl.textContent = 'Session expired. Please sign out and sign back in, then change your password.';
+      } else {
+        errEl.textContent = e.message || 'Failed to update password.';
+      }
+      errEl.style.display = 'block';
+    });
+}
+
 
 function bootApp() {
   /* Dismiss the loading screen */
