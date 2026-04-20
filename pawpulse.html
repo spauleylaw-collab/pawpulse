@@ -1495,7 +1495,7 @@ function runActiveReport() {
       ['Animal','ID / Tag','Species','Color','Intake Source','Days In Care','Status'],
       recs.map(function(r){
         return [esc(r.name||'—'), esc(r.animalId||'—'), esc(r.species||'—'), esc(r.color||'—'),
-          esc(r.intakeSourceLabel||'—'), daysSince(r.date)+'d', esc((r.enforcement&&r.enforcement.internalStatus)||'Intake Logged')];
+          esc(r.intakeSourceLabel||'—'), Math.floor(daysSince(r.date))+'d', esc((r.enforcement&&r.enforcement.internalStatus)||'Intake Logged')];
       }));
 
   } else if (id === 'intake30' || id === 'intake60') {
@@ -1516,7 +1516,7 @@ function runActiveReport() {
       ['Animal','ID / Tag','Hold Type','Days Held','Daily Rate','Est. Cost','Status'],
       holds.map(function(r){
         var e = r.enforcement||{};
-        var d = daysSince(r.shelterHoldStart||r.date);
+        var d = Math.floor(daysSince(r.shelterHoldStart||r.date));
         var rate = e.dailyCost!=null?e.dailyCost:DAILY_RATE;
         return [esc(r.name||r.species||'Unknown'), esc(r.animalId||'—'), esc(r.holdType||'standard'),
           d+'d', '$'+rate+'/day', fmtMoney(d*rate), esc(e.internalStatus||'Active')];
@@ -1565,7 +1565,7 @@ function runActiveReport() {
         los_recs.sort(function(a,b){ return daysSince(b.date)-daysSince(a.date); })
           .map(function(r){
             return [esc(r.name||r.species||'Unknown'), esc(r.species||'—'),
-              r.date?new Date(r.date).toLocaleDateString():'—', daysSince(r.date)+'d',
+              r.date?new Date(r.date).toLocaleDateString():'—', Math.floor(daysSince(r.date))+'d',
               esc(r.reunited?'Reunited':r.adoptionStatus==='adopted'?'Adopted':r.adoptionStatus==='available'?'Adoption Ready':'In Care')];
           }));
 
@@ -5038,7 +5038,7 @@ function generateReport(type) {
       + kpiBox(fmtMoney(totalOrdered), 'Restitution Ordered', 'blue')
       + kpiBox(fmtMoney(totalPaid), 'Restitution Paid', 'green')
       + kpiBox(fmtMoney(totalOrdered-totalPaid), 'Outstanding Balance', (totalOrdered-totalPaid)>0?'alert':'green')
-      + kpiBox(activeHolds.reduce(function(s,r){return s+daysSinceDate(r.shelterHoldStart||r.date);},0)+'d', 'Total Hold Days', '')
+      + kpiBox(activeHolds.reduce(function(s,r){return s+Math.floor(daysSinceDate(r.shelterHoldStart||r.date));},0)+'d', 'Total Hold Days', '')
       + '</div>'
 
       + '<h3>Active Shelter Holds</h3>'
