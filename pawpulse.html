@@ -532,7 +532,7 @@ textarea{min-height:64px}
 </div>
 
 <!-- Staff badge shown when signed in -->
-<div id="staff-badge" style="display:none;position:fixed;bottom:16px;left:16px;z-index:800;display:none;flex-direction:column;gap:5px">
+<div id="staff-badge" style="display:none;position:fixed;top:8px;right:10px;z-index:800;flex-direction:row;gap:5px;align-items:center">
   <div id="staff-name-badge" style="background:var(--forest);color:var(--cream);border-radius:999px;padding:5px 12px;font-size:.7rem;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.2);white-space:nowrap">🔐 Staff</div>
   <div style="display:flex;gap:5px">
     <button onclick="openChangePw()" style="flex:1;padding:4px 10px;font-size:.66rem;font-weight:600;border-radius:999px;border:1px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body);color:var(--warm-mid)">🔑 Change PW</button>
@@ -3446,7 +3446,7 @@ function showToast(type) {
 })();
 
 var shelters = [
-  { name:'Heartland Pet Connection',    address:'1807 W J St, Hastings, NE 68901', phone:'(402) 462-7387', website:'heartlandpetconnection.com', lat:40.5698, lng:-98.3910, type:'shelter' },
+  { name:'Heartland Pet Connection',    address:'1807 W J St, Hastings, NE 68901', phone:'(402) 462-7387', website:'heartlandpetconnection.com', lat:40.5698, lng:-98.4110, type:'shelter' },
   { name:'Adams County Humane Society', address:'Hastings, NE',                     phone:'',               website:'', lat:40.5845, lng:-98.3892, type:'shelter' },
   { name:'Start Over Rover',            address:'Hastings, NE',                     phone:'',               website:'', lat:40.5900, lng:-98.3870, type:'shelter' }
 ];
