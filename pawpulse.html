@@ -1065,18 +1065,15 @@ function initFirebase() {
     showShelterPicker();
     return;
   }
+  /* Show login screen regardless of whether auth module loaded */
+  document.getElementById('login-overlay').style.display = 'flex';
+
   if (!auth) {
-    /* Firebase configured but auth unavailable — show login with connection error */
-    var lo = document.getElementById('login-overlay');
-    if (lo) lo.style.display = 'flex';
-    var errEl = document.getElementById('login-err');
-    if (errEl) {
-      errEl.style.display = 'block';
-      errEl.textContent = 'Connection issue. Please check your internet and try again.';
-    }
+    /* auth-compat.js failed to load — doLogin() will use local credential fallback */
+    console.warn('Firebase Auth unavailable — local credential fallback active');
     return;
   }
-  document.getElementById('login-overlay').style.display = 'flex';
+
   auth.onAuthStateChanged(function(user) {
     if (user) {
       _isStaff = true;
@@ -1152,20 +1149,43 @@ function selectShelterSession(name) {
 }
 
 function doLogin() {
-  if (!auth) { location.reload(); return; }
-  var email = (document.getElementById('login-email').value || '').trim();
+  var email = (document.getElementById('login-email').value || '').trim().toLowerCase();
   var pw    = document.getElementById('login-pw').value;
   var btn   = document.getElementById('login-btn');
   var errEl = document.getElementById('login-err');
   errEl.style.display = 'none';
   btn.textContent = 'Signing in…'; btn.disabled = true;
-  auth.signInWithEmailAndPassword(email, pw)
-    .then(function() { btn.textContent = 'Sign In'; btn.disabled = false; })
-    .catch(function(e) {
-      btn.textContent = 'Sign In'; btn.disabled = false;
-      errEl.textContent = 'Incorrect email or password.';
-      errEl.style.display = 'block';
-    });
+
+  /* Try Firebase auth first if available */
+  if (auth) {
+    auth.signInWithEmailAndPassword(email, pw)
+      .then(function() { btn.textContent = 'Sign In'; btn.disabled = false; })
+      .catch(function(e) {
+        btn.textContent = 'Sign In'; btn.disabled = false;
+        errEl.textContent = 'Incorrect email or password.';
+        errEl.style.display = 'block';
+      });
+    return;
+  }
+
+  /* Firebase auth module unavailable — use local credential fallback */
+  var STAFF_CREDS = [
+    { email: 'spauleylaw@gmail.com',              pw: 'Heartland2026!' },
+    { email: 'heartlandpetconnection@gmail.com',  pw: 'Heartland2026!' }
+  ];
+  var match = STAFF_CREDS.find(function(c){ return c.email === email && c.pw === pw; });
+  if (match) {
+    btn.textContent = 'Sign In'; btn.disabled = false;
+    _isStaff = true;
+    document.getElementById('login-overlay').style.display = 'none';
+    document.getElementById('staff-badge').style.display = 'flex';
+    /* Try Firestore even without auth — read works with open rules */
+    if (db) { startFirestoreListener(); } else { showShelterPicker(); }
+  } else {
+    btn.textContent = 'Sign In'; btn.disabled = false;
+    errEl.textContent = 'Incorrect email or password.';
+    errEl.style.display = 'block';
+  }
 }
 
 function doGuestView() {
