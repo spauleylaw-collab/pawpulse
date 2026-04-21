@@ -1465,6 +1465,7 @@ function openAnimalEdit(id) {
     + '<div class="fg" style="margin-top:10px"><label>About (adoption description)</label>'
     + '<textarea id="ae-about" style="min-height:52px">' + esc(r.about||'') + '</textarea></div>'
     + '<div class="fg"><label>Tags (comma separated)</label><input type="text" id="ae-tags" value="' + esc(r.tags||'') + '" placeholder="e.g. Friendly, House-trained, Good with kids"></div>'
+    + '<div class="fg"><label>Adoption Fee ($)</label><input type="number" id="ae-fee" value="' + (r.adoptionFee!=null?r.adoptionFee:'') + '" min="0" step="1" placeholder="e.g. 75"></div>'
     + (r.intakeType==='hold'
       ? '<div class="fg"><label>Daily Hold Rate ($)</label><input type="number" id="ae-dailyrate" value="' + ((r.enforcement&&r.enforcement.dailyCost!=null)?r.enforcement.dailyCost:DAILY_RATE) + '" min="0" step="1"></div>'
       : '')
@@ -1490,6 +1491,9 @@ function saveAnimalEdit(id) {
   r.address    = ((document.getElementById('ae-address')||{}).value||'').trim();
   r.about      = ((document.getElementById('ae-about')||{}).value||'').trim();
   r.tags       = ((document.getElementById('ae-tags')||{}).value||'').trim();
+  var feeEl = document.getElementById('ae-fee');
+  if (feeEl && feeEl.value !== '') r.adoptionFee = parseFloat(feeEl.value) || 0;
+  else if (feeEl && feeEl.value === '') r.adoptionFee = null;
   var newAdopt = (document.getElementById('ae-adopt')||{}).value;
   if (newAdopt !== r.adoptionStatus) {
     r.adoptionStatus = newAdopt || undefined;
@@ -1519,18 +1523,13 @@ function closeAnimalEdit() {
 
 /* ── REPORTS WORKSPACE ───────────────────────────────────────────────── */
 var REPORT_TYPES = [
-  { id:'incare',    icon:'🏥', label:'Animals Currently In Care' },
+  { id:'incare',    icon:'🏥', label:'Animals In Care' },
   { id:'intake30',  icon:'📅', label:'Intake — Last 30 Days' },
-  { id:'intake60',  icon:'📅', label:'Intake — Last 60 Days' },
-  { id:'holds',     icon:'⚠️', label:'Active Holds Summary' },
-  { id:'costs',     icon:'💰', label:'Cost Breakdown (Holds)' },
+  { id:'holds',     icon:'⚠️', label:'Active Holds' },
+  { id:'costs',     icon:'💰', label:'Cost Breakdown' },
   { id:'adopt',     icon:'🌟', label:'Adoption Pipeline' },
-  { id:'los',       icon:'📊', label:'Length of Stay Report' },
   { id:'outcomes',  icon:'🎉', label:'Outcomes Report' },
   { id:'species',   icon:'🐾', label:'Species Breakdown' },
-  { id:'internal',  icon:'📄', label:'Full Internal Report' },
-  { id:'council',   icon:'🏛️', label:'City Council Report' },
-  { id:'donor',     icon:'💜', label:'Donor / Grant Report' },
   { id:'grants',    icon:'💵', label:'AI Grant Opportunities', highlight: true },
 ];
 
@@ -3425,7 +3424,7 @@ function showToast(type) {
 })();
 
 var shelters = [
-  { name:'Heartland Pet Connection',    address:'1807 W J St, Hastings, NE 68901', phone:'(402) 462-7387', website:'heartlandpetconnection.com', lat:40.5748, lng:-98.4100, type:'shelter' },
+  { name:'Heartland Pet Connection',    address:'1807 W J St, Hastings, NE 68901', phone:'(402) 462-7387', website:'heartlandpetconnection.com', lat:40.5698, lng:-98.3910, type:'shelter' },
   { name:'Adams County Humane Society', address:'Hastings, NE',                     phone:'',               website:'', lat:40.5845, lng:-98.3892, type:'shelter' },
   { name:'Start Over Rover',            address:'Hastings, NE',                     phone:'',               website:'', lat:40.5900, lng:-98.3870, type:'shelter' }
 ];
@@ -6144,10 +6143,11 @@ function renderAdoptView() {
       + (about ? '<div style="font-size:.78rem;color:var(--warm-dk);font-style:italic;line-height:1.45;margin-bottom:7px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">' + esc(about) + '</div>' : '')
       /* Tags */
       + (tags.length ? '<div class="adopt-tags" style="margin-bottom:8px">' + tags.map(function(t){ return '<span class="adopt-tag">' + esc(t.trim()) + '</span>'; }).join('') + '</div>' : '')
-      /* Shelter + days — grouped */
+      /* Shelter + days + fee — grouped */
       + '<div style="margin-bottom:10px">'
       + '<div style="font-size:.7rem;color:var(--warm-mid);margin-bottom:2px">📍 ' + esc(shelter) + '</div>'
       + '<div style="font-size:.72rem;font-weight:700;color:' + urgencyColor + '">' + daysLabel + '</div>'
+      + (r.adoptionFee != null ? '<div style="font-size:.72rem;color:var(--warm-mid);margin-top:2px">Adoption fee: <strong style="color:var(--warm-dk)">$' + r.adoptionFee + '</strong></div>' : '')
       + '</div>'
       /* Single strong CTA */
       + '<button class="adopt-ask-btn" onclick="contactShelterForAdoption(' + r.id + ')">👉 Contact to Adopt</button>'
