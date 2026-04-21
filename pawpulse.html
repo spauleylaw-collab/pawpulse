@@ -1457,81 +1457,226 @@ function openAnimalEdit(id) {
   var body    = document.getElementById('animal-edit-body');
   var title   = document.getElementById('animal-edit-title');
   if (!overlay || !body) return;
-  title.textContent = 'Edit · ' + (r.name||r.species||'Animal Record');
+  title.textContent = (r.name || r.species || 'Animal Record') + ' — Full Record';
   overlay.style.display = 'flex';
 
   var today = new Date().toISOString().slice(0,10);
+  var med   = getMed(r) || {};
+
+  /* Master status — drives everything */
+  var STATUS_OPTS = [
+    { val:'intake',   label:'🟡 Initial Intake',      color:'#8a6010' },
+    { val:'review',   label:'🔍 Under Review',         color:'#2050a0' },
+    { val:'hold',     label:'⚠️ On Hold',              color:'#c04010' },
+    { val:'available',label:'🌟 Adoption Ready',       color:'var(--found-g)' },
+    { val:'adopted',  label:'🎉 Adopted',              color:'var(--found-g)' },
+    { val:'reunited', label:'🏠 Reunited',             color:'var(--forest)' },
+    { val:'transfer', label:'🚐 Transferred',          color:'#6040c0' },
+    { val:'euth',     label:'⚫ Euthanized',           color:'#606060' },
+  ];
+
+  /* Determine current master status */
+  var curStatus = r.masterStatus || (
+    r.euthanized ? 'euth' :
+    r.reunited   ? 'reunited' :
+    r.adoptionStatus === 'adopted'   ? 'adopted' :
+    r.adoptionStatus === 'available' ? 'available' :
+    r.intakeType === 'hold'          ? 'hold' :
+    r.enforcement && r.enforcement.internalStatus === 'Under Review' ? 'review' :
+    'intake'
+  );
+
   body.innerHTML =
-    '<div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--warm-mid);margin-bottom:12px">Animal Information</div>'
-    + '<div class="fr"><div class="fg" style="margin:0"><label>Name</label><input type="text" id="ae-name" value="' + esc(r.name||'') + '" placeholder="Leave blank if unknown"></div>'
-    + '<div class="fg" style="margin:0"><label>Animal ID / Tag #</label><input type="text" id="ae-animalid" value="' + esc(r.animalId||'') + '"></div></div>'
-    + '<div class="fr" style="margin-top:10px"><div class="fg" style="margin:0"><label>Species</label>'
-    + '<select id="ae-species"><option value="">Select…</option><option' + (r.species==='Dog'?' selected':'') + '>Dog</option><option' + (r.species==='Cat'?' selected':'') + '>Cat</option><option' + (r.species==='Bird'?' selected':'') + '>Bird</option><option' + (r.species==='Rabbit'?' selected':'') + '>Rabbit</option><option' + (r.species==='Other'?' selected':'') + '>Other</option></select></div>'
-    + '<div class="fg" style="margin:0"><label>Sex</label>'
-    + '<select id="ae-sex"><option value="">Unknown</option><option' + (r.sex==='Male'?' selected':'') + '>Male</option><option' + (r.sex==='Female'?' selected':'') + '>Female</option></select></div></div>'
-    + '<div class="fr" style="margin-top:10px"><div class="fg" style="margin:0"><label>Breed</label><input type="text" id="ae-breed" value="' + esc(r.breed||'') + '"></div>'
-    + '<div class="fg" style="margin:0"><label>Color / Markings</label><input type="text" id="ae-color" value="' + esc(r.color||'') + '"></div></div>'
-    + '<div class="fg" style="margin-top:10px"><label>Description / Condition</label>'
-    + '<textarea id="ae-desc" style="min-height:60px">' + esc(r.desc||'') + '</textarea></div>'
-    + '<div class="fg"><label>Location Found / Address</label><input type="text" id="ae-address" value="' + esc(r.address||'') + '"></div>'
+    /* ── Master Status ── */
+    '<div style="background:var(--cream-2);border-radius:10px;padding:12px 14px;margin-bottom:16px">'
+    + '<label style="font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--amber);display:block;margin-bottom:6px">Animal Status</label>'
+    + '<select id="ae-status" onchange="updateEditSections()" style="width:100%;font-size:.9rem;font-weight:700;padding:8px 10px;border-radius:8px;border:2px solid var(--cream-3);font-family:var(--font-body)">'
+    + STATUS_OPTS.map(function(o){ return '<option value="' + o.val + '"' + (curStatus===o.val?' selected':'') + '>' + o.label + '</option>'; }).join('')
+    + '</select></div>'
 
-    + '<div style="margin-top:16px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--warm-mid);margin-bottom:10px">Status</div>'
-    + '<div class="fr"><div class="fg" style="margin:0"><label>Adoption Status</label>'
-    + '<select id="ae-adopt"><option value="">None</option><option value="available"' + (r.adoptionStatus==='available'?' selected':'') + '>Adoption Ready</option><option value="pending"' + (r.adoptionStatus==='pending'?' selected':'') + '>Pending</option><option value="adopted"' + (r.adoptionStatus==='adopted'?' selected':'') + '>Adopted</option></select></div>'
-    + '<div class="fg" style="margin:0"><label>Internal Status</label>'
-    + '<select id="ae-intstatus"><option value="Intake Logged"' + ((r.enforcement&&r.enforcement.internalStatus)==='Intake Logged'?' selected':'') + '>Intake Logged</option><option value="Shelter Hold Active"' + ((r.enforcement&&r.enforcement.internalStatus)==='Shelter Hold Active'?' selected':'') + '>Shelter Hold Active</option><option value="AC Review"' + ((r.enforcement&&r.enforcement.internalStatus)==='AC Review'?' selected':'') + '>AC Review</option><option value="Citation Issued"' + ((r.enforcement&&r.enforcement.internalStatus)==='Citation Issued'?' selected':'') + '>Citation Issued</option><option value="Court Pending"' + ((r.enforcement&&r.enforcement.internalStatus)==='Court Pending'?' selected':'') + '>Court Pending</option><option value="Adjudicated"' + ((r.enforcement&&r.enforcement.internalStatus)==='Adjudicated'?' selected':'') + '>Adjudicated</option><option value="Closed"' + ((r.enforcement&&r.enforcement.internalStatus)==='Closed'?' selected':'') + '>Closed</option></select></div></div>'
+    /* ── Section: Identity ── */
+    + editSection('identity', '🐾 Identity', true,
+        '<div class="fr"><div class="fg" style="margin:0"><label>Name</label><input type="text" id="ae-name" value="' + esc(r.name||'') + '" placeholder="Leave blank if unknown"></div>'
+        + '<div class="fg" style="margin:0"><label>Animal ID / Tag #</label><input type="text" id="ae-animalid" value="' + esc(r.animalId||'') + '"></div></div>'
+        + '<div class="fr" style="margin-top:8px"><div class="fg" style="margin:0"><label>Species</label>'
+        + '<select id="ae-species"><option value="">Select…</option><option' + (r.species==='Dog'?' selected':'') + '>Dog</option><option' + (r.species==='Cat'?' selected':'') + '>Cat</option><option' + (r.species==='Bird'?' selected':'') + '>Bird</option><option' + (r.species==='Rabbit'?' selected':'') + '>Rabbit</option><option' + (r.species==='Other'?' selected':'') + '>Other</option></select></div>'
+        + '<div class="fg" style="margin:0"><label>Sex</label><select id="ae-sex"><option value="">Unknown</option><option' + (r.sex==='Male'?' selected':'') + '>Male</option><option' + (r.sex==='Female'?' selected':'') + '>Female</option></select></div></div>'
+        + '<div class="fr" style="margin-top:8px"><div class="fg" style="margin:0"><label>Breed</label><input type="text" id="ae-breed" value="' + esc(r.breed||'') + '"></div>'
+        + '<div class="fg" style="margin:0"><label>Estimated Age</label><input type="text" id="ae-age" value="' + esc(r.age||'') + '" placeholder="e.g. 2 years, puppy"></div></div>'
+        + '<div class="fr" style="margin-top:8px"><div class="fg" style="margin:0"><label>Color / Markings</label><input type="text" id="ae-color" value="' + esc(r.color||'') + '"></div>'
+        + '<div class="fg" style="margin:0"><label>Microchip #</label><input type="text" id="ae-chip" value="' + esc(r.chip||'') + '"></div></div>'
+        + '<div class="fg" style="margin-top:8px"><label>Intake Date</label><input type="date" id="ae-intakedate" value="' + (r.date?r.date.slice(0,10):today) + '"></div>'
+        + '<div class="fg"><label>Found Location / Address</label><input type="text" id="ae-address" value="' + esc(r.address||'') + '"></div>'
+        + '<div class="fg"><label>Description / Condition at Intake</label><textarea id="ae-desc" style="min-height:60px">' + esc(r.desc||'') + '</textarea></div>')
 
-    + '<div style="margin-top:16px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--warm-mid);margin-bottom:10px">Dates &amp; Notes</div>'
-    + '<div class="fr"><div class="fg" style="margin:0"><label>Intake Date</label><input type="date" id="ae-intakedate" value="' + (r.date?r.date.slice(0,10):today) + '"></div>'
-    + '<div class="fg" style="margin:0"><label>Hold Start Date</label><input type="date" id="ae-holdstart" value="' + (r.shelterHoldStart?r.shelterHoldStart.slice(0,10):'') + '" ' + (r.intakeType!=='hold'?'disabled style="opacity:.5"':'') + '></div></div>'
-    + '<div class="fg" style="margin-top:10px"><label>About (adoption description)</label>'
-    + '<textarea id="ae-about" style="min-height:52px">' + esc(r.about||'') + '</textarea></div>'
-    + '<div class="fg"><label>Tags (comma separated)</label><input type="text" id="ae-tags" value="' + esc(r.tags||'') + '" placeholder="e.g. Friendly, House-trained, Good with kids"></div>'
-    + '<div class="fg"><label>Adoption Fee ($)</label><input type="number" id="ae-fee" value="' + (r.adoptionFee!=null?r.adoptionFee:'') + '" min="0" step="1" placeholder="e.g. 75"></div>'
-    + (r.intakeType==='hold'
-      ? '<div class="fg"><label>Daily Hold Rate ($)</label><input type="number" id="ae-dailyrate" value="' + ((r.enforcement&&r.enforcement.dailyCost!=null)?r.enforcement.dailyCost:DAILY_RATE) + '" min="0" step="1"></div>'
-      : '')
+    /* ── Section: Medical ── */
+    + editSection('medical', '🏥 Medical & Health', false,
+        '<div class="fr"><div class="fg" style="margin:0"><label>Health Status</label>'
+        + '<select id="ae-health"><option value="">Unknown</option>'
+        + ['Healthy','Minor Issues','Needs Treatment','Critical','Quarantine'].map(function(s){ return '<option' + (med.healthStatus===s?' selected':'') + '>' + s + '</option>'; }).join('')
+        + '</select></div>'
+        + '<div class="fg" style="margin:0"><label>Spay/Neuter</label>'
+        + '<select id="ae-spayneuter"><option value="">Unknown</option><option value="yes"' + (med.spayNeuter==='yes'?' selected':'') + '>Yes</option><option value="no"' + (med.spayNeuter==='no'?' selected':'') + '>No</option><option value="scheduled"' + (med.spayNeuter==='scheduled'?' selected':'') + '>Scheduled</option></select></div></div>'
+        + '<div class="fr" style="margin-top:8px"><div class="fg" style="margin:0"><label>Vaccinations</label>'
+        + '<select id="ae-vacc"><option value="">Unknown</option><option value="current"' + (med.vaccinations==='current'?' selected':'') + '>Current</option><option value="partial"' + (med.vaccinations==='partial'?' selected':'') + '>Partial</option><option value="none"' + (med.vaccinations==='none'?' selected':'') + '>None</option></select></div>'
+        + '<div class="fg" style="margin:0"><label>Parasite Treatment</label>'
+        + '<select id="ae-parasite"><option value="">None</option><option value="flea"' + (med.parasite==='flea'?' selected':'') + '>Flea/Tick</option><option value="deworm"' + (med.parasite==='deworm'?' selected':'') + '>Dewormer</option><option value="both"' + (med.parasite==='both'?' selected':'') + '>Both</option></select></div></div>'
+        + '<div class="fr" style="margin-top:8px"><div class="fg" style="margin:0"><label>Spay/Neuter Cost ($)</label><input type="number" id="ae-sncost" value="' + (med.spayNeuterCost||'') + '" min="0" step="1"></div>'
+        + '<div class="fg" style="margin:0"><label>Vaccination Cost ($)</label><input type="number" id="ae-vacccost" value="' + (med.vaccinationCost||'') + '" min="0" step="1"></div></div>'
+        + '<div class="fr" style="margin-top:8px"><div class="fg" style="margin:0"><label>Vet Visit Cost ($)</label><input type="number" id="ae-vetcost" value="' + (med.vetCost||'') + '" min="0" step="1"></div>'
+        + '<div class="fg" style="margin:0"><label>Other Medical Cost ($)</label><input type="number" id="ae-othercost" value="' + (med.otherCost||'') + '" min="0" step="1"></div></div>'
+        + '<div class="fg" style="margin-top:8px"><label>Medical Notes</label><textarea id="ae-mednotes" style="min-height:52px">' + esc(med.notes||'') + '</textarea></div>')
 
-    + '<div style="display:flex;gap:8px;margin-top:20px">'
-    + '<button onclick="saveAnimalEdit(' + r.id + ')" class="sh-btn primary" style="flex:1">✓ Save Changes</button>'
-    + '<button onclick="closeAnimalEdit()" class="sh-btn">Cancel</button>'
+    /* ── Section: Behavioral ── */
+    + editSection('behavioral', '🐶 Behavioral Assessment', false,
+        '<div class="fr"><div class="fg" style="margin:0"><label>Temperament Test</label>'
+        + '<select id="ae-temper"><option value="">Pending</option><option value="pass"' + (r.temperament==='pass'?' selected':'') + '>✅ Pass</option><option value="conditional"' + (r.temperament==='conditional'?' selected':'') + '>⚠️ Conditional</option><option value="fail"' + (r.temperament==='fail'?' selected':'') + '>❌ Fail</option></select></div>'
+        + '<div class="fg" style="margin:0"><label>Energy Level</label>'
+        + '<select id="ae-energy"><option value="">Unknown</option><option value="low"' + (r.energy==='low'?' selected':'') + '>Low</option><option value="medium"' + (r.energy==='medium'?' selected':'') + '>Medium</option><option value="high"' + (r.energy==='high'?' selected':'') + '>High</option></select></div></div>'
+        + '<div class="fr" style="margin-top:8px">'
+        + '<div class="fg" style="margin:0"><label>Good with Dogs</label><select id="ae-gdogs"><option value="">Unknown</option><option value="yes"' + (r.goodWithDogs==='yes'?' selected':'') + '>Yes</option><option value="no"' + (r.goodWithDogs==='no'?' selected':'') + '>No</option></select></div>'
+        + '<div class="fg" style="margin:0"><label>Good with Cats</label><select id="ae-gcats"><option value="">Unknown</option><option value="yes"' + (r.goodWithCats==='yes'?' selected':'') + '>Yes</option><option value="no"' + (r.goodWithCats==='no'?' selected':'') + '>No</option></select></div>'
+        + '<div class="fg" style="margin:0"><label>Good with Kids</label><select id="ae-gkids"><option value="">Unknown</option><option value="yes"' + (r.goodWithKids==='yes'?' selected':'') + '>Yes</option><option value="no"' + (r.goodWithKids==='no'?' selected':'') + '>No</option></select></div></div>'
+        + '<div class="fr" style="margin-top:8px">'
+        + '<div class="fg" style="margin:0"><label>House Trained</label><select id="ae-housetrain"><option value="">Unknown</option><option value="yes"' + (r.houseTrained==='yes'?' selected':'') + '>Yes</option><option value="no"' + (r.houseTrained==='no'?' selected':'') + '>No</option></select></div>'
+        + '<div class="fg" style="margin:0"><label>Leash Trained</label><select id="ae-leash"><option value="">Unknown</option><option value="yes"' + (r.leashTrained==='yes'?' selected':'') + '>Yes</option><option value="no"' + (r.leashTrained==='no'?' selected':'') + '>No</option></select></div></div>'
+        + '<div class="fg" style="margin-top:8px"><label>Special Needs / Behavioral Notes</label><textarea id="ae-beh-notes" style="min-height:52px">' + esc(r.behaviorNotes||'') + '</textarea></div>')
+
+    /* ── Section: Hold / Legal ── */
+    + editSection('hold', '⚖️ Hold & Legal', curStatus==='hold',
+        '<div class="fr"><div class="fg" style="margin:0"><label>Hold Type</label>'
+        + '<select id="ae-holdtype"><option value="standard"' + (r.holdType==='standard'?' selected':'') + '>Standard</option><option value="bite"' + (r.holdType==='bite'?' selected':'') + '>Bite Hold</option><option value="dangerous"' + (r.holdType==='dangerous'?' selected':'') + '>Dangerous Animal</option><option value="ac"' + (r.holdType==='ac'?' selected':'') + '>AC Hold</option><option value="court"' + (r.holdType==='court'?' selected':'') + '>Court Hold</option></select></div>'
+        + '<div class="fg" style="margin:0"><label>Hold Start Date</label><input type="date" id="ae-holdstart" value="' + (r.shelterHoldStart?r.shelterHoldStart.slice(0,10):'') + '"></div></div>'
+        + '<div class="fr" style="margin-top:8px"><div class="fg" style="margin:0"><label>Daily Rate ($)</label><input type="number" id="ae-dailyrate" value="' + ((r.enforcement&&r.enforcement.dailyCost!=null)?r.enforcement.dailyCost:DAILY_RATE) + '" min="0" step="1"></div>'
+        + '<div class="fg" style="margin:0"><label>Citation #</label><input type="text" id="ae-citation" value="' + esc(r.citationNum||'') + '"></div></div>'
+        + '<div class="fg" style="margin-top:8px"><label>Legal / Court Notes</label><textarea id="ae-legal-notes" style="min-height:52px">' + esc((r.enforcement&&r.enforcement.legalNotes)||'') + '</textarea></div>')
+
+    /* ── Section: Adoption ── */
+    + editSection('adoption', '🌟 Adoption', curStatus==='available',
+        '<div class="fr"><div class="fg" style="margin:0"><label>Date Available</label><input type="date" id="ae-dateAvail" value="' + (r.dateAvailable?r.dateAvailable.slice(0,10):today) + '"></div>'
+        + '<div class="fg" style="margin:0"><label>Adoption Fee ($)</label><input type="number" id="ae-fee" value="' + (r.adoptionFee!=null?r.adoptionFee:'') + '" min="0" step="1" placeholder="75"></div></div>'
+        + '<div class="fg" style="margin-top:8px"><label>Tags (comma separated)</label><input type="text" id="ae-tags" value="' + esc(r.tags||'') + '" placeholder="Friendly, House-trained, Good with kids"></div>'
+        + '<div class="fg"><label>Public Profile / About</label><textarea id="ae-about" style="min-height:60px">' + esc(r.about||'') + '</textarea></div>')
+
+    /* ── Save ── */
+    + '<div style="display:flex;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid var(--cream-3)">'
+    + '<button onclick="saveAnimalEdit(' + r.id + ')" class="sh-btn primary" style="flex:1;padding:12px;font-size:.9rem">✓ Save Changes</button>'
+    + '<button onclick="closeAnimalEdit()" class="sh-btn" style="padding:12px">Cancel</button>'
     + '</div>';
 
   setTimeout(function(){ injectMicButtons(body); }, 50);
 }
 
+function editSection(id, label, openByDefault, content) {
+  var isOpen = openByDefault;
+  return '<div class="edit-section" style="border:1px solid var(--cream-3);border-radius:10px;margin-bottom:10px;overflow:hidden">'
+    + '<button onclick="toggleEditSection(\'' + id + '\')" style="width:100%;padding:11px 14px;background:var(--cream-2);border:none;cursor:pointer;font-family:var(--font-body);font-size:.78rem;font-weight:700;color:var(--warm-dk);text-align:left;display:flex;justify-content:space-between;align-items:center">'
+    + '<span>' + label + '</span><span id="es-arrow-' + id + '" style="transition:transform .2s;display:inline-block;' + (isOpen?'transform:rotate(0deg)':'transform:rotate(-90deg)') + '">▾</span>'
+    + '</button>'
+    + '<div id="es-body-' + id + '" style="padding:' + (isOpen?'14px':'0') + ';max-height:' + (isOpen?'1000px':'0') + ';overflow:hidden;transition:max-height .25s ease,padding .25s ease">'
+    + content
+    + '</div></div>';
+}
+
+function toggleEditSection(id) {
+  var body  = document.getElementById('es-body-' + id);
+  var arrow = document.getElementById('es-arrow-' + id);
+  if (!body) return;
+  var open = body.style.maxHeight !== '0px' && body.style.maxHeight !== '';
+  body.style.maxHeight  = open ? '0px' : '1000px';
+  body.style.padding    = open ? '0' : '14px';
+  if (arrow) arrow.style.transform = open ? 'rotate(-90deg)' : 'rotate(0deg)';
+}
+
+function updateEditSections() {
+  /* Auto-open relevant sections based on master status */
+  var status = (document.getElementById('ae-status')||{}).value;
+  if (status === 'hold') {
+    var hb = document.getElementById('es-body-hold');
+    if (hb && hb.style.maxHeight === '0px') toggleEditSection('hold');
+  }
+  if (status === 'available') {
+    var ab = document.getElementById('es-body-adoption');
+    if (ab && ab.style.maxHeight === '0px') toggleEditSection('adoption');
+  }
+}
+
+
 function saveAnimalEdit(id) {
   var r = reports.find(function(x){ return x.id===id; });
   if (!r) return;
+
+  /* Core identity */
   r.name       = ((document.getElementById('ae-name')||{}).value||'').trim();
   r.animalId   = ((document.getElementById('ae-animalid')||{}).value||'').trim();
   r.species    = (document.getElementById('ae-species')||{}).value;
   r.sex        = (document.getElementById('ae-sex')||{}).value;
   r.breed      = ((document.getElementById('ae-breed')||{}).value||'').trim();
+  r.age        = ((document.getElementById('ae-age')||{}).value||'').trim();
   r.color      = ((document.getElementById('ae-color')||{}).value||'').trim();
+  r.chip       = ((document.getElementById('ae-chip')||{}).value||'').trim();
   r.desc       = ((document.getElementById('ae-desc')||{}).value||'').trim();
   r.address    = ((document.getElementById('ae-address')||{}).value||'').trim();
-  r.about      = ((document.getElementById('ae-about')||{}).value||'').trim();
-  r.tags       = ((document.getElementById('ae-tags')||{}).value||'').trim();
+  var id2 = document.getElementById('ae-intakedate');
+  if (id2 && id2.value) r.date = id2.value + 'T00:00:00';
+
+  /* Master status — drives adoptionStatus, reunited, euthanized */
+  var masterStatus = (document.getElementById('ae-status')||{}).value;
+  r.masterStatus = masterStatus;
+  r.reunited    = masterStatus === 'reunited';
+  r.euthanized  = masterStatus === 'euth';
+  if (masterStatus === 'adopted') {
+    r.adoptionStatus = 'adopted';
+  } else if (masterStatus === 'available') {
+    r.adoptionStatus = 'available';
+    if (!r.dateAvailable) r.dateAvailable = new Date().toISOString();
+  } else {
+    r.adoptionStatus = '';
+  }
+
+  /* Medical */
+  if (!r.medical) r.medical = {};
+  r.medical.healthStatus    = (document.getElementById('ae-health')||{}).value || '';
+  r.medical.spayNeuter      = (document.getElementById('ae-spayneuter')||{}).value || '';
+  r.medical.vaccinations    = (document.getElementById('ae-vacc')||{}).value || '';
+  r.medical.parasite        = (document.getElementById('ae-parasite')||{}).value || '';
+  r.medical.spayNeuterCost  = parseFloat((document.getElementById('ae-sncost')||{}).value) || 0;
+  r.medical.vaccinationCost = parseFloat((document.getElementById('ae-vacccost')||{}).value) || 0;
+  r.medical.vetCost         = parseFloat((document.getElementById('ae-vetcost')||{}).value) || 0;
+  r.medical.otherCost       = parseFloat((document.getElementById('ae-othercost')||{}).value) || 0;
+  r.medical.notes           = ((document.getElementById('ae-mednotes')||{}).value||'').trim();
+
+  /* Behavioral */
+  r.temperament   = (document.getElementById('ae-temper')||{}).value || '';
+  r.energy        = (document.getElementById('ae-energy')||{}).value || '';
+  r.goodWithDogs  = (document.getElementById('ae-gdogs')||{}).value || '';
+  r.goodWithCats  = (document.getElementById('ae-gcats')||{}).value || '';
+  r.goodWithKids  = (document.getElementById('ae-gkids')||{}).value || '';
+  r.houseTrained  = (document.getElementById('ae-housetrain')||{}).value || '';
+  r.leashTrained  = (document.getElementById('ae-leash')||{}).value || '';
+  r.behaviorNotes = ((document.getElementById('ae-beh-notes')||{}).value||'').trim();
+
+  /* Hold / Legal */
+  if (masterStatus === 'hold') {
+    r.intakeType = 'hold';
+    r.holdType   = (document.getElementById('ae-holdtype')||{}).value || 'standard';
+    var hd = document.getElementById('ae-holdstart');
+    if (hd && hd.value) r.shelterHoldStart = hd.value + 'T00:00:00';
+    r.citationNum = ((document.getElementById('ae-citation')||{}).value||'').trim();
+    if (!r.enforcement) r.enforcement = {};
+    r.enforcement.dailyCost  = parseFloat((document.getElementById('ae-dailyrate')||{}).value) || DAILY_RATE;
+    r.enforcement.legalNotes = ((document.getElementById('ae-legal-notes')||{}).value||'').trim();
+    r.enforcement.internalStatus = 'Shelter Hold Active';
+  }
+
+  /* Adoption */
   var feeEl = document.getElementById('ae-fee');
   if (feeEl && feeEl.value !== '') r.adoptionFee = parseFloat(feeEl.value) || 0;
   else if (feeEl && feeEl.value === '') r.adoptionFee = null;
-  var newAdopt = (document.getElementById('ae-adopt')||{}).value;
-  if (newAdopt !== r.adoptionStatus) {
-    r.adoptionStatus = newAdopt || undefined;
-    if (newAdopt==='available' && !r.dateAvailable) r.dateAvailable = new Date().toISOString();
-  }
-  var newStatus = (document.getElementById('ae-intstatus')||{}).value;
-  if (newStatus) {
-    if (!r.enforcement) r.enforcement = {};
-    r.enforcement.internalStatus = newStatus;
-  }
-  var hd = document.getElementById('ae-holdstart');
-  if (hd && hd.value) r.shelterHoldStart = hd.value + 'T00:00:00';
-  var dr = document.getElementById('ae-dailyrate');
-  if (dr && r.enforcement) r.enforcement.dailyCost = parseFloat(dr.value) || DAILY_RATE;
-  var id2 = document.getElementById('ae-intakedate');
-  if (id2 && id2.value) r.date = id2.value + 'T00:00:00';
+  var daEl = document.getElementById('ae-dateAvail');
+  if (daEl && daEl.value && masterStatus === 'available') r.dateAvailable = daEl.value + 'T00:00:00';
+  r.tags  = ((document.getElementById('ae-tags')||{}).value||'').trim();
+  r.about = ((document.getElementById('ae-about')||{}).value||'').trim();
 
   save(); renderMarkers(); renderIncareView(); renderAdoptView(); updateNavCounts();
   closeAnimalEdit();
@@ -3008,10 +3153,11 @@ function renderMarkers() {
     lMarkers.push(m);
   });
 
-  /* One building pin per shelter showing animal counts */
-  shelters.forEach(function(s) {
-    var inCare   = reports.filter(function(r){ return r.shelter && (r.shelterName===s.name||r.finder===s.name) && !r.reunited && r.adoptionStatus!=='adopted' && !(r.enforcement&&r.enforcement.holdOutcome); }).length;
-    var adoptable = reports.filter(function(r){ return r.shelter && (r.shelterName===s.name||r.finder===s.name) && r.adoptionStatus==='available' && !r.reunited; }).length;
+  /* One building pin — active shelter only */
+  shelters.filter(function(s){ return s.name === activeShelter; }).forEach(function(s) {
+    var sn = s.name.toLowerCase();
+    var inCare   = reports.filter(function(r){ return r.shelter && ((r.shelterName||'').toLowerCase()===sn||(r.finder||'').toLowerCase()===sn) && !r.reunited && r.adoptionStatus!=='adopted' && !(r.enforcement&&r.enforcement.holdOutcome); }).length;
+    var adoptable = reports.filter(function(r){ return r.shelter && ((r.shelterName||'').toLowerCase()===sn||(r.finder||'').toLowerCase()===sn) && r.adoptionStatus==='available' && !r.reunited; }).length;
     if (inCare === 0 && adoptable === 0) return; /* skip empty shelters */
     var icon = L.divIcon({
       className: '',
@@ -3446,7 +3592,7 @@ function showToast(type) {
 })();
 
 var shelters = [
-  { name:'Heartland Pet Connection',    address:'1807 W J St, Hastings, NE 68901', phone:'(402) 462-7387', website:'heartlandpetconnection.com', lat:40.5698, lng:-98.4250, type:'shelter' },
+  { name:'Heartland Pet Connection',    address:'1807 W J St, Hastings, NE 68901', phone:'(402) 462-7387', website:'heartlandpetconnection.com', lat:40.5698, lng:-98.4150, type:'shelter' },
   { name:'Adams County Humane Society', address:'Hastings, NE',                     phone:'',               website:'', lat:40.5845, lng:-98.3892, type:'shelter' },
   { name:'Start Over Rover',            address:'Hastings, NE',                     phone:'',               website:'', lat:40.5900, lng:-98.3870, type:'shelter' }
 ];
@@ -5164,7 +5310,7 @@ function setDailyRate() {
 }
 
 /* ── Medical Care ───────────────────────────── */
-function getMed(r) { return r.medicalCare || {}; }
+function getMed(r) { return r.medical || r.medicalCare || {}; }
 
 function saveMedical(id, updates) {
   var r = reports.find(function(x){ return x.id===id; });
