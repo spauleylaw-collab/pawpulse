@@ -11,23 +11,25 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script>
-/* ── PASTE YOUR FIREBASE CONFIG HERE ─────────────────────────────────────
-   Get this from: Firebase Console → Project Settings → Your apps → SDK setup
-   ─────────────────────────────────────────────────────────────────────── */
-var FIREBASE_CONFIG = {
-  apiKey:            "AIzaSyBVzQ84gSSnukH_JEmYN70ZjXqqmxsNVIw",
-  authDomain:        "pawpulse-24af8.firebaseapp.com",
-  projectId:         "pawpulse-24af8",
-  storageBucket:     "pawpulse-24af8.firebasestorage.app",
-  messagingSenderId: "471613221379",
-  appId:             "1:471613221379:web:461bb35bf7735f0dc33c36"
-};
+var db = null; var auth = null;
+var USE_FIREBASE = (typeof firebase !== 'undefined') && "AIzaSyBVzQ84gSSnukH_JEmYN70ZjXqqmxsNVIw" !== "PASTE_YOUR_API_KEY";
 
-var USE_FIREBASE = FIREBASE_CONFIG.apiKey !== "PASTE_YOUR_API_KEY";
 if (USE_FIREBASE) {
-  firebase.initializeApp(FIREBASE_CONFIG);
-  var db   = firebase.firestore();
-  var auth = firebase.auth();
+  try {
+    /* Avoid duplicate-app error on hot reload */
+    var _fbApp = firebase.apps.length ? firebase.apps[0] : firebase.initializeApp({
+      apiKey:            "AIzaSyBVzQ84gSSnukH_JEmYN70ZjXqqmxsNVIw",
+      authDomain:        "pawpulse-24af8.firebaseapp.com",
+      projectId:         "pawpulse-24af8",
+      storageBucket:     "pawpulse-24af8.firebasestorage.app",
+      messagingSenderId: "471613221379",
+      appId:             "1:471613221379:web:461bb35bf7735f0dc33c36"
+    });
+    db   = firebase.firestore();
+    auth = firebase.auth();
+  } catch(e) {
+    console.warn('Firebase init error:', e.message);
+  }
 }
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -102,8 +104,8 @@ body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);h
 .mode-banner-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 
 /* Map legend */
-#map-legend{position:absolute;bottom:100px;left:12px;z-index:600;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-radius:8px;padding:7px 10px;display:flex;flex-direction:column;gap:4px;box-shadow:0 2px 10px rgba(0,0,0,.1);border:1px solid var(--cream-3)}
-.legend-item{display:flex;align-items:center;gap:6px;font-size:.65rem;font-weight:600;color:var(--warm-mid)}
+#map-legend{position:absolute;bottom:40px;left:12px;z-index:600;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-radius:10px;padding:9px 12px;display:flex;flex-direction:column;gap:6px;box-shadow:0 2px 10px rgba(0,0,0,.1);border:1px solid var(--cream-3)}
+.legend-item{display:flex;align-items:center;gap:7px;font-size:.7rem;font-weight:500;color:var(--warm-mid);white-space:nowrap}
 .legend-pin{width:10px;height:10px;border-radius:50%;flex-shrink:0}
 .print-btn{font-family:var(--font-body);font-size:.74rem;font-weight:600;padding:7px 13px;border-radius:8px;border:1.5px solid var(--cream-3);background:var(--cream-2);color:var(--warm-mid);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px;width:100%;justify-content:center;margin-top:6px}
 .print-btn:hover{border-color:var(--amber);color:var(--amber)}
@@ -162,7 +164,8 @@ textarea{min-height:64px}
 .submit-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.22);filter:brightness(1.08)}
 
 /* MAP OVERLAYS */
-#stats-bar{position:absolute;top:58px;left:12px;z-index:700;display:flex;gap:8px}
+#stats-bar{display:none}
+#map-filters{display:none}
 .stat-pill{background:rgba(255,255,255,.92);backdrop-filter:blur(8px);padding:5px 12px;border-radius:999px;font-size:.73rem;font-weight:600;box-shadow:0 2px 10px rgba(0,0,0,.12);display:flex;align-items:center;gap:5px;border:1px solid var(--cream-3)}
 .stat-dot{width:8px;height:8px;border-radius:50%}
 .stat-dot.lost{background:var(--lost-r)}
@@ -349,7 +352,6 @@ textarea{min-height:64px}
 .ac-search-btn:hover{filter:brightness(1.1)}
 .ac-search-btn:disabled{opacity:.6;cursor:not-allowed}
 /* Admin / Dashboard view */
-#view-admin{background:var(--cream-2);flex-direction:column;overflow:hidden}
 #admin-body{flex:1;overflow-y:auto;padding:20px 22px}
 #admin-body::-webkit-scrollbar{width:4px}
 #admin-body::-webkit-scrollbar-thumb{background:var(--cream-3);border-radius:99px}
@@ -581,13 +583,12 @@ textarea{min-height:64px}
     <button class="tab-btn tab-ops" onclick="setView('incare',this)"   title="In Care">🏥 <span class="tab-lbl">In Care</span> <span id="nav-incare-count" style="display:none;background:var(--found-g);color:#fff;border-radius:999px;font-size:.6rem;padding:1px 5px;margin-left:2px"></span></button>
     <!-- ADMIN MODE -->
     <div class="nav-mode-sep"></div>
-    <button class="tab-btn tab-admin" onclick="setView('admin',this)"   title="Admin Holds">🔒 <span class="tab-lbl">Holds</span></button>
     <button class="tab-btn tab-admin" onclick="setView('reports',this)" title="Reports & Admin">📊 <span class="tab-lbl">Reports</span></button>
   </div>
 </nav>
 
 <div id="view-shelters" class="view">
-  <div class="mode-banner ops"><div class="mode-banner-dot" style="background:#3a7d44"></div>Shelter / Rescue Operations</div>
+  <div class="mode-banner ops"><div class="mode-banner-dot" style="background:#3a7d44"></div>Heartland Pet Connection — Operations</div>
   <div id="sh-row">
   <!-- Left col -->
   <div class="sh-col sh-col-left">
@@ -646,7 +647,7 @@ textarea{min-height:64px}
       <div id="adopt-hdr-title">🌟 Animals Ready for Adoption</div>
       <div id="adopt-hdr-sub">Hastings, NE area shelters · <span id="adopt-count">0</span> available</div>
     </div>
-    <button id="adopt-add-btn" onclick="openAdoptForm()">+ Add Animal</button>
+    
   </div>
   <div id="adopt-search-row">
     <input id="adopt-search" type="text" placeholder="Search by species, breed, color, shelter…" oninput="renderAdoptView()" autocomplete="off">
@@ -709,14 +710,11 @@ textarea{min-height:64px}
 
 <!-- IN CARE VIEW -->
 <div id="view-incare" class="view" style="background:var(--cream-2);flex-direction:column;overflow:hidden">
-  <div class="mode-banner ops"><div class="mode-banner-dot" style="background:#3a7d44"></div>Shelter / Rescue Operations</div>
+  <div class="mode-banner ops"><div class="mode-banner-dot" style="background:#3a7d44"></div>Heartland Pet Connection — Operations</div>
   <!-- Header with shelter name + intake button -->
-  <div style="padding:12px 16px;background:var(--cream);border-bottom:1px solid var(--cream-3);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:12px">
-    <div>
-      <div style="font-family:var(--font-display);font-size:.95rem;font-weight:700;color:var(--warm-dk)" id="incare-shelter-label">Animals In Care</div>
-      <div style="font-size:.7rem;color:var(--warm-mid);margin-top:1px">Tap an animal to manage · <span id="incare-count" style="font-weight:700;color:var(--forest)">0</span> in care</div>
-    </div>
-    <button onclick="openIntakeModal()" style="flex-shrink:0;padding:9px 16px;font-family:var(--font-display);font-size:.82rem;font-weight:700;background:var(--forest);color:var(--cream);border:none;border-radius:9px;cursor:pointer">+ Intake</button>
+  <div style="padding:12px 16px;background:var(--cream);border-bottom:1px solid var(--cream-3);flex-shrink:0">
+    <div style="font-family:var(--font-display);font-size:.95rem;font-weight:700;color:var(--warm-dk)" id="incare-shelter-label">Animals In Care</div>
+    <div style="font-size:.7rem;color:var(--warm-mid);margin-top:1px">Tap an animal to manage · <span id="incare-count" style="font-weight:700;color:var(--forest)">0</span> in care</div>
   </div>
   <!-- Filter chips -->
   <div style="padding:9px 14px;border-bottom:1px solid var(--cream-3);background:var(--cream);flex-shrink:0;display:flex;gap:5px;flex-wrap:wrap;align-items:center">
@@ -754,125 +752,121 @@ textarea{min-height:64px}
   </div>
 </div>
 
-<div id="view-admin" class="view">
-  <div class="mode-banner admin"><div class="mode-banner-dot" style="background:#c8841a"></div>Admin Holds — Internal Only</div>
-  <div id="admin-body">
-    <div class="admin-hdr">🔒 Admin Holds Dashboard</div>
-    <div class="admin-sub">Hold tracking, cost exposure, enforcement. Internal use only — not public-facing.</div>
-    <div id="dash-report-btns" style="margin-bottom:18px"></div>
-
-    <!-- KPI cards -->
-    <div class="dash-grid" id="dash-kpis"></div>
-
-    <!-- Per-shelter summary -->
-    <div class="admin-sec">🏠 Cost Exposure by Shelter</div>
-    <div id="dash-shelter-summary"></div>
-
-    <!-- Shelter holds table -->
-    <div class="admin-sec">🏠 Active Shelter Holds</div>
-    <div id="dash-holds-wrap">
-      <table class="admin-table" id="dash-holds">
-        <thead><tr><th>Animal</th><th>Shelter</th><th>Days</th><th>Est. Cost</th><th>Status</th><th>Action</th></tr></thead>
-        <tbody id="dash-holds-body"></tbody>
-      </table>
-    </div>
-
-    <!-- Enforcement / Court cases -->
-    <div class="admin-sec">🚔 Enforcement & Court Cases</div>
-    <table class="admin-table">
-      <thead><tr><th>Case</th><th>Type</th><th>Citation</th><th>Court Status</th><th>Hearing</th><th>Days Held</th></tr></thead>
-      <tbody id="dash-enforce-body"></tbody>
-    </table>
-
-    <!-- Restitution tracking -->
-    <div class="admin-sec">💰 Restitution Tracking</div>
-    <table class="admin-table">
-      <thead><tr><th>Case</th><th>Shelter</th><th>Requested</th><th>Ordered</th><th>Paid</th><th>Balance</th></tr></thead>
-      <tbody id="dash-restitution-body"></tbody>
-    </table>
-
-    <div style="font-size:.72rem;color:var(--warm-mid);text-align:center;padding:12px 0 4px">
-      Daily cost default: $<span id="dash-daily-rate">25</span>/day · 
-      <button onclick="setDailyRate()" style="font-size:.72rem;color:var(--amber);background:none;border:none;cursor:pointer;text-decoration:underline">Change rate</button>
-    </div>
-  </div>
-</div>
 
 <div id="view-reports" class="view">
   <div class="mode-banner admin"><div class="mode-banner-dot" style="background:#c8841a"></div>Reports &amp; Admin</div>
   <div id="rpt-row">
-  <!-- Left: report type list -->
-  <div id="rpt-left" style="display:flex;flex-direction:column">
-    <!-- Animal record search stays -->
-    <div id="rpt-search-wrap">
-      <input id="rpt-search" type="text" placeholder="Search animals by name, breed, color…" oninput="renderReportsList()" autocomplete="off">
-      <div class="rpt-chips">
-        <button class="rpt-chip active"    id="rchip-all"     onclick="setRptFilter('all',this)">All</button>
-        <button class="rpt-chip lost"      id="rchip-lost"    onclick="setRptFilter('lost',this)">🔴 Lost</button>
-        <button class="rpt-chip found"     id="rchip-found"   onclick="setRptFilter('found',this)">🟢 Found</button>
-        <button class="rpt-chip reunited"  id="rchip-reunited" onclick="setRptFilter('reunited',this)">🎉 Reunited</button>
-        <button class="rpt-chip" id="rchip-adopt" onclick="setRptFilter('adopt',this)" style="color:#3060c0;border-color:#a0c0f0">🌟 Adopt</button>
+
+  <!-- Left: 3-step report builder -->
+  <div id="rpt-left" style="display:flex;flex-direction:column;overflow-y:auto">
+
+    <!-- Step 1: Define Dataset -->
+    <div style="padding:14px 14px 10px;border-bottom:1px solid var(--cream-3)">
+      <div style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--amber);margin-bottom:10px">Step 1 — Define Dataset</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div>
+          <div style="font-size:.68rem;font-weight:600;color:var(--warm-mid);margin-bottom:3px">Shelter</div>
+          <div id="rpt-shelter-label" style="font-size:.8rem;font-weight:700;color:var(--warm-dk);padding:6px 10px;background:var(--cream-2);border-radius:7px;border:1px solid var(--cream-3)">—</div>
+        </div>
+        <div>
+          <div style="font-size:.68rem;font-weight:600;color:var(--warm-mid);margin-bottom:3px">Species</div>
+          <select id="rpt-filter-species" style="width:100%;font-size:.8rem;padding:6px 10px;border-radius:7px;border:1px solid var(--cream-3);font-family:var(--font-body);background:#fff">
+            <option value="">All Species</option>
+            <option>Dog</option><option>Cat</option><option>Bird</option><option>Rabbit</option><option>Other</option>
+          </select>
+        </div>
+        <div>
+          <div style="font-size:.68rem;font-weight:600;color:var(--warm-mid);margin-bottom:3px">Date Range</div>
+          <select id="rpt-filter-days" style="width:100%;font-size:.8rem;padding:6px 10px;border-radius:7px;border:1px solid var(--cream-3);font-family:var(--font-body);background:#fff">
+            <option value="">All Time</option>
+            <option value="30">Last 30 days</option>
+            <option value="60">Last 60 days</option>
+            <option value="90">Last 90 days</option>
+            <option value="365">This Year</option>
+          </select>
+        </div>
+        <div>
+          <div style="font-size:.68rem;font-weight:600;color:var(--warm-mid);margin-bottom:3px">Status Filter</div>
+          <select id="rpt-filter-status" style="width:100%;font-size:.8rem;padding:6px 10px;border-radius:7px;border:1px solid var(--cream-3);font-family:var(--font-body);background:#fff">
+            <option value="">All Statuses</option>
+            <option value="hold">On Hold</option>
+            <option value="stray">In Care (Stray)</option>
+            <option value="adopt">Adoption Ready</option>
+            <option value="reunited">Reunited</option>
+          </select>
+        </div>
       </div>
-      <div id="rpt-count"></div>
     </div>
-    <!-- Report type picker -->
-    <div style="padding:10px 12px 4px;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--warm-mid);border-top:1px solid var(--cream-3);margin-top:4px">Generate Report</div>
-    <div id="report-type-list" style="padding:0 8px 8px;flex-shrink:0"></div>
-    <div style="border-top:1px solid var(--cream-3)"></div>
-    <div id="rpt-list" style="flex:1;overflow-y:auto"></div>
+
+    <!-- Step 2: Choose Report -->
+    <div style="padding:14px 14px 10px;border-bottom:1px solid var(--cream-3);flex-shrink:0">
+      <div style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--amber);margin-bottom:10px">Step 2 — Choose Report</div>
+      <div id="report-type-list" style="display:flex;flex-direction:column;gap:3px"></div>
+    </div>
+
+    <!-- Step 3: Generate -->
+    <div style="padding:14px;flex-shrink:0">
+      <div style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--amber);margin-bottom:10px">Step 3 — Generate</div>
+      <button id="rpt-run-btn" onclick="runSelectedReport()" style="width:100%;padding:12px;font-family:var(--font-display);font-size:.9rem;font-weight:700;background:var(--forest);color:#fff;border:none;border-radius:10px;cursor:pointer;opacity:.4;pointer-events:none" disabled>
+        ▶ Generate Report
+      </button>
+      <div id="rpt-selected-label" style="font-size:.72rem;color:var(--warm-mid);text-align:center;margin-top:6px">Select a report type above</div>
+      <div style="border-top:1px solid var(--cream-3);margin-top:12px;padding-top:12px;display:flex;flex-direction:column;gap:6px">
+        <button onclick="openContentGen('press')" style="width:100%;padding:9px;font-size:.78rem;font-weight:600;background:#fff;color:#c0392b;border:1.5px solid #e0a090;border-radius:8px;cursor:pointer;font-family:var(--font-body)">📣 Public Transparency Report</button>
+        <button onclick="openContentGen('fund')" style="width:100%;padding:9px;font-size:.78rem;font-weight:600;background:#fff;color:#b06010;border:1.5px solid #e0c090;border-radius:8px;cursor:pointer;font-family:var(--font-body)">💛 Funding Narrative</button>
+      </div>
+    </div>
+
+    <!-- Animal record search (collapsed at bottom) -->
+    <div style="border-top:2px solid var(--cream-3);padding:10px 14px 6px">
+      <div style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--warm-mid);margin-bottom:8px">Search Animal Records</div>
+      <input id="rpt-search" type="text" placeholder="Search by name, breed, color…" oninput="renderReportsList()" autocomplete="off" style="width:100%;box-sizing:border-box;padding:7px 10px;font-size:.8rem;border:1px solid var(--cream-3);border-radius:7px;font-family:var(--font-body)">
+      <div class="rpt-chips" style="margin-top:6px">
+        <button class="rpt-chip active" id="rchip-all"      onclick="setRptFilter('all',this)">All</button>
+        <button class="rpt-chip lost"   id="rchip-lost"     onclick="setRptFilter('lost',this)">🔴 Lost</button>
+        <button class="rpt-chip found"  id="rchip-found"    onclick="setRptFilter('found',this)">🟢 Found</button>
+        <button class="rpt-chip"        id="rchip-reunited" onclick="setRptFilter('reunited',this)">🎉 Reunited</button>
+        <button class="rpt-chip"        id="rchip-adopt"    onclick="setRptFilter('adopt',this)" style="color:#3060c0;border-color:#a0c0f0">🌟 Adopt</button>
+      </div>
+      <div id="rpt-count" style="font-size:.7rem;color:var(--warm-mid);margin-top:4px"></div>
+    </div>
+    <div id="rpt-list" style="flex:1;overflow-y:auto;min-height:80px"></div>
   </div>
-  <!-- Right: report viewer or detail -->
+
+  <!-- Right: report output -->
   <div id="rpt-right">
-    <div id="rpt-detail-empty" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--warm-mid);gap:8px">
-      <div style="font-size:2.5rem;opacity:.2">📊</div>
-      <div style="font-size:.9rem;font-weight:600">Select a report type or animal record</div>
-      <div style="font-size:.76rem">Reports pull from live shelter data</div>
+    <div id="rpt-detail-empty" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--warm-mid);gap:10px;padding:32px;text-align:center">
+      <div style="font-size:3rem;opacity:.15">📊</div>
+      <div style="font-size:.95rem;font-weight:700;color:var(--warm-dk)">No report generated yet</div>
+      <div style="font-size:.78rem;line-height:1.6">
+        Use the panel on the left:<br>
+        <strong>1.</strong> Set your dataset filters<br>
+        <strong>2.</strong> Choose a report type<br>
+        <strong>3.</strong> Tap <em>Generate Report</em>
+      </div>
     </div>
-    <!-- Report viewer panel -->
+    <!-- Report output panel -->
     <div id="rpt-report-panel" style="display:none;flex-direction:column;height:100%">
       <div style="padding:12px 16px;border-bottom:1px solid var(--cream-3);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--cream)">
-        <div>
-          <div style="font-family:var(--font-display);font-size:.95rem;font-weight:700;color:var(--warm-dk)" id="rpt-panel-title">Report</div>
-          <div style="font-size:.7rem;color:var(--warm-mid)" id="rpt-panel-sub"></div>
+        <div style="min-width:0;flex:1;margin-right:10px">
+          <div style="font-family:var(--font-display);font-size:.95rem;font-weight:700;color:var(--warm-dk);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="rpt-panel-title">Report</div>
+          <div style="font-size:.68rem;color:var(--warm-mid)" id="rpt-panel-sub"></div>
         </div>
-        <div style="display:flex;gap:6px">
-          <button onclick="printActiveReport()" style="padding:6px 12px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body)">🖨️ Print</button>
-          <button onclick="copyActiveReport()" style="padding:6px 12px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid var(--forest);background:var(--forest);color:#fff;cursor:pointer;font-family:var(--font-body)">📋 Copy</button>
-          <button onclick="closeReportPanel()" style="padding:6px 10px;font-size:.8rem;border-radius:7px;border:none;background:var(--cream-2);cursor:pointer">✕</button>
+        <div style="display:flex;gap:5px;flex-shrink:0">
+          <button onclick="printActiveReport()" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body)">🖨️ Print</button>
+          <button onclick="copyActiveReport()" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid var(--forest);background:var(--forest);color:#fff;cursor:pointer;font-family:var(--font-body)">📋 Copy</button>
+          <button onclick="closeReportPanel()" style="padding:6px 9px;font-size:.8rem;border-radius:7px;border:none;background:var(--cream-2);cursor:pointer">✕</button>
         </div>
       </div>
-      <!-- Filters row -->
-      <div id="rpt-filters-row" style="padding:10px 16px;border-bottom:1px solid var(--cream-3);background:var(--cream-2);flex-shrink:0;display:flex;flex-wrap:wrap;gap:8px;align-items:center">
-        <select id="rpt-filter-species" onchange="runActiveReport()" style="font-size:.76rem;padding:4px 8px;border-radius:6px;border:1px solid var(--cream-3);font-family:var(--font-body)">
-          <option value="">All Species</option>
-          <option>Dog</option><option>Cat</option><option>Bird</option><option>Rabbit</option><option>Other</option>
-        </select>
-        <select id="rpt-filter-status" onchange="runActiveReport()" style="font-size:.76rem;padding:4px 8px;border-radius:6px;border:1px solid var(--cream-3);font-family:var(--font-body)">
-          <option value="">All Statuses</option>
-          <option value="hold">On Hold</option>
-          <option value="stray">In Care (Stray)</option>
-          <option value="adopt">Adoption Ready</option>
-          <option value="lost">Lost</option>
-          <option value="reunited">Reunited</option>
-        </select>
-        <select id="rpt-filter-days" onchange="runActiveReport()" style="font-size:.76rem;padding:4px 8px;border-radius:6px;border:1px solid var(--cream-3);font-family:var(--font-body)">
-          <option value="">All Time</option>
-          <option value="30">Last 30 days</option>
-          <option value="60">Last 60 days</option>
-          <option value="90">Last 90 days</option>
-          <option value="365">This Year</option>
-        </select>
-        <select id="rpt-filter-shelter" onchange="runActiveReport()" style="font-size:.76rem;padding:4px 8px;border-radius:6px;border:1px solid var(--cream-3);font-family:var(--font-body)">
-          <option value="">All Shelters</option>
-          <option>Adams County Humane Society</option>
-          <option>Heartland Pet Connection</option>
-          <option>Start Over Rover</option>
-        </select>
+      <!-- Hidden filters row (kept for JS compatibility, not shown) -->
+      <div id="rpt-filters-row" style="display:none">
+        <select id="rpt-filter-shelter" style="display:none"></select>
       </div>
       <div id="rpt-report-body" style="flex:1;overflow-y:auto;padding:20px;font-family:Georgia,serif;font-size:.86rem;line-height:1.7;color:var(--warm-dk)"></div>
     </div>
     <div id="rpt-detail-panel"></div>
   </div>
+
   </div><!-- end rpt-row -->
 </div>
 
@@ -887,23 +881,12 @@ textarea{min-height:64px}
     </div>
 
     <!-- Floating filter pills -->
-    <div id="map-filters">
-      <button class="filter-btn all active" onclick="setFilter('all')">All</button>
-      <button class="filter-btn lost"       onclick="setFilter('lost')">🔴 Lost</button>
-      <button class="filter-btn found"      onclick="setFilter('found')">🟢 Found</button>
-    </div>
-
-    <div id="stats-bar">
-      <div class="stat-pill"><div class="stat-dot lost"></div><span id="cnt-lost">0</span>&nbsp;lost</div>
-      <div class="stat-pill"><div class="stat-dot found"></div><span id="cnt-found">0</span>&nbsp;found</div>
-    </div>
-
-    <!-- Map legend -->
-    <div id="map-legend">
-      <div class="legend-item"><div class="legend-pin" style="background:#c94f2a"></div>Lost</div>
-      <div class="legend-item"><div class="legend-pin" style="background:#3a7d44"></div>Found</div>
-      <div class="legend-item"><div class="legend-pin" style="background:#2050a0"></div>Shelter</div>
-      <div class="legend-item"><div class="legend-pin" style="background:#c8841a"></div>Adopt</div>
+    <!-- Map legend — bottom left -->
+    <div id="map-legend" style="display:flex;flex-direction:column;gap:5px">
+      <div class="legend-item"><div class="stat-dot lost"></div><span id="cnt-lost" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span>Lost</span></div>
+      <div class="legend-item"><div class="stat-dot found"></div><span id="cnt-found" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span>Found</span></div>
+      <div class="legend-item"><div class="legend-pin" style="background:#1a3f8a"></div><span id="cnt-shelter" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span id="legend-shelter-label">In Care of Heartland</span></div>
+      <div class="legend-item" style="padding-left:18px"><div class="legend-pin" style="background:#c8841a"></div><span id="cnt-adopt" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span>↳ Adoptable</span></div>
     </div>
 
     <div id="drop-hint">
@@ -1016,15 +999,29 @@ textarea{min-height:64px}
 <div id="toast">🔔 <span id="toast-msg"></span></div>
 
 <script>
+/* Global error handler — catches and surfaces errors on iOS Safari */
+window.onerror = function(msg, src, line, col, err) {
+  console.error('PawPulse error:', msg, src ? '@ ' + src.split('/').pop() + ':' + line : '');
+  return false; /* don't suppress */
+};
+window.addEventListener('unhandledrejection', function(e) {
+  console.error('PawPulse unhandled promise:', e.reason);
+});
+
 var HASTINGS = [40.5888, -98.3910];
 
-/* Map — same init pattern as PublicPulse */
-var map = L.map('map', { center: HASTINGS, zoom: 14, zoomControl: false });
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-  maxZoom: 19
-}).addTo(map);
-L.control.zoom({ position: 'bottomright' }).addTo(map);
+/* Map init — wrapped defensively for iOS */
+var map;
+try {
+  map = L.map('map', { center: HASTINGS, zoom: 14, zoomControl: false });
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 19
+  }).addTo(map);
+} catch(e) {
+  console.error('Leaflet init failed:', e.message);
+  map = { addLayer:function(){}, invalidateSize:function(){}, removeLayer:function(){}, hasLayer:function(){return false;}, fitBounds:function(){}, setView:function(){}, on:function(){} };
+}
 
 var reports  = JSON.parse(localStorage.getItem('pawpulse-v2') || '[]');
 var lMarkers = [];
@@ -1064,17 +1061,32 @@ function deleteFromFirestore(id) {
 }
 
 function initFirebase() {
-  if (!USE_FIREBASE) { showShelterPicker(); return; }
+  if (!USE_FIREBASE) {
+    showShelterPicker();
+    return;
+  }
+  if (!auth) {
+    /* Firebase configured but auth unavailable — show login with connection error */
+    var lo = document.getElementById('login-overlay');
+    if (lo) lo.style.display = 'flex';
+    var errEl = document.getElementById('login-err');
+    if (errEl) {
+      errEl.style.display = 'block';
+      errEl.textContent = 'Connection issue. Please check your internet and try again.';
+    }
+    return;
+  }
   document.getElementById('login-overlay').style.display = 'flex';
   auth.onAuthStateChanged(function(user) {
     if (user) {
       _isStaff = true;
       document.getElementById('login-overlay').style.display = 'none';
       document.getElementById('staff-badge').style.display = 'flex';
-      startFirestoreListener();
+      if (db) { startFirestoreListener(); } else { showShelterPicker(); }
     }
   });
 }
+
 
 function startFirestoreListener() {
   db.collection('reports').onSnapshot(function(snapshot) {
@@ -1140,6 +1152,7 @@ function selectShelterSession(name) {
 }
 
 function doLogin() {
+  if (!auth) { location.reload(); return; }
   var email = (document.getElementById('login-email').value || '').trim();
   var pw    = document.getElementById('login-pw').value;
   var btn   = document.getElementById('login-btn');
@@ -1166,7 +1179,7 @@ function doGuestView() {
 
 function doSignOut() {
   sessionStorage.removeItem('pp-shelter');
-  if (!USE_FIREBASE) return;
+  if (!USE_FIREBASE || !auth) return;
   auth.signOut().then(function() {
     _isStaff = false;
     document.getElementById('staff-badge').style.display = 'none';
@@ -1206,7 +1219,7 @@ function doChangePw() {
     errEl.textContent = 'Passwords do not match.';
     errEl.style.display = 'block'; return;
   }
-  if (!USE_FIREBASE || !auth.currentUser) {
+  if (!USE_FIREBASE || !auth || !auth.currentUser) {
     errEl.textContent = 'Not signed in.';
     errEl.style.display = 'block'; return;
   }
@@ -1305,7 +1318,7 @@ function openIntakeForm(intakeSource) {
     + '<div style="flex:1"><label style="margin-bottom:3px">Shelter Animal ID / Tag #</label>'
     + '<input type="text" id="si-animal-id" placeholder="e.g. A-2024-001 or 1042" style="width:100%;padding:7px 10px;font-size:.88rem;border:1.5px solid var(--cream-3);border-radius:7px;font-family:var(--font-body);font-weight:600;letter-spacing:.03em"></div></div>'
 
-    + '<div class="inv-photo-drop" onclick="document.getElementById(\'si-photo-in\').click()" style="margin-bottom:8px">'
+    + '<div class="inv-photo-drop" onclick="triggerSIPhoto()" style="margin-bottom:8px">'
     + '<input type="file" id="si-photo-in" accept="image/*" onchange="previewSIPhoto(this);showAIBtn(\'si\')">'
     + '<div id="si-photo-icon" style="font-size:1.5rem;margin-bottom:3px">📷</div>'
     + '<div id="si-photo-txt" style="font-size:.74rem;color:var(--warm-mid)">Tap to upload photo (optional)</div>'
@@ -1518,6 +1531,7 @@ var REPORT_TYPES = [
   { id:'internal',  icon:'📄', label:'Full Internal Report' },
   { id:'council',   icon:'🏛️', label:'City Council Report' },
   { id:'donor',     icon:'💜', label:'Donor / Grant Report' },
+  { id:'grants',    icon:'💵', label:'AI Grant Opportunities', highlight: true },
 ];
 
 var _activeReportId = null;
@@ -1525,59 +1539,115 @@ var _activeReportId = null;
 function renderReportTypeList() {
   var el = document.getElementById('report-type-list');
   if (!el) return;
+
+  /* Update shelter label */
+  var sl = document.getElementById('rpt-shelter-label');
+  if (sl) sl.textContent = activeShelter || 'No shelter selected';
+
   el.innerHTML = REPORT_TYPES.map(function(rt) {
-    return '<button onclick="runReport(\'' + rt.id + '\')" '
-      + 'style="width:100%;text-align:left;padding:7px 10px;margin-bottom:3px;border-radius:7px;border:none;background:' + (_activeReportId===rt.id?'var(--forest)':'transparent') + ';color:' + (_activeReportId===rt.id?'#fff':'var(--warm-dk)') + ';font-family:var(--font-body);font-size:.8rem;cursor:pointer;display:flex;gap:8px;align-items:center">'
-      + '<span>' + rt.icon + '</span><span>' + rt.label + '</span></button>';
+    var isActive = _activeReportId === rt.id;
+    return '<button onclick="selectReportType(\'' + rt.id + '\')" '
+      + 'style="width:100%;text-align:left;padding:9px 12px;border-radius:8px;'
+      + 'border:1.5px solid ' + (isActive ? 'var(--forest)' : rt.highlight ? '#a0c8f0' : 'var(--cream-3)') + ';'
+      + 'background:' + (isActive ? 'var(--forest)' : rt.highlight ? '#f0f8ff' : '#fff') + ';'
+      + 'color:' + (isActive ? '#fff' : rt.highlight ? '#1a4a8a' : 'var(--warm-dk)') + ';'
+      + 'font-family:var(--font-body);font-size:.8rem;cursor:pointer;display:flex;align-items:center;gap:8px;margin-bottom:3px">'
+      + '<span>' + rt.icon + '</span>'
+      + '<span style="flex:1">' + rt.label + '</span>'
+      + (isActive ? '<span style="font-size:.7rem;opacity:.8">✓</span>' : '')
+      + '</button>';
   }).join('');
 }
 
-function runReport(typeId) {
+function selectReportType(typeId) {
   _activeReportId = typeId;
   renderReportTypeList();
 
-  var panel    = document.getElementById('rpt-report-panel');
-  var empty    = document.getElementById('rpt-detail-empty');
-  var detail   = document.getElementById('rpt-detail-panel');
-  var titleEl  = document.getElementById('rpt-panel-title');
-  var subEl    = document.getElementById('rpt-panel-sub');
-  var bodyEl   = document.getElementById('rpt-report-body');
-  if (!panel || !bodyEl) return;
+  /* Update the generate button state */
+  var btn  = document.getElementById('rpt-run-btn');
+  var lbl  = document.getElementById('rpt-selected-label');
+  var rt   = REPORT_TYPES.find(function(r){ return r.id===typeId; });
 
+  if (btn) {
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.style.pointerEvents = 'auto';
+    btn.textContent = '▶ Generate ' + (rt ? rt.label : 'Report');
+  }
+  if (lbl && rt) {
+    lbl.textContent = rt.icon + ' ' + rt.label + ' selected';
+    lbl.style.color = 'var(--forest)';
+    lbl.style.fontWeight = '600';
+  }
+}
+
+function runSelectedReport() {
+  if (!_activeReportId) return;
+  if (_activeReportId === 'grants') {
+    renderGrantsPanel(); return;
+  }
+
+  var panel  = document.getElementById('rpt-report-panel');
+  var empty  = document.getElementById('rpt-detail-empty');
+  var titleEl = document.getElementById('rpt-panel-title');
+  var subEl   = document.getElementById('rpt-panel-sub');
+  var fRow    = document.getElementById('rpt-filters-row');
+
+  if (!panel) return;
   if (empty)  empty.style.display  = 'none';
-  if (detail) detail.style.display = 'none';
+  if (fRow)   fRow.style.display   = 'none';
   panel.style.display = 'flex';
 
-  var rt = REPORT_TYPES.find(function(r){ return r.id===typeId; });
-  if (titleEl) titleEl.textContent = rt ? rt.label : typeId;
-  if (subEl)   subEl.textContent   = 'Generated ' + new Date().toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
+  var rt = REPORT_TYPES.find(function(r){ return r.id===_activeReportId; });
+  if (titleEl) titleEl.textContent = rt ? rt.label : _activeReportId;
+  if (subEl) {
+    var species = (document.getElementById('rpt-filter-species')||{}).value;
+    var days    = (document.getElementById('rpt-filter-days')||{}).value;
+    var status  = (document.getElementById('rpt-filter-status')||{}).value;
+    var parts   = [activeShelter];
+    if (species) parts.push(species + 's only');
+    if (status)  parts.push(status);
+    if (days)    parts.push('last ' + days + ' days');
+    parts.push('Generated ' + new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}));
+    subEl.textContent = parts.join(' · ');
+  }
 
   runActiveReport();
 }
 
+
+
+function runReport(typeId) {
+  selectReportType(typeId);
+  /* Auto-run grants immediately since it has its own UI */
+  if (typeId === 'grants') runSelectedReport();
+}
+
 function runActiveReport() {
   if (!_activeReportId) return;
+  if (_activeReportId === 'grants') { renderGrantsPanel(); return; }
+
   var bodyEl = document.getElementById('rpt-report-body');
   if (!bodyEl) return;
+  if (!validateShelterContext()) { bodyEl.innerHTML = '<div style="padding:32px;text-align:center;color:var(--warm-mid)">No shelter selected.</div>'; return; }
 
-  /* Read filters */
+  /* Read UI filters */
   var fSpecies  = (document.getElementById('rpt-filter-species')||{}).value || '';
   var fStatus   = (document.getElementById('rpt-filter-status')||{}).value || '';
   var fDays     = parseInt((document.getElementById('rpt-filter-days')||{}).value) || 0;
-  var fShelter  = (document.getElementById('rpt-filter-shelter')||{}).value || activeShelter || '';
 
   var now = new Date();
   var cutoff = fDays ? new Date(now - fDays*86400000).toISOString() : null;
 
-  function filterRecs(recs) {
-    return recs.filter(function(r) {
+  /* ALL data comes from getShelterData — no cross-shelter leakage possible */
+  function shelterFilter(opts) {
+    var base = getShelterData(opts || { includeHolds:true, includeAdopt:true, includeResolved:true });
+    return base.filter(function(r) {
       if (fSpecies && (r.species||'').toLowerCase() !== fSpecies.toLowerCase()) return false;
-      if (fShelter && r.shelterName !== fShelter && r.finder !== fShelter) return false;
       if (cutoff && r.date < cutoff) return false;
       if (fStatus === 'hold'    && r.intakeType !== 'hold') return false;
       if (fStatus === 'stray'   && (r.intakeType === 'hold' || !r.shelter)) return false;
       if (fStatus === 'adopt'   && r.adoptionStatus !== 'available') return false;
-      if (fStatus === 'lost'    && r.type !== 'lost') return false;
       if (fStatus === 'reunited'&& !r.reunited) return false;
       return true;
     });
@@ -1587,19 +1657,23 @@ function runActiveReport() {
   var id = _activeReportId;
 
   if (id === 'incare') {
-    var recs = filterRecs(reports.filter(function(r){ return r.shelter && !r.reunited && !r.euthanized && r.adoptionStatus!=='adopted' && !(r.enforcement&&r.enforcement.holdOutcome); }));
-    html = reportTable('Animals Currently In Care (' + recs.length + ')',
+    var recs = getShelterData({ includeHolds:true }).filter(function(r){
+      return !fSpecies || (r.species||'').toLowerCase()===fSpecies.toLowerCase();
+    });
+    html = reportTable('Animals Currently In Care — ' + activeShelter + ' (' + recs.length + ')',
       ['Animal','ID / Tag','Species','Color','Intake Source','Days In Care','Status'],
       recs.map(function(r){
         return [esc(r.name||'—'), esc(r.animalId||'—'), esc(r.species||'—'), esc(r.color||'—'),
-          esc(r.intakeSourceLabel||'—'), Math.floor(daysSince(r.date))+'d', esc((r.enforcement&&r.enforcement.internalStatus)||'Intake Logged')];
+          esc(r.intakeSourceLabel||'—'), Math.floor(daysSince(r.date))+'d',
+          esc((r.enforcement&&r.enforcement.internalStatus)||'Intake Logged')];
       }));
 
   } else if (id === 'intake30' || id === 'intake60') {
     var days2 = id==='intake30' ? 30 : 60;
-    var cut2 = new Date(now - days2*86400000).toISOString();
-    var recs2 = filterRecs(reports.filter(function(r){ return r.shelter && r.date >= cut2; }));
-    html = reportTable('Intake — Last ' + days2 + ' Days (' + recs2.length + ' animals)',
+    var recs2 = getShelterData({ includeHolds:true, includeAdopt:true, includeResolved:true, cutoffDays:days2 }).filter(function(r){
+      return !fSpecies || (r.species||'').toLowerCase()===fSpecies.toLowerCase();
+    });
+    html = reportTable('Intake — Last ' + days2 + ' Days — ' + activeShelter + ' (' + recs2.length + ')',
       ['Animal','Species','Color','Intake Source','Intake Date','Status'],
       recs2.map(function(r){
         return [esc(r.name||r.species||'Unknown'), esc(r.species||'—'), esc(r.color||'—'),
@@ -1608,8 +1682,10 @@ function runActiveReport() {
       }));
 
   } else if (id === 'holds') {
-    var holds = filterRecs(reports.filter(function(r){ return r.intakeType==='hold' && !r.reunited && !r.euthanized && !(r.enforcement&&r.enforcement.holdOutcome); }));
-    html = reportTable('Active Holds (' + holds.length + ')',
+    var holds = getShelterData({ includeHolds:true }).filter(function(r){
+      return r.intakeType==='hold' && (!fSpecies || (r.species||'').toLowerCase()===fSpecies.toLowerCase());
+    });
+    html = reportTable('Active Holds — ' + activeShelter + ' (' + holds.length + ')',
       ['Animal','ID / Tag','Hold Type','Days Held','Daily Rate','Est. Cost','Status'],
       holds.map(function(r){
         var e = r.enforcement||{};
@@ -1620,13 +1696,13 @@ function runActiveReport() {
       }));
 
   } else if (id === 'costs') {
-    var cost_holds = filterRecs(reports.filter(function(r){ return r.intakeType==='hold' && !r.reunited && !(r.enforcement&&r.enforcement.holdOutcome); }));
+    var cost_holds = getShelterData({ includeHolds:true }).filter(function(r){ return r.intakeType==='hold'; });
     var totalCost = cost_holds.reduce(function(s,r){
       var e=r.enforcement||{}; var d=daysSince(r.shelterHoldStart||r.date);
       return s+(d*(e.dailyCost!=null?e.dailyCost:DAILY_RATE));
     },0);
     html = '<div style="background:#fff8f0;border-radius:10px;padding:14px;margin-bottom:16px">'
-      + '<div style="font-size:.76rem;color:var(--warm-mid)">Total Hold Cost Exposure</div>'
+      + '<div style="font-size:.76rem;color:var(--warm-mid)">' + activeShelter + ' — Total Hold Cost Exposure</div>'
       + '<div style="font-family:var(--font-display);font-size:2rem;font-weight:800;color:#8a5010">' + fmtMoney(totalCost) + '</div>'
       + '</div>'
       + reportTable('Cost Breakdown by Animal',
@@ -1636,12 +1712,14 @@ function runActiveReport() {
           var d=daysSince(r.shelterHoldStart||r.date);
           var rate=e.dailyCost!=null?e.dailyCost:DAILY_RATE;
           var hold=d*rate; var med=(m.spayNeuterCost||0)+(m.vaccinationCost||0)+(m.vetCost||0)+(m.otherCost||0);
-          return [esc(r.name||r.species||'Unknown'), d+'d', '$'+rate, fmtMoney(hold), fmtMoney(med), fmtMoney(hold+med)];
+          return [esc(r.name||r.species||'Unknown'), Math.floor(d)+'d', '$'+rate, fmtMoney(hold), fmtMoney(med), fmtMoney(hold+med)];
         }));
 
   } else if (id === 'adopt') {
-    var avail = filterRecs(reports.filter(function(r){ return r.adoptionStatus==='available'; }));
-    html = reportTable('Adoption Pipeline (' + avail.length + ' available)',
+    var avail = getShelterData({ includeHolds:true }).filter(function(r){
+      return r.adoptionStatus==='available' && (!fSpecies || (r.species||'').toLowerCase()===fSpecies.toLowerCase());
+    });
+    html = reportTable('Adoption Pipeline — ' + activeShelter + ' (' + avail.length + ' available)',
       ['Animal','Species','Breed','Color','Days Waiting','Tags'],
       avail.sort(function(a,b){ return daysSince(b.dateAvailable||b.date)-daysSince(a.dateAvailable||a.date); })
         .map(function(r){
@@ -1651,10 +1729,12 @@ function runActiveReport() {
         }));
 
   } else if (id === 'los') {
-    var los_recs = filterRecs(reports.filter(function(r){ return r.shelter; }));
+    var los_recs = getShelterData({ includeHolds:true, includeAdopt:true, includeResolved:true }).filter(function(r){
+      return !fSpecies || (r.species||'').toLowerCase()===fSpecies.toLowerCase();
+    });
     var avg = los_recs.length ? Math.round(los_recs.reduce(function(s,r){ return s+daysSince(r.date); },0)/los_recs.length) : 0;
     html = '<div style="background:#f0f8f0;border-radius:10px;padding:14px;margin-bottom:16px">'
-      + '<div style="font-size:.76rem;color:var(--warm-mid)">Average Length of Stay</div>'
+      + '<div style="font-size:.76rem;color:var(--warm-mid)">' + activeShelter + ' — Average Length of Stay</div>'
       + '<div style="font-family:var(--font-display);font-size:2rem;font-weight:800;color:var(--forest)">' + avg + ' days</div>'
       + '</div>'
       + reportTable('Length of Stay by Animal',
@@ -1667,7 +1747,9 @@ function runActiveReport() {
           }));
 
   } else if (id === 'outcomes') {
-    var all_s = filterRecs(reports.filter(function(r){ return r.shelter; }));
+    var all_s = getShelterData({ includeHolds:true, includeAdopt:true, includeResolved:true }).filter(function(r){
+      return !fSpecies || (r.species||'').toLowerCase()===fSpecies.toLowerCase();
+    });
     var adopted_r  = all_s.filter(function(r){ return r.adoptionStatus==='adopted'; });
     var reunited_r = all_s.filter(function(r){ return r.reunited; });
     var euth_r     = all_s.filter(function(r){ return r.euthanized; });
@@ -1676,17 +1758,20 @@ function runActiveReport() {
       + '<div style="background:#f0f8f0;border-radius:10px;padding:12px;text-align:center"><div style="font-size:1.6rem;font-weight:800;color:var(--forest)">' + reunited_r.length + '</div><div style="font-size:.76rem;color:var(--warm-mid)">Reunited</div></div>'
       + '<div style="background:#fff5f5;border-radius:10px;padding:12px;text-align:center"><div style="font-size:1.6rem;font-weight:800;color:var(--lost-r)">' + euth_r.length + '</div><div style="font-size:.76rem;color:var(--warm-mid)">Resolved</div></div>'
       + '</div>'
-      + reportTable('Outcomes Detail',['Animal','Species','Outcome','Date'],
+      + reportTable('Outcomes Detail — ' + activeShelter,['Animal','Species','Outcome','Date'],
         [...adopted_r.map(function(r){ return [esc(r.name||r.species||'Unknown'),esc(r.species||'—'),'🌟 Adopted','—']; }),
          ...reunited_r.map(function(r){ return [esc(r.name||r.species||'Unknown'),esc(r.species||'—'),'🎉 Reunited',r.reunitedDate?new Date(r.reunitedDate).toLocaleDateString():'—']; }),
          ...euth_r.map(function(r){ return [esc(r.name||r.species||'Unknown'),esc(r.species||'—'),'⚫ Resolved','—']; })]);
 
   } else if (id === 'species') {
-    var sp_recs = filterRecs(reports.filter(function(r){ return r.shelter; }));
+    var sp_recs = getShelterData({ includeHolds:true, includeAdopt:true, includeResolved:true }).filter(function(r){
+      return !fSpecies || (r.species||'').toLowerCase()===fSpecies.toLowerCase();
+    });
     var counts = {};
     sp_recs.forEach(function(r){ var s=r.species||'Unknown'; counts[s]=(counts[s]||0)+1; });
-    html = '<div style="margin-bottom:16px">' + Object.keys(counts).map(function(sp){
-      var pct = Math.round(counts[sp]/sp_recs.length*100);
+    html = '<div style="font-size:.82rem;font-weight:600;margin-bottom:12px">' + activeShelter + ' — Species Breakdown (' + sp_recs.length + ' total)</div>'
+      + '<div style="margin-bottom:16px">' + Object.keys(counts).map(function(sp){
+      var pct = sp_recs.length ? Math.round(counts[sp]/sp_recs.length*100) : 0;
       return '<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:.84rem;margin-bottom:4px"><span>' + sp + '</span><span style="font-weight:700">' + counts[sp] + ' (' + pct + '%)</span></div>'
         + '<div style="background:var(--cream-2);border-radius:999px;height:8px"><div style="background:var(--forest);height:8px;border-radius:999px;width:' + pct + '%"></div></div></div>';
     }).join('') + '</div>';
@@ -1710,12 +1795,538 @@ function reportTable(title, headers, rows) {
       }).join('') + '</tbody></table></div>';
 }
 
+/* ══════════════════════════════════════════════════════════════════════
+   AI GRANTS ENGINE — shelter-specific grant identification & drafting
+   All data pulled exclusively from getShelterData() for the active shelter
+   ══════════════════════════════════════════════════════════════════════ */
+
+var _grantsTab = 'opportunities'; /* 'opportunities' | 'queue' | 'submitted' */
+
+function buildGrantsContext() {
+  /* Compute all shelter metrics from shelter-isolated data only */
+  var now = new Date();
+  var d90  = new Date(now - 90*86400000).toISOString();
+  var d30  = new Date(now - 30*86400000).toISOString();
+
+  var allActive   = getShelterData({ includeHolds:true });
+  var all90       = getShelterData({ includeHolds:true, includeAdopt:true, includeResolved:true, cutoffDays:90 });
+  var all30       = getShelterData({ includeHolds:true, includeAdopt:true, includeResolved:true, cutoffDays:30 });
+
+  var inCare      = allActive;
+  var holds       = allActive.filter(function(r){ return r.intakeType==='hold'; });
+  var adoptReady  = allActive.filter(function(r){ return r.adoptionStatus==='available'; });
+  var adopted90   = all90.filter(function(r){ return r.adoptionStatus==='adopted'; });
+  var reunited90  = all90.filter(function(r){ return r.reunited; });
+  var longStay    = inCare.filter(function(r){ return daysSince(r.date)>=21; });
+  var biteHolds   = holds.filter(function(r){ return r.holdType==='bite'||r.holdType==='dangerous'; });
+  var acIntake    = all90.filter(function(r){ return r.intakeSource==='ac'; });
+  var surrender   = all90.filter(function(r){ return r.intakeSource==='surrender'; });
+  var cats        = inCare.filter(function(r){ return (r.species||'').toLowerCase()==='cat'; });
+  var dogs        = inCare.filter(function(r){ return (r.species||'').toLowerCase()==='dog'; });
+
+  var avgLOS = inCare.length
+    ? Math.round(inCare.reduce(function(s,r){ return s+daysSince(r.date); },0)/inCare.length)
+    : 0;
+
+  var holdCostTotal = holds.reduce(function(s,r){
+    var e=r.enforcement||{}; var d=daysSince(r.shelterHoldStart||r.date);
+    return s+(d*(e.dailyCost!=null?e.dailyCost:DAILY_RATE));
+  },0);
+
+  var medCostTotal = all90.reduce(function(s,r){
+    var m=getMed(r)||{};
+    return s+(m.spayNeuterCost||0)+(m.vaccinationCost||0)+(m.vetCost||0)+(m.otherCost||0);
+  },0);
+
+  var spayNeut = all90.filter(function(r){ return getMed(r).spayNeuter; });
+  var adoptRate = (all90.length > 0) ? Math.round(adopted90.length/all90.length*100) : 0;
+  var reuniteRate = (all90.length > 0) ? Math.round(reunited90.length/all90.length*100) : 0;
+
+  return {
+    shelter:       activeShelter,
+    inCare:        inCare.length,
+    holds:         holds.length,
+    biteHolds:     biteHolds.length,
+    adoptReady:    adoptReady.length,
+    adopted90:     adopted90.length,
+    reunited90:    reunited90.length,
+    longStay:      longStay.length,
+    acIntake:      acIntake.length,
+    surrender:     surrender.length,
+    cats:          cats.length,
+    dogs:          dogs.length,
+    avgLOS:        avgLOS,
+    holdCost:      holdCostTotal,
+    medCost:       medCostTotal,
+    spayNeut:      spayNeut.length,
+    adoptRate:     adoptRate,
+    reuniteRate:   reuniteRate,
+    intake30:      all30.length,
+    intake90:      all90.length,
+    overcrowded:   inCare.length >= 15,
+    year:          now.getFullYear(),
+    city:          'Hastings, NE',
+  };
+}
+
+function scoreGrants(ctx) {
+  /* Score each grant category based on shelter metrics. Returns sorted array. */
+  var opps = [];
+
+  function opp(id, name, icon, est, diff, deadline, materials, fitFn) {
+    var fit = fitFn(ctx);
+    if (fit.score < 20) return; /* below threshold */
+    opps.push({
+      id: id, name: name, icon: icon,
+      score: fit.score, why: fit.why, gaps: fit.gaps||[],
+      est: est, difficulty: diff, deadline: deadline,
+      materials: materials,
+      readiness: fit.score>=75 ? 'Ready to Apply' : fit.score>=50 ? 'Needs Director Review' : ctx.medCost===0&&id==='medical' ? 'Needs Budget Numbers' : 'Needs More Data'
+    });
+  }
+
+  opp('adoption', 'Adoption Promotion Grant', '🏠', '$2,000–$10,000', 'Medium', 'Rolling / quarterly',
+    ['Adoption statistics (last 90 days)', 'Length of stay data', 'Animal photos & bios', 'Program description', 'Budget narrative'],
+    function(c) {
+      var score = 0; var why = []; var gaps = [];
+      if (c.adoptReady >= 3) { score+=30; why.push(c.adoptReady + ' animals currently adoption-ready'); }
+      if (c.avgLOS >= 14)    { score+=25; why.push('average length of stay is ' + c.avgLOS + ' days, indicating capacity strain'); }
+      if (c.adoptRate < 40)  { score+=20; why.push('adoption rate of ' + c.adoptRate + '% shows promotion opportunity'); }
+      if (c.longStay >= 2)   { score+=15; why.push(c.longStay + ' animals have been in care 21+ days'); }
+      if (c.intake90 > 5)    { score+=10; why.push('intake of ' + c.intake90 + ' animals in 90 days shows active operations'); }
+      if (!c.adoptReady)     gaps.push('Log animals as adoption-ready');
+      return { score: Math.min(score, 100), why: why.join('. '), gaps: gaps };
+    });
+
+  opp('spayneuter', 'Spay/Neuter Assistance Program', '🩺', '$1,500–$8,000', 'Low', 'Varies — many are rolling',
+    ['Surgery volume data', 'Cost per procedure breakdown', 'Partner vet contact', 'Community need statement'],
+    function(c) {
+      var score = 0; var why = []; var gaps = [];
+      if (c.spayNeut > 0)    { score+=35; why.push(c.spayNeut + ' spay/neuter procedures logged'); }
+      if (c.surrender >= 2)  { score+=25; why.push(c.surrender + ' owner surrenders in 90 days suggests community access barriers'); }
+      if (c.intake90 >= 8)   { score+=20; why.push('high intake volume (' + c.intake90 + ') indicates unmanaged pet population'); }
+      if (c.inCare >= 8)     { score+=20; why.push('current capacity (' + c.inCare + ' in care) supports community-level need'); }
+      if (!c.spayNeut)       gaps.push('Log medical procedures to strengthen application');
+      return { score: Math.min(score, 100), why: why.join('. '), gaps: gaps };
+    });
+
+  opp('medical', 'Veterinary / Medical Care Grant', '💉', '$3,000–$15,000', 'Medium', 'Annual — spring/fall cycles',
+    ['Itemized medical cost records', 'Case summaries for high-cost animals', 'Partner vet statement', 'Budget narrative'],
+    function(c) {
+      var score = 0; var why = []; var gaps = [];
+      if (c.medCost > 500)   { score+=40; why.push('$' + Math.round(c.medCost) + ' in documented medical costs in 90 days'); }
+      if (c.biteHolds >= 1)  { score+=25; why.push(c.biteHolds + ' bite/dangerous animal hold(s) requiring extended veterinary observation'); }
+      if (c.holds >= 2)      { score+=20; why.push(c.holds + ' active holds with ongoing daily care costs'); }
+      if (c.avgLOS >= 14)    { score+=15; why.push('avg stay of ' + c.avgLOS + ' days increases medical cost exposure'); }
+      if (!c.medCost)        gaps.push('Log medical costs in animal records');
+      return { score: Math.min(score, 100), why: why.join('. '), gaps: gaps };
+    });
+
+  opp('capacity', 'Overcrowding / Capacity Relief Grant', '🏗️', '$5,000–$25,000', 'High', 'Competitive — annual',
+    ['Current capacity vs. animal count', 'Intake trend data', 'Facility description', 'Community need letter', 'Director signature'],
+    function(c) {
+      var score = 0; var why = []; var gaps = [];
+      if (c.overcrowded)     { score+=40; why.push('shelter currently at or above 15 animals suggesting capacity strain'); }
+      if (c.longStay >= 3)   { score+=25; why.push(c.longStay + ' animals in care 21+ days indicates insufficient throughput'); }
+      if (c.acIntake >= 5)   { score+=20; why.push(c.acIntake + ' Animal Control intakes in 90 days adds mandatory holding burden'); }
+      if (c.avgLOS >= 21)    { score+=15; why.push('average stay of ' + c.avgLOS + ' days reduces available space significantly'); }
+      return { score: Math.min(score, 100), why: why.join('. '), gaps: gaps };
+    });
+
+  opp('foster', 'Foster Program Support Grant', '🏡', '$1,000–$6,000', 'Low', 'Rolling',
+    ['Current foster household count', 'Animals in foster vs. shelter', 'Foster supply/demand gap description', 'Program plan'],
+    function(c) {
+      var score = 0; var why = []; var gaps = [];
+      if (c.inCare >= 8)     { score+=35; why.push(c.inCare + ' animals in shelter suggests foster program could relieve capacity'); }
+      if (c.cats >= 3)       { score+=20; why.push(c.cats + ' cats in care — cats especially benefit from foster placement'); }
+      if (c.avgLOS >= 14)    { score+=25; why.push('long average stay (' + c.avgLOS + ' days) indicates foster shortage'); }
+      if (c.longStay >= 2)   { score+=20; why.push(c.longStay + ' long-stay animals are strong foster candidates'); }
+      return { score: Math.min(score, 100), why: why.join('. '), gaps: gaps };
+    });
+
+  opp('reunification', 'Public Trust / Reunification Technology Grant', '🔍', '$2,000–$12,000', 'Medium', 'Varies',
+    ['Lost/found reunification rate data', 'Description of current process gaps', 'Community reach metrics', 'Technology plan'],
+    function(c) {
+      var score = 0; var why = []; var gaps = [];
+      if (c.reuniteRate < 30) { score+=35; why.push('reunification rate of ' + c.reuniteRate + '% indicates gap in public-facing lost/found system'); }
+      if (c.acIntake >= 4)   { score+=25; why.push(c.acIntake + ' AC intakes suggest community-wide stray management need'); }
+      if (c.intake90 >= 10)  { score+=20; why.push('high intake volume (' + c.intake90 + ' in 90 days) supports community outreach case'); }
+      score += 20; /* PawPulse itself is evidence of tech modernization */
+      why.push('shelter is actively using digital intake and public reporting tools');
+      return { score: Math.min(score, 100), why: why.join('. '), gaps: gaps };
+    });
+
+  opp('technology', 'Technology / Data Modernization Grant', '💻', '$3,000–$20,000', 'Medium', 'Annual — varies by funder',
+    ['Current system description', 'Technology gaps identified', 'Implementation plan', 'Staff training plan', 'Budget narrative'],
+    function(c) {
+      var score = 30; /* Base: shelter using PawPulse is evidence */
+      var why = ['shelter has adopted digital intake, reporting, and public-facing lost/found tracking'];
+      if (c.intake90 >= 5)   { score+=25; why.push('intake volume of ' + c.intake90 + '/90 days supports data infrastructure need'); }
+      if (c.holds >= 1)      { score+=20; why.push('active hold tracking and cost reporting demonstrates operational data need'); }
+      if (c.inCare >= 5)     { score+=15; why.push(c.inCare + ' animals under management demonstrates system utilization'); }
+      why.push('grant could fund expanded features, staff training, or infrastructure');
+      return { score: Math.min(score, 100), why: why.join('. '), gaps: [] };
+    });
+
+  opp('community', 'Community Animal Welfare / Outreach Grant', '🌍', '$1,000–$8,000', 'Low', 'Rolling / annual',
+    ['Community impact summary', 'Intake/adoption statistics', 'Resident engagement data', 'One-page program narrative'],
+    function(c) {
+      var score = 0; var why = []; var gaps = [];
+      if (c.reunited90 >= 1) { score+=30; why.push(c.reunited90 + ' pets reunited with families in 90 days shows community impact'); }
+      if (c.adopted90 >= 1)  { score+=25; why.push(c.adopted90 + ' adoptions completed shows positive community outcomes'); }
+      if (c.intake90 >= 5)   { score+=25; why.push('active intake of ' + c.intake90 + ' animals demonstrates community reliance on shelter services'); }
+      score += 20; why.push('public-facing digital tools extend community access to lost/found and adoption services');
+      return { score: Math.min(score, 100), why: why.join('. '), gaps: gaps };
+    });
+
+  return opps.sort(function(a,b){ return b.score-a.score; });
+}
+
+function renderGrantsPanel() {
+  var panel  = document.getElementById('rpt-report-panel');
+  var empty  = document.getElementById('rpt-detail-empty');
+  var detail = document.getElementById('rpt-detail-panel');
+  var title  = document.getElementById('rpt-panel-title');
+  var sub    = document.getElementById('rpt-panel-sub');
+  var body   = document.getElementById('rpt-report-body');
+  var fRow   = document.getElementById('rpt-filters-row');
+
+  if (!panel || !body) return;
+  if (!validateShelterContext()) { body.innerHTML = '<div style="padding:32px;text-align:center;color:var(--warm-mid)">No shelter selected.</div>'; return; }
+
+  if (empty)  empty.style.display  = 'none';
+  if (detail) detail.style.display = 'none';
+  if (fRow)   fRow.style.display   = 'none'; /* hide standard report filters */
+  panel.style.display = 'flex';
+  if (title)  title.textContent = '💵 AI Grant Opportunities';
+  if (sub)    sub.textContent   = activeShelter + ' · Based on live operational data';
+
+  var ctx = buildGrantsContext();
+  var opps = scoreGrants(ctx);
+
+  /* Shelter snapshot strip */
+  var snap = '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;padding:12px;background:var(--cream-2);border-radius:10px">'
+    + snap_pill('🏥 In Care', ctx.inCare)
+    + snap_pill('⚠️ Holds', ctx.holds)
+    + snap_pill('🌟 Adopt Ready', ctx.adoptReady)
+    + snap_pill('📅 Avg Stay', ctx.avgLOS+'d')
+    + snap_pill('💰 Hold Cost', fmtMoney(ctx.holdCost))
+    + snap_pill('🩺 Med Cost', fmtMoney(ctx.medCost))
+    + snap_pill('✅ Adopted (90d)', ctx.adopted90)
+    + snap_pill('🏠 Reunited (90d)', ctx.reunited90)
+    + '</div>';
+
+  /* Tab bar */
+  var shelterGrants = grants.filter(function(g){ return g.shelterId===activeShelter; });
+  var queued    = shelterGrants.filter(function(g){ return g.status==='queued'; });
+  var submitted = shelterGrants.filter(function(g){ return g.status==='submitted'||g.status==='awarded'||g.status==='declined'; });
+
+  var tabs = '<div style="display:flex;gap:6px;margin-bottom:16px;border-bottom:2px solid var(--cream-3);padding-bottom:10px">'
+    + grantTab('opportunities', '🔍 Opportunities (' + opps.length + ')')
+    + grantTab('queue', '📝 Drafting Queue (' + queued.length + ')')
+    + grantTab('submitted', '📬 Submitted (' + submitted.length + ')')
+    + '</div>';
+
+  var content = '';
+  if (_grantsTab === 'opportunities') {
+    if (!opps.length) {
+      content = '<div style="text-align:center;padding:32px;color:var(--warm-mid)"><div style="font-size:2rem">📊</div><div style="margin-top:8px">Log more intake and medical data to unlock grant opportunities.</div></div>';
+    } else {
+      content = opps.map(function(o) { return renderGrantCard(o, ctx); }).join('');
+    }
+  } else if (_grantsTab === 'queue') {
+    content = renderGrantQueue(queued);
+  } else {
+    content = renderGrantSubmitted(submitted);
+  }
+
+  body.innerHTML = snap + tabs + content;
+}
+
+function snap_pill(label, val) {
+  return '<div style="font-size:.72rem;padding:4px 10px;background:#fff;border-radius:6px;border:1px solid var(--cream-3)">'
+    + '<span style="color:var(--warm-mid)">' + label + ' </span><strong>' + val + '</strong></div>';
+}
+
+function grantTab(id, label) {
+  var active = _grantsTab === id;
+  return '<button onclick="setGrantsTab(\'' + id + '\')" style="padding:6px 14px;font-size:.78rem;font-weight:' + (active?'700':'400') + ';border:none;background:none;cursor:pointer;color:' + (active?'var(--forest)':'var(--warm-mid)') + ';border-bottom:' + (active?'2px solid var(--forest)':'2px solid transparent') + ';margin-bottom:-12px;font-family:var(--font-body)">' + label + '</button>';
+}
+
+function setGrantsTab(tab) {
+  _grantsTab = tab;
+  renderGrantsPanel();
+}
+
+function renderGrantCard(o, ctx) {
+  var scoreColor = o.score>=75?'var(--found-g)':o.score>=50?'var(--amber)':'#a0a0a0';
+  var readColor  = o.readiness==='Ready to Apply'?'var(--found-g)':o.readiness==='Needs Director Review'?'var(--amber)':'#c0a0a0';
+  var savedGrant = grants.find(function(g){ return g.oppId===o.id&&g.shelterId===activeShelter&&g.status==='queued'; });
+
+  return '<div style="background:#fff;border:1px solid var(--cream-3);border-radius:12px;margin-bottom:12px;overflow:hidden">'
+    + '<div style="height:3px;background:' + scoreColor + '"></div>'
+    + '<div style="padding:14px 16px">'
+    /* Header row */
+    + '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">'
+    + '<div><div style="font-family:var(--font-display);font-size:.92rem;font-weight:700;color:var(--warm-dk)">' + o.icon + ' ' + esc(o.name) + '</div>'
+    + '<div style="font-size:.7rem;color:var(--warm-mid);margin-top:2px">' + esc(o.est) + ' · ' + esc(o.difficulty) + ' difficulty · ' + esc(o.deadline) + '</div></div>'
+    + '<div style="text-align:right"><div style="font-size:1.1rem;font-weight:800;color:' + scoreColor + '">' + o.score + '%</div><div style="font-size:.6rem;color:var(--warm-mid)">fit score</div></div>'
+    + '</div>'
+    /* Why it fits */
+    + '<div style="background:var(--cream-2);border-radius:8px;padding:10px 12px;margin-bottom:10px">'
+    + '<div style="font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--warm-mid);margin-bottom:4px">Why this fits ' + esc(activeShelter.split(' ')[0]) + '</div>'
+    + '<div style="font-size:.78rem;color:var(--warm-dk);line-height:1.5">' + esc(o.why) + '.</div>'
+    + (o.gaps.length?'<div style="font-size:.7rem;color:var(--amber);margin-top:6px">⚠️ To strengthen: ' + esc(o.gaps.join('; ')) + '</div>':'')
+    + '</div>'
+    /* Readiness + materials */
+    + '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">'
+    + '<span style="font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--cream-2);color:' + readColor + '">' + esc(o.readiness) + '</span>'
+    + '</div>'
+    + '<div style="font-size:.7rem;color:var(--warm-mid);margin-bottom:10px"><strong>Required:</strong> ' + esc(o.materials.join(', ')) + '</div>'
+    /* Actions */
+    + '<div style="display:flex;gap:6px;flex-wrap:wrap">'
+    + '<button onclick="openGrantDraft(\'' + o.id + '\')" style="padding:7px 14px;font-size:.76rem;font-weight:700;border-radius:8px;border:none;background:var(--forest);color:#fff;cursor:pointer;font-family:var(--font-body)">✍️ Generate Application Draft</button>'
+    + (savedGrant
+      ? '<span style="padding:7px 14px;font-size:.76rem;font-weight:600;color:var(--found-g)">✓ Saved to queue</span>'
+      : '<button onclick="saveGrantToQueue(\'' + o.id + '\',\'' + esc(o.name) + '\',\'' + esc(o.est) + '\')" style="padding:7px 14px;font-size:.76rem;font-weight:600;border-radius:8px;border:1.5px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body)">📌 Save for Later</button>')
+    + '</div>'
+    + '</div></div>';
+}
+
+function renderGrantQueue(queued) {
+  if (!queued.length) return '<div style="text-align:center;padding:32px;color:var(--warm-mid)"><div style="font-size:2rem">📝</div><div style="margin-top:8px;font-size:.86rem">No grants in drafting queue.<br>Save an opportunity from the Opportunities tab.</div></div>';
+  return queued.map(function(g) {
+    return '<div style="background:#fff;border:1px solid var(--cream-3);border-radius:12px;margin-bottom:10px;padding:14px 16px">'
+      + '<div style="font-family:var(--font-display);font-size:.88rem;font-weight:700;margin-bottom:4px">' + esc(g.name) + '</div>'
+      + '<div style="font-size:.7rem;color:var(--warm-mid);margin-bottom:8px">Saved ' + new Date(g.savedAt).toLocaleDateString() + ' · ' + esc(g.est||'—') + '</div>'
+      + (g.draftText ? '<div style="font-size:.72rem;color:var(--found-g);font-weight:600;margin-bottom:8px">✓ Draft ready</div>' : '')
+      + '<div style="display:flex;gap:6px;flex-wrap:wrap">'
+      + '<button onclick="openGrantDraft(\'' + g.oppId + '\')" style="padding:6px 12px;font-size:.74rem;font-weight:700;border-radius:7px;border:none;background:var(--forest);color:#fff;cursor:pointer;font-family:var(--font-body)">' + (g.draftText?'✏️ Edit Draft':'✍️ Generate Draft') + '</button>'
+      + '<button onclick="markGrantSubmitted(\'' + g.id + '\')" style="padding:6px 12px;font-size:.74rem;font-weight:600;border-radius:7px;border:1.5px solid #a0c0f0;background:#f0f4ff;color:#2050a0;cursor:pointer;font-family:var(--font-body)">📬 Mark Submitted</button>'
+      + '<button onclick="removeGrant(\'' + g.id + '\')" style="padding:6px 10px;font-size:.74rem;border-radius:7px;border:1.5px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body);color:var(--warm-mid)">✕</button>'
+      + '</div></div>';
+  }).join('');
+}
+
+function renderGrantSubmitted(submitted) {
+  if (!submitted.length) return '<div style="text-align:center;padding:32px;color:var(--warm-mid)"><div style="font-size:2rem">📬</div><div style="margin-top:8px;font-size:.86rem">No submitted grants yet.</div></div>';
+  var statusColor = { submitted:'#2050a0', awarded:'var(--found-g)', declined:'var(--lost-r)' };
+  return '<table style="width:100%;border-collapse:collapse;font-size:.8rem">'
+    + '<thead><tr style="background:var(--cream-2)">'
+    + '<th style="padding:8px 10px;text-align:left;border-bottom:2px solid var(--cream-3)">Grant</th>'
+    + '<th style="padding:8px 10px;text-align:left;border-bottom:2px solid var(--cream-3)">Submitted</th>'
+    + '<th style="padding:8px 10px;text-align:left;border-bottom:2px solid var(--cream-3)">Amount</th>'
+    + '<th style="padding:8px 10px;text-align:left;border-bottom:2px solid var(--cream-3)">Status</th>'
+    + '<th style="padding:8px 10px;text-align:left;border-bottom:2px solid var(--cream-3)">Notes</th>'
+    + '</tr></thead><tbody>'
+    + submitted.map(function(g,i) {
+        return '<tr style="background:' + (i%2?'var(--cream-2)':'#fff') + '">'
+          + '<td style="padding:8px 10px;border-bottom:1px solid var(--cream-3);font-weight:600">' + esc(g.name) + '</td>'
+          + '<td style="padding:8px 10px;border-bottom:1px solid var(--cream-3)">' + (g.submittedAt?new Date(g.submittedAt).toLocaleDateString():'—') + '</td>'
+          + '<td style="padding:8px 10px;border-bottom:1px solid var(--cream-3)">' + esc(g.amountRequested||'—') + '</td>'
+          + '<td style="padding:8px 10px;border-bottom:1px solid var(--cream-3);font-weight:700;color:' + (statusColor[g.status]||'var(--warm-dk)') + '">' + esc(g.status||'—') + '</td>'
+          + '<td style="padding:8px 10px;border-bottom:1px solid var(--cream-3);color:var(--warm-mid)">' + esc(g.notes||'—') + '</td>'
+          + '</tr>';
+      }).join('')
+    + '</tbody></table>';
+}
+
+function saveGrantToQueue(oppId, name, est) {
+  if (!activeShelter) return;
+  var existing = grants.find(function(g){ return g.oppId===oppId&&g.shelterId===activeShelter&&g.status==='queued'; });
+  if (existing) return;
+  grants.push({
+    id: 'g' + Date.now(), oppId: oppId, shelterId: activeShelter,
+    name: name, est: est, status: 'queued',
+    savedAt: new Date().toISOString(), draftText: null,
+    amountRequested: '', submittedAt: null, notes: '', awardDecision: null
+  });
+  saveGrants();
+  renderGrantsPanel();
+}
+
+function removeGrant(gid) {
+  grants = grants.filter(function(g){ return g.id!==gid; });
+  saveGrants(); renderGrantsPanel();
+}
+
+function markGrantSubmitted(gid) {
+  var g = grants.find(function(x){ return x.id===gid; });
+  if (!g) return;
+  var amt = prompt('Amount requested (e.g. $5,000):') || '';
+  g.status = 'submitted'; g.submittedAt = new Date().toISOString(); g.amountRequested = amt;
+  saveGrants(); _grantsTab = 'submitted'; renderGrantsPanel();
+}
+
+/* ── GRANT DRAFT GENERATOR (AI-powered) ──────────────────────────────── */
+var _grantDraftOverlay = null;
+
+function openGrantDraft(oppId) {
+  var ctx  = buildGrantsContext();
+  var opps = scoreGrants(ctx);
+  var opp  = opps.find(function(o){ return o.id===oppId; });
+  if (!opp) return;
+
+  /* Find or create queue entry */
+  var queued = grants.find(function(g){ return g.oppId===oppId&&g.shelterId===activeShelter&&(g.status==='queued'||g.status==='drafting'); });
+  if (!queued) {
+    saveGrantToQueue(oppId, opp.name, opp.est);
+    queued = grants.find(function(g){ return g.oppId===oppId&&g.shelterId===activeShelter; });
+  }
+
+  /* Build overlay */
+  var overlay = document.createElement('div');
+  overlay.id = 'grant-draft-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:9950;background:rgba(42,31,18,.6);display:flex;align-items:flex-end;justify-content:center';
+  overlay.innerHTML =
+    '<div style="background:var(--cream);border-radius:18px 18px 0 0;width:100%;max-width:700px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden" onclick="event.stopPropagation()">'
+    + '<div style="padding:14px 20px 10px;border-bottom:1px solid var(--cream-3);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">'
+    + '<div><div style="font-family:var(--font-display);font-size:.95rem;font-weight:700;color:var(--warm-dk)">✍️ ' + esc(opp.name) + '</div>'
+    + '<div style="font-size:.7rem;color:var(--warm-mid)">' + esc(activeShelter) + ' · AI-drafted from real shelter data</div></div>'
+    + '<button onclick="closeGrantDraft()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--warm-mid)">✕</button>'
+    + '</div>'
+    + '<div id="gd-body" style="flex:1;overflow-y:auto;padding:16px 20px 32px;-webkit-overflow-scrolling:touch">'
+    + (queued&&queued.draftText
+      ? '<div id="gd-draft-wrap"><div style="display:flex;gap:8px;margin-bottom:12px">'
+        + '<button onclick="copyGrantDraft()" style="padding:7px 14px;font-size:.76rem;font-weight:700;border-radius:8px;border:none;background:var(--forest);color:#fff;cursor:pointer;font-family:var(--font-body)">📋 Copy Draft</button>'
+        + '<button onclick="printGrantDraft()" style="padding:7px 14px;font-size:.76rem;font-weight:600;border-radius:8px;border:1.5px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body)">🖨️ Print</button>'
+        + '<button onclick="regenerateGrantDraft(\'' + oppId + '\')" style="padding:7px 14px;font-size:.76rem;font-weight:600;border-radius:8px;border:1.5px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body)">🔄 Regenerate</button>'
+        + '</div><div id="gd-text" style="white-space:pre-wrap;font-family:Georgia,serif;font-size:.86rem;line-height:1.75;color:var(--warm-dk)">' + esc(queued.draftText) + '</div></div>'
+      : '<div style="text-align:center;padding:24px 0"><div style="font-size:1.5rem;margin-bottom:10px">✨</div>'
+        + '<div style="font-size:.86rem;font-weight:600;margin-bottom:6px;color:var(--warm-dk)">Ready to draft your ' + esc(opp.name) + ' application</div>'
+        + '<div style="font-size:.76rem;color:var(--warm-mid);margin-bottom:16px;line-height:1.5">'
+        + 'Claude will generate a full application draft using ' + esc(activeShelter) + '\'s real operational data:<br>'
+        + ctx.inCare + ' animals in care · ' + ctx.avgLOS + 'd avg stay · ' + ctx.adopted90 + ' adoptions (90d) · ' + fmtMoney(ctx.holdCost) + ' hold cost exposure'
+        + '</div>'
+        + '<button onclick="generateGrantDraft(\'' + oppId + '\')" style="padding:12px 28px;font-family:var(--font-display);font-size:.92rem;font-weight:700;background:var(--forest);color:#fff;border:none;border-radius:10px;cursor:pointer">✨ Generate Full Application Draft</button>'
+        + '</div>')
+    + '</div></div>';
+
+  document.body.appendChild(overlay);
+  _grantDraftOverlay = overlay;
+  window._grantDraftOppId = oppId;
+}
+
+function closeGrantDraft() {
+  if (_grantDraftOverlay) { _grantDraftOverlay.remove(); _grantDraftOverlay = null; }
+}
+
+async function generateGrantDraft(oppId) {
+  var ctx  = buildGrantsContext();
+  var opps = scoreGrants(ctx);
+  var opp  = opps.find(function(o){ return o.id===oppId; });
+  if (!opp) return;
+
+  var body = document.getElementById('gd-body');
+  if (body) body.innerHTML = '<div style="text-align:center;padding:40px"><div style="font-size:1.5rem;margin-bottom:12px">✨</div>'
+    + '<div style="font-size:.86rem;font-weight:600;color:var(--warm-dk);margin-bottom:8px">Drafting your application…</div>'
+    + '<div style="font-size:.76rem;color:var(--warm-mid);margin-bottom:16px">Using real data from ' + esc(activeShelter) + '</div>'
+    + '<div class="ai-loading" style="justify-content:center"><div class="ai-dot"></div><div class="ai-dot" style="animation-delay:.2s"></div><div class="ai-dot" style="animation-delay:.4s"></div></div></div>';
+
+  var prompt = 'You are a grant writer helping a small animal shelter apply for a grant.\n\n'
+    + 'SHELTER: ' + ctx.shelter + '\nLOCATION: ' + ctx.city + '\nGRANT TYPE: ' + opp.name + '\n\n'
+    + 'REAL SHELTER DATA (use these exact numbers in the application):\n'
+    + '- Animals currently in care: ' + ctx.inCare + '\n'
+    + '- Active holds: ' + ctx.holds + '\n'
+    + '- Animals adoption-ready: ' + ctx.adoptReady + '\n'
+    + '- Average length of stay: ' + ctx.avgLOS + ' days\n'
+    + '- Animals adopted in last 90 days: ' + ctx.adopted90 + '\n'
+    + '- Animals reunited with owners (90d): ' + ctx.reunited90 + '\n'
+    + '- Intake in last 90 days: ' + ctx.intake90 + '\n'
+    + '- Intake from Animal Control (90d): ' + ctx.acIntake + '\n'
+    + '- Owner surrenders (90d): ' + ctx.surrender + '\n'
+    + '- Hold cost exposure: $' + Math.round(ctx.holdCost) + '\n'
+    + '- Medical cost (90d): $' + Math.round(ctx.medCost) + '\n'
+    + '- Spay/neuter procedures (90d): ' + ctx.spayNeut + '\n'
+    + '- Long-stay animals (21+ days): ' + ctx.longStay + '\n'
+    + '- Dogs in care: ' + ctx.dogs + ', Cats in care: ' + ctx.cats + '\n'
+    + '- Adoption rate: ' + ctx.adoptRate + '%\n'
+    + '- Reunification rate: ' + ctx.reuniteRate + '%\n\n'
+    + 'WHY THIS GRANT FITS: ' + opp.why + '\n\n'
+    + 'Write a complete, professional grant application draft with these clearly labeled sections:\n'
+    + '1. EXECUTIVE SUMMARY\n'
+    + '2. STATEMENT OF NEED (use the real data above with specific numbers)\n'
+    + '3. PROBLEM DESCRIPTION\n'
+    + '4. PROGRAM DESCRIPTION\n'
+    + '5. EXPECTED OUTCOMES (be specific and measurable)\n'
+    + '6. BUDGET NARRATIVE (reference cost data provided)\n'
+    + '7. ORGANIZATIONAL BACKGROUND\n'
+    + '8. MEASURABLE IMPACT\n\n'
+    + 'Use a professional, sincere tone. Do not make up statistics. Use only the data provided. '
+    + 'Write in full paragraphs, not bullet points. This should be ready to submit with minor edits.';
+
+  try {
+    var resp = await fetch('/api/anthropic', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 2000,
+        messages: [{ role:'user', content: prompt }]
+      })
+    });
+    var data = await resp.json();
+    var text = (data.content||[]).map(function(b){ return b.text||''; }).join('');
+    if (!text) throw new Error('Empty response');
+
+    /* Save draft to grants storage */
+    var queued = grants.find(function(g){ return g.oppId===oppId&&g.shelterId===activeShelter; });
+    if (queued) { queued.draftText = text; saveGrants(); }
+    else { grants.push({ id:'g'+Date.now(), oppId:oppId, shelterId:activeShelter, name:opp.name, est:opp.est, status:'queued', savedAt:new Date().toISOString(), draftText:text }); saveGrants(); }
+
+    if (body) body.innerHTML =
+      '<div style="display:flex;gap:8px;margin-bottom:12px">'
+      + '<button onclick="copyGrantDraft()" style="padding:7px 14px;font-size:.76rem;font-weight:700;border-radius:8px;border:none;background:var(--forest);color:#fff;cursor:pointer;font-family:var(--font-body)">📋 Copy Draft</button>'
+      + '<button onclick="printGrantDraft()" style="padding:7px 14px;font-size:.76rem;font-weight:600;border-radius:8px;border:1.5px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body)">🖨️ Print</button>'
+      + '<button onclick="regenerateGrantDraft(\'' + oppId + '\')" style="padding:7px 14px;font-size:.76rem;font-weight:600;border-radius:8px;border:1.5px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body)">🔄 Regenerate</button>'
+      + '</div>'
+      + '<div id="gd-text" style="white-space:pre-wrap;font-family:Georgia,serif;font-size:.86rem;line-height:1.75;color:var(--warm-dk)">' + esc(text) + '</div>';
+
+  } catch(err) {
+    if (body) body.innerHTML = '<div style="padding:24px;color:var(--lost-r);text-align:center">Draft generation failed. Check your API connection and try again.<br><small>' + err.message + '</small></div>';
+  }
+}
+
+function regenerateGrantDraft(oppId) {
+  var queued = grants.find(function(g){ return g.oppId===oppId&&g.shelterId===activeShelter; });
+  if (queued) { queued.draftText = null; saveGrants(); }
+  generateGrantDraft(oppId);
+}
+
+function copyGrantDraft() {
+  var el = document.getElementById('gd-text');
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent).then(function(){
+    var btn = document.querySelector('#gd-body button');
+    if (btn) { btn.textContent = '✓ Copied!'; setTimeout(function(){ btn.textContent = '📋 Copy Draft'; }, 2000); }
+  });
+}
+
+function printGrantDraft() {
+  var el  = document.getElementById('gd-text');
+  if (!el) return;
+  var w = window.open('','_blank','width=740,height=700');
+  w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Grant Application — ' + esc(activeShelter) + '</title>'
+    + '<style>body{font-family:Georgia,serif;max-width:680px;margin:50px auto;font-size:13px;line-height:1.8;color:#222}h2{font-size:1rem;text-transform:uppercase;letter-spacing:.08em;border-bottom:1px solid #ccc;padding-bottom:4px;margin-top:28px}@media print{body{margin:0}}</style></head>'
+    + '<body><h1 style="font-size:1.1rem;margin-bottom:4px">Grant Application</h1><p style="color:#666;font-size:.8rem">' + esc(activeShelter) + ' · ' + new Date().toLocaleDateString() + '</p>'
+    + '<div style="white-space:pre-wrap">' + esc(el.textContent) + '</div></body></html>');
+  w.document.close(); w.focus(); setTimeout(function(){ w.print(); }, 400);
+}
+
+
 function closeReportPanel() {
   _activeReportId = null;
+  _grantsTab = 'opportunities';
   var panel = document.getElementById('rpt-report-panel');
   var empty = document.getElementById('rpt-detail-empty');
+  var fRow  = document.getElementById('rpt-filters-row');
+  var btn   = document.getElementById('rpt-run-btn');
+  var lbl   = document.getElementById('rpt-selected-label');
   if (panel) panel.style.display = 'none';
   if (empty) empty.style.display = 'flex';
+  if (fRow)  fRow.style.display  = 'none';
+  if (btn)   { btn.disabled = true; btn.style.opacity = '.4'; btn.style.pointerEvents = 'none'; btn.textContent = '▶ Generate Report'; }
+  if (lbl)   { lbl.textContent = 'Select a report type above'; lbl.style.color = 'var(--warm-mid)'; lbl.style.fontWeight = '400'; }
   renderReportTypeList();
 }
 
@@ -1950,7 +2561,7 @@ function cardHTML(r) {
     /* Only show description for non-hold animals */
     if (publicDesc && r.intakeType !== 'hold') rows += '<div class="pc-row" style="margin-top:4px">' + esc(publicDesc) + '</div>';
     if (r.address && r.intakeType !== 'hold') rows += '<div class="pc-row"><strong>Found near:</strong> ' + esc(r.address) + '</div>';
-    if (r.shelter) rows += '<div class="pc-row"><strong>🏠 In care at:</strong> ' + esc(r.shelterName||'local shelter') + '</div>';
+    if (r.shelter) rows += '<div class="pc-row"><strong>🏠 In care at:</strong> ' + esc(r.shelterName||'Heartland Pet Connection') + '</div>';
     /* How it arrived — public-safe language, shown for non-citizen sources only */
     if (r.shelter && r.intakeSource && r.intakeSource !== 'citizen') {
       var arrivedTxt = r.intakeSource === 'ac'        ? 'Brought in by city services'
@@ -2065,6 +2676,20 @@ function cardHTML(r) {
     }
   }
 
+  var animalFirstName = (lost && r.name) ? r.name.split(' ')[0]
+    : (r.name ? r.name.split(' ')[0] : 'our friend');
+
+  var whatNextSection = !reunited
+    ? '<div style="margin-top:10px;border-top:1px solid var(--cream-3);padding-top:10px">'
+      + '<button onclick="toggleWhatNext(' + r.id + ')" style="width:100%;text-align:left;background:none;border:none;cursor:pointer;padding:0;font-family:var(--font-body)">'
+      + '<div style="display:flex;justify-content:space-between;align-items:center">'
+      + '<div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--amber)">What happens next to ' + esc(animalFirstName) + '?</div>'
+      + '<span id="whn-arrow-' + r.id + '" style="font-size:.7rem;color:var(--amber);transition:transform .2s">▾</span>'
+      + '</div></button>'
+      + '<div id="whn-body-' + r.id + '" style="display:none;font-size:.78rem;color:var(--warm-dk);line-height:1.6;margin-top:6px"></div>'
+      + '</div>'
+    : '';
+
   return img
     + '<div class="pc-body" style="background:' + bg + '">'
     + badge
@@ -2080,6 +2705,7 @@ function cardHTML(r) {
     + comments
     + adoptSection
     + reuniteBtn
+    + whatNextSection
     + '<div style="text-align:center;margin-top:4px"><button onclick="printReport(' + r.id + ')" style="background:none;border:none;cursor:pointer;font-size:.7rem;color:var(--warm-mid);text-decoration:underline">Print report</button></div>'
     + '</div>';
 }
@@ -2105,6 +2731,104 @@ function openCard(r, cp) {
     card.style.top  = top  + 'px';
     card.style.visibility = '';
   });
+}
+
+async function generateWhatNext(r) {
+  var bodyEl = document.getElementById('whn-body-' + r.id);
+  if (!bodyEl) return;
+
+  var name        = r.name ? r.name.split(' ')[0] : 'our friend';
+  var species     = r.species || 'animal';
+  var days        = Math.floor(daysSince(r.shelterHoldStart || r.date));
+  var shelter     = r.shelterName || r.finder || 'the local shelter';
+  var lost        = r.type === 'lost';
+  var isHold      = r.intakeType === 'hold';
+  var holdType    = r.holdType || 'standard';
+  var isAdopt     = r.adoptionStatus === 'available';
+  var isSurrender = r.intakeSource === 'surrender';
+  var acCase      = r.intakeSource === 'ac';
+  var daysWaiting = isAdopt ? Math.floor(daysSince(r.dateAvailable || r.date)) : 0;
+  var holdCost    = isHold ? (days * ((r.enforcement && r.enforcement.dailyCost) || 25)) : 0;
+
+  var context = 'Animal: ' + (r.name || 'unnamed ' + species)
+    + '\nSpecies: ' + species
+    + (r.breed ? '\nBreed: ' + r.breed : '')
+    + (r.color ? '\nColor: ' + r.color : '')
+    + '\nStatus: ' + (lost ? 'Lost — owner is searching'
+        : isHold && holdType === 'bite' ? 'Bite hold — under mandatory observation'
+        : isHold && holdType === 'dangerous' ? 'Dangerous animal hold — under review'
+        : isHold ? 'AC hold — city services involved'
+        : isSurrender ? 'Owner surrender — needs new home'
+        : isAdopt ? 'Adoption ready — waiting ' + daysWaiting + ' days'
+        : 'In shelter care — stray, owner search ongoing')
+    + '\nDays in care: ' + days
+    + '\nShelter: ' + shelter
+    + (isHold ? '\nEstimated hold cost so far: $' + holdCost : '')
+    + (r.desc ? '\nNotes: ' + r.desc : '');
+
+  var prompt = 'You are writing a short, warm, specific narrative for a public-facing pet tracking app called PawPulse in Hastings, Nebraska.'
+    + '\n\nAnimal details:\n' + context
+    + '\n\nWrite 2-3 sentences answering "What happens next to ' + name + '?" from the perspective of someone who cares about this animal.'
+    + ' Be specific to the animal\'s actual situation — not generic. Use the real shelter name, real timeline, real process.'
+    + ' For a lost pet: describe the owner search and how the community can help.'
+    + ' For a stray in care: describe the shelter intake process, vaccination/assessment, owner search window, and path to adoption if no owner is found.'
+    + ' For a bite/dangerous hold: describe the legal hold timeline, what the evaluation involves, and what happens after.'
+    + ' For an AC hold: describe city process, timeline, and shelter\'s role.'
+    + ' For an owner surrender: describe the transition process and path to finding a new home.'
+    + ' For adoption-ready: make it feel urgent and hopeful — this animal is waiting for someone right now.'
+    + ' Keep it under 60 words. Warm, human, specific. No bullet points. No headers. Just the narrative.';
+
+  try {
+    var resp = await fetch('/api/anthropic', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 150,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    var data = await resp.json();
+    /* Surface API errors */
+    if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+    var text = (data.content || []).map(function(b){ return b.text || ''; }).join('').trim();
+    if (bodyEl && text) {
+      bodyEl.textContent = text;
+      bodyEl.style.fontStyle = 'normal';
+      bodyEl.style.color = 'var(--warm-dk)';
+      bodyEl.style.display = 'block';
+      var arrow = document.getElementById('whn-arrow-' + r.id);
+      if (arrow) arrow.style.transform = 'rotate(0deg)';
+    } else if (bodyEl) {
+      bodyEl.textContent = 'Unable to generate at this time.';
+      bodyEl.style.fontStyle = 'italic';
+    }
+  } catch(e) {
+    console.error('What Happens Next error:', e.message);
+    if (bodyEl) {
+      bodyEl.textContent = 'Unable to generate at this time.';
+      bodyEl.style.fontStyle = 'italic';
+      bodyEl.style.color = 'var(--warm-mid)';
+      bodyEl.style.display = 'block';
+    }
+  }
+}
+
+function toggleWhatNext(id) {
+  var bodyEl  = document.getElementById('whn-body-' + id);
+  var arrowEl = document.getElementById('whn-arrow-' + id);
+  if (!bodyEl) return;
+  var open = bodyEl.style.display !== 'none';
+  bodyEl.style.display  = open ? 'none' : 'block';
+  if (arrowEl) arrowEl.style.transform = open ? 'rotate(-90deg)' : 'rotate(0deg)';
+  /* Load on first expand if not yet loaded */
+  if (!open && !bodyEl.textContent) {
+    bodyEl.textContent = 'Loading…';
+    bodyEl.style.fontStyle = 'italic';
+    bodyEl.style.color = 'var(--warm-mid)';
+    var r = reports.find(function(x){ return String(x.id) === String(id); });
+    if (r) generateWhatNext(r);
+  }
 }
 
 function closeCard() {
@@ -2249,23 +2973,66 @@ function renderMarkers() {
     }
   });
 
+  /* Only show lost and found public reports as individual pins — not shelter animals */
   reports.filter(function(r) {
+    if (r.shelter) return false;         /* shelter animals — handled by building pin below */
     if (!isPublicVisible(r)) return false;
     if (curFilter === 'all')   return !r.reunited;
     if (curFilter === 'lost')  return r.type==='lost'  && !r.reunited;
     if (curFilter === 'found') return r.type==='found' && !r.reunited;
-    if (curFilter === 'adopt') return r.adoptionStatus === 'available' && !r.reunited;
     return true;
   }).forEach(function(r){
-    var adoptReady  = r.adoptionStatus === 'available' && !r.reunited;
-    var atShelter   = r.shelter && !adoptReady && !r.reunited;
-    var urgentAdopt = adoptReady && Math.floor(daysSince(r.dateAvailable || r.date)) >= 30;
-    var m = L.marker([r.lat,r.lng],{icon:pinIcon(r.type, r.reunited, r.possibleMatch && !r.reunited, adoptReady, atShelter, urgentAdopt)}).addTo(map);
+    var m = L.marker([r.lat,r.lng],{icon:pinIcon(r.type, r.reunited, r.possibleMatch && !r.reunited, false, false, false)}).addTo(map);
     m.on('click', function(e){ closeCard(); openCard(r,e.containerPoint); L.DomEvent.stopPropagation(e); });
     lMarkers.push(m);
   });
-  document.getElementById('cnt-lost').textContent  = reports.filter(function(r){return r.type==='lost'  && !r.reunited && isPublicVisible(r);}).length;
-  document.getElementById('cnt-found').textContent = reports.filter(function(r){return r.type==='found' && !r.reunited && isPublicVisible(r);}).length;
+
+  /* One building pin per shelter showing animal counts */
+  shelters.forEach(function(s) {
+    var inCare   = reports.filter(function(r){ return r.shelter && (r.shelterName===s.name||r.finder===s.name) && !r.reunited && r.adoptionStatus!=='adopted' && !(r.enforcement&&r.enforcement.holdOutcome); }).length;
+    var adoptable = reports.filter(function(r){ return r.shelter && (r.shelterName===s.name||r.finder===s.name) && r.adoptionStatus==='available' && !r.reunited; }).length;
+    if (inCare === 0 && adoptable === 0) return; /* skip empty shelters */
+    var icon = L.divIcon({
+      className: '',
+      html: '<div style="text-align:center;filter:drop-shadow(0 2px 6px rgba(0,0,0,.5))">'
+        + '<div style="font-size:2.4rem;line-height:1">🏠</div>'
+        + '</div>',
+      iconAnchor: [20, 38]
+    });
+    var m = L.marker([s.lat, s.lng], { icon: icon }).addTo(map);
+    m.on('click', function(e) {
+      closeCard();
+      /* Show a summary card for the shelter */
+      var card = document.getElementById('pin-card');
+      var body = document.getElementById('pin-card-body');
+      body.innerHTML = '<div class="pc-body">'
+        + '<div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--warm-dk);margin-bottom:2px">🏛️ ' + esc(s.name) + '</div>'
+        + '<div style="font-size:.76rem;color:var(--warm-mid);margin-bottom:10px">' + esc(s.address) + '</div>'
+        + '<div style="display:flex;gap:10px;margin-bottom:10px">'
+        + '<div style="flex:1;background:var(--cream-2);border-radius:8px;padding:8px;text-align:center"><div style="font-size:1.3rem;font-weight:800;color:#2050a0">' + inCare + '</div><div style="font-size:.68rem;color:var(--warm-mid)">In Care</div></div>'
+        + '<div style="flex:1;background:var(--cream-2);border-radius:8px;padding:8px;text-align:center"><div style="font-size:1.3rem;font-weight:800;color:#c8841a">' + adoptable + '</div><div style="font-size:.68rem;color:var(--warm-mid)">Adoptable</div></div>'
+        + '</div>'
+        + (s.phone ? '<div style="font-size:.78rem;color:var(--warm-mid);margin-bottom:4px">📞 ' + esc(s.phone) + '</div>' : '')
+        + (s.website ? '<div style="font-size:.78rem;color:#2050a0;margin-bottom:8px">🌐 ' + esc(s.website) + '</div>' : '')
+        + '<button onclick="setView(\'adopt\',document.querySelector(\'.tab-btn[onclick*=\\\"adopt\\\"]\'))" style="width:100%;padding:9px;font-family:var(--font-display);font-size:.82rem;font-weight:700;background:var(--forest);color:#fff;border:none;border-radius:9px;cursor:pointer">See Adoptable Animals →</button>'
+        + '</div>';
+      card.style.left = Math.max(14, e.containerPoint.x - 140) + 'px';
+      card.style.top  = Math.max(14, e.containerPoint.y - 160) + 'px';
+      card.className = 'open';
+      card.style.visibility = 'visible';
+      L.DomEvent.stopPropagation(e);
+    });
+    lMarkers.push(m);
+  });
+
+  document.getElementById('cnt-lost').textContent    = reports.filter(function(r){return r.type==='lost'  && !r.reunited && isPublicVisible(r);}).length;
+  document.getElementById('cnt-found').textContent   = reports.filter(function(r){return r.type==='found' && !r.reunited && isPublicVisible(r) && !r.shelter;}).length;
+  var cntS = document.getElementById('cnt-shelter');
+  var cntA = document.getElementById('cnt-adopt');
+  var lblS = document.getElementById('legend-shelter-label');
+  if (cntS) cntS.textContent = reports.filter(function(r){return r.shelter && !r.reunited && r.adoptionStatus!=='adopted' && !(r.enforcement&&r.enforcement.holdOutcome);}).length;
+  if (cntA) cntA.textContent = reports.filter(function(r){return r.adoptionStatus==='available' && !r.reunited;}).length;
+  if (lblS && activeShelter) lblS.textContent = '🏠 In Care of ' + activeShelter.split(' ')[0];
   document.getElementById('empty-hint').style.opacity = reports.length ? '0' : '1';
   updateNavCounts();
   var rptView = document.getElementById('view-reports');
@@ -2567,11 +3334,11 @@ function stopMic() {
    Call this after any form opens or panel renders. */
 function injectMicButtons(scopeEl) {
   var root = scopeEl || document;
-  root.querySelectorAll('textarea:not([data-has-mic]), input[type=text]:not([data-has-mic]), input[type=tel]:not([data-has-mic])').forEach(function(el) {
+  /* Only add mic to textareas (description/notes fields) — not name, ID, color, address etc */
+  root.querySelectorAll('textarea:not([data-has-mic])').forEach(function(el) {
     if (!el.id) return;
     el.setAttribute('data-has-mic', '1');
     var parent = el.parentNode;
-    /* Don't double-wrap */
     if (parent && parent.classList && parent.classList.contains('mic-wrap')) return;
     var wrap = document.createElement('div');
     wrap.className = 'mic-wrap';
@@ -2658,9 +3425,9 @@ function showToast(type) {
 })();
 
 var shelters = [
-  { name:'Adams County Humane Society', address:'1000 S Baltimore Ave, Hastings, NE', phone:'(402) 462-7387', lat:40.5845, lng:-98.3892, type:'shelter' },
-  { name:'Heartland Pet Connection',    address:'Hastings, NE',                        phone:'',               lat:40.5870, lng:-98.3940, type:'shelter' },
-  { name:'Start Over Rover',            address:'Hastings, NE',                        phone:'',               lat:40.5900, lng:-98.3870, type:'shelter' }
+  { name:'Heartland Pet Connection',    address:'1807 W J St, Hastings, NE 68901', phone:'(402) 462-7387', website:'heartlandpetconnection.com', lat:40.5748, lng:-98.4100, type:'shelter' },
+  { name:'Adams County Humane Society', address:'Hastings, NE',                     phone:'',               website:'', lat:40.5845, lng:-98.3892, type:'shelter' },
+  { name:'Start Over Rover',            address:'Hastings, NE',                     phone:'',               website:'', lat:40.5900, lng:-98.3870, type:'shelter' }
 ];
 
 var activeShelter = shelters[0].name;
@@ -2668,6 +3435,69 @@ var selectedIntakeId = null;
 var shelterTab = 'queue';       // 'queue' | 'inventory'
 var selectedInvId = null;
 var inventory = JSON.parse(localStorage.getItem('pawpulse-inv-v1') || '[]');
+var grants    = JSON.parse(localStorage.getItem('pawpulse-grants-v1') || '[]');
+
+function saveGrants() {
+  localStorage.setItem('pawpulse-grants-v1', JSON.stringify(grants));
+}
+
+/* ── SHELTER ISOLATION: single source of truth helpers ───────────────── */
+/*
+ * Two-stage data model:
+ *   Stage 1 — publicReports: resident lost/found + unconfirmed intake
+ *             → appear on map, may resolve WITHOUT entering shelter
+ *   Stage 2 — shelterRecords: physically in shelter care
+ *             → feed ALL operational pages (In Care, Adoption, Reports, Grants)
+ *
+ * Both live in reports[] with shelter/type flags.
+ * ALL operational queries MUST go through getShelterData() below.
+ */
+
+function getShelterData(opts) {
+  /* opts: { includeHolds, includeAdopt, includeResolved, includeLost, cutoffDays } */
+  opts = opts || {};
+  if (!activeShelter || !reports || !reports.length) return [];
+
+  var cutoff = opts.cutoffDays
+    ? new Date(Date.now() - opts.cutoffDays * 86400000).toISOString()
+    : null;
+
+  return reports.filter(function(r) {
+    /* SHELTER ISOLATION: must belong to active shelter */
+    if (r.shelterName !== activeShelter && r.finder !== activeShelter) return false;
+    /* Must be a shelter record (Stage 2) — not a public-only report */
+    if (!r.shelter) return false;
+    /* Skip resolved unless asked */
+    if (!opts.includeResolved && (r.reunited || r.euthanized)) return false;
+    /* Skip adopted unless asked */
+    if (!opts.includeAdopt && r.adoptionStatus === 'adopted') return false;
+    /* Skip closed holds unless asked */
+    if (!opts.includeResolved && r.enforcement && r.enforcement.holdOutcome) return false;
+    /* Date cutoff */
+    if (cutoff && r.date < cutoff) return false;
+    return true;
+  });
+}
+
+function getPublicReports(opts) {
+  /* Stage 1 — public lost/found reports, not shelter-managed */
+  opts = opts || {};
+  return reports.filter(function(r) {
+    if (r.shelter) return false; /* already in shelter inventory */
+    if (opts.type && r.type !== opts.type) return false;
+    return true;
+  });
+}
+
+function validateShelterContext() {
+  /* Returns false and shows empty state if shelter not selected */
+  if (!activeShelter) {
+    console.warn('PawPulse: No shelter context set. Data not rendered.');
+    return false;
+  }
+  return true;
+}
+
 
 function saveInv() {
   localStorage.setItem('pawpulse-inv-v1', JSON.stringify(inventory));
@@ -3429,7 +4259,7 @@ function toggleIntakeForm(intakeSource) {
     + '<div style="flex:1"><label style="margin-bottom:3px">Shelter Animal ID / Tag #</label>'
     + '<input type="text" id="si-animal-id" placeholder="e.g. A-2024-001 or 1042" style="width:100%;padding:7px 10px;font-size:.88rem;border:1.5px solid var(--cream-3);border-radius:7px;font-family:var(--font-body);font-weight:600;letter-spacing:.03em"></div></div>'
 
-    + '<div class="inv-photo-drop" onclick="document.getElementById(\'si-photo-in\').click()" style="margin-bottom:8px">'
+    + '<div class="inv-photo-drop" onclick="triggerSIPhoto()" style="margin-bottom:8px">'
     + '<input type="file" id="si-photo-in" accept="image/*" onchange="previewSIPhoto(this);showAIBtn(\'si\')">'
     + '<div id="si-photo-icon" style="font-size:1.5rem;margin-bottom:3px">📷</div>'
     + '<div id="si-photo-txt" style="font-size:.74rem;color:var(--warm-mid)">Tap to upload photo (optional)</div>'
@@ -3488,6 +4318,11 @@ function srcBtn(source, icon, title, desc, bg, border, color) {
     + 'style="width:100%;padding:14px;margin-bottom:8px;background:' + bg + ';border:2px solid ' + border + ';border-radius:12px;cursor:pointer;text-align:left">'
     + '<div style="font-family:var(--font-display);font-size:.9rem;font-weight:700;color:' + color + ';margin-bottom:3px">' + icon + ' ' + title + '</div>'
     + '<div style="font-size:.74rem;color:' + color + ';opacity:.8;line-height:1.4">' + desc + '</div></button>';
+}
+
+function triggerSIPhoto() {
+  var el = document.getElementById('si-photo-in');
+  if (el) el.click();
 }
 
 function previewSIPhoto(input) {
@@ -3667,7 +4502,6 @@ function closeHold(id, outcome) {
   renderMarkers();
   renderShelterQueue();
   renderIncareView();
-  renderAdminDashboard();
 
   /* Show done toast then refresh costs list */
   var doneMsg = outcome === 'euthanized' ? '⚫ Record closed. Animal removed from active holds.'
@@ -4275,10 +5109,12 @@ function printReport(id) {
   setTimeout(function(){ w.print(); }, 400);
 }
 function getAdoptable() {
+  /* Adopt tab = filtered view of In Care where adoptionStatus === 'available'
+     Uses getShelterData for shelter isolation — same source of truth as In Care */
   var q = ((document.getElementById('adopt-search')||{}).value||'').toLowerCase().trim();
-  var list = reports.filter(function(r){
-    return r.type==='found' && !r.reunited && r.adoptionStatus==='available';
-  }).sort(function(a,b){ return daysSince(b.dateAvailable||b.date) - daysSince(a.dateAvailable||a.date); });
+  var list = getShelterData({ includeHolds: true })
+    .filter(function(r){ return r.adoptionStatus === 'available'; })
+    .sort(function(a,b){ return daysSince(b.dateAvailable||b.date) - daysSince(a.dateAvailable||a.date); });
   if (q) list = list.filter(function(r){
     return [r.name,r.species,r.breed,r.color,r.desc,r.shelterName,r.finder].filter(Boolean).join(' ').toLowerCase().indexOf(q) > -1;
   });
@@ -4303,8 +5139,7 @@ function setDailyRate() {
   if (val && !isNaN(parseFloat(val))) {
     DAILY_RATE = parseFloat(val);
     localStorage.setItem('pp-daily-rate', DAILY_RATE);
-    renderAdminDashboard();
-  }
+    }
 }
 
 /* ── Medical Care ───────────────────────────── */
@@ -4429,7 +5264,6 @@ function setCostField(id, field, value) {
   r.shelterLog.push({ body: 'Hold start date updated', time: 'Just now' });
   save();
   if (shelterTab === 'costs') renderShelterCosts();
-  renderAdminDashboard && renderAdminDashboard();
 }
 
 function saveEnf(id, updates) {
@@ -4442,8 +5276,6 @@ function saveEnf(id, updates) {
   r.shelterLog.push({ body: 'Enforcement record updated', time: 'Just now' });
   save();
   if (selectedIntakeId === id) selectIntake(id);
-  var adminView = document.getElementById('view-admin');
-  if (adminView && adminView.classList.contains('active')) renderAdminDashboard();
   if (shelterTab === 'costs') renderShelterCosts();
 }
 
@@ -4544,16 +5376,14 @@ function renderAdminDashboard() {
   var now   = new Date();
   var yearStart = new Date(now.getFullYear(), 0, 1).toISOString();
 
-  /* Filter to current calendar year */
-  var yearRecords = reports.filter(function(r){ return r.date >= yearStart && r.shelter; });
-
-  /* Core stats */
+  /* ALL data scoped to Heartland (activeShelter) only */
+  var yearRecords = getShelterData({ includeHolds:true, includeAdopt:true, includeResolved:true, cutoffDays:365 });
   var totalIntake    = yearRecords.length;
   var euthanized     = yearRecords.filter(function(r){ return r.euthanized; });
   var adopted        = yearRecords.filter(function(r){ return r.adoptionStatus === 'adopted' || (r.enforcement && r.enforcement.holdOutcome === 'adoption'); });
   var reunited       = yearRecords.filter(function(r){ return r.reunited; });
-  var inCare         = yearRecords.filter(function(r){ return !r.reunited && !r.euthanized && r.adoptionStatus !== 'adopted' && !(r.enforcement && r.enforcement.holdOutcome === 'reunited'); });
-  var activeHolds    = reports.filter(function(r){ return r.shelter && !r.reunited && !r.euthanized && r.adoptionStatus !== 'adopted' && !(r.enforcement && r.enforcement.holdOutcome); });
+  var inCare         = getShelterData({ includeHolds:true });
+  var activeHolds    = inCare.filter(function(r){ return r.intakeType === 'hold' && !(r.enforcement && r.enforcement.holdOutcome); });
   var withMedical    = yearRecords.filter(function(r){ var m=getMed(r); return m.spayNeuter||m.vaccinations||m.vetVisit||m.otherCare; });
   var spayNeuter     = yearRecords.filter(function(r){ return getMed(r).spayNeuter; });
 
@@ -4639,49 +5469,33 @@ function renderAdminDashboard() {
       + '</div>';
   }
 
-  /* Per-shelter cost summary */
+  /* Heartland-only financial summary */
   var shelterSummaryEl = document.getElementById('dash-shelter-summary');
   if (shelterSummaryEl) {
-    var allShelterNames = ['Adams County Humane Society','Heartland Pet Connection','Start Over Rover','Hastings Animal Control'];
-    var rows = allShelterNames.map(function(name) {
-      var recs = activeHolds.filter(function(r){ return (r.shelterName||r.finder) === name; });
-      if (!recs.length) return '';
-      var totalD = recs.reduce(function(s,r){ return s + daysSinceDate(r.shelterHoldStart||r.date); }, 0);
-      var totalC = recs.reduce(function(s,r){
-        var d = daysSinceDate(r.shelterHoldStart||r.date);
-        var rt = (r.enforcement&&r.enforcement.dailyCost!=null) ? r.enforcement.dailyCost : DAILY_RATE;
-        return s + d*rt;
-      }, 0);
-      var restRec = recs.filter(function(r){ return r.enforcement&&r.enforcement.restitutionSought; });
-      var owed = restRec.reduce(function(s,r){ return s+(r.enforcement.restitutionOrdered||0)-(r.enforcement.restitutionPaid||0); }, 0);
-      var avgD = recs.length ? Math.round(totalD/recs.length) : 0;
-      return '<tr>'
-        + '<td><strong>' + esc(name) + '</strong></td>'
-        + '<td style="text-align:center">' + recs.length + '</td>'
-        + '<td style="text-align:center"><strong' + (avgD>14?' style="color:var(--lost-r)"':'') + '>' + avgD + 'd avg</strong></td>'
-        + '<td style="text-align:right"><strong style="color:var(--lost-r)">' + fmtMoney(totalC) + '</strong></td>'
-        + '<td style="text-align:right">' + (owed>0?'<strong style="color:var(--lost-r)">'+fmtMoney(owed)+'</strong>':'<span style="color:var(--warm-mid)">—</span>') + '</td>'
-        + '</tr>';
-    }).filter(Boolean).join('');
-    shelterSummaryEl.innerHTML = rows
-      ? '<table class="admin-table"><thead><tr><th>Shelter</th><th style="text-align:center">Animals</th><th style="text-align:center">Avg Days</th><th style="text-align:right">Cost Exposure</th><th style="text-align:right">Restitution Owed</th></tr></thead><tbody>' + rows + '</tbody></table>'
-      : '<div style="font-size:.82rem;color:var(--warm-mid);padding:12px 0">No animals currently on hold across any shelter.</div>';
+    var holdCostTotal = activeHolds.reduce(function(s,r){
+      var d = daysSinceDate(r.shelterHoldStart||r.date);
+      var rt = (r.enforcement&&r.enforcement.dailyCost!=null) ? r.enforcement.dailyCost : DAILY_RATE;
+      return s + d*rt;
+    }, 0);
+    var medCostTotal = yearRecords.reduce(function(s,r){
+      var m=getMed(r)||{};
+      return s+(m.spayNeuterCost||0)+(m.vaccinationCost||0)+(m.vetCost||0)+(m.otherCost||0);
+    }, 0);
+    var avgHoldDays = activeHolds.length
+      ? Math.round(activeHolds.reduce(function(s,r){ return s+daysSinceDate(r.shelterHoldStart||r.date); },0)/activeHolds.length)
+      : 0;
+    shelterSummaryEl.innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px">'
+      + '<div style="background:#fff8f0;border-radius:10px;padding:12px">'
+      + '<div style="font-size:.68rem;color:var(--warm-mid);margin-bottom:2px">Hold Cost Exposure</div>'
+      + '<div style="font-family:var(--font-display);font-size:1.4rem;font-weight:800;color:#8a5010">' + fmtMoney(holdCostTotal) + '</div>'
+      + '<div style="font-size:.68rem;color:var(--warm-mid)">' + activeHolds.length + ' active holds · ' + avgHoldDays + 'd avg</div>'
+      + '</div>'
+      + '<div style="background:#f5f8ff;border-radius:10px;padding:12px">'
+      + '<div style="font-size:.68rem;color:var(--warm-mid);margin-bottom:2px">Medical Cost (YTD)</div>'
+      + '<div style="font-family:var(--font-display);font-size:1.4rem;font-weight:800;color:#2050a0">' + fmtMoney(medCostTotal) + '</div>'
+      + '<div style="font-size:.68rem;color:var(--warm-mid)">' + withMedical.length + ' animals with medical care</div>'
+      + '</div></div>';
   }
-
-  /* Report buttons */
-  var repEl = document.getElementById('dash-report-btns');
-  if (repEl) repEl.innerHTML =
-    '<div style="font-size:.76rem;color:var(--warm-mid);margin-bottom:10px;line-height:1.4">View detailed reports in the <strong>Reports</strong> tab. Quick links:</div>'
-    + '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">'
-    + '<button onclick="setView(\'reports\',document.querySelector(\'.tab-btn[onclick*=\\\"reports\\\"]\'));setTimeout(function(){runReport(\'holds\');},100)" style="padding:7px 12px;font-size:.76rem;font-weight:600;background:#fff8f0;color:#8a5010;border:1.5px solid #e8c090;border-radius:7px;cursor:pointer;font-family:var(--font-body)">⚠️ Active Holds</button>'
-    + '<button onclick="setView(\'reports\',document.querySelector(\'.tab-btn[onclick*=\\\"reports\\\"]\'));setTimeout(function(){runReport(\'costs\');},100)" style="padding:7px 12px;font-size:.76rem;font-weight:600;background:#fff8f0;color:#8a5010;border:1.5px solid #e8c090;border-radius:7px;cursor:pointer;font-family:var(--font-body)">💰 Cost Breakdown</button>'
-    + '<button onclick="setView(\'reports\',document.querySelector(\'.tab-btn[onclick*=\\\"reports\\\"]\'));setTimeout(function(){runReport(\'incare\');},100)" style="padding:7px 12px;font-size:.76rem;font-weight:600;background:var(--cream-2);color:var(--warm-dk);border:1.5px solid var(--cream-3);border-radius:7px;cursor:pointer;font-family:var(--font-body)">🏥 In Care Report</button>'
-    + '<button onclick="setView(\'reports\',document.querySelector(\'.tab-btn[onclick*=\\\"reports\\\"]\'));setTimeout(function(){runReport(\'outcomes\');},100)" style="padding:7px 12px;font-size:.76rem;font-weight:600;background:var(--cream-2);color:var(--warm-dk);border:1.5px solid var(--cream-3);border-radius:7px;cursor:pointer;font-family:var(--font-body)">🎉 Outcomes</button>'
-    + '</div>'
-    + '<div style="border-top:1px solid var(--cream-3);padding-top:10px;display:flex;flex-wrap:wrap;gap:6px">'
-    + '<button onclick="openContentGen(\'press\')" style="padding:7px 12px;font-size:.76rem;font-weight:600;background:#fff;color:#c0392b;border:1.5px solid #e0a090;border-radius:7px;cursor:pointer;font-family:var(--font-body)">📣 Public Transparency Report</button>'
-    + '<button onclick="openContentGen(\'fund\')" style="padding:7px 12px;font-size:.76rem;font-weight:600;background:#fff;color:#b06010;border:1.5px solid #e0c090;border-radius:7px;cursor:pointer;font-family:var(--font-body)">💛 Funding Narrative</button>'
-    + '</div>';
 
   /* Holds table */
   var hb = document.getElementById('dash-holds-body');
@@ -5421,13 +6235,7 @@ function submitAdoptListing() {
 }
 
 function updateNavCounts() {
-  var inCareCount = reports.filter(function(r){
-    return r.shelter
-      && (r.shelterName === activeShelter || r.finder === activeShelter)
-      && !r.reunited && !r.euthanized
-      && r.adoptionStatus !== 'adopted'
-      && !(r.enforcement && r.enforcement.holdOutcome);
-  }).length;
+  var inCareCount = getShelterData({ includeHolds: true }).length;
   var badge = document.getElementById('nav-incare-count');
   if (badge) {
     badge.style.display = inCareCount > 0 ? '' : 'none';
@@ -5448,16 +6256,13 @@ function renderIncareView() {
   var el = document.getElementById('incare-list');
   var cntEl = document.getElementById('incare-count');
   if (!el) return;
+  if (!validateShelterContext()) { el.innerHTML = '<div style="padding:32px;text-align:center;color:var(--warm-mid)">No shelter selected.</div>'; return; }
   updateNavCounts();
 
-  /* All sheltered animals for this shelter — includes strays AND holds */
-  var all = reports.filter(function(r){
-    return r.shelter
-      && (r.shelterName === activeShelter || r.finder === activeShelter)
-      && !r.reunited && !r.euthanized
-      && r.adoptionStatus !== 'adopted'
-      && !(r.enforcement && r.enforcement.holdOutcome);
-  });
+  /* In Care = ALL active animals at shelter including adoption-ready ones.
+     Only 'adopted' (left shelter), 'reunited', and 'euthanized' are excluded.
+     Adoption Ready animals are still physically here — they belong in this list. */
+  var all = getShelterData({ includeHolds: true });
 
   if (cntEl) cntEl.textContent = all.length;
 
@@ -5558,13 +6363,24 @@ function setView(v, btn) {
   }
   if (v === 'map')     setTimeout(function(){ map.invalidateSize(); }, 200);
   if (v === 'incare')  renderIncareView();
-  if (v === 'reports') { renderReportsList(); renderReportTypeList(); }
+  if (v === 'reports') {
+    renderReportsList();
+    renderReportTypeList();
+    var sl = document.getElementById('rpt-shelter-label');
+    if (sl) sl.textContent = activeShelter || 'No shelter selected';
+  }
   if (v === 'adopt')   renderAdoptView();
-  if (v === 'admin')   renderAdminDashboard();
-}
+  if (v === 'admin') }
 
 /* ── BOOT ─────────────────────────────────────────────────────────────── */
-initFirebase();
+try {
+  initFirebase();
+} catch(e) {
+  console.error('PawPulse boot error:', e.message);
+  /* Show login overlay as fallback so users aren't stuck on blank screen */
+  var lo = document.getElementById('login-overlay');
+  if (lo) lo.style.display = 'flex';
+}
 /* Inject mic buttons into static HTML forms on load */
 setTimeout(function(){ injectMicButtons(document.getElementById('side-panel')); }, 100);
 </script>
