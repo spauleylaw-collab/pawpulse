@@ -1010,21 +1010,18 @@ window.addEventListener('unhandledrejection', function(e) {
 
 var HASTINGS = [40.5888, -98.3910];
 
-/* Map init — deferred until DOM is ready so the #map div exists */
+/* Map init — synchronous. Script tag is at bottom of body so #map div exists. */
 var map;
-document.addEventListener('DOMContentLoaded', function() {
-  try {
-    map = L.map('map', { center: HASTINGS, zoom: 14, zoomControl: false });
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      maxZoom: 19
-    }).addTo(map);
-    map.on('click', function(e) { handleMapClick(e); });
-  } catch(e) {
-    console.error('Leaflet init failed:', e.message);
-    map = { addLayer:function(){}, invalidateSize:function(){}, removeLayer:function(){}, hasLayer:function(){return false;}, fitBounds:function(){}, setView:function(){}, on:function(){}, addTo:function(){} };
-  }
-});
+try {
+  map = L.map('map', { center: HASTINGS, zoom: 14, zoomControl: false });
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 19
+  }).addTo(map);
+} catch(e) {
+  console.error('Leaflet init failed:', e.message);
+  map = { addLayer:function(){}, invalidateSize:function(){}, removeLayer:function(){}, hasLayer:function(){return false;}, fitBounds:function(){}, setView:function(){}, on:function(){}, off:function(){} };
+}
 
 var reports  = JSON.parse(localStorage.getItem('pawpulse-v2') || '[]');
 var lMarkers = [];
@@ -1276,6 +1273,8 @@ function bootApp() {
     loading.style.transition = 'opacity .25s ease';
     setTimeout(function(){ if (loading.parentNode) loading.parentNode.removeChild(loading); }, 280);
   }
+  /* Force map to recalculate size now that loading screen is gone */
+  setTimeout(function(){ try { map.invalidateSize(); } catch(e){} }, 300);
   /* Update incare shelter label */
   var lbl = document.getElementById('incare-shelter-label');
   if (lbl) lbl.textContent = activeShelter + ' — Animals In Care';
@@ -6396,16 +6395,14 @@ function setView(v, btn) {
 }
 
 /* ── BOOT ─────────────────────────────────────────────────────────────── */
-document.addEventListener('DOMContentLoaded', function() {
-  try {
-    initFirebase();
-  } catch(e) {
-    console.error('PawPulse boot error:', e.message);
-    var lo = document.getElementById('login-overlay');
-    if (lo) lo.style.display = 'flex';
-  }
-  setTimeout(function(){ injectMicButtons(document.getElementById('side-panel')); }, 100);
-});
+try {
+  initFirebase();
+} catch(e) {
+  console.error('PawPulse boot error:', e.message);
+  var lo = document.getElementById('login-overlay');
+  if (lo) lo.style.display = 'flex';
+}
+setTimeout(function(){ injectMicButtons(document.getElementById('side-panel')); }, 100);
 </script>
 
 <!-- Press Release / Fundraiser Generator -->
