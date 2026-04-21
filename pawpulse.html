@@ -1010,18 +1010,21 @@ window.addEventListener('unhandledrejection', function(e) {
 
 var HASTINGS = [40.5888, -98.3910];
 
-/* Map init — wrapped defensively for iOS */
+/* Map init — deferred until DOM is ready so the #map div exists */
 var map;
-try {
-  map = L.map('map', { center: HASTINGS, zoom: 14, zoomControl: false });
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    maxZoom: 19
-  }).addTo(map);
-} catch(e) {
-  console.error('Leaflet init failed:', e.message);
-  map = { addLayer:function(){}, invalidateSize:function(){}, removeLayer:function(){}, hasLayer:function(){return false;}, fitBounds:function(){}, setView:function(){}, on:function(){} };
-}
+document.addEventListener('DOMContentLoaded', function() {
+  try {
+    map = L.map('map', { center: HASTINGS, zoom: 14, zoomControl: false });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 19
+    }).addTo(map);
+    map.on('click', function(e) { handleMapClick(e); });
+  } catch(e) {
+    console.error('Leaflet init failed:', e.message);
+    map = { addLayer:function(){}, invalidateSize:function(){}, removeLayer:function(){}, hasLayer:function(){return false;}, fitBounds:function(){}, setView:function(){}, on:function(){}, addTo:function(){} };
+  }
+});
 
 var reports  = JSON.parse(localStorage.getItem('pawpulse-v2') || '[]');
 var lMarkers = [];
@@ -6390,19 +6393,19 @@ function setView(v, btn) {
     if (sl) sl.textContent = activeShelter || 'No shelter selected';
   }
   if (v === 'adopt')   renderAdoptView();
-  if (v === 'admin') }
+}
 
 /* ── BOOT ─────────────────────────────────────────────────────────────── */
-try {
-  initFirebase();
-} catch(e) {
-  console.error('PawPulse boot error:', e.message);
-  /* Show login overlay as fallback so users aren't stuck on blank screen */
-  var lo = document.getElementById('login-overlay');
-  if (lo) lo.style.display = 'flex';
-}
-/* Inject mic buttons into static HTML forms on load */
-setTimeout(function(){ injectMicButtons(document.getElementById('side-panel')); }, 100);
+document.addEventListener('DOMContentLoaded', function() {
+  try {
+    initFirebase();
+  } catch(e) {
+    console.error('PawPulse boot error:', e.message);
+    var lo = document.getElementById('login-overlay');
+    if (lo) lo.style.display = 'flex';
+  }
+  setTimeout(function(){ injectMicButtons(document.getElementById('side-panel')); }, 100);
+});
 </script>
 
 <!-- Press Release / Fundraiser Generator -->
