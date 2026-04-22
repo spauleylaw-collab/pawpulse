@@ -717,6 +717,19 @@ textarea{min-height:64px}
     <div style="font-family:var(--font-display);font-size:.95rem;font-weight:700;color:var(--warm-dk)" id="incare-shelter-label">Animals In Care</div>
     <div style="font-size:.7rem;color:var(--warm-mid);margin-top:1px">Tap an animal to manage · <span id="incare-count" style="font-weight:700;color:var(--forest)">0</span> in care</div>
   </div>
+  <!-- Search bar -->
+  <div style="padding:8px 14px;border-bottom:1px solid var(--cream-3);background:var(--cream);flex-shrink:0;display:flex;gap:6px;align-items:center">
+    <div style="flex:1;position:relative">
+      <span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:.8rem;pointer-events:none">🔍</span>
+      <input type="text" id="incare-search" placeholder="Search by name, breed, color, ID…" oninput="renderIncareView()" style="width:100%;padding:7px 10px 7px 28px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.8rem;background:#fff;box-sizing:border-box">
+    </div>
+    <select id="incare-sort" onchange="renderIncareView()" style="padding:7px 8px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.75rem;background:#fff;color:var(--warm-dk)">
+      <option value="status">By Status</option>
+      <option value="alpha">A → Z</option>
+      <option value="newest">Newest First</option>
+      <option value="longest">Longest Stay</option>
+    </select>
+  </div>
   <!-- Filter chips -->
   <div style="padding:9px 14px;border-bottom:1px solid var(--cream-3);background:var(--cream);flex-shrink:0;display:flex;gap:5px;flex-wrap:wrap;align-items:center">
     <span style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--warm-mid);margin-right:2px">Species:</span>
@@ -6783,8 +6796,17 @@ function renderIncareView() {
     return;
   }
 
-  /* Sort: holds first, then adoption-ready, then by days descending */
+  /* Sort based on dropdown */
+  var sortBy = (document.getElementById('incare-sort')||{}).value || 'status';
   filtered.sort(function(a,b){
+    if (sortBy === 'alpha') {
+      var an = (a.name||a.species||'').toLowerCase();
+      var bn = (b.name||b.species||'').toLowerCase();
+      return an < bn ? -1 : an > bn ? 1 : 0;
+    }
+    if (sortBy === 'newest') return new Date(b.date) - new Date(a.date);
+    if (sortBy === 'longest') return daysSince(a.date) < daysSince(b.date) ? 1 : -1;
+    /* Default: status — holds first, adoption-ready next, then longest stay */
     if (a.intakeType==='hold' && b.intakeType!=='hold') return -1;
     if (b.intakeType==='hold' && a.intakeType!=='hold') return 1;
     if (a.adoptionStatus==='available' && b.adoptionStatus!=='available') return -1;
@@ -6792,7 +6814,7 @@ function renderIncareView() {
     return daysSince(a.date) < daysSince(b.date) ? 1 : -1;
   });
 
-  el.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px">'
+  el.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px">'
     + filtered.map(function(r) {
     var isHold  = r.intakeType === 'hold';
     var isAdopt = r.adoptionStatus === 'available';
@@ -6800,36 +6822,66 @@ function renderIncareView() {
     var urgencyColor = days >= 30 ? 'var(--lost-r)' : days >= 14 ? 'var(--amber)' : 'var(--found-g)';
     var daysLabel = days === 0 ? 'Just arrived'
       : days <= 3  ? 'New · ' + days + 'd'
-      : days < 14  ? days + ' days'
-      : days < 30  ? days + ' days'
-      : days + ' days';
+      : days + ' days' + (days >= 30 ? ' 🔴' : days >= 14 ? ' 🟡' : '');
     var src = r.intakeSource||'citizen';
     var srcLabel = src==='ac'?'AC':src==='surrender'?'Surrender':src==='other'?'Transfer':'';
 
-    return '<div style="background:#fff;border:1px solid var(--cream-3);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;cursor:pointer" onclick="openAnimalEdit(' + r.id + ')">'
+    /* Photo section */
+    var photoHTML = r.photo
+      ? '<div style="height:120px;overflow:hidden;background:var(--cream-2);position:relative">'
+        + '<img src="' + r.photo + '" style="width:100%;height:100%;object-fit:cover" alt="' + esc(r.name||r.species||'animal') + '">'
+        + (_isStaff ? '<button onclick="event.stopPropagation();triggerPhotoUpload(' + r.id + ')" style="position:absolute;bottom:4px;right:4px;padding:3px 7px;font-size:.6rem;border-radius:6px;border:none;background:rgba(0,0,0,.5);color:#fff;cursor:pointer">📷 Replace</button>' : '')
+        + '</div>'
+      : '<div style="height:100px;background:var(--cream-2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer" onclick="event.stopPropagation();triggerPhotoUpload(' + r.id + ')">'
+        + '<div style="font-size:1.8rem">' + (r.species==='Dog'?'🐕':r.species==='Cat'?'🐈':'🐾') + '</div>'
+        + (_isStaff ? '<div style="font-size:.62rem;color:var(--warm-mid);font-weight:600">📷 Add Photo</div>' : '')
+        + '</div>';
+
+    return '<div style="background:#fff;border:1px solid var(--cream-3);border-radius:10px;overflow:hidden;display:flex;flex-direction:column" onclick="openAnimalEdit(' + r.id + ')" style="cursor:pointer">'
       + '<div style="height:3px;background:' + (isHold?'var(--amber)':urgencyColor) + '"></div>'
-      + '<div style="padding:10px 11px;flex:1">'
-      /* Name + ID */
-      + '<div style="font-family:var(--font-display);font-size:.86rem;font-weight:700;color:var(--warm-dk);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(r.name||r.species||'Unknown') + '</div>'
-      + (r.animalId?'<div style="font-size:.62rem;font-weight:700;color:var(--forest);margin-bottom:4px">🏷️ ' + esc(r.animalId) + '</div>':'')
-      /* Species/breed/color */
-      + '<div style="font-size:.7rem;color:var(--warm-mid);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + ([r.species,r.breed,r.color].filter(Boolean).join(' · ')||'Unknown') + '</div>'
-      /* Status badges */
-      + '<div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:6px">'
+      + photoHTML
+      + '<div style="padding:9px 10px;flex:1;cursor:pointer">'
+      + '<div style="font-family:var(--font-display);font-size:.86rem;font-weight:700;color:var(--warm-dk);margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(r.name||r.species||'Unknown') + '</div>'
+      + (r.animalId?'<div style="font-size:.62rem;font-weight:700;color:var(--forest);margin-bottom:3px">🏷️ ' + esc(r.animalId) + '</div>':'')
+      + '<div style="font-size:.68rem;color:var(--warm-mid);margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + ([r.species,r.breed,r.color].filter(Boolean).join(' · ')||'Unknown') + '</div>'
+      + '<div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:5px">'
       + (isHold?'<span style="font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:999px;background:#fff8f0;color:#8a5010;border:1px solid #e8c090">⚠️ Hold</span>':'')
       + (isAdopt?'<span style="font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:999px;background:#e8f0ff;color:#2050a0">🌟 Adopt</span>':'')
       + (srcLabel?'<span style="font-size:.6rem;padding:2px 6px;border-radius:999px;background:var(--cream-2);color:var(--warm-mid)">' + srcLabel + '</span>':'')
       + '</div>'
-      /* Days counter */
-      + '<div style="font-size:.72rem;font-weight:700;color:' + urgencyColor + '">' + daysLabel + '</div>'
+      + '<div style="font-size:.7rem;font-weight:700;color:' + urgencyColor + '">' + daysLabel + '</div>'
       + '</div>'
-      /* Action bar */
-      + '<div style="padding:7px 10px;border-top:1px solid var(--cream-3);background:var(--cream-2);display:flex;gap:5px">'
+      + '<div style="padding:6px 8px;border-top:1px solid var(--cream-3);background:var(--cream-2);display:flex;gap:5px">'
       + '<button onclick="event.stopPropagation();openAnimalEdit(' + r.id + ')" style="flex:1;padding:4px 6px;font-size:.68rem;font-weight:600;border-radius:6px;border:1px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body)">✏️ Edit</button>'
-      + (!isAdopt&&!isHold?'<button onclick="event.stopPropagation();quickAdoptReady(' + r.id + ')" style="flex:1;padding:4px 6px;font-size:.68rem;font-weight:600;border-radius:6px;border:1px solid #a0c0f0;background:#f0f4ff;color:#2050a0;cursor:pointer;font-family:var(--font-body)">🌟</button>':'')
+      + (!isAdopt&&!isHold?'<button onclick="event.stopPropagation();quickAdoptReady(' + r.id + ')" style="flex:1;padding:4px 6px;font-size:.68rem;font-weight:600;border-radius:6px;border:1px solid #a0c0f0;background:#f0f4ff;color:#2050a0;cursor:pointer;font-family:var(--font-body)" title="Mark Adoption Ready">🌟</button>':'')
       + '</div>'
       + '</div>';
-  }).join('') + '</div>';
+  }).join('') + '</div>'
+  /* Hidden file input for photo uploads */
+  + '<input type="file" id="incare-photo-input" accept="image/*" style="display:none" onchange="handleIncarePhotoUpload(this)">';
+}
+
+function triggerPhotoUpload(id) {
+  if (!_isStaff) return;
+  var input = document.getElementById('incare-photo-input');
+  if (!input) return;
+  input.dataset.animalId = id;
+  input.click();
+}
+
+function handleIncarePhotoUpload(input) {
+  var id = parseInt(input.dataset.animalId);
+  var r = reports.find(function(x){ return x.id === id; });
+  if (!r || !input.files || !input.files[0]) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    r.photo = e.target.result;
+    save();
+    renderIncareView();
+    renderAdoptView();
+    pushBannerEvent('📷 Photo added for ' + (r.name||r.species||'animal'), 'var(--found-g)');
+  };
+  reader.readAsDataURL(input.files[0]);
 }
 
 function quickAdoptReady(id) {
