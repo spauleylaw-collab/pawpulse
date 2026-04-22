@@ -716,6 +716,7 @@ textarea{min-height:64px}
   <div style="padding:12px 16px;background:var(--cream);border-bottom:1px solid var(--cream-3);flex-shrink:0">
     <div style="font-family:var(--font-display);font-size:.95rem;font-weight:700;color:var(--warm-dk)" id="incare-shelter-label">Animals In Care</div>
     <div style="font-size:.7rem;color:var(--warm-mid);margin-top:1px">Tap an animal to manage · <span id="incare-count" style="font-weight:700;color:var(--forest)">0</span> in care</div>
+    <div id="incare-stats-bar" style="display:none;margin-top:6px;display:flex;flex-wrap:wrap;gap:6px"></div>
   </div>
   <!-- Search + Sort bar -->
   <div style="padding:8px 14px;border-bottom:1px solid var(--cream-3);background:var(--cream);flex-shrink:0;display:flex;gap:6px;align-items:center">
@@ -1596,7 +1597,7 @@ function openAnimalEdit(id) {
         + '<div class="fr" style="margin-top:8px"><div class="fg" style="margin:0"><label>Breed</label><input type="text" id="ae-breed" value="' + esc(r.breed||'') + '"></div>'
         + '<div class="fg" style="margin:0"><label>Estimated Age</label><input type="text" id="ae-age" value="' + esc(r.age||'') + '" placeholder="e.g. 2 years, puppy"></div></div>'
         + '<div class="fr" style="margin-top:8px"><div class="fg" style="margin:0"><label>Color / Markings</label><input type="text" id="ae-color" value="' + esc(r.color||'') + '"></div>'
-        + '<div class="fg" style="margin:0"><label>Microchip #</label><input type="text" id="ae-chip" value="' + esc(r.chip||'') + '"></div></div>'
+        + '<div class="fg" style="margin:0"><label>Microchip #</label><div style="display:flex;gap:6px;align-items:center"><input type="text" id="ae-chip" value="' + esc(r.chip||'') + '" style="flex:1">' + (r.chip ? '<a href="https://www.petlink.net/us/search/?microchip=' + esc(r.chip) + '" target="_blank" style="font-size:.66rem;color:#2050a0;white-space:nowrap;text-decoration:none;padding:3px 7px;border:1px solid #a0baf0;border-radius:5px">PetLink 🔗</a><a href="https://www.aaha.org/your-pet/petfinder/chip-lookup/?chip_id=' + esc(r.chip) + '" target="_blank" style="font-size:.66rem;color:#2050a0;white-space:nowrap;text-decoration:none;padding:3px 7px;border:1px solid #a0baf0;border-radius:5px">AAHA 🔗</a>' : '') + '</div></div></div>'
         + '<div class="fg" style="margin-top:8px"><label>Intake Date</label><input type="date" id="ae-intakedate" value="' + (r.date?r.date.slice(0,10):today) + '"></div>'
         + '<div class="fg"><label>Found Location / Address</label><input type="text" id="ae-address" value="' + esc(r.address||'') + '"></div>'
         + '<div class="fg"><label>Description / Condition at Intake</label><textarea id="ae-desc" style="min-height:60px">' + esc(r.desc||'') + '</textarea></div>')
@@ -1648,11 +1649,78 @@ function openAnimalEdit(id) {
     /* ── Section: Hold / Legal ── */
     + editSection('hold', '⚖️ Hold & Legal', curStatus==='hold',
         '<div class="fr"><div class="fg" style="margin:0"><label>Hold Type</label>'
-        + '<select id="ae-holdtype"><option value="standard"' + (r.holdType==='standard'?' selected':'') + '>Standard</option><option value="bite"' + (r.holdType==='bite'?' selected':'') + '>Bite Hold</option><option value="dangerous"' + (r.holdType==='dangerous'?' selected':'') + '>Dangerous Animal</option><option value="ac"' + (r.holdType==='ac'?' selected':'') + '>AC Hold</option><option value="court"' + (r.holdType==='court'?' selected':'') + '>Court Hold</option></select></div>'
+        + '<select id="ae-holdtype"><option value="standard"' + (r.holdType==='standard'?' selected':'') + '>Standard</option><option value="bite"' + (r.holdType==='bite'?' selected':'') + '>Bite Hold (10-day quarantine)</option><option value="dangerous"' + (r.holdType==='dangerous'?' selected':'') + '>Dangerous Animal</option><option value="ac"' + (r.holdType==='ac'?' selected':'') + '>AC Hold</option><option value="court"' + (r.holdType==='court'?' selected':'') + '>Court Hold</option></select></div>'
         + '<div class="fg" style="margin:0"><label>Hold Start Date</label><input type="date" id="ae-holdstart" value="' + (r.shelterHoldStart?r.shelterHoldStart.slice(0,10):'') + '"></div></div>'
-        + '<div class="fr" style="margin-top:8px"><div class="fg" style="margin:0"><label>Daily Rate ($)</label><input type="number" id="ae-dailyrate" value="' + ((r.enforcement&&r.enforcement.dailyCost!=null)?r.enforcement.dailyCost:DAILY_RATE) + '" min="0" step="1"></div>'
-        + '<div class="fg" style="margin:0"><label>Citation #</label><input type="text" id="ae-citation" value="' + esc(r.citationNum||'') + '"></div></div>'
+        /* Bite quarantine countdown */
+        + (r.holdType==='bite' ? (function(){
+            var biteStart = r.shelterHoldStart||r.date;
+            var elapsed = Math.floor(daysSince(biteStart));
+            var remaining = Math.max(0, 10 - elapsed);
+            return '<div style="background:' + (remaining>0?'#fff8f0':'#f0fff4') + ';border:1px solid ' + (remaining>0?'#e8a040':'#48bb78') + ';border-radius:7px;padding:8px 10px;margin:8px 0;font-size:.76rem">'
+              + (remaining>0
+                ? '<strong style="color:#8a5010">⏳ Bite Quarantine: ' + remaining + ' day' + (remaining!==1?'s':'') + ' remaining</strong> — Animal must be observed for rabies symptoms until day 10.'
+                : '<strong style="color:#2a7040">✅ 10-day bite quarantine complete</strong> — Observation period finished.')
+              + '</div>';
+          })() : '')
+        + '<div class="fr" style="margin-top:8px"><div class="fg" style="margin:0"><label>Court Date</label><input type="date" id="ae-courtdate" value="' + (r.courtDate||'') + '"></div>'
+        + '<div class="fg" style="margin:0"><label>Daily Rate ($)</label><input type="number" id="ae-dailyrate" value="' + ((r.enforcement&&r.enforcement.dailyCost!=null)?r.enforcement.dailyCost:DAILY_RATE) + '" min="0" step="1"></div></div>'
+        + '<div class="fr" style="margin-top:8px"><div class="fg" style="margin:0"><label>Citation #</label><input type="text" id="ae-citation" value="' + esc(r.citationNum||'') + '"></div>'
+        + '<div class="fg" style="margin:0"><label>Officer / AC Contact</label><input type="text" id="ae-officer-name" value="' + esc(r.officerName||'') + '"></div></div>'
         + '<div class="fg" style="margin-top:8px"><label>Legal / Court Notes</label><textarea id="ae-legal-notes" style="min-height:52px">' + esc((r.enforcement&&r.enforcement.legalNotes)||'') + '</textarea></div>')
+
+    /* ── Section: Foster Placement ── */
+    + editSection('foster', '🏡 Foster Placement', r.isFoster===true,
+        '<div style="font-size:.76rem;color:var(--warm-mid);margin-bottom:10px">Animal remains in care but is physically placed with a foster family. Mark here so staff knows where the animal is.</div>'
+        + '<div class="fr"><div class="fg" style="margin:0"><label>Foster Status</label>'
+        + '<select id="ae-foster-status"><option value="">Not in foster</option><option value="yes"' + (r.isFoster?'selected':'') + '>In foster care</option></select></div>'
+        + '<div class="fg" style="margin:0"><label>Foster Since</label><input type="date" id="ae-foster-date" value="' + (r.fosterDate||'') + '"></div></div>'
+        + '<div class="fr" style="margin-top:8px"><div class="fg" style="margin:0"><label>Foster Contact Name</label><input type="text" id="ae-foster-name" value="' + esc(r.fosterName||'') + '"></div>'
+        + '<div class="fg" style="margin:0"><label>Foster Phone</label><input type="tel" id="ae-foster-phone" value="' + esc(r.fosterPhone||'') + '"></div></div>'
+        + '<div class="fg" style="margin-top:8px"><label>Foster Notes</label><textarea id="ae-foster-notes" style="min-height:40px">' + esc(r.fosterNotes||'') + '</textarea></div>')
+
+    /* ── Section: Outcome / Transfer ── */
+    + (curStatus==='transfer' || curStatus==='euth' || curStatus==='reunited' || curStatus==='adopted' ? editSection('outcome', '📋 Outcome Details', true,
+        (curStatus==='transfer' ? '<div class="fg"><label>Transfer Partner / Rescue Name</label><input type="text" id="ae-transfer-partner" value="' + esc(r.transferPartner||'') + '" placeholder="e.g. Nebraska Humane Society"></div>'
+          + '<div class="fg"><label>Transfer Date</label><input type="date" id="ae-transfer-date" value="' + (r.transferDate||today) + '"></div>'
+          + '<div class="fg"><label>Transfer Notes</label><textarea id="ae-transfer-notes" style="min-height:40px">' + esc(r.transferNotes||'') + '</textarea></div>'
+          : '')
+        + (curStatus==='euth' ? '<div class="fg"><label>Reason for Euthanasia <span style="color:var(--lost-r)">*</span></label>'
+          + '<select id="ae-euth-reason"><option value="">Select reason…</option>'
+          + ['Severe illness / injury','Untreatable medical condition','Aggression — failed temperament test','Dangerous animal — court ordered','Space / resource limitations','Owner request','Bite quarantine — rabies confirmed','Prolonged suffering'].map(function(s){ return '<option' + (r.euthReason===s?' selected':'') + '>' + s + '</option>'; }).join('')
+          + '</select></div>'
+          + '<div class="fg" style="margin-top:8px"><label>Authorizing Staff / Vet</label><input type="text" id="ae-euth-auth" value="' + esc(r.euthAuthorizedBy||'') + '"></div>'
+          + '<div class="fg"><label>Documentation Notes</label><textarea id="ae-euth-notes" style="min-height:52px">' + esc(r.euthNotes||'') + '</textarea></div>'
+          : '')
+        + (curStatus==='reunited' ? '<div class="fg"><label>Owner Name (confirmed)</label><input type="text" id="ae-reunite-owner" value="' + esc(r.confirmedOwner||r.owner||'') + '"></div>'
+          + '<div class="fg"><label>Reunification Notes</label><textarea id="ae-reunite-notes" style="min-height:40px">' + esc(r.reuniteNotes||'') + '</textarea></div>'
+          : '')
+        + (curStatus==='adopted' ? '<div class="fr"><div class="fg" style="margin:0"><label>Adopter Name</label><input type="text" id="ae-adopter-name" value="' + esc(r.adopterName||'') + '"></div>'
+          + '<div class="fg" style="margin:0"><label>Adoption Date</label><input type="date" id="ae-adopt-date" value="' + (r.adoptionDate||today) + '"></div></div>'
+          + '<div class="fg" style="margin-top:8px"><label>Adopter Phone</label><input type="tel" id="ae-adopter-phone" value="' + esc(r.adopterPhone||'') + '"></div>'
+          : '')
+        + '<div style="margin-top:10px">'
+        + '<button onclick="printDischargeForm(' + r.id + ')" style="padding:7px 14px;font-size:.76rem;font-weight:600;border-radius:7px;border:1.5px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body);color:var(--warm-mid)">🖨️ Print Discharge / Release Form</button>'
+        + '</div>') : '')
+
+    /* ── Section: Owner Notification Log ── */
+    + editSection('calllog', '📞 Owner Notification Log', false,
+        '<div style="font-size:.74rem;color:var(--warm-mid);margin-bottom:10px">Log every call from a potential owner. This creates a timestamped record — important if ownership is disputed.</div>'
+        + '<div id="ae-call-log-entries" style="margin-bottom:10px">'
+        + (r.callLog && r.callLog.length ? r.callLog.map(function(entry, i){
+            return '<div style="background:var(--cream-2);border-radius:7px;padding:8px 10px;margin-bottom:6px;font-size:.74rem">'
+              + '<div style="font-weight:700;color:var(--warm-dk)">' + esc(entry.callerName||'Unknown caller') + (entry.callerPhone ? ' · ' + esc(entry.callerPhone) : '') + '</div>'
+              + '<div style="color:var(--warm-mid);font-size:.68rem;margin-bottom:3px">' + new Date(entry.time).toLocaleString() + ' · Logged by ' + esc(entry.loggedBy||'staff') + '</div>'
+              + '<div style="color:var(--warm-dk)">' + esc(entry.notes||'') + '</div>'
+              + '</div>';
+          }).join('') : '<div style="font-size:.74rem;color:var(--warm-mid);font-style:italic">No calls logged yet.</div>')
+        + '</div>'
+        + '<div style="background:var(--cream-2);border-radius:8px;padding:10px 12px">'
+        + '<div style="font-size:.72rem;font-weight:700;color:var(--warm-dk);margin-bottom:8px">Log a New Call</div>'
+        + '<div class="fr"><div class="fg" style="margin:0"><label>Caller Name</label><input type="text" id="ae-call-name" placeholder="e.g. Jane Smith"></div>'
+        + '<div class="fg" style="margin:0"><label>Caller Phone</label><input type="tel" id="ae-call-phone" placeholder="(402) 555-0100"></div></div>'
+        + '<div class="fg" style="margin-top:8px"><label>Description / Notes</label><textarea id="ae-call-notes" style="min-height:44px" placeholder="Description of pet they described, questions asked, outcome of call…"></textarea></div>'
+        + '<button onclick="addCallLogEntry(' + r.id + ')" style="margin-top:8px;padding:6px 14px;font-size:.76rem;font-weight:700;border-radius:7px;border:none;background:var(--forest);color:#fff;cursor:pointer;font-family:var(--font-display)">+ Log This Call</button>'
+        + '</div>')
 
     /* ── Section: Adoption ── */
     + editSection('adoption', '🌟 Adoption', curStatus==='available',
@@ -1779,7 +1847,42 @@ function saveAnimalEdit(id) {
     r.enforcement.internalStatus = 'Shelter Hold Active';
   }
 
-  /* Adoption */
+  r.courtDate      = (document.getElementById('ae-courtdate')||{}).value || '';
+  r.officerName    = ((document.getElementById('ae-officer-name')||{}).value||'').trim();
+
+  /* Foster */
+  r.isFoster       = (document.getElementById('ae-foster-status')||{}).value === 'yes';
+  r.fosterDate     = (document.getElementById('ae-foster-date')||{}).value || '';
+  r.fosterName     = ((document.getElementById('ae-foster-name')||{}).value||'').trim();
+  r.fosterPhone    = ((document.getElementById('ae-foster-phone')||{}).value||'').trim();
+  r.fosterNotes    = ((document.getElementById('ae-foster-notes')||{}).value||'').trim();
+
+  /* Transfer */
+  if (masterStatus === 'transfer') {
+    r.transferPartner = ((document.getElementById('ae-transfer-partner')||{}).value||'').trim();
+    r.transferDate    = (document.getElementById('ae-transfer-date')||{}).value || '';
+    r.transferNotes   = ((document.getElementById('ae-transfer-notes')||{}).value||'').trim();
+  }
+
+  /* Euthanasia */
+  if (masterStatus === 'euth') {
+    r.euthReason       = (document.getElementById('ae-euth-reason')||{}).value || '';
+    r.euthAuthorizedBy = ((document.getElementById('ae-euth-auth')||{}).value||'').trim();
+    r.euthNotes        = ((document.getElementById('ae-euth-notes')||{}).value||'').trim();
+  }
+
+  /* Reunited */
+  if (masterStatus === 'reunited') {
+    r.confirmedOwner = ((document.getElementById('ae-reunite-owner')||{}).value||'').trim();
+    r.reuniteNotes   = ((document.getElementById('ae-reunite-notes')||{}).value||'').trim();
+  }
+
+  /* Adopted */
+  if (masterStatus === 'adopted') {
+    r.adopterName  = ((document.getElementById('ae-adopter-name')||{}).value||'').trim();
+    r.adopterPhone = ((document.getElementById('ae-adopter-phone')||{}).value||'').trim();
+    r.adoptionDate = (document.getElementById('ae-adopt-date')||{}).value || today;
+  }
   var feeEl = document.getElementById('ae-fee');
   if (feeEl && feeEl.value !== '') r.adoptionFee = parseFloat(feeEl.value) || 0;
   else if (feeEl && feeEl.value === '') r.adoptionFee = null;
@@ -6897,6 +7000,30 @@ function renderIncareView() {
 
   if (cntEl) cntEl.textContent = all.length;
 
+  /* Daily stats bar */
+  var statsBar = document.getElementById('incare-stats-bar');
+  if (statsBar && _isStaff) {
+    var today0 = new Date(); today0.setHours(0,0,0,0);
+    var todayISO = today0.toISOString();
+    var intakesToday  = all.filter(function(r){ return r.date >= todayISO; }).length;
+    var holdsActive   = all.filter(function(r){ return r.intakeType==='hold'; }).length;
+    var adoptReady    = all.filter(function(r){ return r.adoptionStatus==='available'; }).length;
+    var expiringSoon  = all.filter(function(r){ return r.intakeType==='hold' && r.enforcement && daysUntilAdoptEligible(r) <= 1 && daysUntilAdoptEligible(r) >= 0; }).length;
+    var fostered      = all.filter(function(r){ return r.isFoster; }).length;
+    var noRabies      = all.filter(function(r){ var m=getMed(r)||{}; return !m.rabiesStatus; }).length;
+    var stat = function(label, val, color) {
+      return '<div style="background:#fff;border:1px solid var(--cream-3);border-radius:7px;padding:3px 9px;font-size:.68rem;white-space:nowrap"><span style="font-weight:800;color:' + color + '">' + val + '</span> <span style="color:var(--warm-mid)">' + label + '</span></div>';
+    };
+    statsBar.style.display = 'flex';
+    statsBar.innerHTML =
+      stat('today', intakesToday, 'var(--forest)')
+      + stat('holds', holdsActive, holdsActive>0?'var(--amber)':'var(--warm-mid)')
+      + stat('adopt ready', adoptReady, adoptReady>0?'#2050a0':'var(--warm-mid)')
+      + (expiringSoon>0 ? stat('expiring soon', expiringSoon, 'var(--lost-r)') : '')
+      + (fostered>0 ? stat('in foster', fostered, '#6040c0') : '')
+      + (noRabies>0 ? stat('no rabies', noRabies, 'var(--lost-r)') : '');
+  }
+
   var filtered = all;
   if (incareFilter === 'dog')   filtered = all.filter(function(r){ return (r.species||'').toLowerCase()==='dog'; });
   if (incareFilter === 'cat')   filtered = all.filter(function(r){ return (r.species||'').toLowerCase()==='cat'; });
@@ -6986,6 +7113,107 @@ function renderIncareView() {
   }).join('') + '</div>'
   /* Hidden file input for photo uploads */
   + '<input type="file" id="incare-photo-input" accept="image/*" style="display:none" onchange="handleIncarePhotoUpload(this)">';
+}
+
+function addCallLogEntry(id) {
+  var r = reports.find(function(x){ return x.id===id; });
+  if (!r) return;
+  var name  = ((document.getElementById('ae-call-name')||{}).value||'').trim();
+  var phone = ((document.getElementById('ae-call-phone')||{}).value||'').trim();
+  var notes = ((document.getElementById('ae-call-notes')||{}).value||'').trim();
+  if (!name && !notes) return;
+  if (!r.callLog) r.callLog = [];
+  r.callLog.unshift({ callerName: name, callerPhone: phone, notes: notes, time: new Date().toISOString(), loggedBy: 'staff' });
+  save();
+  /* Refresh the log display */
+  var el = document.getElementById('ae-call-log-entries');
+  if (el) {
+    el.innerHTML = r.callLog.map(function(entry){
+      return '<div style="background:var(--cream-2);border-radius:7px;padding:8px 10px;margin-bottom:6px;font-size:.74rem">'
+        + '<div style="font-weight:700;color:var(--warm-dk)">' + esc(entry.callerName||'Unknown') + (entry.callerPhone?' · '+esc(entry.callerPhone):'') + '</div>'
+        + '<div style="color:var(--warm-mid);font-size:.68rem;margin-bottom:3px">' + new Date(entry.time).toLocaleString() + '</div>'
+        + '<div>' + esc(entry.notes||'') + '</div></div>';
+    }).join('');
+  }
+  /* Clear the form */
+  ['ae-call-name','ae-call-phone','ae-call-notes'].forEach(function(fid){
+    var el = document.getElementById(fid); if(el) el.value='';
+  });
+}
+
+function printDischargeForm(id) {
+  var r = reports.find(function(x){ return String(x.id)===String(id); });
+  if (!r) return;
+  var med = getMed(r) || {};
+  var isAdopt   = r.masterStatus === 'adopted';
+  var isReunite = r.masterStatus === 'reunited';
+  var isTransfer= r.masterStatus === 'transfer';
+  var title     = isAdopt ? 'Adoption Agreement' : isReunite ? 'Owner Reclaim Release' : 'Transfer Agreement';
+  var date      = new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  var rabiesOk  = med.rabiesStatus==='given' || med.rabiesStatus==='prior';
+
+  var css = '*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;font-size:12px;padding:28px;max-width:7in}'
+    + '.header{text-align:center;margin-bottom:20px}.shelter-name{font-size:16px;font-weight:bold}.doc-title{font-size:20px;font-weight:bold;margin:8px 0;color:#333}'
+    + '.section{margin-bottom:16px}.section-title{font-size:11px;font-weight:bold;text-transform:uppercase;letter-spacing:.06em;color:#666;border-bottom:1px solid #ddd;padding-bottom:4px;margin-bottom:8px}'
+    + '.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 24px}.field{margin-bottom:8px}'
+    + '.field label{font-size:10px;color:#888;display:block;margin-bottom:1px}.field span{font-size:12px;font-weight:bold}'
+    + '.sig-line{border-bottom:1px solid #333;height:36px;margin-top:4px}.sig-label{font-size:10px;color:#888;margin-top:3px}'
+    + '.notice{background:#f9f9f9;border:1px solid #ddd;border-radius:4px;padding:10px 12px;font-size:11px;line-height:1.6;margin-bottom:16px}'
+    + '.rabies-ok{color:#2a7040;font-weight:bold}.rabies-no{color:#c53030;font-weight:bold}'
+    + '@media print{body{padding:12px}}';
+
+  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>' + title + '</title><style>' + css + '</style></head><body>'
+    + '<div class="header">'
+    + '<div class="shelter-name">Heartland Pet Connection</div>'
+    + '<div style="font-size:11px;color:#666">1807 W J St, Hastings, NE 68901 · (402) 462-7387 · heartlandpetconnection.com</div>'
+    + '<div class="doc-title">' + title + '</div>'
+    + '<div style="font-size:11px;color:#666">Date: ' + date + '</div>'
+    + '</div>'
+    /* Animal info */
+    + '<div class="section"><div class="section-title">Animal Information</div>'
+    + '<div class="grid">'
+    + '<div class="field"><label>Name</label><span>' + esc(r.name||'Unknown') + '</span></div>'
+    + '<div class="field"><label>Species / Breed</label><span>' + [r.species,r.breed].filter(Boolean).join(' · ') + '</span></div>'
+    + '<div class="field"><label>Color</label><span>' + esc(r.color||'—') + '</span></div>'
+    + '<div class="field"><label>Sex</label><span>' + esc(r.sex||'Unknown') + '</span></div>'
+    + '<div class="field"><label>Age</label><span>' + esc(r.age||'Unknown') + '</span></div>'
+    + '<div class="field"><label>Microchip #</label><span>' + esc(r.chip||'None on file') + '</span></div>'
+    + '<div class="field"><label>Animal ID</label><span>' + esc(r.animalId||String(r.id)) + '</span></div>'
+    + '<div class="field"><label>Intake Date</label><span>' + (r.date?new Date(r.date).toLocaleDateString():'—') + '</span></div>'
+    + '</div></div>'
+    /* Rabies */
+    + '<div class="section"><div class="section-title">Rabies Vaccination</div>'
+    + '<div class="' + (rabiesOk?'rabies-ok':'rabies-no') + '">' + (rabiesOk?'✅ Vaccinated':'❌ Not vaccinated — owner must vaccinate within 30 days') + '</div>'
+    + (med.rabiesTag ? '<div style="font-size:11px;margin-top:4px">Tag #: <strong>' + esc(med.rabiesTag) + '</strong>' + (med.rabiesExpiry?' · Expires: '+med.rabiesExpiry:'') + '</div>' : '')
+    + '</div>'
+    /* Person info */
+    + '<div class="section"><div class="section-title">' + (isAdopt?'Adopter Information':isReunite?'Owner Information':'Receiving Organization') + '</div>'
+    + '<div class="grid">'
+    + (isAdopt ? '<div class="field"><label>Adopter Name</label><span>' + esc(r.adopterName||'___________________________') + '</span></div><div class="field"><label>Phone</label><span>' + esc(r.adopterPhone||'___________________________') + '</span></div>' : '')
+    + (isReunite ? '<div class="field"><label>Owner Name</label><span>' + esc(r.confirmedOwner||r.owner||'___________________________') + '</span></div>' : '')
+    + (isTransfer ? '<div class="field"><label>Organization</label><span>' + esc(r.transferPartner||'___________________________') + '</span></div>' : '')
+    + '<div class="field"><label>Address</label><span>_________________________________</span></div>'
+    + '</div></div>'
+    /* Terms */
+    + '<div class="section"><div class="section-title">Agreement</div>'
+    + '<div class="notice">'
+    + (isAdopt ? 'By signing below, the adopter agrees to provide proper care, shelter, food, and veterinary attention for this animal. The adopter agrees not to use this animal for fighting, experimentation, or any cruel purpose. Heartland Pet Connection reserves the right to reclaim this animal if it is being mistreated.' : '')
+    + (isReunite ? 'By signing below, the owner confirms this is their animal and agrees to keep the animal current on rabies vaccination and licensed as required by local ordinance. A redemption fee may apply.' : '')
+    + (isTransfer ? 'By signing below, both parties confirm the above animal is being transferred and accepting organization assumes all responsibility for the animal\'s care and placement.' : '')
+    + '</div></div>'
+    /* Signatures */
+    + '<div class="grid" style="margin-top:24px">'
+    + '<div><div class="sig-line"></div><div class="sig-label">' + (isAdopt?'Adopter Signature':'Owner / Representative Signature') + '</div></div>'
+    + '<div><div class="sig-line"></div><div class="sig-label">Heartland Pet Connection Staff</div></div>'
+    + '<div style="margin-top:20px"><div class="sig-line"></div><div class="sig-label">Date</div></div>'
+    + '<div style="margin-top:20px"><div class="sig-line"></div><div class="sig-label">Date</div></div>'
+    + '</div>'
+    + '<div style="text-align:center;margin-top:20px;font-size:10px;color:#aaa">Generated by PawPulse · paw-pulse.org</div>'
+    + '</body></html>';
+
+  var w = window.open('','_blank','width=800,height=900');
+  w.document.write(html); w.document.close();
+  setTimeout(function(){ w.print(); }, 400);
 }
 
 function previewEditPhoto(input, id) {
