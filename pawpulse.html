@@ -1467,6 +1467,19 @@ function submitIntakeFromModal() {
   var photoEl = document.getElementById('si-prev');
   if (photoEl && photoEl.src && photoEl.src.startsWith('data:')) r.photo = photoEl.src;
 
+  /* If this intake was migrated from a public found report, close the original
+     so the green pin disappears and no duplicate/ghost remains on the map */
+  if (window._migrateFromId) {
+    var orig = reports.find(function(x){ return String(x.id)===String(window._migrateFromId); });
+    if (orig) {
+      orig.shelter     = true;           /* moves off public map */
+      orig.shelterName = activeShelter;  /* associates with shelter */
+      orig.migratedTo  = r.id;          /* audit trail */
+      orig.reunited    = true;           /* hides from all active views */
+    }
+    window._migrateFromId = null;
+  }
+
   reports.push(r); save(); renderMarkers(); renderIncareView(); updateNavCounts();
   closeIntakeModal();
   pushBannerEvent((isHold?'⚠️ Animal on hold logged at ':'🐾 New animal received at ') + activeShelter, isHold?'#d4843a':'var(--found-g)');
@@ -3336,14 +3349,6 @@ function renderMarkers() {
   lMarkers.forEach(function(m){ map.removeLayer(m); });
   lMarkers = [];
 
-  /* Auto-trigger adoption: strays only, >5 days, not on hold */
-  reports.forEach(function(r) {
-    if (r.type==='found' && r.intakeType !== 'hold' && r.shelter && !r.reunited && !r.euthanized && !r.adoptionStatus && daysSince(r.date) > 5) {
-      r.adoptionStatus = 'available';
-      if (!r.dateAvailable) r.dateAvailable = new Date().toISOString();
-    }
-  });
-
   /* Only show lost and found public reports as individual pins — not shelter animals */
   reports.filter(function(r) {
     if (r.shelter) return false;         /* shelter animals — handled by building pin below */
@@ -3834,9 +3839,13 @@ function getShelterData(opts) {
     ? new Date(Date.now() - opts.cutoffDays * 86400000).toISOString()
     : null;
 
+  /* Case-insensitive shelter name for robustness across entry points */
+  var snLower = activeShelter.toLowerCase();
+
   return reports.filter(function(r) {
-    /* SHELTER ISOLATION: must belong to active shelter */
-    if (r.shelterName !== activeShelter && r.finder !== activeShelter) return false;
+    /* SHELTER ISOLATION: must belong to active shelter (case-insensitive) */
+    var rName = (r.shelterName || r.finder || '').toLowerCase();
+    if (rName !== snLower) return false;
     /* Must be a shelter record (Stage 2) — not a public-only report */
     if (!r.shelter) return false;
     /* Skip resolved unless asked */
