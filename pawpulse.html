@@ -3404,7 +3404,7 @@ function renderMarkers() {
   var lblS = document.getElementById('legend-shelter-label');
   if (cntS) cntS.textContent = reports.filter(function(r){return r.shelter && !r.reunited && r.adoptionStatus!=='adopted' && !(r.enforcement&&r.enforcement.holdOutcome);}).length;
   if (cntA) cntA.textContent = reports.filter(function(r){return r.adoptionStatus==='available' && !r.reunited;}).length;
-  if (lblS && activeShelter) lblS.textContent = '🏠 In Care of ' + activeShelter.split(' ')[0];
+  if (lblS && activeShelter) lblS.textContent = 'In Care of ' + activeShelter.split(' ')[0];
   document.getElementById('empty-hint').style.opacity = reports.length ? '0' : '1';
   updateNavCounts();
   var rptView = document.getElementById('view-reports');
