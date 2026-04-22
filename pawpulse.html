@@ -1530,6 +1530,8 @@ function submitIntakeFromModal() {
   reports.push(r); save(); renderMarkers(); renderIncareView(); updateNavCounts();
   closeIntakeModal();
   pushBannerEvent((isHold?'⚠️ Animal on hold logged at ':'🐾 New animal received at ') + activeShelter, isHold?'#d4843a':'var(--found-g)');
+  /* Auto-match: search lost reports for possible owner immediately after intake */
+  if (!isHold) setTimeout(function(){ autoMatchOnIntake(r); }, 800);
 }
 
 /* ── ANIMAL EDIT MODAL ───────────────────────────────────────────────── */
@@ -1607,6 +1609,16 @@ function openAnimalEdit(id) {
         + '</select></div>'
         + '<div class="fg" style="margin:0"><label>Spay/Neuter</label>'
         + '<select id="ae-spayneuter"><option value="">Unknown</option><option value="yes"' + (med.spayNeuter==='yes'?' selected':'') + '>Yes</option><option value="no"' + (med.spayNeuter==='no'?' selected':'') + '>No</option><option value="scheduled"' + (med.spayNeuter==='scheduled'?' selected':'') + '>Scheduled</option></select></div></div>'
+        /* Rabies — required by Nebraska law before release */
+        + '<div style="background:#fff8f0;border:1px solid #e8c090;border-radius:8px;padding:10px 12px;margin-top:10px;margin-bottom:2px">'
+        + '<div style="font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:#8a5010;margin-bottom:8px">🐕 Rabies — Required Before Release</div>'
+        + '<div class="fr"><div class="fg" style="margin:0"><label>Rabies Vaccine Status</label>'
+        + '<select id="ae-rabies-status"><option value="">Not Given</option><option value="given"' + (med.rabiesStatus==='given'?' selected':'') + '>✅ Given</option><option value="exempt"' + (med.rabiesStatus==='exempt'?' selected':'') + '>Exempt (too young)</option><option value="prior"' + (med.rabiesStatus==='prior'?' selected':'') + '>Prior — on file</option></select></div>'
+        + '<div class="fg" style="margin:0"><label>Rabies Tag #</label><input type="text" id="ae-rabies-tag" value="' + esc(med.rabiesTag||'') + '" placeholder="e.g. NE-2024-00123"></div></div>'
+        + '<div class="fr" style="margin-top:8px"><div class="fg" style="margin:0"><label>Date Administered</label><input type="date" id="ae-rabies-date" value="' + (med.rabiesDate||'') + '"></div>'
+        + '<div class="fg" style="margin:0"><label>Expires</label><input type="date" id="ae-rabies-expiry" value="' + (med.rabiesExpiry||'') + '"></div></div>'
+        + '<div class="fg" style="margin-top:8px"><label>Administering Vet / Clinic</label><input type="text" id="ae-rabies-vet" value="' + esc(med.rabiesVet||'') + '" placeholder="e.g. Adams County Vet Clinic"></div>'
+        + '</div>'
         + '<div class="fr" style="margin-top:8px"><div class="fg" style="margin:0"><label>Vaccinations</label>'
         + '<select id="ae-vacc"><option value="">Unknown</option><option value="current"' + (med.vaccinations==='current'?' selected':'') + '>Current</option><option value="partial"' + (med.vaccinations==='partial'?' selected':'') + '>Partial</option><option value="none"' + (med.vaccinations==='none'?' selected':'') + '>None</option></select></div>'
         + '<div class="fg" style="margin:0"><label>Parasite Treatment</label>'
@@ -1615,7 +1627,8 @@ function openAnimalEdit(id) {
         + '<div class="fg" style="margin:0"><label>Vaccination Cost ($)</label><input type="number" id="ae-vacccost" value="' + (med.vaccinationCost||'') + '" min="0" step="1"></div></div>'
         + '<div class="fr" style="margin-top:8px"><div class="fg" style="margin:0"><label>Vet Visit Cost ($)</label><input type="number" id="ae-vetcost" value="' + (med.vetCost||'') + '" min="0" step="1"></div>'
         + '<div class="fg" style="margin:0"><label>Other Medical Cost ($)</label><input type="number" id="ae-othercost" value="' + (med.otherCost||'') + '" min="0" step="1"></div></div>'
-        + '<div class="fg" style="margin-top:8px"><label>Medical Notes</label><textarea id="ae-mednotes" style="min-height:52px">' + esc(med.notes||'') + '</textarea></div>')
+        + '<div class="fg" style="margin-top:8px"><label>Medical Notes</label><textarea id="ae-mednotes" style="min-height:52px">' + esc(med.notes||'') + '</textarea></div>'
+        + '<div class="fg" style="margin-top:8px"><label>Weight at Intake (lbs)</label><input type="number" id="ae-weight" value="' + (med.weight||'') + '" min="0" step="0.1" placeholder="e.g. 42.5"></div>')
 
     /* ── Section: Behavioral ── */
     + editSection('behavioral', '🐶 Behavioral Assessment', false,
@@ -1735,6 +1748,13 @@ function saveAnimalEdit(id) {
   r.medical.vetCost         = parseFloat((document.getElementById('ae-vetcost')||{}).value) || 0;
   r.medical.otherCost       = parseFloat((document.getElementById('ae-othercost')||{}).value) || 0;
   r.medical.notes           = ((document.getElementById('ae-mednotes')||{}).value||'').trim();
+  r.medical.rabiesStatus    = (document.getElementById('ae-rabies-status')||{}).value || '';
+  r.medical.rabiesTag       = ((document.getElementById('ae-rabies-tag')||{}).value||'').trim();
+  r.medical.rabiesDate      = (document.getElementById('ae-rabies-date')||{}).value || '';
+  r.medical.rabiesExpiry    = (document.getElementById('ae-rabies-expiry')||{}).value || '';
+  r.medical.rabiesVet       = ((document.getElementById('ae-rabies-vet')||{}).value||'').trim();
+  var wt = (document.getElementById('ae-weight')||{}).value;
+  r.medical.weight          = wt ? parseFloat(wt) : null;
 
   /* Behavioral */
   r.temperament   = (document.getElementById('ae-temper')||{}).value || '';
@@ -3265,6 +3285,85 @@ async function searchMatchesFromCard(lostId) {
     }
   }
   if (btn) { btn.disabled = false; btn.textContent = '🔍 Search Again'; }
+}
+
+
+/* ── AUTO-MATCH ON INTAKE ─────────────────────────────────────────────── */
+async function autoMatchOnIntake(intake) {
+  var lostPets = reports.filter(function(r){
+    return r.type === 'lost' && !r.reunited && !r.shelter;
+  });
+  if (!lostPets.length) return;
+  var quickMatch = lostPets.filter(function(r){
+    return intake.species && r.species && intake.species.toLowerCase() === r.species.toLowerCase();
+  });
+  if (!quickMatch.length) return;
+  try {
+    var intakeDesc = [
+      intake.species && 'Species: ' + intake.species,
+      intake.breed   && 'Breed: '   + intake.breed,
+      intake.color   && 'Color: '   + intake.color,
+      intake.sex     && 'Sex: '     + intake.sex,
+      intake.address && 'Found near: ' + intake.address
+    ].filter(Boolean).join('. ');
+    var lostList = quickMatch.map(function(r, i){
+      return (i+1) + '. ID:' + r.id + (r.name?' Name:'+r.name:'') + (r.species?' Species:'+r.species:'') + (r.breed?' Breed:'+r.breed:'') + (r.color?' Color:'+r.color:'') + (r.address?' Last seen:'+r.address:'');
+    }).join('\n');
+    var resp = await fetch('/api/anthropic', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:400,
+        messages:[{role:'user',content:'A shelter just received this animal:\n' + intakeDesc + '\n\nActive lost pet reports:\n' + lostList + '\n\nReturn ONLY valid JSON array of matches with: id (number), confidence ("high","medium","low"), reason (1 sentence). Empty array if no matches.'}]
+      })
+    });
+    var data = await resp.json();
+    var text = (data.content||[]).map(function(b){return b.text||'';}).join('').trim();
+    var matches = JSON.parse(text.replace(/```json|```/g,'').trim());
+    if (!matches.length) return;
+    var best = matches[0];
+    var lostPet = lostPets.find(function(r){return String(r.id)===String(best.id);});
+    var petName = lostPet ? (lostPet.name || lostPet.species || 'pet') : 'a pet';
+    pushBannerEvent('\uD83D\uDD0D ' + matches.length + ' possible lost pet match' + (matches.length>1?'es':'') + ' for this intake \u2014 ' + petName + ' was reported missing nearby. Check the map.', '#2050a0');
+    intake.possibleMatchIds = matches.map(function(m){return m.id;});
+    save();
+  } catch(e) { console.warn('Auto-match error:', e.message); }
+}
+
+/* ── CAGE CARD PRINT ──────────────────────────────────────────────────── */
+function printCageCard(id) {
+  var r = reports.find(function(x){return String(x.id)===String(id);});
+  if (!r) return;
+  var med = getMed(r) || {};
+  var days = Math.floor(daysSince(r.date));
+  var holdWait = daysUntilAdoptEligible(r);
+  var intakeDate = r.date ? new Date(r.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '---';
+  var rabiesStatus = med.rabiesStatus==='given' ? 'Given - Tag #' + (med.rabiesTag||'---') : med.rabiesStatus==='prior' ? 'Prior on file' : med.rabiesStatus==='exempt' ? 'Exempt (age)' : 'NOT GIVEN';
+  var rabiesOk = med.rabiesStatus === 'given' || med.rabiesStatus === 'prior';
+  var css = '*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;font-size:12px;padding:16px;max-width:4in}.header{text-align:center;border-bottom:2px solid #333;padding-bottom:8px;margin-bottom:10px}.shelter{font-size:9px;color:#666}.name{font-size:22px;font-weight:bold}.species{font-size:12px;color:#555;margin-top:2px}.photo{width:100%;height:150px;object-fit:cover;border-radius:6px;margin:8px 0}.no-photo{width:100%;height:60px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:28px;margin:8px 0;border-radius:6px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;margin-bottom:8px}.field label{font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:#888;display:block}.field span{font-size:12px;font-weight:bold;color:#333}.section{border:1px solid #ddd;border-radius:4px;padding:6px 8px;margin-bottom:6px}.stitle{font-size:9px;text-transform:uppercase;color:#888;margin-bottom:4px;font-weight:bold}.rabies{border-radius:4px;padding:5px 8px;margin-bottom:8px;font-size:11px}.ryes{background:#f0fff4;border:1px solid #48bb78}.rno{background:#fff5f5;border:1px solid #fc8181;color:#c53030}.banner{background:#fff8f0;border:1.5px solid #e8a040;border-radius:4px;padding:5px 8px;text-align:center;margin-bottom:6px;font-weight:bold;color:#8a5010;font-size:11px}.footer{border-top:1px solid #ddd;padding-top:5px;margin-top:6px;font-size:9px;color:#888;display:flex;justify-content:space-between}@media print{body{padding:4px}}';
+  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Cage Card</title><style>' + css + '</style></head><body>'
+    + '<div class="header"><div class="shelter">Heartland Pet Connection &middot; 1807 W J St, Hastings NE</div>'
+    + '<div class="name">' + esc(r.name||'Unknown') + '</div>'
+    + '<div class="species">' + [r.species,r.breed,r.sex].filter(Boolean).join(' &middot; ') + '</div></div>'
+    + (r.photo ? '<img class="photo" src="' + r.photo + '">' : '<div class="no-photo">' + (r.species==='Dog'?'&#128021;':r.species==='Cat'?'&#128008;':'&#128062;') + '</div>')
+    + (holdWait > 0 ? '<div class="banner">STRAY HOLD &mdash; ' + holdWait + ' day' + (holdWait!==1?'s':'') + ' remaining</div>' : '')
+    + (r.intakeType==='hold' ? '<div class="banner">LEGAL HOLD &mdash; ' + (r.holdType||'Standard').toUpperCase() + '</div>' : '')
+    + '<div class="grid">'
+    + '<div class="field"><label>Intake Date</label><span>' + intakeDate + '</span></div>'
+    + '<div class="field"><label>Days In Care</label><span>' + days + 'd</span></div>'
+    + '<div class="field"><label>Color</label><span>' + esc(r.color||'---') + '</span></div>'
+    + '<div class="field"><label>Age</label><span>' + esc(r.age||'---') + '</span></div>'
+    + '<div class="field"><label>Chip #</label><span>' + esc(r.chip||'None') + '</span></div>'
+    + '<div class="field"><label>Weight</label><span>' + (med.weight ? med.weight + ' lbs' : '---') + '</span></div>'
+    + '<div class="field"><label>Source</label><span>' + esc(r.intakeSourceLabel||'---') + '</span></div>'
+    + '<div class="field"><label>Found Near</label><span>' + esc((r.address||'---').split(',')[0]) + '</span></div>'
+    + '</div>'
+    + '<div class="rabies ' + (rabiesOk?'ryes':'rno') + '"><div class="stitle">Rabies</div><strong>' + rabiesStatus + '</strong>' + (med.rabiesExpiry?' &middot; Exp: '+med.rabiesExpiry:'') + (med.rabiesVet?'<br><span style="font-size:10px">'+esc(med.rabiesVet)+'</span>':'') + '</div>'
+    + '<div class="section"><div class="stitle">Medical</div><div class="grid"><div class="field"><label>Health</label><span>' + esc(med.healthStatus||'---') + '</span></div><div class="field"><label>S/N</label><span>' + esc(med.spayNeuter||'Unknown') + '</span></div><div class="field"><label>Vaccines</label><span>' + esc(med.vaccinations||'Unknown') + '</span></div><div class="field"><label>Parasites</label><span>' + esc(med.parasite||'None') + '</span></div></div>' + (med.notes?'<div style="font-size:10px;color:#555;margin-top:3px">'+esc(med.notes)+'</div>':'') + '</div>'
+    + '<div class="section"><div class="stitle">Behavioral</div><div class="grid"><div class="field"><label>Temperament</label><span>' + esc(r.temperament||'Pending') + '</span></div><div class="field"><label>Energy</label><span>' + esc(r.energy||'---') + '</span></div><div class="field"><label>Dogs</label><span>' + esc(r.goodWithDogs||'Unknown') + '</span></div><div class="field"><label>Cats</label><span>' + esc(r.goodWithCats||'Unknown') + '</span></div><div class="field"><label>Kids</label><span>' + esc(r.goodWithKids||'Unknown') + '</span></div><div class="field"><label>House</label><span>' + esc(r.houseTrained||'Unknown') + '</span></div></div>' + (r.behaviorNotes?'<div style="font-size:10px;color:#555;margin-top:3px">'+esc(r.behaviorNotes)+'</div>':'') + '</div>'
+    + '<div class="footer"><span>' + new Date().toLocaleDateString() + '</span><span>ID: ' + r.id + '</span><span>paw-pulse.org</span></div>'
+    + '</body></html>';
+  var w = window.open('','_blank','width=500,height=750');
+  w.document.write(html); w.document.close();
+  setTimeout(function(){w.print();}, 400);
 }
 
 function closeCard() {
@@ -6873,6 +6972,7 @@ function renderIncareView() {
       + '</div>'
       + '<div style="padding:6px 8px;border-top:1px solid var(--cream-3);background:var(--cream-2);display:flex;gap:5px">'
       + '<button onclick="event.stopPropagation();openAnimalEdit(' + r.id + ')" style="flex:1;padding:4px 6px;font-size:.68rem;font-weight:600;border-radius:6px;border:1px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body)">✏️ Edit</button>'
+      + '<button onclick="event.stopPropagation();printCageCard(' + r.id + ')" style="padding:4px 7px;font-size:.68rem;font-weight:600;border-radius:6px;border:1px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body)" title="Print cage card">🖨️</button>'
       + (function() {
           if (isAdopt || isHold) return '';
           var wait = daysUntilAdoptEligible(r);
