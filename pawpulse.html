@@ -532,11 +532,12 @@ textarea{min-height:64px}
 </div>
 
 <!-- Staff badge shown when signed in -->
-<div id="staff-badge" style="display:none;position:fixed;top:8px;right:10px;z-index:800;flex-direction:row;gap:5px;align-items:center">
-  <div id="staff-name-badge" style="background:var(--forest);color:var(--cream);border-radius:999px;padding:5px 12px;font-size:.7rem;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.2);white-space:nowrap">🔐 Staff</div>
+<div id="staff-badge" style="display:none;position:fixed;bottom:12px;right:12px;z-index:800;flex-direction:column;align-items:flex-end;gap:5px">
+  <div id="staff-name-badge" style="background:var(--forest);color:var(--cream);border-radius:999px;padding:5px 14px;font-size:.7rem;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.2);white-space:nowrap">🔐 Staff</div>
   <div style="display:flex;gap:5px">
-    <button onclick="openChangePw()" style="flex:1;padding:4px 10px;font-size:.66rem;font-weight:600;border-radius:999px;border:1px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body);color:var(--warm-mid)">🔑 Change PW</button>
-    <button onclick="doSignOut()" style="flex:1;padding:4px 10px;font-size:.66rem;font-weight:600;border-radius:999px;border:1px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body);color:var(--warm-mid)">Sign Out</button>
+    <button onclick="clearTestData()" style="padding:4px 12px;font-size:.66rem;font-weight:600;border-radius:999px;border:1px solid #f0c0a0;background:#fff8f0;cursor:pointer;font-family:var(--font-body);color:#a04010;box-shadow:0 1px 4px rgba(0,0,0,.08)">🗑 Clear Test Data</button>
+    <button onclick="openChangePw()" style="padding:4px 12px;font-size:.66rem;font-weight:600;border-radius:999px;border:1px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body);color:var(--warm-mid);box-shadow:0 1px 4px rgba(0,0,0,.08)">🔑 Change PW</button>
+    <button onclick="doSignOut()" style="padding:4px 12px;font-size:.66rem;font-weight:600;border-radius:999px;border:1px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body);color:var(--warm-mid);box-shadow:0 1px 4px rgba(0,0,0,.08)">Sign Out</button>
   </div>
 </div>
 
@@ -1229,6 +1230,39 @@ function doSignOut() {
     document.getElementById('login-overlay').style.display = 'flex';
     document.querySelectorAll('.tab-ops,.tab-admin').forEach(function(el){ el.style.display=''; });
   });
+}
+
+function clearTestData() {
+  if (!_isStaff) return;
+  var before = reports.length;
+  /* Remove all records flagged as test data OR all shelter records if no flag */
+  var flagged = reports.filter(function(r){ return r._isTestData; });
+  if (flagged.length > 0) {
+    /* Remove only flagged test records */
+    reports = reports.filter(function(r){ return !r._isTestData; });
+  } else {
+    /* Fallback: remove all shelter records (keeps public lost/found pins) */
+    var confirmed = window.confirm(
+      'Remove all ' + reports.filter(function(r){return r.shelter;}).length +
+      ' shelter animals from the system?\n\nThis cannot be undone. Use before going live with real data.'
+    );
+    if (!confirmed) return;
+    reports = reports.filter(function(r){ return !r.shelter; });
+  }
+  var removed = before - reports.length;
+  save();
+  renderMarkers();
+  renderIncareView();
+  renderAdoptView();
+  updateNavCounts();
+  showToast('found');
+  /* Quick confirm message */
+  var badge = document.getElementById('staff-name-badge');
+  if (badge) {
+    var orig = badge.textContent;
+    badge.textContent = '✓ Cleared ' + removed + ' test animals';
+    setTimeout(function(){ badge.textContent = orig; }, 3000);
+  }
 }
 
 function openChangePw() {
