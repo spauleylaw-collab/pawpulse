@@ -717,11 +717,11 @@ textarea{min-height:64px}
     <div style="font-family:var(--font-display);font-size:.95rem;font-weight:700;color:var(--warm-dk)" id="incare-shelter-label">Animals In Care</div>
     <div style="font-size:.7rem;color:var(--warm-mid);margin-top:1px">Tap an animal to manage · <span id="incare-count" style="font-weight:700;color:var(--forest)">0</span> in care</div>
   </div>
-  <!-- Search bar -->
+  <!-- Search + Sort bar -->
   <div style="padding:8px 14px;border-bottom:1px solid var(--cream-3);background:var(--cream);flex-shrink:0;display:flex;gap:6px;align-items:center">
-    <div style="flex:1;position:relative">
+    <div style="position:relative;width:180px;flex-shrink:0">
       <span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:.8rem;pointer-events:none">🔍</span>
-      <input type="text" id="incare-search" placeholder="Search by name, breed, color, ID…" oninput="renderIncareView()" style="width:100%;padding:7px 10px 7px 28px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.8rem;background:#fff;box-sizing:border-box">
+      <input type="text" id="incare-search" placeholder="Search…" oninput="renderIncareView()" style="width:100%;padding:7px 10px 7px 28px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.8rem;background:#fff;box-sizing:border-box">
     </div>
     <select id="incare-sort" onchange="renderIncareView()" style="padding:7px 8px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.75rem;background:#fff;color:var(--warm-dk)">
       <option value="status">By Status</option>
@@ -1579,7 +1579,14 @@ function openAnimalEdit(id) {
 
     /* ── Section: Identity ── */
     + editSection('identity', '🐾 Identity', true,
-        '<div class="fr"><div class="fg" style="margin:0"><label>Name</label><input type="text" id="ae-name" value="' + esc(r.name||'') + '" placeholder="Leave blank if unknown"></div>'
+        /* Photo — preview if exists, add button if not */
+        '<div style="margin-bottom:12px">'
+        + (r.photo
+          ? '<div style="position:relative;height:140px;border-radius:8px;overflow:hidden;margin-bottom:6px"><img src="' + esc(r.photo) + '" style="width:100%;height:100%;object-fit:cover"><button onclick="document.getElementById(\'ae-photo-input\').click()" style="position:absolute;bottom:6px;right:6px;padding:4px 10px;font-size:.68rem;font-weight:600;border:none;border-radius:6px;background:rgba(0,0,0,.55);color:#fff;cursor:pointer">📷 Replace</button></div>'
+          : '<button onclick="document.getElementById(\'ae-photo-input\').click()" style="width:100%;padding:10px;border:1.5px dashed var(--cream-3);border-radius:8px;background:var(--cream-2);font-family:var(--font-body);font-size:.78rem;color:var(--warm-mid);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px"><span style="font-size:1.2rem">📷</span> Add Photo</button>')
+        + '<input type="file" id="ae-photo-input" accept="image/*" style="display:none" onchange="previewEditPhoto(this,' + r.id + ')">'
+        + '</div>'
+        + '<div class="fr"><div class="fg" style="margin:0"><label>Name</label><input type="text" id="ae-name" value="' + esc(r.name||'') + '" placeholder="Leave blank if unknown"></div>'
         + '<div class="fg" style="margin:0"><label>Animal ID / Tag #</label><input type="text" id="ae-animalid" value="' + esc(r.animalId||'') + '"></div></div>'
         + '<div class="fr" style="margin-top:8px"><div class="fg" style="margin:0"><label>Species</label>'
         + '<select id="ae-species"><option value="">Select…</option><option' + (r.species==='Dog'?' selected':'') + '>Dog</option><option' + (r.species==='Cat'?' selected':'') + '>Cat</option><option' + (r.species==='Bird'?' selected':'') + '>Bird</option><option' + (r.species==='Rabbit'?' selected':'') + '>Rabbit</option><option' + (r.species==='Other'?' selected':'') + '>Other</option></select></div>'
@@ -6826,16 +6833,13 @@ function renderIncareView() {
     var src = r.intakeSource||'citizen';
     var srcLabel = src==='ac'?'AC':src==='surrender'?'Surrender':src==='other'?'Transfer':'';
 
-    /* Photo section */
+    /* Photo — only show if one exists */
     var photoHTML = r.photo
       ? '<div style="height:120px;overflow:hidden;background:var(--cream-2);position:relative">'
         + '<img src="' + r.photo + '" style="width:100%;height:100%;object-fit:cover" alt="' + esc(r.name||r.species||'animal') + '">'
         + (_isStaff ? '<button onclick="event.stopPropagation();triggerPhotoUpload(' + r.id + ')" style="position:absolute;bottom:4px;right:4px;padding:3px 7px;font-size:.6rem;border-radius:6px;border:none;background:rgba(0,0,0,.5);color:#fff;cursor:pointer">📷 Replace</button>' : '')
         + '</div>'
-      : '<div style="height:100px;background:var(--cream-2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer" onclick="event.stopPropagation();triggerPhotoUpload(' + r.id + ')">'
-        + '<div style="font-size:1.8rem">' + (r.species==='Dog'?'🐕':r.species==='Cat'?'🐈':'🐾') + '</div>'
-        + (_isStaff ? '<div style="font-size:.62rem;color:var(--warm-mid);font-weight:600">📷 Add Photo</div>' : '')
-        + '</div>';
+      : '';
 
     return '<div style="background:#fff;border:1px solid var(--cream-3);border-radius:10px;overflow:hidden;display:flex;flex-direction:column" onclick="openAnimalEdit(' + r.id + ')" style="cursor:pointer">'
       + '<div style="height:3px;background:' + (isHold?'var(--amber)':urgencyColor) + '"></div>'
@@ -6859,6 +6863,35 @@ function renderIncareView() {
   }).join('') + '</div>'
   /* Hidden file input for photo uploads */
   + '<input type="file" id="incare-photo-input" accept="image/*" style="display:none" onchange="handleIncarePhotoUpload(this)">';
+}
+
+function previewEditPhoto(input, id) {
+  if (!input.files || !input.files[0]) return;
+  var r = reports.find(function(x){ return x.id === id; });
+  if (!r) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    r.photo = e.target.result;
+    /* Update preview inline without closing the modal */
+    var body = document.getElementById('animal-edit-body');
+    if (body) {
+      var img = body.querySelector('img');
+      if (img) {
+        img.src = e.target.result;
+      } else {
+        /* Replace the dashed "Add Photo" button with the image */
+        var addBtn = body.querySelector('button[onclick*="ae-photo-input"]');
+        if (addBtn && addBtn.parentNode) {
+          var wrapper = document.createElement('div');
+          wrapper.style.cssText = 'position:relative;height:140px;border-radius:8px;overflow:hidden;margin-bottom:6px';
+          wrapper.innerHTML = '<img src="' + e.target.result + '" style="width:100%;height:100%;object-fit:cover">'
+            + '<button onclick="document.getElementById(\'ae-photo-input\').click()" style="position:absolute;bottom:6px;right:6px;padding:4px 10px;font-size:.68rem;font-weight:600;border:none;border-radius:6px;background:rgba(0,0,0,.55);color:#fff;cursor:pointer">📷 Replace</button>';
+          addBtn.parentNode.replaceChild(wrapper, addBtn);
+        }
+      }
+    }
+  };
+  reader.readAsDataURL(input.files[0]);
 }
 
 function triggerPhotoUpload(id) {
