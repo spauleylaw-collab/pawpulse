@@ -5559,6 +5559,22 @@ function getAdoptable() {
 /* ── ENFORCEMENT & ADMIN ────────────────────── */
 var DAILY_RATE = parseFloat(localStorage.getItem('pp-daily-rate') || '25');
 
+/* Minimum hold days before an animal can be marked adoption-ready.
+   Nebraska stray law: 5 days for AC/stray before ownership transfers to shelter.
+   Owner surrenders and transfers have no mandatory hold. */
+var HOLD_DAYS_BY_SOURCE = { ac: 5, citizen: 5, surrender: 0, other: 0 };
+
+function daysUntilAdoptEligible(r) {
+  /* Returns 0 if eligible now, positive number if still in hold */
+  if (r.intakeType === 'hold') return 0;  /* Legal holds managed separately */
+  if (r.reunited || r.euthanized) return 0;
+  var required = HOLD_DAYS_BY_SOURCE[r.intakeSource] || 0;
+  if (required === 0) return 0;
+  var elapsed = daysSince(r.date);
+  var remaining = Math.ceil(required - elapsed);
+  return remaining > 0 ? remaining : 0;
+}
+
 function daysSinceDate(iso) {
   if (!iso) return 0;
   return Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 86400000));
@@ -6857,7 +6873,14 @@ function renderIncareView() {
       + '</div>'
       + '<div style="padding:6px 8px;border-top:1px solid var(--cream-3);background:var(--cream-2);display:flex;gap:5px">'
       + '<button onclick="event.stopPropagation();openAnimalEdit(' + r.id + ')" style="flex:1;padding:4px 6px;font-size:.68rem;font-weight:600;border-radius:6px;border:1px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body)">✏️ Edit</button>'
-      + (!isAdopt&&!isHold?'<button onclick="event.stopPropagation();quickAdoptReady(' + r.id + ')" style="flex:1;padding:4px 6px;font-size:.68rem;font-weight:600;border-radius:6px;border:1px solid #a0c0f0;background:#f0f4ff;color:#2050a0;cursor:pointer;font-family:var(--font-body)" title="Mark Adoption Ready">🌟</button>':'')
+      + (function() {
+          if (isAdopt || isHold) return '';
+          var wait = daysUntilAdoptEligible(r);
+          if (wait > 0) {
+            return '<span style="flex:1;padding:4px 6px;font-size:.62rem;font-weight:700;border-radius:6px;background:#fff8f0;color:#8a5010;border:1px solid #e8c090;text-align:center;display:flex;align-items:center;justify-content:center" title="Hold period — eligible in ' + wait + ' day' + (wait!==1?'s':'') + '">⏳ ' + wait + 'd hold</span>';
+          }
+          return '<button onclick="event.stopPropagation();quickAdoptReady(' + r.id + ')" style="flex:1;padding:4px 6px;font-size:.68rem;font-weight:600;border-radius:6px;border:1px solid #a0c0f0;background:#f0f4ff;color:#2050a0;cursor:pointer;font-family:var(--font-body)" title="Mark Adoption Ready">🌟</button>';
+        })()
       + '</div>'
       + '</div>';
   }).join('') + '</div>'
@@ -6920,8 +6943,14 @@ function handleIncarePhotoUpload(input) {
 function quickAdoptReady(id) {
   var r = reports.find(function(x){ return x.id===id; });
   if (!r) return;
+  var wait = daysUntilAdoptEligible(r);
+  if (wait > 0) {
+    alert('This animal is still in the required ' + (HOLD_DAYS_BY_SOURCE[r.intakeSource]||5) + '-day stray hold period. Eligible for adoption in ' + wait + ' more day' + (wait!==1?'s':'') + '.\n\nThis ensures owners have time to claim their pet.');
+    return;
+  }
   r.adoptionStatus = 'available';
   r.dateAvailable  = new Date().toISOString();
+  r.masterStatus   = 'available';
   save(); renderIncareView(); renderAdoptView(); updateNavCounts();
   pushBannerEvent('🌟 ' + (r.name||r.species||'Animal') + ' is now listed for adoption!', 'var(--found-g)');
 }
