@@ -1173,31 +1173,42 @@ function doLogin() {
   errEl.style.display = 'none';
   btn.textContent = 'Signing in…'; btn.disabled = true;
 
-  /* Local credential fallback — works even if Firebase auth CDN fails */
   var STAFF_CREDS = [
     { email: 'spauleylaw@gmail.com',             pw: 'Heartland2026!' },
     { email: 'heartlandpetconnection@gmail.com', pw: 'Heartland2026!' }
   ];
-  var match = STAFF_CREDS.find(function(c){ return c.email === email && c.pw === pw; });
 
-  if (match) {
-    /* Valid staff — proceed immediately without waiting for Firebase */
+  function onSuccess() {
     btn.textContent = 'Sign In'; btn.disabled = false;
     _isStaff = true;
     document.getElementById('login-overlay').style.display = 'none';
     document.getElementById('staff-badge').style.display = 'flex';
-    var nameBadge = document.getElementById('staff-name-badge');
-    if (nameBadge) nameBadge.textContent = '🔐 Staff';
-    /* Also try Firebase auth in background for Firestore write access */
-    if (auth) {
-      auth.signInWithEmailAndPassword(email, pw).catch(function(){});
-    }
+    var nb = document.getElementById('staff-name-badge');
+    if (nb) nb.textContent = '🔐 Staff';
     if (db) { startFirestoreListener(); } else { showShelterPicker(); }
-  } else {
+  }
+
+  function onFail() {
     btn.textContent = 'Sign In'; btn.disabled = false;
     errEl.textContent = 'Incorrect email or password.';
     errEl.style.display = 'block';
   }
+
+  /* Try Firebase auth first if available */
+  if (auth) {
+    auth.signInWithEmailAndPassword(email, pw)
+      .then(function() { onSuccess(); })
+      .catch(function() {
+        /* Firebase rejected — try local credentials as fallback */
+        var match = STAFF_CREDS.find(function(c){ return c.email === email && c.pw === pw; });
+        if (match) { onSuccess(); } else { onFail(); }
+      });
+    return;
+  }
+
+  /* Firebase auth unavailable — local credentials only */
+  var match = STAFF_CREDS.find(function(c){ return c.email === email && c.pw === pw; });
+  if (match) { onSuccess(); } else { onFail(); }
 }
 
 function doGuestView() {
