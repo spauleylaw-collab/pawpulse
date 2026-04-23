@@ -7230,10 +7230,16 @@ function previewEditPhoto(input, id) {
   var reader = new FileReader();
   reader.onload = function(e) {
     r.photo = e.target.result;
+    /* Persist immediately — don't wait for Save Changes */
+    save();
+    if (USE_FIREBASE && _fbReady && db && _isStaff) {
+      db.collection('reports').doc(String(r.id)).update({ photo: r.photo })
+        .catch(function(err){ console.warn('Photo sync error:', err); });
+    }
     /* Update preview inline without closing the modal */
     var body = document.getElementById('animal-edit-body');
     if (body) {
-      var img = body.querySelector('img');
+      var img = body.querySelector('img[style*="object-fit:cover"]');
       if (img) {
         img.src = e.target.result;
       } else {
@@ -7248,6 +7254,9 @@ function previewEditPhoto(input, id) {
         }
       }
     }
+    /* Refresh the In Care and Adopt cards so photo appears immediately */
+    renderIncareView();
+    renderAdoptView();
   };
   reader.readAsDataURL(input.files[0]);
 }
