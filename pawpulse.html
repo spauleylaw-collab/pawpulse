@@ -1122,14 +1122,23 @@ function loadDemoData() {
   /* Full wipe first — clears everything so demo starts clean */
   if (!confirm('This will clear ALL existing animals and load 9 demo animals from Heartland. Continue?')) return;
 
-  /* Remove all records from Firestore */
-  if (USE_FIREBASE && _fbReady && db) {
-    reports.forEach(function(r){
-      db.collection('reports').doc(String(r.id)).delete().catch(function(){});
-    });
-  }
+  /* Remove all records from Firestore — async batch, don't block UI */
+  var idsToDelete = reports.map(function(r){ return String(r.id); });
   reports = [];
   save();
+  if (USE_FIREBASE && _fbReady && db) {
+    /* Delete in small batches to avoid freezing */
+    var batchSize = 20;
+    function deleteBatch(ids) {
+      if (!ids.length) return;
+      var batch = db.batch();
+      ids.slice(0, batchSize).forEach(function(id){
+        batch.delete(db.collection('reports').doc(id));
+      });
+      batch.commit().then(function(){ deleteBatch(ids.slice(batchSize)); }).catch(function(){});
+    }
+    deleteBatch(idsToDelete);
+  }
   var now = Date.now();
   var day = 86400000;
   var shelter = 'Heartland Pet Connection';
