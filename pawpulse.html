@@ -1119,10 +1119,17 @@ function sendPasswordReset() {
 }
 
 function loadDemoData() {
-  /* Real animals from Heartland Pet Connection — for demo purposes */
-  if (reports.filter(function(r){ return r._isDemoData; }).length > 0) {
-    alert('Demo animals already loaded.'); return;
+  /* Full wipe first — clears everything so demo starts clean */
+  if (!confirm('This will clear ALL existing animals and load 9 demo animals from Heartland. Continue?')) return;
+
+  /* Remove all records from Firestore */
+  if (USE_FIREBASE && _fbReady && db) {
+    reports.forEach(function(r){
+      db.collection('reports').doc(String(r.id)).delete().catch(function(){});
+    });
   }
+  reports = [];
+  save();
   var now = Date.now();
   var day = 86400000;
   var shelter = 'Heartland Pet Connection';
