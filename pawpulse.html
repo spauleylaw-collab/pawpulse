@@ -590,6 +590,11 @@ textarea{min-height:64px}
   <div style="font-size:.62rem;color:var(--warm-mid);text-align:center;padding:3px 16px 4px;line-height:1.5;border-bottom:1px solid var(--cream-3);background:var(--cream)">Information may change as cases are reviewed. For official records, contact the shelter directly.</div>
   <div id="adopt-search-row">
     <input id="adopt-search" type="text" placeholder="Search by species, breed, color, shelter…" oninput="renderAdoptView()" autocomplete="off">
+    <select id="adopt-sort" onchange="renderAdoptView()" style="padding:7px 8px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.75rem;background:#fff;color:var(--warm-dk);flex-shrink:0">
+      <option value="longest">Longest Wait</option>
+      <option value="newest">Newest First</option>
+      <option value="alpha">A → Z</option>
+    </select>
   </div>
   <div style="padding:6px 16px;border-bottom:1px solid var(--cream-3);background:var(--cream);display:flex;gap:6px;flex-wrap:wrap">
     <button class="rpt-chip active" id="af-all"  onclick="setAdoptFilter('all',this)">All</button>
@@ -1015,9 +1020,8 @@ function initFirebase() {
         _isStaff = true;
         document.getElementById('login-overlay').style.display = 'none';
         document.getElementById('staff-badge').style.display = 'flex';
+        document.querySelectorAll('.tab-ops,.tab-admin').forEach(function(el){ el.style.display = ''; });
         hideStaffLoginBtn();
-        var navBtn = document.getElementById('nav-staff-login-btn');
-        if (navBtn) navBtn.style.display = 'none';
         if (db) { startFirestoreListener(); } else { showShelterPicker(); }
       }
     });
@@ -1114,8 +1118,9 @@ function doLogin() {
     _isStaff = true;
     document.getElementById('login-overlay').style.display = 'none';
     document.getElementById('staff-badge').style.display = 'flex';
-    var navBtn = document.getElementById('nav-staff-login-btn');
-    if (navBtn) navBtn.style.display = 'none';
+    /* Show staff-only tabs */
+    document.querySelectorAll('.tab-ops,.tab-admin').forEach(function(el){ el.style.display = ''; });
+    hideStaffLoginBtn();
     var nb = document.getElementById('staff-name-badge');
     if (nb) nb.textContent = '🔐 Staff';
     if (db) { startFirestoreListener(); } else { showShelterPicker(); }
@@ -5471,9 +5476,14 @@ function setAdoptFilter(f, btn) {
 function getAdoptable() {
   /* Adopt tab = filtered view of In Care where adoptionStatus === 'available' */
   var q = ((document.getElementById('adopt-search')||{}).value||'').toLowerCase().trim();
+  var sort = ((document.getElementById('adopt-sort')||{}).value) || 'longest';
   var list = getShelterData({ includeHolds: true })
     .filter(function(r){ return r.adoptionStatus === 'available'; })
-    .sort(function(a,b){ return daysSince(b.dateAvailable||b.date) - daysSince(a.dateAvailable||a.date); });
+    .sort(function(a,b){
+      if (sort === 'alpha')   return (a.name||'').localeCompare(b.name||'');
+      if (sort === 'newest')  return new Date(b.dateAvailable||b.date) - new Date(a.dateAvailable||a.date);
+      return daysSince(b.dateAvailable||b.date) - daysSince(a.dateAvailable||a.date); /* longest wait default */
+    });
   if (_adoptFilter === 'dog')   list = list.filter(function(r){ return (r.species||'').toLowerCase() === 'dog'; });
   if (_adoptFilter === 'cat')   list = list.filter(function(r){ return (r.species||'').toLowerCase() === 'cat'; });
   if (_adoptFilter === 'other') list = list.filter(function(r){ var s=(r.species||'').toLowerCase(); return s!=='dog'&&s!=='cat'; });
