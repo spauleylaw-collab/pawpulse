@@ -648,8 +648,8 @@ textarea{min-height:64px}
       <div id="adopt-hdr-title">🌟 Animals Ready for Adoption</div>
       <div id="adopt-hdr-sub">Hastings, NE area shelters · <span id="adopt-count">0</span> available</div>
     </div>
-    
   </div>
+  <div style="font-size:.62rem;color:var(--warm-mid);text-align:center;padding:3px 16px 4px;line-height:1.5;border-bottom:1px solid var(--cream-3);background:var(--cream)">Information may change as cases are reviewed. For official records, contact the shelter directly.</div>
   <div id="adopt-search-row">
     <input id="adopt-search" type="text" placeholder="Search by species, breed, color, shelter…" oninput="renderAdoptView()" autocomplete="off">
   </div>
@@ -897,11 +897,13 @@ textarea{min-height:64px}
 
     <!-- Floating filter pills -->
     <!-- Map legend — bottom left -->
-    <div id="map-legend" style="display:flex;flex-direction:column;gap:5px">
+    <div id="map-disclaimer" style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);z-index:600;background:rgba(255,255,255,.85);backdrop-filter:blur(4px);border-radius:7px;padding:3px 10px;font-size:.58rem;color:var(--warm-mid);white-space:nowrap;max-width:90%">Information may change — contact shelter for official status</div>
+<div id="map-legend" style="display:flex;flex-direction:column;gap:5px">
       <div class="legend-item"><div class="stat-dot lost"></div><span id="cnt-lost" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span>Lost</span></div>
       <div class="legend-item"><div class="stat-dot found"></div><span id="cnt-found" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span>Found</span></div>
       <div class="legend-item"><div class="legend-pin" style="background:#1a3f8a"></div><span id="cnt-shelter" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span id="legend-shelter-label">In Care of Heartland</span></div>
       <div class="legend-item" style="padding-left:18px"><div class="legend-pin" style="background:#c8841a"></div><span id="cnt-adopt" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span>↳ Adoptable</span></div>
+      <div style="font-size:.55rem;color:var(--warm-mid);line-height:1.4;margin-top:2px;max-width:160px">Info may change. Contact shelter for official status.</div>
     </div>
 
     <div id="drop-hint">
@@ -1506,6 +1508,11 @@ function submitIntakeFromModal() {
     owner:       ownerName||undefined, phone: ownerPhone||undefined,
     surrenderReason: surReason||undefined,
     shelter:     true, shelterName: activeShelter, intakeType: intakeType, holdType: holdType,
+    /* Explicit state fields — never implicit */
+    masterStatus:    isHold ? 'hold' : 'intake',
+    adoptionStatus:  '',
+    reunited:        false,
+    euthanized:      false,
     shelterHoldStart: isHold ? (holdStart?holdStart+'T00:00:00':new Date().toISOString()) : null,
     enforcement: isHold ? { internalStatus:(holdType==='bite'||holdType==='dangerous')?'AC Review':'Shelter Hold Active', acInvolved:intakeSource==='ac', dailyCost:dailyRate, courtDateStatus:'none', caseType:caseType } : null,
     caseType:    caseType,
@@ -1990,6 +1997,18 @@ function runSelectedReport() {
     parts.push('Generated ' + new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}));
     subEl.textContent = parts.join(' · ');
   }
+  /* Disclaimer row in report panel */
+  var disclaimerEl = document.getElementById('rpt-disclaimer');
+  if (!disclaimerEl) {
+    var panel = document.getElementById('rpt-report-panel');
+    if (panel) {
+      var d = document.createElement('div');
+      d.id = 'rpt-disclaimer';
+      d.style.cssText = 'font-size:.6rem;color:var(--warm-mid);padding:4px 0 8px;border-bottom:1px solid var(--cream-3);margin-bottom:8px';
+      d.textContent = 'Information is provided for community awareness and may change as cases are reviewed and updated. For official records or urgent matters, please contact the shelter directly.';
+      panel.insertBefore(d, panel.querySelector('#rpt-report-body'));
+    }
+  }
 
   runActiveReport();
 }
@@ -2009,6 +2028,21 @@ function runActiveReport() {
   var bodyEl = document.getElementById('rpt-report-body');
   if (!bodyEl) return;
   if (!validateShelterContext()) { bodyEl.innerHTML = '<div style="padding:32px;text-align:center;color:var(--warm-mid)">No shelter selected.</div>'; return; }
+
+  /* ── PRE-FLIGHT RECONCILIATION CHECK ─────────────────────────────────
+     Verify source data is consistent before generating any report.
+     If counts mismatch (duplicate IDs, corrupt state), flag it rather
+     than silently output bad numbers. */
+  var allShelter = getShelterData({ includeHolds:true, includeAdopt:true, includeResolved:true });
+  var ids = allShelter.map(function(r){ return r.id; });
+  var uniqueIds = ids.filter(function(id, i){ return ids.indexOf(id) === i; });
+  if (uniqueIds.length !== ids.length) {
+    bodyEl.innerHTML = '<div style="background:#fff5f5;border:1px solid var(--lost-r);border-radius:10px;padding:16px;color:#c00;font-size:.82rem">'
+      + '<strong>⚠️ Data Integrity Issue</strong><br>Duplicate animal records detected (' + (ids.length - uniqueIds.length) + ' duplicates). '
+      + 'Please contact your system administrator before generating reports. This ensures report accuracy.'
+      + '</div>';
+    return;
+  }
 
   /* Read UI filters */
   var fSpecies  = (document.getElementById('rpt-filter-species')||{}).value || '';
@@ -3148,7 +3182,7 @@ async function generateWhatNext(r) {
   var isSurrender = r.intakeSource === 'surrender';
   var acCase      = r.intakeSource === 'ac';
   var daysWaiting = isAdopt ? Math.floor(daysSince(r.dateAvailable || r.date)) : 0;
-  var holdCost    = isHold ? (days * ((r.enforcement && r.enforcement.dailyCost) || 25)) : 0;
+  var holdCost    = 0; /* Internal field — not surfaced publicly */
 
   var context = 'Animal: ' + (r.name || 'unnamed ' + species)
     + '\nSpecies: ' + species
@@ -5628,37 +5662,17 @@ function showAdoptUpload() {
 
 
 function submitAdoptUpload() {
-  var photoEl = document.getElementById('adopt-prev');
-  var shelter = shelters[0]; /* Default to first shelter coords */
-  var r = {
-    id: Date.now(), type: 'found', date: new Date().toISOString(),
-    lat: HASTINGS[0] + (Math.random()-.5)*.008,
-    lng: HASTINGS[1] + (Math.random()-.5)*.008,
-    name:    ((document.getElementById('adopt-name')||{}).value||'').trim(),
-    species: (document.getElementById('adopt-species')||{}).value,
-    breed:   getBreedValue('adopt-breed-wrap'),
-    color:   ((document.getElementById('adopt-color')||{}).value||'').trim(),
-    age:     (document.getElementById('adopt-age')||{}).value,
-    sex:     (document.getElementById('adopt-sex')||{}).value,
-    desc:    ((document.getElementById('adopt-desc')||{}).value||'').trim(),
-    finder:  ((document.getElementById('adopt-contact')||{}).value||'').trim() || 'PawPulse Community',
-    fphone:  ((document.getElementById('adopt-phone')||{}).value||'').trim(),
-    shelter: false,
-    adoptionStatus: 'available',
-    dateAvailable:  new Date().toISOString(),
-    photo: (photoEl && photoEl.src && photoEl.src.startsWith('data:')) ? photoEl.src : null
-  };
-  reports.push(r); save(); renderMarkers();
-  pushBannerEvent('🏠 New adoption listing: ' + (r.name || r.species || 'A pet') + ' is looking for a home', '#6090e0');
-  closeAdoptUpload();
-  renderReportsList();
-  selectReport(r.id);
-  /* Show a toast */
-  document.getElementById('toast-msg').textContent = '🏠 Listed for adoption — visible on the map';
-  var t = document.getElementById('toast');
-  t.style.background = '#2050a0';
-  t.classList.add('show');
-  setTimeout(function(){ t.classList.remove('show'); setTimeout(function(){ t.style.background=''; },400); }, 4000);
+  /* DISABLED: This path created shelter:false orphan records bypassing intake.
+     All animals must enter through the intake flow to maintain single-record integrity.
+     Redirecting to intake modal instead. */
+  closeAdoptForm(null);
+  if (_isStaff) { openIntakeModal(); } else {
+    alert('To list an animal for adoption, please contact Heartland Pet Connection directly at (402) 462-7387.');
+  }
+  return;
+  /* Original code below preserved for reference but never reached */
+  void function() {
+  }();
 }
 
 function closeAdoptUpload() {
