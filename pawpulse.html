@@ -154,7 +154,7 @@ textarea{min-height:64px}
 .photo-drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
 .photo-drop-icon{font-size:1.5rem;margin-bottom:3px}
 .photo-drop-txt{font-size:.75rem;color:var(--warm-mid)}
-.photo-prev{width:100%;max-height:130px;object-fit:cover;border-radius:7px;margin-top:8px;display:none}
+.photo-prev{width:100%;max-height:220px;object-fit:contain;border-radius:7px;margin-top:8px;display:none;background:var(--cream-2)}
 .chk-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;cursor:pointer}
 .chk-row input{width:16px;height:16px;accent-color:var(--found-g);flex-shrink:0}
 .chk-row label{font-size:.82rem;font-weight:500;color:var(--warm-dk);text-transform:none;letter-spacing:0;margin:0;cursor:pointer}
@@ -3894,10 +3894,30 @@ function showAIBtn(prefix) {
 }
 
 async function identifyPetFromPhoto(dataUrl) {
-  var parts = dataUrl.split(',');
-  var mime  = (parts[0].match(/:(.*?);/) || ['','image/jpeg'])[1];
+  /* Resize image to max 800px before sending — phone photos can be 5-10MB */
+  var resized = await new Promise(function(resolve) {
+    var img = new Image();
+    img.onload = function() {
+      var maxW = 800, maxH = 800;
+      var w = img.width, h = img.height;
+      if (w > maxW || h > maxH) {
+        var ratio = Math.min(maxW/w, maxH/h);
+        w = Math.round(w*ratio); h = Math.round(h*ratio);
+      }
+      var canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', 0.8));
+    };
+    img.src = dataUrl;
+  });
+
+  var parts = resized.split(',');
+  var mime  = 'image/jpeg';
   var b64   = parts[1];
-  var resp  = await fetch('https://api.anthropic.com/v1/messages', {
+
+  /* Use /api/anthropic proxy — never call Anthropic directly from browser */
+  var resp = await fetch('/api/anthropic', {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({
       model:'claude-sonnet-4-20250514', max_tokens:300,
@@ -4067,7 +4087,7 @@ function submitLost() {
     return;
   }
   var r = { id:Date.now(), type:'lost', date:new Date().toISOString(),
-    lat:pLat.lost, lng:pLng.lost,
+    lat:pLat.lost, lng:pLng.lost, shelter: false, reunited: false,
     name:v('l-name'), species:v('l-species'), breed:v('l-breed'), color:v('l-color'),
     address:v('l-address'), owner:v('l-owner'), phone:v('l-phone'),
     email:v('l-email'), chip:v('l-chip'), notes:v('l-notes'), photo:getPhoto('l-prev') };
@@ -4095,10 +4115,10 @@ function submitFound() {
   }
   var shelter = document.getElementById('f-shelter').checked;
   var r = { id:Date.now(), type:'found', date:new Date().toISOString(),
-    lat:pLat.found, lng:pLng.found,
+    lat:pLat.found, lng:pLng.found, shelter: shelter, reunited: false,
     species:v('f-species'), color:v('f-color'), desc:v('f-desc'),
     address:v('f-address'), finder:v('f-finder'), fphone:v('f-phone'),
-    shelter:shelter, shelterName:shelter?v('f-sname'):'', photo:getPhoto('f-prev') };
+    shelterName:shelter?v('f-sname'):'', photo:getPhoto('f-prev') };
   reports.push(r); save(); renderMarkers(); renderIncareView();
   /* Write directly to Firestore so ALL devices see it immediately — no staff login required */
   if (USE_FIREBASE && _fbReady && db) {
