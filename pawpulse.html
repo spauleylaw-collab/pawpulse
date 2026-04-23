@@ -1656,11 +1656,26 @@ function openAnimalEdit(id) {
         + '</div>')
 
     /* ── Section: Adoption ── */
-    + editSection('adoption', '🌟 Adoption', curStatus==='available',
-        '<div class="fr"><div class="fg" style="margin:0"><label>Date Available</label><input type="date" id="ae-dateAvail" value="' + (r.dateAvailable?r.dateAvailable.slice(0,10):today) + '"></div>'
-        + '<div class="fg" style="margin:0"><label>Adoption Fee ($)</label><input type="number" id="ae-fee" value="' + (r.adoptionFee!=null?r.adoptionFee:'') + '" min="0" step="1" placeholder="75"></div></div>'
-        + '<div class="fg" style="margin-top:8px"><label>Tags (comma separated)</label><input type="text" id="ae-tags" value="' + esc(r.tags||'') + '" placeholder="Friendly, House-trained, Good with kids"></div>'
-        + '<div class="fg"><label>Public Profile / About</label><textarea id="ae-about" style="min-height:60px">' + esc(r.about||'') + '</textarea></div>')
+    + (function(){
+        var holdWait = daysUntilAdoptEligible(r);
+        var isActiveBiteHold = r.intakeType === 'hold' && r.holdType === 'bite' && holdWait > 0;
+        var isActiveHold = r.intakeType === 'hold' && holdWait > 0;
+        if (isActiveBiteHold || isActiveHold) {
+          return editSection('adoption', '🌟 Adoption', false,
+            '<div style="background:#fff8f0;border:1.5px solid var(--amber);border-radius:8px;padding:12px 14px">'
+            + '<div style="font-size:.82rem;font-weight:700;color:#8a5010;margin-bottom:4px">⛔ Not eligible for adoption</div>'
+            + '<div style="font-size:.76rem;color:#8a5010;line-height:1.5">'
+            + (isActiveBiteHold
+              ? 'This animal is in a mandatory 10-day bite quarantine. <strong>' + holdWait + ' day' + (holdWait!==1?'s':'') + ' remaining.</strong> Adoption cannot be listed until quarantine is complete.'
+              : 'This animal is under an active legal hold. The hold must be resolved before adoption listing is permitted.')
+            + '</div></div>');
+        }
+        return editSection('adoption', '🌟 Adoption', curStatus==='available',
+          '<div class="fr"><div class="fg" style="margin:0"><label>Date Available</label><input type="date" id="ae-dateAvail" value="' + (r.dateAvailable?r.dateAvailable.slice(0,10):today) + '"></div>'
+          + '<div class="fg" style="margin:0"><label>Adoption Fee ($)</label><input type="number" id="ae-fee" value="' + (r.adoptionFee!=null?r.adoptionFee:'') + '" min="0" step="1" placeholder="75"></div></div>'
+          + '<div class="fg" style="margin-top:8px"><label>Tags (comma separated)</label><input type="text" id="ae-tags" value="' + esc(r.tags||'') + '" placeholder="Friendly, House-trained, Good with kids"></div>'
+          + '<div class="fg"><label>Public Profile / About</label><textarea id="ae-about" style="min-height:60px">' + esc(r.about||'') + '</textarea></div>');
+      })()
 
     /* ── Save ── */
     + '<div style="display:flex;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid var(--cream-3)">'
@@ -1732,6 +1747,12 @@ function saveAnimalEdit(id) {
   if (masterStatus === 'adopted') {
     r.adoptionStatus = 'adopted';
   } else if (masterStatus === 'available') {
+    /* Block if animal is still in mandatory hold */
+    var holdWait = daysUntilAdoptEligible(r);
+    if (holdWait > 0) {
+      alert('⛔ Cannot mark as Adoption Ready — this animal has ' + holdWait + ' day' + (holdWait!==1?'s':'') + ' remaining on a mandatory hold. The hold must be completed first.');
+      return;
+    }
     r.adoptionStatus = 'available';
     if (!r.dateAvailable) r.dateAvailable = new Date().toISOString();
   } else {
@@ -2519,11 +2540,7 @@ async function generateGrantDraft(oppId) {
     var text = (data.content||[]).map(function(b){ return b.text||''; }).join('');
     if (!text) throw new Error('Empty response');
 
-    /* Save draft to grants storage */
-    var queued = grants.find(function(g){ return g.oppId===oppId&&g.shelterId===activeShelter; });
-    if (queued) { queued.draftText = text; saveGrants(); }
-    else { grants.push({ id:'g'+Date.now(), oppId:oppId, shelterId:activeShelter, name:opp.name, est:opp.est, status:'queued', savedAt:new Date().toISOString(), draftText:text }); saveGrants(); }
-
+    /* Draft generated — show copy/print/regenerate actions */
     if (body) body.innerHTML =
       '<div style="display:flex;gap:8px;margin-bottom:12px">'
       + '<button onclick="copyGrantDraft()" style="padding:7px 14px;font-size:.76rem;font-weight:700;border-radius:8px;border:none;background:var(--forest);color:#fff;cursor:pointer;font-family:var(--font-body)">📋 Copy Draft</button>'
@@ -2535,6 +2552,26 @@ async function generateGrantDraft(oppId) {
   } catch(err) {
     if (body) body.innerHTML = '<div style="padding:24px;color:var(--lost-r);text-align:center">Draft generation failed. Check your API connection and try again.<br><small>' + err.message + '</small></div>';
   }
+}
+
+function openGrantDraft(oppId) {
+  /* Remove any existing draft panel */
+  var existing = document.getElementById('grant-draft-panel');
+  if (existing) existing.remove();
+  /* Create inline slide-up panel */
+  var overlay = document.createElement('div');
+  overlay.id = 'grant-draft-panel';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:1100;background:rgba(42,31,18,.55);display:flex;align-items:flex-end;justify-content:center';
+  overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
+  overlay.innerHTML = '<div style="background:var(--cream);border-radius:18px 18px 0 0;width:100%;max-width:700px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden">'
+    + '<div style="padding:14px 18px 10px;border-bottom:1px solid var(--cream-3);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">'
+    + '<div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--warm-dk)">✍️ Grant Application Draft</div>'
+    + '<button onclick="document.getElementById(\'grant-draft-panel\').remove()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--warm-mid)">✕</button>'
+    + '</div>'
+    + '<div id="gd-body" style="flex:1;overflow-y:auto;padding:20px;-webkit-overflow-scrolling:touch"></div>'
+    + '</div>';
+  document.body.appendChild(overlay);
+  generateGrantDraft(oppId);
 }
 
 function regenerateGrantDraft(oppId) {
@@ -5508,9 +5545,18 @@ var DAILY_RATE = parseFloat(localStorage.getItem('pp-daily-rate') || '25');
 var HOLD_DAYS_BY_SOURCE = { ac: 5, citizen: 5, surrender: 0, other: 0 };
 
 function daysUntilAdoptEligible(r) {
-  /* Returns 0 if eligible now, positive number if still in hold */
-  if (r.intakeType === 'hold') return 0;  /* Legal holds managed separately */
+  /* Returns 0 if eligible now, positive number if still in mandatory hold */
   if (r.reunited || r.euthanized) return 0;
+  /* Bite hold: 10-day mandatory quarantine — must complete before any placement */
+  if (r.intakeType === 'hold' && r.holdType === 'bite') {
+    var holdStart = r.shelterHoldStart || r.date;
+    var elapsed = daysSince(holdStart);
+    var remaining = Math.ceil(10 - elapsed);
+    return remaining > 0 ? remaining : 0;
+  }
+  /* Other legal holds — must fully resolve before adoption */
+  if (r.intakeType === 'hold') return 0;
+  /* Standard stray hold */
   var required = HOLD_DAYS_BY_SOURCE[r.intakeSource] || 0;
   if (required === 0) return 0;
   var elapsed = daysSince(r.date);
