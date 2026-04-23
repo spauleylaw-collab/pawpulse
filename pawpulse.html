@@ -2525,7 +2525,8 @@ async function generateGrantDraft(oppId) {
     + '7. ORGANIZATIONAL BACKGROUND\n'
     + '8. MEASURABLE IMPACT\n\n'
     + 'Use a professional, sincere tone. Do not make up statistics. Use only the data provided. '
-    + 'Write in full paragraphs, not bullet points. This should be ready to submit with minor edits.';
+    + 'Write in full paragraphs, not bullet points. This should be ready to submit with minor edits. '
+    + 'Do NOT use markdown — no ##, no **, no *, no bullet dashes. Use plain text with section headers in ALL CAPS followed by a blank line.';
 
   try {
     var resp = await fetch('/api/anthropic', {
@@ -3693,7 +3694,33 @@ map.on('click', function(e) {
   var pre = t==='lost' ? 'l' : 'f';
   document.getElementById(pre+'-prompt').classList.remove('on');
   document.getElementById(pre+'-locset').classList.add('on');
-  document.getElementById(pre+'-loctxt').textContent = 'Placed at ' + pLat[t].toFixed(4) + ', ' + pLng[t].toFixed(4);
+  document.getElementById(pre+'-loctxt').textContent = 'Locating address…';
+  /* Store coords immediately — reverse geocode in background */
+  pLat[t]._addr = null;
+  var capturedLat = pLat[t], capturedLng = pLng[t], capturedPre = pre;
+  fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + capturedLat + '&lon=' + capturedLng + '&zoom=18&addressdetails=1', {
+    headers: { 'Accept-Language': 'en-US,en', 'User-Agent': 'PawPulse/1.0' }
+  }).then(function(r){ return r.json(); }).then(function(data){
+    var a = data.address || {};
+    /* Build a clean Hastings-style address */
+    var parts = [];
+    if (a.house_number && a.road) parts.push(a.house_number + ' ' + a.road);
+    else if (a.road) parts.push(a.road);
+    else if (a.neighbourhood) parts.push(a.neighbourhood);
+    else if (a.suburb) parts.push(a.suburb);
+    if (a.city || a.town || a.village) parts.push(a.city || a.town || a.village);
+    var addr = parts.join(', ') || (capturedLat.toFixed(4) + ', ' + capturedLng.toFixed(4));
+    var el = document.getElementById(capturedPre + '-loctxt');
+    if (el) el.textContent = '📍 ' + addr;
+    /* Pre-fill the address input field */
+    var addrInput = document.getElementById(capturedPre + '-address');
+    if (addrInput && !addrInput.value) addrInput.value = addr;
+    /* Store for use in submitLost/submitFound */
+    pLat[t]._addr = addr;
+  }).catch(function(){
+    var el = document.getElementById(capturedPre + '-loctxt');
+    if (el) el.textContent = 'Near ' + capturedLat.toFixed(4) + ', ' + capturedLng.toFixed(4);
+  });
   var resetBtn = document.getElementById(pre+'-resetbtn');
   if (resetBtn) resetBtn.style.display = 'block'; /* guard — may have been replaced */
   cancelPlace();
@@ -6092,6 +6119,7 @@ function buildCGPrompt(format, ctx) {
   var base = 'You are writing for ' + ctx.shelterName + ', an animal shelter in ' + ctx.city + '. '
     + 'Write in a warm, professional, community-focused tone. Be specific — use the real numbers provided. '
     + 'Do not make up stories or animals not listed. Keep it concise and shareable. '
+    + 'Do NOT use markdown formatting — no ##, no **, no bullet dashes. Use plain paragraphs only. '
     + (ctx.contact ? 'Contact: ' + ctx.contact + '. ' : '');
 
   var data = '\n\nREAL SHELTER DATA:\n'
