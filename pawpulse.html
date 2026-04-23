@@ -4122,7 +4122,8 @@ function resetForm(type) {
   document.getElementById(pre+'-dtxt').style.display  = '';
   document.getElementById(pre+'-prompt').classList.add('on');
   document.getElementById(pre+'-locset').classList.remove('on');
-  document.getElementById(pre+'-resetbtn').style.display = 'none';
+  var resetBtn = document.getElementById(pre+'-resetbtn');
+  if (resetBtn) resetBtn.style.display = 'none';
   if (type==='found') {
     document.getElementById('f-shelter').checked = false;
     document.getElementById('f-sgrp').style.display = 'none';
