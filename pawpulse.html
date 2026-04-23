@@ -907,8 +907,8 @@ textarea{min-height:64px}
     </div>
 
     <div id="drop-hint">
-      📍 Click the map to place pin
-      <button id="drop-cancel" onclick="cancelPlace()">✕ Cancel</button>
+      📍 Tap the map to place pin
+      <button id="drop-cancel" onclick="cancelPlace(); document.getElementById('side-panel').classList.add('open');">✕ Back to form</button>
     </div>
 
     <div id="pin-card">
@@ -941,9 +941,13 @@ textarea{min-height:64px}
           </div>
           <hr class="div">
           <div class="sl">📍 Last Seen Location</div>
-          <div class="loc-prompt on" id="l-prompt">🗺️ Click the map to place the last-seen pin</div>
-          <div class="loc-set"       id="l-locset">✅ <span id="l-loctxt">Location set</span></div>
-          <button class="reset-loc"  id="l-resetbtn" onclick="startPlace('lost')">📍 Move pin</button>
+          <div class="loc-prompt on" id="l-prompt">
+            <button onclick="startPlace('lost')" style="width:100%;padding:12px;border:2px dashed #c94f2a;border-radius:9px;background:#fff8f6;color:#c94f2a;font-size:.82rem;font-weight:700;cursor:pointer;font-family:var(--font-body);display:flex;align-items:center;justify-content:center;gap:8px">
+              📍 Tap to Set Location on Map
+            </button>
+            <div style="font-size:.66rem;color:var(--warm-mid);text-align:center;margin-top:4px">The map will open — tap where your pet was last seen</div>
+          </div>
+          <div class="loc-set"       id="l-locset">✅ <span id="l-loctxt">Location set</span> — <button onclick="startPlace('lost')" style="background:none;border:none;color:var(--forest);font-size:.72rem;font-weight:600;cursor:pointer;padding:0;font-family:var(--font-body);text-decoration:underline">Move pin</button></div>
           <div class="fg"><label>Landmark / Address (optional)</label><input type="text" id="l-address" placeholder="e.g. Near Brickyard Park"></div>
           <hr class="div">
           <div class="sl">🖼️ Photo</div>
@@ -979,9 +983,11 @@ textarea{min-height:64px}
           <div class="fg"><label>Description</label><textarea id="f-desc" placeholder="Size, age, collar, behavior…"></textarea></div>
           <hr class="div">
           <div class="sl">📍 Where Found</div>
-          <div class="loc-prompt on" id="f-prompt">🗺️ Click the map to place where you found them</div>
-          <div class="loc-set"       id="f-locset">✅ <span id="f-loctxt">Location set</span></div>
-          <button class="reset-loc"  id="f-resetbtn" onclick="startPlace('found')">📍 Move pin</button>
+          <div class="loc-prompt on" id="f-prompt">
+            <button onclick="startPlace('found')" style="width:100%;padding:12px;border:2px dashed #3a7d44;border-radius:9px;background:#f6fff7;color:#3a7d44;font-size:.82rem;font-weight:700;cursor:pointer;font-family:var(--font-body);display:flex;align-items:center;justify-content:center;gap:8px">📍 Tap to Set Location on Map</button>
+            <div style="font-size:.66rem;color:var(--warm-mid);text-align:center;margin-top:4px">The map will open — tap where you found the pet</div>
+          </div>
+          <div class="loc-set" id="f-locset">✅ <span id="f-loctxt">Location set</span> — <button onclick="startPlace('found')" style="background:none;border:none;color:var(--forest);font-size:.72rem;font-weight:600;cursor:pointer;padding:0;font-family:var(--font-body);text-decoration:underline">Move pin</button></div>
           <div class="fg"><label>Landmark / Address (optional)</label><input type="text" id="f-address" placeholder="e.g. Near the fairgrounds"></div>
           <hr class="div">
           <div class="sl">🖼️ Photo</div>
@@ -3762,6 +3768,9 @@ function startPlace(type) {
   placing = type;
   map.getContainer().classList.add('placing');
   document.getElementById('drop-hint').classList.add('on');
+  /* On mobile the panel covers the map — close it so user can tap to place pin */
+  document.getElementById('side-panel').classList.remove('open');
+  setTimeout(function(){ map.invalidateSize(); }, 50);
 }
 
 function cancelPlace() {
@@ -4024,7 +4033,18 @@ function injectMicButtons(scopeEl) {
 function v(id) { var el=document.getElementById(id); return el ? el.value.trim() : ''; }
 
 function submitLost() {
-  if (!pLat.lost) { alert('Please click the map to set a location first.'); startPlace('lost'); return; }
+  if (!pLat.lost) {
+    /* Show inline error and open map in pin-placement mode */
+    var prompt = document.getElementById('l-prompt');
+    if (prompt) {
+      prompt.querySelector('button').style.borderColor = 'var(--lost-r)';
+      prompt.querySelector('button').style.background = '#fff0ee';
+      prompt.querySelector('button').textContent = '⚠️ Tap here to set location first';
+      prompt.querySelector('button').style.animation = 'none';
+    }
+    startPlace('lost');
+    return;
+  }
   var r = { id:Date.now(), type:'lost', date:new Date().toISOString(),
     lat:pLat.lost, lng:pLng.lost,
     name:v('l-name'), species:v('l-species'), breed:v('l-breed'), color:v('l-color'),
@@ -4042,7 +4062,16 @@ function submitLost() {
 }
 
 function submitFound() {
-  if (!pLat.found) { alert('Please click the map to set a location first.'); startPlace('found'); return; }
+  if (!pLat.found) {
+    var prompt = document.getElementById('f-prompt');
+    if (prompt) {
+      prompt.querySelector('button').style.borderColor = '#3a7d44';
+      prompt.querySelector('button').style.background = '#f0fff2';
+      prompt.querySelector('button').textContent = '⚠️ Tap here to set location first';
+    }
+    startPlace('found');
+    return;
+  }
   var shelter = document.getElementById('f-shelter').checked;
   var r = { id:Date.now(), type:'found', date:new Date().toISOString(),
     lat:pLat.found, lng:pLng.found,
