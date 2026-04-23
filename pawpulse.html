@@ -520,7 +520,7 @@ textarea{min-height:64px}
 </div>
 
 <!-- Staff badge shown when signed in -->
-<div id="staff-badge" style="display:none;position:fixed;bottom:12px;right:12px;z-index:800;flex-direction:column;align-items:flex-end;gap:5px">
+<div id="staff-badge" style="display:none;position:fixed;bottom:12px;left:12px;z-index:800;flex-direction:column;align-items:flex-start;gap:5px">
   <div id="staff-name-badge" style="background:var(--forest);color:var(--cream);border-radius:999px;padding:5px 14px;font-size:.7rem;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.2);white-space:nowrap">🔐 Staff</div>
   <div style="display:flex;gap:5px">
     <button onclick="clearTestData()" style="padding:4px 12px;font-size:.66rem;font-weight:600;border-radius:999px;border:1px solid #f0c0a0;background:#fff8f0;cursor:pointer;font-family:var(--font-body);color:#a04010;box-shadow:0 1px 4px rgba(0,0,0,.08)">🗑 Clear Test Data</button>
@@ -2040,6 +2040,11 @@ function runActiveReport() {
       var e=r.enforcement||{}; var d=daysSince(r.shelterHoldStart||r.date);
       return s+(d*(e.dailyCost!=null?e.dailyCost:DAILY_RATE));
     },0);
+    var totalMed = cost_holds.reduce(function(s,r){
+      var m=getMed(r)||{};
+      return s+(m.spayNeuterCost||0)+(m.vaccinationCost||0)+(m.vetCost||0)+(m.otherCost||0);
+    },0);
+    var grandTotal = totalCost + totalMed;
     html = '<div style="background:#fff8f0;border-radius:10px;padding:14px;margin-bottom:16px">'
       + '<div style="font-size:.76rem;color:var(--warm-mid)">' + activeShelter + ' — Total Hold Cost Exposure</div>'
       + '<div style="font-family:var(--font-display);font-size:2rem;font-weight:800;color:#8a5010">' + fmtMoney(totalCost) + '</div>'
@@ -2052,7 +2057,11 @@ function runActiveReport() {
           var rate=e.dailyCost!=null?e.dailyCost:DAILY_RATE;
           var hold=d*rate; var med=(m.spayNeuterCost||0)+(m.vaccinationCost||0)+(m.vetCost||0)+(m.otherCost||0);
           return [esc(r.name||r.species||'Unknown'), Math.floor(d)+'d', '$'+rate, fmtMoney(hold), fmtMoney(med), fmtMoney(hold+med)];
-        }));
+        }))
+      + '<div style="margin-top:12px;padding:12px 16px;background:var(--warm-dk);border-radius:10px;display:flex;justify-content:space-between;align-items:center">'
+      + '<div style="font-family:var(--font-display);font-size:.88rem;font-weight:700;color:var(--cream)">Grand Total — Hold + Medical</div>'
+      + '<div style="font-family:var(--font-display);font-size:1.2rem;font-weight:800;color:var(--amber)">' + fmtMoney(grandTotal) + '</div>'
+      + '</div>';
 
   } else if (id === 'adopt') {
     var avail = getShelterData({ includeHolds:true }).filter(function(r){
