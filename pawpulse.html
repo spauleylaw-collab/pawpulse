@@ -554,7 +554,7 @@ textarea{min-height:64px}
     <!-- PUBLIC MODE -->
     <button class="tab-btn tab-public active" onclick="setView('map',this)" title="Public Map">🗺️ <span class="tab-lbl">Map</span></button>
     <button class="tab-btn tab-public"        onclick="setView('adopt',this)" title="Adoption">🏠 <span class="tab-lbl">Adopt</span></button>
-    <!-- OPERATIONS MODE -->
+    <!-- STAFF MODE -->
     <div class="nav-mode-sep"></div>
     <button class="tab-btn tab-ops" onclick="setView('incare',this)"   title="In Care">🏥 <span class="tab-lbl">In Care</span> <span id="nav-incare-count" style="display:none;background:var(--found-g);color:#fff;border-radius:999px;font-size:.6rem;padding:1px 5px;margin-left:2px"></span></button>
     <!-- ADMIN MODE -->
@@ -605,7 +605,7 @@ textarea{min-height:64px}
 
 <!-- IN CARE VIEW -->
 <div id="view-incare" class="view" style="background:var(--cream-2);flex-direction:column;overflow:hidden">
-  <div class="mode-banner ops"><div class="mode-banner-dot" style="background:#3a7d44"></div>Heartland Pet Connection — Operations</div>
+  <div class="mode-banner ops"><div class="mode-banner-dot" style="background:#3a7d44"></div>Heartland Pet Connection — Staff</div>
   <!-- Header with shelter name + intake button -->
   <div style="padding:12px 16px;background:var(--cream);border-bottom:1px solid var(--cream-3);flex-shrink:0">
     <div style="font-family:var(--font-display);font-size:.95rem;font-weight:700;color:var(--warm-dk)" id="incare-shelter-label">Animals In Care</div>
@@ -2392,7 +2392,7 @@ function renderGrantsPanel() {
   var snap = '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;padding:12px;background:var(--cream-2);border-radius:10px">'
     + snap_pill('🏥 In Care', ctx.inCare)
     + snap_pill('⚠️ Holds', ctx.holds)
-    + snap_pill('🌟 Adopt Ready', ctx.adoptReady)
+    + snap_pill('🌟 Adoption Ready', ctx.adoptReady)
     + snap_pill('📅 Avg Stay', ctx.avgLOS+'d')
     + snap_pill('💰 Hold Cost', fmtMoney(ctx.holdCost))
     + snap_pill('🩺 Med Cost', fmtMoney(ctx.medCost))
@@ -2472,7 +2472,7 @@ function renderGrantCard(o, ctx) {
     + '<button onclick="openGrantDraft(\'' + o.id + '\')" style="padding:7px 14px;font-size:.76rem;font-weight:700;border-radius:8px;border:none;background:var(--forest);color:#fff;cursor:pointer;font-family:var(--font-body)">✍️ Generate Application Draft</button>'
     + (savedGrant
       ? '<span style="padding:7px 14px;font-size:.76rem;font-weight:600;color:var(--found-g)">✓ Saved to queue</span>'
-      : '<button onclick="saveGrantToQueue(\'' + o.id + '\',\'' + esc(o.name) + '\',\'' + esc(o.est) + '\')" style="padding:7px 14px;font-size:.76rem;font-weight:600;border-radius:8px;border:1.5px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body)">📌 Save for Later</button>')
+      : '')
     + '</div>'
     + '</div></div>';
 }
@@ -4658,7 +4658,7 @@ function selectIntake(id) {
     + '<textarea class="sh-update-input" id="sh-update-txt" placeholder="Describe condition, vet visits, microchip scan results…"></textarea>'
     + '<div class="sh-action-btns">'
     + '<button class="sh-btn primary" onclick="postShelterUpdate(' + r.id + ')">📢 Post Update</button>'
-    + (!r.reunited ? '<button class="sh-btn" onclick="shMarkReunited(' + r.id + ')">🎉 Mark Reunited / Claimed</button>' : '<span style="font-size:.78rem;color:var(--found-g);font-weight:600">🎉 Reunited</span>')
+    + (!r.reunited ? '<button class="sh-btn" onclick="shMarkReunited(' + r.id + ')">🎉 Mark as Reunited</button>' : '<span style="font-size:.78rem;color:var(--found-g);font-weight:600">🎉 Reunited</span>')
     + '</div>'
     + (!r.reunited ? '<div class="sh-sec" style="margin-top:14px">Adoption Status</div>'
       + '<div class="sh-action-btns" style="margin-bottom:4px">'
@@ -6428,7 +6428,7 @@ function generateReport(type) {
       + '<div class="kpi-grid" style="grid-template-columns:repeat(3,1fr)">'
       + kpiBox(allShelter.length, 'Animals Received', '')
       + kpiBox(adopted.length, 'Found Forever Homes', 'green')
-      + kpiBox(reunited.length, 'Reunited with Families', 'green')
+      + kpiBox(reunited.length, 'Reunited with owners', 'green')
       + kpiBox(spayCount, 'Spay / Neuters Performed', 'blue')
       + kpiBox(medCount, 'Animals Received Medical Care', 'blue')
       + kpiBox(avgAdoptDays + ' days', 'Average Time to Adoption', avgAdoptDays > 30 ? 'alert' : '')
@@ -6465,7 +6465,7 @@ function generateReport(type) {
       + '<div class="kpi-grid">'
       + kpiBox(allShelter.length, 'Animals Cared For', '')
       + kpiBox(adopted.length, 'Adopted', 'green')
-      + kpiBox(reunited.length, 'Reunited with Owners', 'green')
+      + kpiBox(reunited.length, 'Reunited with owners', 'green')
       + kpiBox(inCare.length, 'Looking for Homes', '')
       + '</div>'
 
