@@ -578,6 +578,24 @@ textarea{min-height:64px}
   </div>
 </nav>
 
+<!-- ADOPT VIEW -->
+<div id="view-adopt" class="view">
+  <div class="mode-banner public"><div class="mode-banner-dot" style="background:#c8841a"></div>Public View — Adoption</div>
+  <div id="adopt-hdr">
+    <div>
+      <div id="adopt-hdr-title">🌟 Animals Ready for Adoption</div>
+      <div id="adopt-hdr-sub">Hastings, NE area shelters · <span id="adopt-count">0</span> available</div>
+    </div>
+  </div>
+  <div style="font-size:.62rem;color:var(--warm-mid);text-align:center;padding:3px 16px 4px;line-height:1.5;border-bottom:1px solid var(--cream-3);background:var(--cream)">Information may change as cases are reviewed. For official records, contact the shelter directly.</div>
+  <div id="adopt-search-row">
+    <input id="adopt-search" type="text" placeholder="Search by species, breed, color, shelter…" oninput="renderAdoptView()" autocomplete="off">
+  </div>
+  <div id="adopt-body">
+    <div class="adopt-grid" id="adopt-grid"></div>
+  </div>
+</div>
+
 <!-- IN CARE VIEW -->
 <div id="view-incare" class="view" style="background:var(--cream-2);flex-direction:column;overflow:hidden">
   <div class="mode-banner ops"><div class="mode-banner-dot" style="background:#3a7d44"></div>Heartland Pet Connection — Operations</div>
@@ -1041,23 +1059,14 @@ function startFirestoreListener() {
 }
 
 function showShelterPicker() {
-  /* If only one shelter or already selected this session, skip */
-  var saved = sessionStorage.getItem('pp-shelter');
-  if (saved) { activeShelter = saved; bootApp(); return; }
-  if (!_isStaff) { bootApp(); return; }
-
+  /* Single shelter — go straight in, no picker needed */
+  activeShelter = shelters[0].name;
+  sessionStorage.setItem('pp-shelter', activeShelter);
   var el = document.getElementById('shelter-picker-overlay');
-  var list = document.getElementById('shelter-picker-list');
-  if (!el || !list) { bootApp(); return; }
-
-  list.innerHTML = shelters.map(function(s) {
-    return '<button onclick="selectShelterSession(\'' + s.name.replace(/'/g,"\\'") + '\')" '
-      + 'style="width:100%;padding:14px 18px;text-align:left;border-radius:12px;border:2px solid var(--cream-3);background:#fff;font-family:var(--font-display);font-size:.92rem;font-weight:600;color:var(--warm-dk);cursor:pointer;display:flex;align-items:center;gap:12px">'
-      + '<span style="font-size:1.3rem">' + (s.name.includes('Adams')?'🏠':s.name.includes('Heartland')?'🐾':'🐕') + '</span>'
-      + '<div><div>' + s.name + '</div><div style="font-size:.72rem;color:var(--warm-mid);font-weight:400;margin-top:2px">' + s.address + '</div></div>'
-      + '</button>';
-  }).join('');
-  el.style.display = 'flex';
+  if (el) el.style.display = 'none';
+  var badge = document.getElementById('staff-badge');
+  if (badge) badge.style.display = 'flex';
+  bootApp();
 }
 
 function selectShelterSession(name) {
@@ -3988,9 +3997,7 @@ function showToast(type) {
 })();
 
 var shelters = [
-  { name:'Heartland Pet Connection',    address:'1807 W J St, Hastings, NE 68901', phone:'(402) 462-7387', website:'heartlandpetconnection.com', lat:40.5698, lng:-98.4150, type:'shelter' },
-  { name:'Adams County Humane Society', address:'Hastings, NE',                     phone:'',               website:'', lat:40.5845, lng:-98.3892, type:'shelter' },
-  { name:'Start Over Rover',            address:'Hastings, NE',                     phone:'',               website:'', lat:40.5900, lng:-98.3870, type:'shelter' }
+  { name:'Heartland Pet Connection', address:'1807 W J St, Hastings, NE 68901', phone:'(402) 462-7387', website:'heartlandpetconnection.com', lat:40.5698, lng:-98.4150, type:'shelter' }
 ];
 
 var activeShelter = shelters[0].name;
