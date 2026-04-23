@@ -446,7 +446,7 @@ textarea{min-height:64px}
 #adopt-search-row{padding:10px 16px;border-bottom:1px solid var(--cream-3);background:var(--cream);flex-shrink:0;display:flex;gap:8px;align-items:center}
 #adopt-search{flex:1;padding:8px 12px 8px 32px;font-family:var(--font-body);font-size:.84rem;color:var(--warm-dk);background:var(--cream-2);border:1.5px solid var(--cream-3);border-radius:8px;outline:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236b5540' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:10px center}
 #adopt-search:focus{border-color:var(--amber)}
-#adopt-body{flex:1;overflow-y:auto;padding:16px 18px 90px}
+#adopt-body{flex:1;overflow-y:auto;padding:16px 18px}
 #adopt-body::-webkit-scrollbar{width:4px}
 #adopt-body::-webkit-scrollbar-thumb{background:var(--cream-3);border-radius:99px}
 .adopt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
@@ -507,19 +507,14 @@ textarea{min-height:64px}
     <div class="fg"><label>Password</label><input type="password" id="login-pw" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()" style="width:100%;padding:10px 12px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.9rem"></div>
     <div id="login-err" style="display:none;font-size:.76rem;color:var(--lost-r);margin-bottom:10px;text-align:center"></div>
     <button id="login-btn" onclick="doLogin()" style="width:100%;padding:11px;font-family:var(--font-display);font-size:.88rem;font-weight:700;background:var(--forest);color:var(--cream);border:none;border-radius:10px;cursor:pointer;margin-top:4px">Sign In</button>
-    <button onclick="closeStaffLogin()" style="width:100%;padding:8px;font-family:var(--font-body);font-size:.78rem;background:none;border:none;cursor:pointer;color:var(--warm-mid);margin-top:6px;text-decoration:underline">Cancel — back to map</button>
+    <div style="display:flex;justify-content:space-between;margin-top:8px">
+      <button onclick="closeStaffLogin()" style="padding:8px;font-family:var(--font-body);font-size:.78rem;background:none;border:none;cursor:pointer;color:var(--warm-mid);text-decoration:underline">Cancel</button>
+      <button onclick="sendPasswordReset()" style="padding:8px;font-family:var(--font-body);font-size:.78rem;background:none;border:none;cursor:pointer;color:var(--warm-mid);text-decoration:underline">Forgot password?</button>
+    </div>
   </div>
 </div>
 
 <!-- Staff badge shown when signed in -->
-<div id="staff-badge" style="display:none;position:fixed;bottom:12px;left:12px;z-index:800;flex-direction:column;align-items:flex-start;gap:5px">
-  <div id="staff-name-badge" style="background:var(--forest);color:var(--cream);border-radius:999px;padding:5px 14px;font-size:.7rem;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.2);white-space:nowrap">🔐 Staff</div>
-  <div style="display:flex;gap:5px">
-    <button onclick="clearTestData()" style="padding:8px 12px;font-size:.66rem;font-weight:600;border-radius:999px;border:1px solid #f0c0a0;background:#fff8f0;cursor:pointer;font-family:var(--font-body);color:#a04010;box-shadow:0 1px 4px rgba(0,0,0,.08)">🗑 Clear Test Data</button>
-    <button onclick="openChangePw()" style="padding:8px 12px;font-size:.66rem;font-weight:600;border-radius:999px;border:1px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body);color:var(--warm-mid);box-shadow:0 1px 4px rgba(0,0,0,.08)">🔑 Change PW</button>
-    <button onclick="doSignOut()" style="padding:8px 12px;font-size:.66rem;font-weight:600;border-radius:999px;border:1px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body);color:var(--warm-mid);box-shadow:0 1px 4px rgba(0,0,0,.08)">Sign Out</button>
-  </div>
-</div>
 
 <!-- Change Password modal -->
 <div id="change-pw-overlay" style="display:none;position:fixed;inset:0;z-index:9997;background:rgba(42,31,18,.55);align-items:center;justify-content:center">
@@ -567,6 +562,15 @@ textarea{min-height:64px}
     <button class="tab-btn tab-admin" onclick="setView('reports',this)" title="Reports & Admin">📊 <span class="tab-lbl">Reports</span></button>
     <!-- Staff sign-in button — shown when not logged in -->
     <button id="nav-staff-login-btn" onclick="openStaffLogin()" title="Staff Sign In" style="margin-left:6px;padding:5px 12px;font-size:.72rem;font-weight:700;border-radius:999px;border:1.5px solid var(--cream-3);background:var(--cream-2);cursor:pointer;font-family:var(--font-body);color:var(--warm-mid);display:flex;align-items:center;gap:5px">🔐 <span class="tab-lbl">Staff</span></button>
+    <!-- Staff badge — shown when signed in, lives in nav -->
+    <div id="staff-badge" style="display:none;align-items:center;gap:5px;margin-left:6px">
+      <div id="staff-name-badge" style="color:var(--cream);font-size:.7rem;font-weight:700;white-space:nowrap;opacity:.85">🔐 Staff</div>
+      <div style="display:flex;gap:4px">
+        <button onclick="clearTestData()" title="Clear Test Data" style="padding:5px 8px;font-size:.65rem;font-weight:600;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);cursor:pointer;color:var(--cream);font-family:var(--font-body)">🗑</button>
+        <button onclick="openChangePw()" title="Change Password" style="padding:5px 8px;font-size:.65rem;font-weight:600;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);cursor:pointer;color:var(--cream);font-family:var(--font-body)">🔑</button>
+        <button onclick="doSignOut()" style="padding:5px 10px;font-size:.65rem;font-weight:700;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);cursor:pointer;color:var(--cream);font-family:var(--font-body)">Sign Out</button>
+      </div>
+    </div>
   </div>
 </nav>
 
@@ -632,7 +636,7 @@ textarea{min-height:64px}
     <button class="rpt-chip"        id="ic-chip-adopt"     onclick="setIncareFilter('adopt',this)">🌟 Adoption Ready</button>
     <button class="rpt-chip"        id="ic-chip-long"      onclick="setIncareFilter('long',this)">🔴 30+ Days</button>
   </div>
-  <div id="incare-list" style="flex:1;overflow-y:auto;padding:12px 12px 90px;min-height:0;-webkit-overflow-scrolling:touch"></div>
+  <div id="incare-list" style="flex:1;overflow-y:auto;padding:12px;min-height:0;-webkit-overflow-scrolling:touch"></div>
 </div>
 
 <!-- Intake modal overlay -->
@@ -707,7 +711,7 @@ textarea{min-height:64px}
     </div>
 
     <!-- Step 3: Generate -->
-    <div style="padding:14px;padding-bottom:100px;flex-shrink:0">
+    <div style="padding:14px;padding-bottom:14px;flex-shrink:0">
       <div style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--amber);margin-bottom:10px">Step 3 — Generate</div>
       <button id="rpt-run-btn" onclick="runSelectedReport()" style="width:100%;padding:12px;font-family:var(--font-display);font-size:.9rem;font-weight:700;background:var(--forest);color:#fff;border:none;border-radius:10px;cursor:pointer;opacity:.4;pointer-events:none" disabled>
         ▶ Generate Report
@@ -729,7 +733,7 @@ textarea{min-height:64px}
       </div>
       <div id="rpt-count" style="font-size:.7rem;color:var(--warm-mid);margin-top:4px"></div>
     </div>
-    <div id="rpt-list" style="flex:1;overflow-y:auto;min-height:80px;padding-bottom:70px"></div>
+    <div id="rpt-list" style="flex:1;overflow-y:auto;min-height:80px;padding-bottom:8px"></div>
   </div>
 
   <!-- Right: report output -->
@@ -763,7 +767,7 @@ textarea{min-height:64px}
       <div id="rpt-filters-row" style="display:none">
         <select id="rpt-filter-shelter" style="display:none"></select>
       </div>
-      <div id="rpt-report-body" style="flex:1;overflow-y:auto;padding:20px 20px 80px;font-family:Georgia,serif;font-size:.86rem;line-height:1.7;color:var(--warm-dk)"></div>
+      <div id="rpt-report-body" style="flex:1;overflow-y:auto;padding:20px;font-family:Georgia,serif;font-size:.86rem;line-height:1.7;color:var(--warm-dk)"></div>
     </div>
     <div id="rpt-detail-panel"></div>
   </div>
@@ -1008,7 +1012,7 @@ function initFirebase() {
       if (user) {
         _isStaff = true;
         document.getElementById('login-overlay').style.display = 'none';
-        document.getElementById('staff-badge').style.display = 'flex';
+        document.getElementById('staff-badge').style.display = 'inline-flex';
         document.querySelectorAll('.tab-ops,.tab-admin').forEach(function(el){ el.style.display = ''; });
         hideStaffLoginBtn();
         if (db) { startFirestoreListener(); } else { showShelterPicker(); }
@@ -1064,7 +1068,7 @@ function showShelterPicker() {
   var el = document.getElementById('shelter-picker-overlay');
   if (el) el.style.display = 'none';
   var badge = document.getElementById('staff-badge');
-  if (badge) badge.style.display = 'flex';
+  if (badge) badge.style.display = 'inline-flex';
   bootApp();
 }
 
@@ -1078,11 +1082,31 @@ function selectShelterSession(name) {
   if (sel) sel.value = name;
   var badge = document.getElementById('staff-badge');
   if (badge) {
-    badge.style.display = 'flex';
+    badge.style.display = 'inline-flex';
     var nameBadge = document.getElementById('staff-name-badge');
     if (nameBadge) nameBadge.textContent = '🔐 ' + name.split(' ')[0];
   }
   bootApp();
+}
+
+function sendPasswordReset() {
+  var email = ((document.getElementById('login-email')||{}).value||'').trim();
+  var errEl = document.getElementById('login-err');
+  if (!email) {
+    if (errEl) { errEl.textContent = 'Enter your email address first, then tap Forgot password?'; errEl.style.display = 'block'; }
+    return;
+  }
+  if (!auth) {
+    if (errEl) { errEl.textContent = 'Firebase not available.'; errEl.style.display = 'block'; }
+    return;
+  }
+  auth.sendPasswordResetEmail(email)
+    .then(function() {
+      if (errEl) { errEl.style.color = 'var(--found-g)'; errEl.textContent = '✓ Reset email sent to ' + email + '. Check your inbox.'; errEl.style.display = 'block'; }
+    })
+    .catch(function(e) {
+      if (errEl) { errEl.style.color = 'var(--lost-r)'; errEl.textContent = e.message; errEl.style.display = 'block'; }
+    });
 }
 
 function doLogin() {
@@ -1095,6 +1119,7 @@ function doLogin() {
     errEl.style.display = 'block'; return;
   }
   errEl.style.display = 'none';
+  errEl.style.color = 'var(--lost-r)'; /* reset from any green reset-email message */
   btn.textContent = 'Signing in…'; btn.disabled = true;
 
   var STAFF_CREDS = [
@@ -1106,7 +1131,7 @@ function doLogin() {
     btn.textContent = 'Sign In'; btn.disabled = false;
     _isStaff = true;
     document.getElementById('login-overlay').style.display = 'none';
-    document.getElementById('staff-badge').style.display = 'flex';
+    document.getElementById('staff-badge').style.display = 'inline-flex';
     /* Show staff-only tabs */
     document.querySelectorAll('.tab-ops,.tab-admin').forEach(function(el){ el.style.display = ''; });
     hideStaffLoginBtn();
