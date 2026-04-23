@@ -1239,18 +1239,12 @@ function loadDemoData() {
   /* Sync demo animals to Firestore — pause listener so it doesn't reload old data */
   if (USE_FIREBASE && _fbReady && db) {
     window._pauseFirestoreSync = true;
-    var synced = 0;
     demo.forEach(function(r){
       db.collection('reports').doc(String(r.id)).set(r)
-        .then(function(){
-          synced++;
-          if (synced === demo.length) {
-            /* All demo animals written — safe to resume listener */
-            setTimeout(function(){ window._pauseFirestoreSync = false; }, 2000);
-          }
-        })
         .catch(function(e){ console.warn('Demo seed sync error:', e); });
     });
+    /* Resume listener after 15s — enough for 9 writes on any connection */
+    setTimeout(function(){ window._pauseFirestoreSync = false; }, 15000);
   }
 
   alert('✅ ' + demo.length + ' demo animals loaded — 4 adoption-ready, 2 stray holds, 1 bite hold, 1 lost pet, 1 found pet.');
@@ -7235,7 +7229,7 @@ function printDischargeForm(id) {
 }
 
 function deleteAnimalPhoto(id) {
-  var r = reports.find(function(x){ return x.id === id; });
+  var r = reports.find(function(x){ return x.id == id; }); /* == handles string/number mismatch */
   if (!r) return;
   r.photo = null;
   save();
@@ -7243,15 +7237,25 @@ function deleteAnimalPhoto(id) {
     db.collection('reports').doc(String(r.id)).update({ photo: null })
       .catch(function(e){ console.warn('Photo delete sync error:', e); });
   }
-  /* Rebuild the photo section in the edit modal */
-  openAnimalEdit(id);
+  /* Swap the photo div back to the Add Photo button without closing modal */
+  var body = document.getElementById('animal-edit-body');
+  if (body) {
+    var photoDiv = body.querySelector('div[style*="height:140px"]');
+    if (photoDiv) {
+      var addBtn = document.createElement('button');
+      addBtn.setAttribute('onclick', "document.getElementById('ae-photo-input').click()");
+      addBtn.style.cssText = 'width:100%;padding:10px;border:1.5px dashed var(--cream-3);border-radius:8px;background:var(--cream-2);font-family:var(--font-body);font-size:.78rem;color:var(--warm-mid);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px';
+      addBtn.innerHTML = '<span style="font-size:1.2rem">📷</span> Add Photo';
+      photoDiv.parentNode.replaceChild(addBtn, photoDiv);
+    }
+  }
   renderIncareView();
   renderAdoptView();
 }
 
 function previewEditPhoto(input, id) {
   if (!input.files || !input.files[0]) return;
-  var r = reports.find(function(x){ return x.id === id; });
+  var r = reports.find(function(x){ return x.id == id; }); /* == handles string/number mismatch */
   if (!r) return;
   var reader = new FileReader();
   reader.onload = function(e) {
