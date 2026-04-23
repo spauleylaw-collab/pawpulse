@@ -511,8 +511,6 @@ textarea{min-height:64px}
 </div>
 
 <!-- Shelter picker — shown after sign-in before app loads -->
-<div id="shelter-picker-overlay" style="display:none;position:fixed;inset:0;z-index:9998;background:var(--cream);flex-direction:column;align-items:center;justify-content:center;padding:32px">
-  <div style="font-size:2rem;margin-bottom:8px">🏠</div>
   <div style="font-family:var(--font-display);font-size:1.2rem;font-weight:700;color:var(--warm-dk);margin-bottom:6px">Which shelter are you signing in for?</div>
   <div style="font-size:.78rem;color:var(--warm-mid);margin-bottom:28px;text-align:center">Your session will show only this shelter's animals.</div>
   <div style="width:100%;max-width:360px;display:flex;flex-direction:column;gap:10px" id="shelter-picker-list"></div>
@@ -676,11 +674,8 @@ textarea{min-height:64px}
     <!-- Step 1: Define Dataset -->
     <div style="padding:14px 14px 10px;border-bottom:1px solid var(--cream-3)">
       <div style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--amber);margin-bottom:10px">Step 1 — Define Dataset</div>
+      <div style="font-size:.78rem;font-weight:600;color:var(--warm-dk);padding:4px 0 10px" id="rpt-shelter-label">—</div>
       <div style="display:flex;flex-direction:column;gap:8px">
-        <div>
-          <div style="font-size:.68rem;font-weight:600;color:var(--warm-mid);margin-bottom:3px">Shelter</div>
-          <div id="rpt-shelter-label" style="font-size:.8rem;font-weight:700;color:var(--warm-dk);padding:6px 10px;background:var(--cream-2);border-radius:7px;border:1px solid var(--cream-3)">—</div>
-        </div>
         <div>
           <div style="font-size:.68rem;font-weight:600;color:var(--warm-mid);margin-bottom:3px">Species</div>
           <select id="rpt-filter-species" style="width:100%;font-size:.8rem;padding:6px 10px;border-radius:7px;border:1px solid var(--cream-3);font-family:var(--font-body);background:#fff">
@@ -774,7 +769,7 @@ textarea{min-height:64px}
       <div id="rpt-filters-row" style="display:none">
         <select id="rpt-filter-shelter" style="display:none"></select>
       </div>
-      <div id="rpt-report-body" style="flex:1;overflow-y:auto;padding:20px;font-family:Georgia,serif;font-size:.86rem;line-height:1.7;color:var(--warm-dk)"></div>
+      <div id="rpt-report-body" style="flex:1;overflow-y:auto;padding:20px 20px 80px;font-family:Georgia,serif;font-size:.86rem;line-height:1.7;color:var(--warm-dk)"></div>
     </div>
     <div id="rpt-detail-panel"></div>
   </div>
@@ -4022,7 +4017,7 @@ var shelters = [
 
 var activeShelter = shelters[0].name;
 var selectedIntakeId = null;
-var shelterTab = 'queue';       // 'queue' | 'inventory'
+var shelterTab = 'queue';
 var selectedInvId = null;
 
 function saveGrants() {
@@ -4092,14 +4087,12 @@ function validateShelterContext() {
 }
 
 
-function saveInv() { /* removed */ }
 
 function setShelterTab(tab, btn) {
   shelterTab = tab;
   document.querySelectorAll('.sh-tab').forEach(function(b){ b.classList.remove('active'); });
   if (btn) btn.classList.add('active');
   document.getElementById('sh-queue').style.display     = tab==='queue'     ? 'flex' : 'none';
-  document.getElementById('sh-inventory').style.display = tab==='inventory' ? 'flex' : 'none';
   document.getElementById('sh-costs').style.display     = tab==='costs'     ? 'flex' : 'none';
   // Update footer button
   var fb = document.getElementById('sh-footer-btn');
@@ -4111,7 +4104,6 @@ function setShelterTab(tab, btn) {
   document.getElementById('sh-action-empty').style.display = 'flex';
   document.getElementById('sh-action-panel').style.display = 'none';
   document.getElementById('sh-panel-title').textContent = tab==='queue' ? 'Action Panel' : tab==='costs' ? 'Cost & Restitution' : 'Animal Detail';
-  if (tab==='inventory') renderInventoryList();
   if (tab==='costs')     renderShelterCosts();
 }
 
@@ -4499,7 +4491,6 @@ function printCostReport(shelterName) {
 }
 
 function handleShelterFooterBtn() {
-  if (shelterTab === 'inventory') { showAddInventoryForm(); return; }
   if (shelterTab === 'costs') {
     setShelterTab('queue', document.getElementById('sh-tab-queue'));
   }
@@ -4513,7 +4504,6 @@ function setShelter(name) {
   document.getElementById('sh-action-empty').style.display = 'flex';
   document.getElementById('sh-action-panel').style.display = 'none';
   renderShelterQueue();
-  if (shelterTab === 'inventory') renderInventoryList();
   if (shelterTab === 'costs') renderShelterCosts();
 }
 
@@ -4927,7 +4917,7 @@ function cancelShelterPanel() {
   if (backBtn) backBtn.style.display = 'none';
   document.getElementById('sh-action-empty').style.display = 'flex';
   document.getElementById('sh-action-panel').style.display = 'none';
-  document.getElementById('sh-panel-title').textContent = shelterTab==='inventory' ? 'Animal Detail' : 'Action Panel';
+  document.getElementById('sh-panel-title').textContent = 'Action Panel';
 }
 
 function submitIntake() {
@@ -5098,9 +5088,7 @@ function closeHold(id, outcome) {
 }
 
 /* ── INVENTORY ─────────────────────────────── */
-function getShelterInventory() { return []; }
 
-function renderInventoryList() { /* removed */ }
 
 function showAddInventoryForm() {
   document.getElementById('sh-action-empty').style.display = 'none';
@@ -5126,15 +5114,12 @@ function showAddInventoryForm() {
     + '<div class="fg"><label>Age Estimate</label><select id="inv-age"><option value="">Unknown</option><option>Puppy/Kitten</option><option>Young (1-2yr)</option><option>Adult (3-7yr)</option><option>Senior (8yr+)</option></select></div>'
     + '<div class="fg"><label>Description / Notes</label><textarea id="inv-desc" placeholder="Markings, behavior, condition, microchip status…" style="min-height:60px"></textarea></div>'
     + '<div style="display:flex;gap:8px;margin-top:4px">'
-    + '<button class="sh-btn primary" style="flex:1" onclick="submitInventoryItem()">✓ Add to Inventory</button>'
     + '<button class="sh-btn" onclick="cancelInvForm()">Cancel</button>'
     + '</div>';
   setTimeout(function(){ injectMicButtons(document.getElementById('sh-action-panel-body')); }, 50);
 }
 
-function previewInvPhoto() { /* removed */ }
 
-function submitInventoryItem() { /* removed — inventory system cut */ }
 
 function cancelInvForm() {
   selectedInvId = null;
@@ -5143,18 +5128,12 @@ function cancelInvForm() {
   document.getElementById('sh-panel-title').textContent = 'Animal Detail';
 }
 
-function selectInventoryItem() { /* removed — inventory system cut */ }
 
-function saveInvEdit() { /* removed */ }
 
-function confirmRemoveInv() { /* removed — inventory system cut */ }
 
-function setInvStatus() { /* removed — inventory system cut */ }
 
-function removeInvItem() { /* removed — inventory system cut */ }
 
-async function searchInvMatches() { /* removed — inventory system cut */ }
-
+async 
 function postShelterUpdate(id) {
   var r = reports.find(function(x){ return x.id===id; });
   var txt = document.getElementById('sh-update-txt');
