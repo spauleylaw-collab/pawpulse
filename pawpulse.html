@@ -591,6 +591,12 @@ textarea{min-height:64px}
   <div id="adopt-search-row">
     <input id="adopt-search" type="text" placeholder="Search by species, breed, color, shelter…" oninput="renderAdoptView()" autocomplete="off">
   </div>
+  <div style="padding:6px 16px;border-bottom:1px solid var(--cream-3);background:var(--cream);display:flex;gap:6px;flex-wrap:wrap">
+    <button class="rpt-chip active" id="af-all"  onclick="setAdoptFilter('all',this)">All</button>
+    <button class="rpt-chip"        id="af-dog"  onclick="setAdoptFilter('dog',this)">🐕 Dogs</button>
+    <button class="rpt-chip"        id="af-cat"  onclick="setAdoptFilter('cat',this)">🐈 Cats</button>
+    <button class="rpt-chip"        id="af-other" onclick="setAdoptFilter('other',this)">🐾 Other</button>
+  </div>
   <div id="adopt-body">
     <div class="adopt-grid" id="adopt-grid"></div>
   </div>
@@ -5454,13 +5460,23 @@ function printReport(id) {
   w.focus();
   setTimeout(function(){ w.print(); }, 400);
 }
+var _adoptFilter = 'all';
+function setAdoptFilter(f, btn) {
+  _adoptFilter = f;
+  document.querySelectorAll('[id^="af-"]').forEach(function(b){ b.classList.remove('active'); });
+  if (btn) btn.classList.add('active');
+  renderAdoptView();
+}
+
 function getAdoptable() {
-  /* Adopt tab = filtered view of In Care where adoptionStatus === 'available'
-     Uses getShelterData for shelter isolation — same source of truth as In Care */
+  /* Adopt tab = filtered view of In Care where adoptionStatus === 'available' */
   var q = ((document.getElementById('adopt-search')||{}).value||'').toLowerCase().trim();
   var list = getShelterData({ includeHolds: true })
     .filter(function(r){ return r.adoptionStatus === 'available'; })
     .sort(function(a,b){ return daysSince(b.dateAvailable||b.date) - daysSince(a.dateAvailable||a.date); });
+  if (_adoptFilter === 'dog')   list = list.filter(function(r){ return (r.species||'').toLowerCase() === 'dog'; });
+  if (_adoptFilter === 'cat')   list = list.filter(function(r){ return (r.species||'').toLowerCase() === 'cat'; });
+  if (_adoptFilter === 'other') list = list.filter(function(r){ var s=(r.species||'').toLowerCase(); return s!=='dog'&&s!=='cat'; });
   if (q) list = list.filter(function(r){
     return [r.name,r.species,r.breed,r.color,r.desc,r.shelterName,r.finder].filter(Boolean).join(' ').toLowerCase().indexOf(q) > -1;
   });
