@@ -5116,7 +5116,7 @@ function cancelInvForm() {
   document.getElementById('sh-panel-title').textContent = 'Animal Detail';
 }
 
-function selectInventoryItem() { /* removed — inventory system cut */ });
+function selectInventoryItem() { /* removed — inventory system cut */ }
   if (!it) return;
   document.getElementById('sh-action-empty').style.display = 'none';
   document.getElementById('sh-action-panel').style.display = 'flex';
@@ -5161,15 +5161,6 @@ function selectInventoryItem() { /* removed — inventory system cut */ });
     + '<div id="inv-match-results-' + it.id + '"></div>'
 
     + '<hr style="border:none;border-top:1px solid var(--cream-3);margin:16px 0">'
-    + '<button class="sh-btn danger" style="width:100%;font-size:.78rem" onclick="confirmRemoveInv('+it.id+')">🗑 Remove from Inventory</button>'
-    + '<div id="inv-delete-confirm-'+it.id+'" style="display:none;margin-top:8px;background:#fff0ee;border:1px solid #f0c0b0;border-radius:8px;padding:10px 12px">'
-    + '<div style="font-size:.78rem;color:var(--lost-r);font-weight:600;margin-bottom:8px">Remove this animal from inventory?</div>'
-    + '<div style="display:flex;gap:6px">'
-    + '<button class="sh-btn danger" style="flex:1" onclick="removeInvItem('+it.id+')">Yes, remove</button>'
-    + '<button class="sh-btn" onclick="document.getElementById(\'inv-delete-confirm-'+it.id+'\').style.display=\'none\'">Cancel</button>'
-    + '</div></div>';
-  setTimeout(function(){ injectMicButtons(document.getElementById('sh-action-panel-body')); }, 50);
-}
 
 function saveInvEdit() { /* removed */ }
 
