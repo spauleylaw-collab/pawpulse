@@ -175,12 +175,12 @@ textarea{min-height:64px}
 @keyframes hpulse{0%,100%{opacity:.88}50%{opacity:1}}
 #drop-cancel{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);color:rgba(255,255,255,.75);border-radius:999px;padding:3px 10px;font-size:.72rem;font-weight:600;cursor:pointer;font-family:var(--font-body)}
 #drop-cancel:hover{color:#fff}
-#pin-card{display:none;position:absolute;z-index:850;width:280px;background:var(--cream);border:1px solid var(--cream-3);border-radius:14px;overflow:hidden;box-shadow:0 16px 50px rgba(0,0,0,.2);transition:opacity .55s ease,transform .55s ease}
+#pin-card{display:none;position:absolute;z-index:850;width:280px;background:var(--cream);border:1px solid var(--cream-3);border-radius:14px;overflow:hidden;box-shadow:0 16px 50px rgba(0,0,0,.2);transition:opacity .55s ease,transform .55s ease;max-height:80vh;flex-direction:column}
 /* Keep Leaflet controls below pin card */
 .leaflet-pane{z-index:400 !important}
 .leaflet-top,.leaflet-bottom{z-index:500 !important}
 .leaflet-control{z-index:500 !important}
-#pin-card.open{display:block;animation:cpop .2s cubic-bezier(.34,1.56,.64,1)}
+#pin-card.open{display:flex;flex-direction:column;animation:cpop .2s cubic-bezier(.34,1.56,.64,1)}
 #pin-card.fading{opacity:0;transform:translateY(-10px) scale(.97);pointer-events:none}
 @keyframes cpop{from{opacity:0;transform:scale(.9) translateY(6px)}to{opacity:1;transform:scale(1) translateY(0)}}
 .pc-close{position:absolute;top:7px;right:7px;background:rgba(42,31,18,.5);color:#fff;border:none;cursor:pointer;width:22px;height:22px;border-radius:50%;font-size:.75rem;line-height:22px;text-align:center;z-index:1}
@@ -316,22 +316,10 @@ textarea{min-height:64px}
 .col-footer-btn{width:100%;padding:9px;font-family:var(--font-display);font-size:.82rem;font-weight:600;background:var(--forest);color:var(--cream);border:none;border-radius:8px;cursor:pointer;transition:all .15s}
 .col-footer-btn:hover{filter:brightness(1.1)}
 /* Inventory */
-.inv-card{background:#fff;border:1px solid var(--cream-3);border-radius:10px;overflow:hidden;margin-bottom:8px;cursor:pointer;transition:all .15s;display:flex;gap:0}
-.inv-card:hover{border-color:var(--amber);box-shadow:0 2px 8px rgba(42,31,18,.08)}
 .inv-card.selected{border-color:var(--forest);background:#f5faf5}
-.inv-card-photo{width:58px;height:58px;object-fit:cover;flex-shrink:0}
-.inv-card-no-photo{width:58px;height:58px;background:var(--cream-2);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
-.inv-card-info{padding:8px 10px;flex:1;min-width:0}
-.inv-card-name{font-family:var(--font-display);font-size:.88rem;font-weight:600;color:var(--warm-dk);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.inv-card-desc{font-size:.72rem;color:var(--warm-mid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.inv-card-date{font-size:.65rem;color:var(--warm-mid);margin-top:2px}
 .inv-add-form{background:#fff;border:1px solid var(--cream-3);border-radius:10px;padding:14px;margin-bottom:10px}
-.inv-photo-drop{border:2px dashed var(--cream-3);border-radius:8px;padding:12px;text-align:center;cursor:pointer;background:var(--cream-2);transition:border-color .15s;position:relative;overflow:hidden;margin-bottom:10px}
-.inv-photo-drop:hover{border-color:var(--amber)}
-.inv-photo-drop input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
 .inv-preview{width:100%;max-height:120px;object-fit:cover;border-radius:6px;display:none;margin-top:6px}
 /* Inventory detail panel */
-.inv-detail-photo{width:100%;max-height:180px;object-fit:cover;border-radius:10px;margin-bottom:12px;display:block}
 .inv-status-badge{display:inline-flex;align-items:center;gap:4px;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:3px 9px;border-radius:999px;margin-bottom:8px}
 .inv-status-badge.available{background:#e0f0e4;color:var(--found-g)}
 .inv-status-badge.returned{background:#fde8e0;color:var(--lost-r)}
@@ -509,16 +497,16 @@ textarea{min-height:64px}
 </div>
 
 <!-- Login overlay — shown when Firebase is configured and user not signed in -->
-<div id="login-overlay" style="display:flex;position:fixed;inset:0;z-index:9999;background:var(--cream);flex-direction:column;align-items:center;justify-content:center;padding:32px">
-  <div style="font-size:2.2rem;margin-bottom:8px">🐾</div>
-  <div style="font-family:var(--font-display);font-size:1.4rem;font-weight:700;color:var(--warm-dk);margin-bottom:4px">PawPulse</div>
-  <div style="font-size:.8rem;color:var(--warm-mid);margin-bottom:32px">Hastings, NE · Shelter &amp; Rescue Operations</div>
-  <div style="width:100%;max-width:320px">
+<!-- Small staff sign-in panel — replaces full-screen login overlay -->
+<div id="login-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(42,31,18,.55);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:32px">
+  <div style="background:var(--cream);border-radius:16px;padding:28px 28px 20px;width:100%;max-width:320px;box-shadow:0 8px 40px rgba(0,0,0,.25)">
+    <div style="font-family:var(--font-display);font-size:1.1rem;font-weight:700;color:var(--warm-dk);margin-bottom:4px;text-align:center">🔐 Staff Sign In</div>
+    <div style="font-size:.74rem;color:var(--warm-mid);margin-bottom:18px;text-align:center">Heartland Pet Connection</div>
     <div class="fg"><label>Email</label><input type="email" id="login-email" placeholder="staff@shelter.org" autocomplete="email" style="width:100%;padding:10px 12px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.9rem"></div>
     <div class="fg"><label>Password</label><input type="password" id="login-pw" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()" style="width:100%;padding:10px 12px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.9rem"></div>
     <div id="login-err" style="display:none;font-size:.76rem;color:var(--lost-r);margin-bottom:10px;text-align:center"></div>
-    <button id="login-btn" onclick="doLogin()" style="width:100%;padding:12px;font-family:var(--font-display);font-size:.92rem;font-weight:700;background:var(--forest);color:var(--cream);border:none;border-radius:10px;cursor:pointer;margin-top:4px">Sign In</button>
-    <button onclick="doGuestView()" style="width:100%;padding:10px;font-family:var(--font-body);font-size:.8rem;background:none;border:none;cursor:pointer;color:var(--warm-mid);margin-top:8px;text-decoration:underline">View public map only</button>
+    <button id="login-btn" onclick="doLogin()" style="width:100%;padding:11px;font-family:var(--font-display);font-size:.88rem;font-weight:700;background:var(--forest);color:var(--cream);border:none;border-radius:10px;cursor:pointer;margin-top:4px">Sign In</button>
+    <button onclick="closeStaffLogin()" style="width:100%;padding:8px;font-family:var(--font-body);font-size:.78rem;background:none;border:none;cursor:pointer;color:var(--warm-mid);margin-top:6px;text-decoration:underline">Cancel — back to map</button>
   </div>
 </div>
 
@@ -585,129 +573,10 @@ textarea{min-height:64px}
     <!-- ADMIN MODE -->
     <div class="nav-mode-sep"></div>
     <button class="tab-btn tab-admin" onclick="setView('reports',this)" title="Reports & Admin">📊 <span class="tab-lbl">Reports</span></button>
+    <!-- Staff sign-in button — shown when not logged in -->
+    <button id="nav-staff-login-btn" onclick="openStaffLogin()" title="Staff Sign In" style="margin-left:6px;padding:5px 12px;font-size:.72rem;font-weight:700;border-radius:999px;border:1.5px solid var(--cream-3);background:var(--cream-2);cursor:pointer;font-family:var(--font-body);color:var(--warm-mid);display:flex;align-items:center;gap:5px">🔐 <span class="tab-lbl">Staff</span></button>
   </div>
 </nav>
-
-<div id="view-shelters" class="view">
-  <div class="mode-banner ops"><div class="mode-banner-dot" style="background:#3a7d44"></div>Heartland Pet Connection — Operations</div>
-  <div id="sh-row">
-  <!-- Left col -->
-  <div class="sh-col sh-col-left">
-    <div class="sh-col-hdr">
-      <div class="sh-col-title" id="sh-col-title">Intake Queue</div>
-      <div id="sh-queue-badge" style="font-size:.7rem;font-weight:700;background:var(--cream-2);color:var(--warm-mid);padding:2px 9px;border-radius:999px;border:1px solid var(--cream-3)">0 active</div>
-    </div>
-    <div class="sh-selector-wrap">
-      <select class="sh-select" id="sh-selector" onchange="setShelter(this.value)">
-        <option value="Adams County Humane Society">🏠 Adams County Humane Society</option>
-        <option value="Heartland Pet Connection">🐾 Heartland Pet Connection</option>
-        <option value="Start Over Rover">🐕 Start Over Rover</option>
-      </select>
-    </div>
-    <div class="sh-tab-row">
-      <button class="sh-tab active" id="sh-tab-queue" onclick="setShelterTab('queue',this)">📋 Queue</button>
-      <button class="sh-tab"        id="sh-tab-inv"   onclick="setShelterTab('inventory',this)">🐾 Inventory</button>
-      <button class="sh-tab"        id="sh-tab-costs" onclick="setShelterTab('costs',this)">📋 Holds & Costs</button>
-    </div>
-    <div class="sh-col-body" id="sh-queue" style="display:flex;flex-direction:column">
-      <div class="sh-empty"><div class="sh-empty-icon">🐾</div><strong>No intakes logged</strong><br><span style="font-size:.72rem">Tap + Log New Intake when an animal arrives.</span></div>
-    </div>
-    <div class="sh-col-body" id="sh-inventory" style="display:none;flex-direction:column">
-      <div class="sh-empty"><div class="sh-empty-icon">📋</div>No inventory yet<br><span style="font-size:.72rem">Add animals below</span></div>
-    </div>
-    <div class="sh-col-body" id="sh-costs" style="display:none;flex-direction:column;padding:10px 10px 60px">
-      <div id="sh-costs-body"></div>
-    </div>
-    <div class="col-footer" id="sh-col-footer">
-      <button class="col-footer-btn" id="sh-footer-btn" onclick="handleShelterFooterBtn()">+ Log New Intake</button>
-    </div>
-  </div>
-  <!-- Right col -->
-  <div class="sh-col sh-col-right">
-    <div class="sh-col-hdr" style="display:flex;align-items:center;gap:10px">
-      <button onclick="cancelShelterPanel()" style="display:none;font-size:.78rem;font-weight:600;color:var(--amber);background:none;border:none;cursor:pointer;padding:0;font-family:var(--font-body);flex-shrink:0" id="sh-back-btn">← Back</button>
-      <div class="sh-col-title" id="sh-panel-title">Action Panel</div>
-    </div>
-    <div id="sh-action-empty" class="sh-action-empty">
-      <div class="sh-action-empty-icon">🐾</div>
-      <div style="font-size:.86rem;font-weight:600;color:var(--warm-mid);text-align:center">Select an animal to manage it</div>
-      <div style="font-size:.74rem;color:var(--warm-mid);text-align:center;line-height:1.5;margin-bottom:12px">Or tap below when an animal arrives.</div>
-      <button onclick="toggleIntakeForm()" style="padding:9px 20px;border-radius:8px;border:none;background:var(--forest);color:var(--cream);font-family:var(--font-display);font-size:.82rem;font-weight:700;cursor:pointer">+ Log New Intake</button>
-    </div>
-    <div id="sh-action-panel" style="flex:1;min-height:0;display:none;flex-direction:column">
-      <div class="sh-action-panel" id="sh-action-panel-body"></div>
-    </div>
-  </div>
-  </div><!-- end sh-row -->
-</div>
-
-<div id="view-adopt" class="view">
-  <div class="mode-banner public"><div class="mode-banner-dot" style="background:#c8841a"></div>Public View — Adoption</div>
-  <div id="adopt-hdr">
-    <div>
-      <div id="adopt-hdr-title">🌟 Animals Ready for Adoption</div>
-      <div id="adopt-hdr-sub">Hastings, NE area shelters · <span id="adopt-count">0</span> available</div>
-    </div>
-  </div>
-  <div style="font-size:.62rem;color:var(--warm-mid);text-align:center;padding:3px 16px 4px;line-height:1.5;border-bottom:1px solid var(--cream-3);background:var(--cream)">Information may change as cases are reviewed. For official records, contact the shelter directly.</div>
-  <div id="adopt-search-row">
-    <input id="adopt-search" type="text" placeholder="Search by species, breed, color, shelter…" oninput="renderAdoptView()" autocomplete="off">
-  </div>
-  <div id="adopt-body">
-    <div class="adopt-grid" id="adopt-grid"></div>
-  </div>
-</div>
-
-<!-- Add to adopt slide-up form -->
-<div id="adopt-form-panel" onclick="closeAdoptForm(event)">
-  <div id="adopt-form-inner">
-    <div style="font-family:var(--font-display);font-size:1.1rem;font-weight:600;color:var(--warm-dk);margin-bottom:4px">🏠 Post Animal for Adoption</div>
-    <div style="font-size:.76rem;color:var(--warm-mid);margin-bottom:16px">This will create a Found report and mark it adoption-ready, visible on the map and in the Adopt tab.</div>
-    <div class="inv-photo-drop" onclick="document.getElementById('af-photo-in').click()" style="margin-bottom:12px">
-      <input type="file" id="af-photo-in" accept="image/*" onchange="previewAdoptPhoto(this)">
-      <div id="af-photo-icon" style="font-size:1.6rem;margin-bottom:3px">📷</div>
-      <div id="af-photo-txt" style="font-size:.74rem;color:var(--warm-mid)">Tap to upload photo (strongly recommended)</div>
-      <img id="af-prev" class="inv-preview" alt="">
-    </div>
-    <div id="af-ai-wrap" style="display:none;margin-bottom:12px">
-      <button class="ai-id-btn" id="af-ai-btn" onclick="applyAIIdentify('af')">✨ Identify breed &amp; color with AI</button>
-      <div class="ai-id-result" id="af-ai-result"></div>
-    </div>
-    <div class="fr">
-      <div class="fg" style="margin:0"><label>Species</label><select id="af-species" onchange="updateBreedField('af-species','af-breed-wrap')"><option value="">Select…</option><option>Dog</option><option>Cat</option><option>Bird</option><option>Rabbit</option><option>Other</option></select></div>
-      <div class="fg" style="margin:0"><label>Sex</label><select id="af-sex"><option value="">Unknown</option><option>Male</option><option>Female</option></select></div>
-    </div>
-    <div class="fr" style="margin-top:10px">
-      <div class="fg" style="margin:0"><label>Breed</label><div id="af-breed-wrap"><input type="text" id="af-breed" placeholder="Select species first"></div></div>
-      <div class="fg" style="margin:0"><label>Color</label><input type="text" id="af-color" placeholder="e.g. Golden, white"></div>
-    </div>
-    <div class="fg" style="margin-top:10px"><label>Name (if known)</label><input type="text" id="af-name" placeholder="Leave blank if unknown"></div>
-    <div class="fg"><label>Age Estimate</label><select id="af-age"><option value="">Unknown</option><option>Puppy/Kitten</option><option>Young (1-2yr)</option><option>Adult (3-7yr)</option><option>Senior (8yr+)</option></select></div>
-    <div class="fg"><label>About (one sentence for the public)</label><textarea id="af-about" placeholder="e.g. Gentle and loves cuddles — great with kids." style="min-height:48px"></textarea></div>
-    <div class="fg"><label>Personality Tags (tap to select)</label>
-      <div id="af-tags-wrap" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">
-        <button type="button" class="adopt-tag-btn" onclick="toggleAdoptTag(this,'Good with kids')">Good with kids</button>
-        <button type="button" class="adopt-tag-btn" onclick="toggleAdoptTag(this,'Good with other pets')">Good with other pets</button>
-        <button type="button" class="adopt-tag-btn" onclick="toggleAdoptTag(this,'House trained')">House trained</button>
-        <button type="button" class="adopt-tag-btn" onclick="toggleAdoptTag(this,'Active')">Active</button>
-        <button type="button" class="adopt-tag-btn" onclick="toggleAdoptTag(this,'Calm')">Calm</button>
-        <button type="button" class="adopt-tag-btn" onclick="toggleAdoptTag(this,'Senior')">Senior</button>
-        <button type="button" class="adopt-tag-btn" onclick="toggleAdoptTag(this,'Needs quiet home')">Needs quiet home</button>
-        <button type="button" class="adopt-tag-btn" onclick="toggleAdoptTag(this,'Shy, needs patience')">Shy, needs patience</button>
-        <button type="button" class="adopt-tag-btn" onclick="toggleAdoptTag(this,'Medical needs')">Medical needs</button>
-        <button type="button" class="adopt-tag-btn" onclick="toggleAdoptTag(this,'Spayed/Neutered')">Spayed/Neutered</button>
-      </div>
-      <input type="hidden" id="af-tags" value="">
-    </div>
-    <div class="fg"><label>Description</label><textarea id="af-desc" placeholder="Additional details, behavior notes…" style="min-height:48px"></textarea></div>
-    <div class="fg"><label>Shelter / Contact</label><input type="text" id="af-shelter" placeholder="e.g. Adams County Humane Society"></div>
-    <div class="fg"><label>Phone</label><input type="tel" id="af-phone" placeholder="(402) 462-7387"></div>
-    <div style="display:flex;gap:8px;margin-top:6px">
-      <button class="adopt-ask-btn" style="flex:1;padding:12px;font-size:.9rem" onclick="submitAdoptListing()">✓ Post for Adoption</button>
-      <button class="sh-btn" onclick="closeAdoptForm(null)" style="padding:12px 18px">Cancel</button>
-    </div>
-  </div>
-</div>
 
 <!-- IN CARE VIEW -->
 <div id="view-incare" class="view" style="background:var(--cream-2);flex-direction:column;overflow:hidden">
@@ -826,10 +695,7 @@ textarea{min-height:64px}
         ▶ Generate Report
       </button>
       <div id="rpt-selected-label" style="font-size:.72rem;color:var(--warm-mid);text-align:center;margin-top:6px">Select a report type above</div>
-      <div style="border-top:1px solid var(--cream-3);margin-top:12px;padding-top:12px;display:flex;flex-direction:column;gap:6px">
-        <button onclick="openContentGen('press')" style="width:100%;padding:9px;font-size:.78rem;font-weight:600;background:#fff;color:#c0392b;border:1.5px solid #e0a090;border-radius:8px;cursor:pointer;font-family:var(--font-body)">📣 Public Transparency Report</button>
-        <button onclick="openContentGen('fund')" style="width:100%;padding:9px;font-size:.78rem;font-weight:600;background:#fff;color:#b06010;border:1.5px solid #e0c090;border-radius:8px;cursor:pointer;font-family:var(--font-body)">💛 Funding Narrative</button>
-      </div>
+
     </div>
 
     <!-- Animal record search (collapsed at bottom) -->
@@ -869,6 +735,8 @@ textarea{min-height:64px}
         </div>
         <div style="display:flex;gap:5px;flex-shrink:0">
           <button onclick="printActiveReport()" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body)">🖨️ Print</button>
+          <button onclick="openContentGen('press')" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid #e0a090;background:#fff;cursor:pointer;font-family:var(--font-body);color:#c0392b">📣 Shareable Summary</button>
+          <button onclick="openContentGen('fund')" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid #e0c090;background:#fff;cursor:pointer;font-family:var(--font-body);color:#b06010">💛 Donor Message</button>
           <button onclick="copyActiveReport()" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid var(--forest);background:var(--forest);color:#fff;cursor:pointer;font-family:var(--font-body)">📋 Copy</button>
           <button onclick="closeReportPanel()" style="padding:6px 9px;font-size:.8rem;border-radius:7px;border:none;background:var(--cream-2);cursor:pointer">✕</button>
         </div>
@@ -917,7 +785,7 @@ textarea{min-height:64px}
 
     <div id="pin-card">
       <button class="pc-close" onclick="closeCard()">✕</button>
-      <div id="pin-card-body"></div>
+      <div id="pin-card-body" style="overflow-y:auto;max-height:calc(80vh - 40px);-webkit-overflow-scrolling:touch"></div>
     </div>
 
     <div id="empty-hint">🐾 No reports yet<br><span style="font-size:.76rem;opacity:.8">Tap Lost Pet or Found Pet to post on the map.</span></div>
@@ -1087,28 +955,49 @@ function deleteFromFirestore(id) {
     .catch(function(e){ console.warn('Firestore delete error:', e); });
 }
 
-function initFirebase() {
-  if (!USE_FIREBASE) {
-    /* No Firebase — skip login, go straight to app */
-    document.getElementById('login-overlay').style.display = 'none';
-    showShelterPicker();
-    return;
-  }
+function openStaffLogin() {
+  var overlay = document.getElementById('login-overlay');
+  overlay.style.display = 'flex';
+  setTimeout(function(){ 
+    var em = document.getElementById('login-email');
+    if (em) em.focus();
+  }, 100);
+}
 
-  /* Login overlay is already visible by default in HTML.
-     If auth loaded, listen for existing session to auto-sign-in. */
+function closeStaffLogin() {
+  document.getElementById('login-overlay').style.display = 'none';
+}
+
+function hideStaffLoginBtn() {
+  var btn = document.getElementById('nav-staff-login-btn');
+  if (btn) btn.style.display = 'none';
+}
+
+function showStaffLoginBtn() {
+  var btn = document.getElementById('nav-staff-login-btn');
+  if (btn) btn.style.display = 'flex';
+}
+
+function initFirebase() {
+  /* Boot straight to map — no login gate for public users */
+  doGuestView();
+
+  if (!USE_FIREBASE) return;
+
+  /* If already signed in (returning staff), restore session silently */
   if (auth) {
     auth.onAuthStateChanged(function(user) {
       if (user) {
         _isStaff = true;
         document.getElementById('login-overlay').style.display = 'none';
         document.getElementById('staff-badge').style.display = 'flex';
+        hideStaffLoginBtn();
+        var navBtn = document.getElementById('nav-staff-login-btn');
+        if (navBtn) navBtn.style.display = 'none';
         if (db) { startFirestoreListener(); } else { showShelterPicker(); }
       }
-      /* If no user, login overlay stays visible — user must sign in */
     });
   }
-  /* If auth is null, login overlay stays visible — doLogin() handles fallback */
 }
 
 
@@ -1210,6 +1099,8 @@ function doLogin() {
     _isStaff = true;
     document.getElementById('login-overlay').style.display = 'none';
     document.getElementById('staff-badge').style.display = 'flex';
+    var navBtn = document.getElementById('nav-staff-login-btn');
+    if (navBtn) navBtn.style.display = 'none';
     var nb = document.getElementById('staff-name-badge');
     if (nb) nb.textContent = '🔐 Staff';
     if (db) { startFirestoreListener(); } else { showShelterPicker(); }
@@ -1249,13 +1140,14 @@ function doGuestView() {
 
 function doSignOut() {
   sessionStorage.removeItem('pp-shelter');
+  _isStaff = false;
+  document.getElementById('staff-badge').style.display = 'none';
+  var navBtn = document.getElementById('nav-staff-login-btn');
+  if (navBtn) navBtn.style.display = 'flex';
+  /* Hide staff-only tabs */
+  document.querySelectorAll('.tab-ops,.tab-admin').forEach(function(el){ el.style.display='none'; });
   if (!USE_FIREBASE || !auth) return;
-  auth.signOut().then(function() {
-    _isStaff = false;
-    document.getElementById('staff-badge').style.display = 'none';
-    document.getElementById('login-overlay').style.display = 'flex';
-    document.querySelectorAll('.tab-ops,.tab-admin').forEach(function(el){ el.style.display=''; });
-  });
+  auth.signOut();
 }
 
 function clearTestData() {
@@ -1641,10 +1533,7 @@ function openAnimalEdit(id) {
         + '<select id="ae-vacc"><option value="">Unknown</option><option value="current"' + (med.vaccinations==='current'?' selected':'') + '>Current</option><option value="partial"' + (med.vaccinations==='partial'?' selected':'') + '>Partial</option><option value="none"' + (med.vaccinations==='none'?' selected':'') + '>None</option></select></div>'
         + '<div class="fg" style="margin:0"><label>Parasite Treatment</label>'
         + '<select id="ae-parasite"><option value="">None</option><option value="flea"' + (med.parasite==='flea'?' selected':'') + '>Flea/Tick</option><option value="deworm"' + (med.parasite==='deworm'?' selected':'') + '>Dewormer</option><option value="both"' + (med.parasite==='both'?' selected':'') + '>Both</option></select></div></div>'
-        + '<div class="fr" style="margin-top:8px"><div class="fg" style="margin:0"><label>Spay/Neuter Cost ($)</label><input type="number" id="ae-sncost" value="' + (med.spayNeuterCost||'') + '" min="0" step="1"></div>'
-        + '<div class="fg" style="margin:0"><label>Vaccination Cost ($)</label><input type="number" id="ae-vacccost" value="' + (med.vaccinationCost||'') + '" min="0" step="1"></div></div>'
-        + '<div class="fr" style="margin-top:8px"><div class="fg" style="margin:0"><label>Vet Visit Cost ($)</label><input type="number" id="ae-vetcost" value="' + (med.vetCost||'') + '" min="0" step="1"></div>'
-        + '<div class="fg" style="margin:0"><label>Other Medical Cost ($)</label><input type="number" id="ae-othercost" value="' + (med.otherCost||'') + '" min="0" step="1"></div></div>'
+        + '<div class="fg" style="margin-top:8px"><label>Medical Costs ($) <span style="font-size:.7rem;color:var(--warm-mid);font-weight:400">— spay/neuter, vaccines, vet visits combined</span></label><input type="number" id="ae-medcost" value="' + ((med.spayNeuterCost||0)+(med.vaccinationCost||0)+(med.vetCost||0)+(med.otherCost||0)||'') + '" min="0" step="1" style="max-width:140px"></div>'
         + '<div class="fg" style="margin-top:8px"><label>Medical Notes</label><textarea id="ae-mednotes" style="min-height:52px">' + esc(med.notes||'') + '</textarea></div>'
         + '<div class="fg" style="margin-top:8px"><label>Weight at Intake (lbs)</label><input type="number" id="ae-weight" value="' + (med.weight||'') + '" min="0" step="0.1" placeholder="e.g. 42.5"></div>')
 
@@ -1666,7 +1555,7 @@ function openAnimalEdit(id) {
     /* ── Section: Hold / Legal ── */
     + editSection('hold', '⚖️ Hold & Legal', curStatus==='hold',
         '<div class="fr"><div class="fg" style="margin:0"><label>Hold Type</label>'
-        + '<select id="ae-holdtype"><option value="standard"' + (r.holdType==='standard'?' selected':'') + '>Standard</option><option value="bite"' + (r.holdType==='bite'?' selected':'') + '>Bite Hold (10-day quarantine)</option><option value="dangerous"' + (r.holdType==='dangerous'?' selected':'') + '>Dangerous Animal</option><option value="ac"' + (r.holdType==='ac'?' selected':'') + '>AC Hold</option><option value="court"' + (r.holdType==='court'?' selected':'') + '>Court Hold</option></select></div>'
+        + '<select id="ae-holdtype"><option value="standard"' + (r.holdType==='standard'?' selected':'') + '>Standard</option><option value="bite"' + (r.holdType==='bite'?' selected':'') + '>Bite Hold (10-day quarantine)</option><option value="dangerous"' + (r.holdType==='dangerous'?' selected':'') + '>Dangerous Animal</option></select></div>'
         + '<div class="fg" style="margin:0"><label>Hold Start Date</label><input type="date" id="ae-holdstart" value="' + (r.shelterHoldStart?r.shelterHoldStart.slice(0,10):'') + '"></div></div>'
         /* Bite quarantine countdown */
         + (r.holdType==='bite' ? (function(){
@@ -1687,29 +1576,22 @@ function openAnimalEdit(id) {
 
     /* ── Section: Foster Placement ── */
     + editSection('foster', '🏡 Foster Placement', r.isFoster===true,
-        '<div style="font-size:.76rem;color:var(--warm-mid);margin-bottom:10px">Animal remains in care but is physically placed with a foster family. Mark here so staff knows where the animal is.</div>'
-        + '<div class="fr"><div class="fg" style="margin:0"><label>Foster Status</label>'
+        '<div class="fr"><div class="fg" style="margin:0"><label>Foster Status</label>'
         + '<select id="ae-foster-status"><option value="">Not in foster</option><option value="yes"' + (r.isFoster?'selected':'') + '>In foster care</option></select></div>'
-        + '<div class="fg" style="margin:0"><label>Foster Since</label><input type="date" id="ae-foster-date" value="' + (r.fosterDate||'') + '"></div></div>'
-        + '<div class="fr" style="margin-top:8px"><div class="fg" style="margin:0"><label>Foster Contact Name</label><input type="text" id="ae-foster-name" value="' + esc(r.fosterName||'') + '"></div>'
-        + '<div class="fg" style="margin:0"><label>Foster Phone</label><input type="tel" id="ae-foster-phone" value="' + esc(r.fosterPhone||'') + '"></div></div>'
-        + '<div class="fg" style="margin-top:8px"><label>Foster Notes</label><textarea id="ae-foster-notes" style="min-height:40px">' + esc(r.fosterNotes||'') + '</textarea></div>')
+        + '<div class="fg" style="margin:0"><label>Foster Contact</label><input type="text" id="ae-foster-name" value="' + esc(r.fosterName||'') + '" placeholder="Name · phone number"></div></div>')
 
     /* ── Section: Outcome / Transfer ── */
     + (curStatus==='transfer' || curStatus==='euth' || curStatus==='reunited' || curStatus==='adopted' ? editSection('outcome', '📋 Outcome Details', true,
         (curStatus==='transfer' ? '<div class="fg"><label>Transfer Partner / Rescue Name</label><input type="text" id="ae-transfer-partner" value="' + esc(r.transferPartner||'') + '" placeholder="e.g. Nebraska Humane Society"></div>'
-          + '<div class="fg"><label>Transfer Date</label><input type="date" id="ae-transfer-date" value="' + (r.transferDate||today) + '"></div>'
-          + '<div class="fg"><label>Transfer Notes</label><textarea id="ae-transfer-notes" style="min-height:40px">' + esc(r.transferNotes||'') + '</textarea></div>'
+          + '<div class="fg"><label>Notes</label><textarea id="ae-transfer-notes" style="min-height:40px">' + esc(r.transferNotes||'') + '</textarea></div>'
           : '')
         + (curStatus==='euth' ? '<div class="fg"><label>Reason for Euthanasia <span style="color:var(--lost-r)">*</span></label>'
           + '<select id="ae-euth-reason"><option value="">Select reason…</option>'
           + ['Severe illness / injury','Untreatable medical condition','Aggression — failed temperament test','Dangerous animal — court ordered','Space / resource limitations','Owner request','Bite quarantine — rabies confirmed','Prolonged suffering'].map(function(s){ return '<option' + (r.euthReason===s?' selected':'') + '>' + s + '</option>'; }).join('')
           + '</select></div>'
-          + '<div class="fg" style="margin-top:8px"><label>Authorizing Staff / Vet</label><input type="text" id="ae-euth-auth" value="' + esc(r.euthAuthorizedBy||'') + '"></div>'
-          + '<div class="fg"><label>Documentation Notes</label><textarea id="ae-euth-notes" style="min-height:52px">' + esc(r.euthNotes||'') + '</textarea></div>'
+          + '<div class="fg" style="margin-top:8px"><label>Documentation Notes <span style="font-size:.7rem;font-weight:400;color:var(--warm-mid)">(include authorizing staff/vet)</span></label><textarea id="ae-euth-notes" style="min-height:52px">' + esc((r.euthNotes||'')+(r.euthAuthorizedBy?' Authorized by: '+r.euthAuthorizedBy:'')) + '</textarea></div>'
           : '')
-        + (curStatus==='reunited' ? '<div class="fg"><label>Owner Name (confirmed)</label><input type="text" id="ae-reunite-owner" value="' + esc(r.confirmedOwner||r.owner||'') + '"></div>'
-          + '<div class="fg"><label>Reunification Notes</label><textarea id="ae-reunite-notes" style="min-height:40px">' + esc(r.reuniteNotes||'') + '</textarea></div>'
+        + (curStatus==='reunited' ? '<div class="fg"><label>Reunification Notes <span style="font-size:.7rem;font-weight:400;color:var(--warm-mid)">(owner name, contact confirmed)</span></label><textarea id="ae-reunite-notes" style="min-height:40px">' + esc((r.reuniteNotes||'')+(r.confirmedOwner||r.owner?' Owner: '+(r.confirmedOwner||r.owner):'')) + '</textarea></div>'
           : '')
         + (curStatus==='adopted' ? '<div class="fr"><div class="fg" style="margin:0"><label>Adopter Name</label><input type="text" id="ae-adopter-name" value="' + esc(r.adopterName||'') + '"></div>'
           + '<div class="fg" style="margin:0"><label>Adoption Date</label><input type="date" id="ae-adopt-date" value="' + (r.adoptionDate||today) + '"></div></div>'
@@ -1828,10 +1710,11 @@ function saveAnimalEdit(id) {
   r.medical.spayNeuter      = (document.getElementById('ae-spayneuter')||{}).value || '';
   r.medical.vaccinations    = (document.getElementById('ae-vacc')||{}).value || '';
   r.medical.parasite        = (document.getElementById('ae-parasite')||{}).value || '';
-  r.medical.spayNeuterCost  = parseFloat((document.getElementById('ae-sncost')||{}).value) || 0;
-  r.medical.vaccinationCost = parseFloat((document.getElementById('ae-vacccost')||{}).value) || 0;
-  r.medical.vetCost         = parseFloat((document.getElementById('ae-vetcost')||{}).value) || 0;
-  r.medical.otherCost       = parseFloat((document.getElementById('ae-othercost')||{}).value) || 0;
+  var medCost = parseFloat((document.getElementById('ae-medcost')||{}).value) || 0;
+  r.medical.spayNeuterCost  = medCost; /* stored as total medical cost */
+  r.medical.vaccinationCost = 0;
+  r.medical.vetCost         = 0;
+  r.medical.otherCost       = 0;
   r.medical.notes           = ((document.getElementById('ae-mednotes')||{}).value||'').trim();
   r.medical.rabiesStatus    = (document.getElementById('ae-rabies-status')||{}).value || '';
   r.medical.rabiesTag       = ((document.getElementById('ae-rabies-tag')||{}).value||'').trim();
@@ -1868,30 +1751,24 @@ function saveAnimalEdit(id) {
   r.officerName    = ((document.getElementById('ae-officer-name')||{}).value||'').trim();
 
   /* Foster */
-  r.isFoster       = (document.getElementById('ae-foster-status')||{}).value === 'yes';
-  r.fosterDate     = (document.getElementById('ae-foster-date')||{}).value || '';
-  r.fosterName     = ((document.getElementById('ae-foster-name')||{}).value||'').trim();
-  r.fosterPhone    = ((document.getElementById('ae-foster-phone')||{}).value||'').trim();
-  r.fosterNotes    = ((document.getElementById('ae-foster-notes')||{}).value||'').trim();
+  r.isFoster   = (document.getElementById('ae-foster-status')||{}).value === 'yes';
+  r.fosterName = ((document.getElementById('ae-foster-name')||{}).value||'').trim();
 
   /* Transfer */
   if (masterStatus === 'transfer') {
     r.transferPartner = ((document.getElementById('ae-transfer-partner')||{}).value||'').trim();
-    r.transferDate    = (document.getElementById('ae-transfer-date')||{}).value || '';
     r.transferNotes   = ((document.getElementById('ae-transfer-notes')||{}).value||'').trim();
   }
 
   /* Euthanasia */
   if (masterStatus === 'euth') {
-    r.euthReason       = (document.getElementById('ae-euth-reason')||{}).value || '';
-    r.euthAuthorizedBy = ((document.getElementById('ae-euth-auth')||{}).value||'').trim();
-    r.euthNotes        = ((document.getElementById('ae-euth-notes')||{}).value||'').trim();
+    r.euthReason = (document.getElementById('ae-euth-reason')||{}).value || '';
+    r.euthNotes  = ((document.getElementById('ae-euth-notes')||{}).value||'').trim();
   }
 
   /* Reunited */
   if (masterStatus === 'reunited') {
-    r.confirmedOwner = ((document.getElementById('ae-reunite-owner')||{}).value||'').trim();
-    r.reuniteNotes   = ((document.getElementById('ae-reunite-notes')||{}).value||'').trim();
+    r.reuniteNotes = ((document.getElementById('ae-reunite-notes')||{}).value||'').trim();
   }
 
   /* Adopted */
@@ -1909,6 +1786,11 @@ function saveAnimalEdit(id) {
   r.about = ((document.getElementById('ae-about')||{}).value||'').trim();
 
   save(); renderMarkers(); renderIncareView(); renderAdoptView(); updateNavCounts();
+  /* Write immediately to Firestore — don't wait for debounce, prevents onSnapshot overwrite */
+  if (USE_FIREBASE && _fbReady && db && _isStaff) {
+    db.collection('reports').doc(String(r.id)).set(r)
+      .catch(function(e){ console.warn('Animal edit sync error:', e.message); });
+  }
   closeAnimalEdit();
   showToast('found');
 }
@@ -2040,18 +1922,32 @@ function runActiveReport() {
   if (!validateShelterContext()) { bodyEl.innerHTML = '<div style="padding:32px;text-align:center;color:var(--warm-mid)">No shelter selected.</div>'; return; }
 
   /* ── PRE-FLIGHT RECONCILIATION CHECK ─────────────────────────────────
-     Verify source data is consistent before generating any report.
-     If counts mismatch (duplicate IDs, corrupt state), flag it rather
-     than silently output bad numbers. */
+     Verify source data is consistent. If duplicates exist, deduplicate
+     and warn rather than blocking the report entirely. */
   var allShelter = getShelterData({ includeHolds:true, includeAdopt:true, includeResolved:true });
   var ids = allShelter.map(function(r){ return r.id; });
   var uniqueIds = ids.filter(function(id, i){ return ids.indexOf(id) === i; });
-  if (uniqueIds.length !== ids.length) {
-    bodyEl.innerHTML = '<div style="background:#fff5f5;border:1px solid var(--lost-r);border-radius:10px;padding:16px;color:#c00;font-size:.82rem">'
-      + '<strong>⚠️ Data Integrity Issue</strong><br>Duplicate animal records detected (' + (ids.length - uniqueIds.length) + ' duplicates). '
-      + 'Please contact your system administrator before generating reports. This ensures report accuracy.'
-      + '</div>';
-    return;
+  var dupCount = ids.length - uniqueIds.length;
+  if (dupCount > 0) {
+    /* Deduplicate in place so report still generates */
+    var seen = {};
+    reports = reports.filter(function(r){
+      if (seen[r.id]) return false;
+      seen[r.id] = true; return true;
+    });
+    save();
+    /* Show a soft warning above the report — don't block */
+    var warn = document.getElementById('rpt-dup-warning');
+    if (!warn) {
+      warn = document.createElement('div');
+      warn.id = 'rpt-dup-warning';
+      warn.style.cssText = 'background:#fff8f0;border:1px solid var(--amber);border-radius:8px;padding:8px 12px;font-size:.74rem;color:#8a5010;margin-bottom:8px';
+      bodyEl.parentNode.insertBefore(warn, bodyEl);
+    }
+    warn.textContent = '⚠️ ' + dupCount + ' duplicate record' + (dupCount!==1?'s':'') + ' detected and removed. Report generated from deduplicated data.';
+  } else {
+    var warn = document.getElementById('rpt-dup-warning');
+    if (warn) warn.remove();
   }
 
   /* Read UI filters */
@@ -2516,123 +2412,11 @@ function renderGrantCard(o, ctx) {
     + '</div></div>';
 }
 
-function renderGrantQueue(queued) {
-  if (!queued.length) return '<div style="text-align:center;padding:32px;color:var(--warm-mid)"><div style="font-size:2rem">📝</div><div style="margin-top:8px;font-size:.86rem">No grants in drafting queue.<br>Save an opportunity from the Opportunities tab.</div></div>';
-  return queued.map(function(g) {
-    return '<div style="background:#fff;border:1px solid var(--cream-3);border-radius:12px;margin-bottom:10px;padding:14px 16px">'
-      + '<div style="font-family:var(--font-display);font-size:.88rem;font-weight:700;margin-bottom:4px">' + esc(g.name) + '</div>'
-      + '<div style="font-size:.7rem;color:var(--warm-mid);margin-bottom:8px">Saved ' + new Date(g.savedAt).toLocaleDateString() + ' · ' + esc(g.est||'—') + '</div>'
-      + (g.draftText ? '<div style="font-size:.72rem;color:var(--found-g);font-weight:600;margin-bottom:8px">✓ Draft ready</div>' : '')
-      + '<div style="display:flex;gap:6px;flex-wrap:wrap">'
-      + '<button onclick="openGrantDraft(\'' + g.oppId + '\')" style="padding:6px 12px;font-size:.74rem;font-weight:700;border-radius:7px;border:none;background:var(--forest);color:#fff;cursor:pointer;font-family:var(--font-body)">' + (g.draftText?'✏️ Edit Draft':'✍️ Generate Draft') + '</button>'
-      + '<button onclick="markGrantSubmitted(\'' + g.id + '\')" style="padding:6px 12px;font-size:.74rem;font-weight:600;border-radius:7px;border:1.5px solid #a0c0f0;background:#f0f4ff;color:#2050a0;cursor:pointer;font-family:var(--font-body)">📬 Mark Submitted</button>'
-      + '<button onclick="removeGrant(\'' + g.id + '\')" style="padding:6px 10px;font-size:.74rem;border-radius:7px;border:1.5px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body);color:var(--warm-mid)">✕</button>'
-      + '</div></div>';
-  }).join('');
-}
 
-function renderGrantSubmitted(submitted) {
-  if (!submitted.length) return '<div style="text-align:center;padding:32px;color:var(--warm-mid)"><div style="font-size:2rem">📬</div><div style="margin-top:8px;font-size:.86rem">No submitted grants yet.</div></div>';
-  var statusColor = { submitted:'#2050a0', awarded:'var(--found-g)', declined:'var(--lost-r)' };
-  return '<table style="width:100%;border-collapse:collapse;font-size:.8rem">'
-    + '<thead><tr style="background:var(--cream-2)">'
-    + '<th style="padding:8px 10px;text-align:left;border-bottom:2px solid var(--cream-3)">Grant</th>'
-    + '<th style="padding:8px 10px;text-align:left;border-bottom:2px solid var(--cream-3)">Submitted</th>'
-    + '<th style="padding:8px 10px;text-align:left;border-bottom:2px solid var(--cream-3)">Amount</th>'
-    + '<th style="padding:8px 10px;text-align:left;border-bottom:2px solid var(--cream-3)">Status</th>'
-    + '<th style="padding:8px 10px;text-align:left;border-bottom:2px solid var(--cream-3)">Notes</th>'
-    + '</tr></thead><tbody>'
-    + submitted.map(function(g,i) {
-        return '<tr style="background:' + (i%2?'var(--cream-2)':'#fff') + '">'
-          + '<td style="padding:8px 10px;border-bottom:1px solid var(--cream-3);font-weight:600">' + esc(g.name) + '</td>'
-          + '<td style="padding:8px 10px;border-bottom:1px solid var(--cream-3)">' + (g.submittedAt?new Date(g.submittedAt).toLocaleDateString():'—') + '</td>'
-          + '<td style="padding:8px 10px;border-bottom:1px solid var(--cream-3)">' + esc(g.amountRequested||'—') + '</td>'
-          + '<td style="padding:8px 10px;border-bottom:1px solid var(--cream-3);font-weight:700;color:' + (statusColor[g.status]||'var(--warm-dk)') + '">' + esc(g.status||'—') + '</td>'
-          + '<td style="padding:8px 10px;border-bottom:1px solid var(--cream-3);color:var(--warm-mid)">' + esc(g.notes||'—') + '</td>'
-          + '</tr>';
-      }).join('')
-    + '</tbody></table>';
-}
-
-function saveGrantToQueue(oppId, name, est) {
-  if (!activeShelter) return;
-  var existing = grants.find(function(g){ return g.oppId===oppId&&g.shelterId===activeShelter&&g.status==='queued'; });
-  if (existing) return;
-  grants.push({
-    id: 'g' + Date.now(), oppId: oppId, shelterId: activeShelter,
-    name: name, est: est, status: 'queued',
-    savedAt: new Date().toISOString(), draftText: null,
-    amountRequested: '', submittedAt: null, notes: '', awardDecision: null
-  });
-  saveGrants();
-  renderGrantsPanel();
-}
-
-function removeGrant(gid) {
-  grants = grants.filter(function(g){ return g.id!==gid; });
-  saveGrants(); renderGrantsPanel();
-}
-
-function markGrantSubmitted(gid) {
-  var g = grants.find(function(x){ return x.id===gid; });
-  if (!g) return;
-  var amt = prompt('Amount requested (e.g. $5,000):') || '';
-  g.status = 'submitted'; g.submittedAt = new Date().toISOString(); g.amountRequested = amt;
-  saveGrants(); _grantsTab = 'submitted'; renderGrantsPanel();
-}
-
-/* ── GRANT DRAFT GENERATOR (AI-powered) ──────────────────────────────── */
-var _grantDraftOverlay = null;
-
-function openGrantDraft(oppId) {
-  var ctx  = buildGrantsContext();
-  var opps = scoreGrants(ctx);
-  var opp  = opps.find(function(o){ return o.id===oppId; });
-  if (!opp) return;
-
-  /* Find or create queue entry */
-  var queued = grants.find(function(g){ return g.oppId===oppId&&g.shelterId===activeShelter&&(g.status==='queued'||g.status==='drafting'); });
-  if (!queued) {
-    saveGrantToQueue(oppId, opp.name, opp.est);
-    queued = grants.find(function(g){ return g.oppId===oppId&&g.shelterId===activeShelter; });
-  }
-
-  /* Build overlay */
-  var overlay = document.createElement('div');
-  overlay.id = 'grant-draft-overlay';
-  overlay.style.cssText = 'position:fixed;inset:0;z-index:9950;background:rgba(42,31,18,.6);display:flex;align-items:flex-end;justify-content:center';
-  overlay.innerHTML =
-    '<div style="background:var(--cream);border-radius:18px 18px 0 0;width:100%;max-width:700px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden" onclick="event.stopPropagation()">'
-    + '<div style="padding:14px 20px 10px;border-bottom:1px solid var(--cream-3);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">'
-    + '<div><div style="font-family:var(--font-display);font-size:.95rem;font-weight:700;color:var(--warm-dk)">✍️ ' + esc(opp.name) + '</div>'
-    + '<div style="font-size:.7rem;color:var(--warm-mid)">' + esc(activeShelter) + ' · AI-drafted from real shelter data</div></div>'
-    + '<button onclick="closeGrantDraft()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--warm-mid)">✕</button>'
-    + '</div>'
-    + '<div id="gd-body" style="flex:1;overflow-y:auto;padding:16px 20px 32px;-webkit-overflow-scrolling:touch">'
-    + (queued&&queued.draftText
-      ? '<div id="gd-draft-wrap"><div style="display:flex;gap:8px;margin-bottom:12px">'
-        + '<button onclick="copyGrantDraft()" style="padding:7px 14px;font-size:.76rem;font-weight:700;border-radius:8px;border:none;background:var(--forest);color:#fff;cursor:pointer;font-family:var(--font-body)">📋 Copy Draft</button>'
-        + '<button onclick="printGrantDraft()" style="padding:7px 14px;font-size:.76rem;font-weight:600;border-radius:8px;border:1.5px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body)">🖨️ Print</button>'
-        + '<button onclick="regenerateGrantDraft(\'' + oppId + '\')" style="padding:7px 14px;font-size:.76rem;font-weight:600;border-radius:8px;border:1.5px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body)">🔄 Regenerate</button>'
-        + '</div><div id="gd-text" style="white-space:pre-wrap;font-family:Georgia,serif;font-size:.86rem;line-height:1.75;color:var(--warm-dk)">' + esc(queued.draftText) + '</div></div>'
-      : '<div style="text-align:center;padding:24px 0"><div style="font-size:1.5rem;margin-bottom:10px">✨</div>'
-        + '<div style="font-size:.86rem;font-weight:600;margin-bottom:6px;color:var(--warm-dk)">Ready to draft your ' + esc(opp.name) + ' application</div>'
-        + '<div style="font-size:.76rem;color:var(--warm-mid);margin-bottom:16px;line-height:1.5">'
-        + 'Claude will generate a full application draft using ' + esc(activeShelter) + '\'s real operational data:<br>'
-        + ctx.inCare + ' animals in care · ' + ctx.avgLOS + 'd avg stay · ' + ctx.adopted90 + ' adoptions (90d) · ' + fmtMoney(ctx.holdCost) + ' hold cost exposure'
-        + '</div>'
-        + '<button onclick="generateGrantDraft(\'' + oppId + '\')" style="padding:12px 28px;font-family:var(--font-display);font-size:.92rem;font-weight:700;background:var(--forest);color:#fff;border:none;border-radius:10px;cursor:pointer">✨ Generate Full Application Draft</button>'
-        + '</div>')
-    + '</div></div>';
-
-  document.body.appendChild(overlay);
-  _grantDraftOverlay = overlay;
-  window._grantDraftOppId = oppId;
-}
-
-function closeGrantDraft() {
-  if (_grantDraftOverlay) { _grantDraftOverlay.remove(); _grantDraftOverlay = null; }
-}
+function saveGrantToQueue() { /* removed — grants queue cut */ }
+function removeGrant() { /* removed */ }
+function renderGrantQueue() { return ''; }
+function renderGrantSubmitted() { return ''; }
 
 async function generateGrantDraft(oppId) {
   var ctx  = buildGrantsContext();
@@ -2965,7 +2749,7 @@ function cardHTML(r) {
   var bg = reunited ? '#f7f4ef' : matched ? '#fffbf0' : (lost ? '#fff8f5' : '#f5faf6');
   var img = r.photo
     ? '<img class="pc-img" src="' + r.photo + '" alt="pet"' + (reunited ? ' style="filter:grayscale(.6)"' : '') + '>'
-    : '<div class="pc-no-img" style="background:' + bg + '">' + (reunited ? '🐾' : lost ? '🐕' : '🐈') + '</div>';
+    : '<div class="pc-no-img" style="background:' + bg + '">' + (reunited ? '🐾' : r.species==='Cat' ? '🐈' : r.species==='Bird' ? '🐦' : r.species==='Rabbit' ? '🐰' : '🐕') + '</div>';
 
   /* Public-safe description — strip sensitive language */
   var publicDesc = sanitizePublicDesc(r.desc || r.notes || '');
@@ -3123,12 +2907,8 @@ function cardHTML(r) {
 
   var whatNextSection = !reunited
     ? '<div style="margin-top:10px;border-top:1px solid var(--cream-3);padding-top:10px">'
-      + '<button onclick="toggleWhatNext(' + r.id + ')" style="width:100%;text-align:left;background:none;border:none;cursor:pointer;padding:0;font-family:var(--font-body)">'
-      + '<div style="display:flex;justify-content:space-between;align-items:center">'
-      + '<div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--amber)">What happens next to ' + esc(animalFirstName) + '?</div>'
-      + '<span id="whn-arrow-' + r.id + '" style="font-size:.7rem;color:var(--amber);transition:transform .2s">▾</span>'
-      + '</div></button>'
-      + '<div id="whn-body-' + r.id + '" style="display:none;font-size:.78rem;color:var(--warm-dk);line-height:1.6;margin-top:6px"></div>'
+      + '<div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--amber);margin-bottom:6px">What happens next?</div>'
+      + '<div id="whn-body-' + r.id + '" style="font-size:.78rem;color:var(--warm-mid);line-height:1.6;font-style:italic">Loading…</div>'
       + '</div>'
     : '';
 
@@ -3164,9 +2944,8 @@ function openCard(r, cp) {
     var cw = card.offsetWidth, ch = card.offsetHeight;
     var mw = mc.offsetWidth,   mh = mc.offsetHeight;
     var M = 14;
-    /* Keep clear of Leaflet zoom controls (bottom-right) and attribution (bottom-right) */
     var rightMargin  = M + 50;
-    var bottomMargin = M + 100; /* clears zoom buttons at bottom:90px */
+    var bottomMargin = M + 100;
     var left = Math.max(M, Math.min(cp.x - cw/2, mw - cw - rightMargin));
     var top  = cp.y - ch - 16;
     if (top < M) top = cp.y + 22;
@@ -3175,6 +2954,8 @@ function openCard(r, cp) {
     card.style.top  = top  + 'px';
     card.style.visibility = '';
   });
+  /* Auto-generate What Happens Next — no tap required */
+  if (!r.reunited) setTimeout(function(){ generateWhatNext(r); }, 300);
 }
 
 async function generateWhatNext(r) {
@@ -3186,6 +2967,17 @@ async function generateWhatNext(r) {
   var days        = Math.floor(daysSince(r.shelterHoldStart || r.date));
   var shelter     = r.shelterName || r.finder || 'the local shelter';
   var lost        = r.type === 'lost';
+  var found       = r.type === 'found' && !r.shelter; /* public found report — posted by citizen */
+
+  /* Found public pin — always the same process, no AI needed */
+  if (found) {
+    var sp = (r.species || 'animal').toLowerCase();
+    bodyEl.textContent = 'If this is your missing ' + sp + ', contact the finder directly or visit Heartland Pet Connection at 1807 W J St, Hastings — (402) 462-7387. Staff can check if a lost report matches this description.';
+    bodyEl.style.color = 'var(--warm-dk)';
+    bodyEl.style.fontStyle = 'normal';
+    setTimeout(function(){ var card = document.getElementById('pin-card-body'); if (card) card.scrollTop = card.scrollHeight; }, 100);
+    return;
+  }
   var isHold      = r.intakeType === 'hold';
   var holdType    = r.holdType || 'standard';
   var isAdopt     = r.adoptionStatus === 'available';
@@ -3210,17 +3002,24 @@ async function generateWhatNext(r) {
     + (isHold ? '\nEstimated hold cost so far: $' + holdCost : '')
     + (r.desc ? '\nNotes: ' + r.desc : '');
 
-  var prompt = 'You are writing a short, warm, specific narrative for a public-facing pet tracking app called PawPulse in Hastings, Nebraska.'
+  var prompt = 'You are explaining shelter process to the public on PawPulse, a pet tracking app for Heartland Pet Connection in Hastings, Nebraska.'
     + '\n\nAnimal details:\n' + context
-    + '\n\nWrite 2-3 sentences answering "What happens next to ' + name + '?" from the perspective of someone who cares about this animal.'
-    + ' Be specific to the animal\'s actual situation — not generic. Use the real shelter name, real timeline, real process.'
-    + ' For a lost pet: describe the owner search and how the community can help.'
-    + ' For a stray in care: describe the shelter intake process, vaccination/assessment, owner search window, and path to adoption if no owner is found.'
-    + ' For a bite/dangerous hold: describe the legal hold timeline, what the evaluation involves, and what happens after.'
-    + ' For an AC hold: describe city process, timeline, and shelter\'s role.'
-    + ' For an owner surrender: describe the transition process and path to finding a new home.'
-    + ' For adoption-ready: make it feel urgent and hopeful — this animal is waiting for someone right now.'
-    + ' Keep it under 60 words. Warm, human, specific. No bullet points. No headers. Just the narrative.';
+    + '\n\nWrite 2-3 sentences explaining the actual shelter process for this specific situation. Be factual and clear — no drama, no assumptions about what owners are feeling or doing.'
+    + ' Focus only on what actually happens procedurally at the shelter.'
+    + (lost
+      ? ' For a lost pet report: explain that if someone finds this pet, they can bring it to Heartland Pet Connection where staff will scan for a microchip, check lost pet reports, and contact the owner. Mention the shelter address and phone if helpful.'
+      : found
+      ? ' For a found pet report posted by a community member: explain that if this is someone\'s missing pet, they should contact the finder directly or bring a description to Heartland Pet Connection at 1807 W J St, (402) 462-7387. Staff can check if a lost report matches.'
+      : isHold && holdType === 'bite'
+      ? ' For a bite hold: explain the mandatory 10-day rabies observation period required by Nebraska law, that the animal is being monitored by shelter staff, and what happens after the quarantine ends.'
+      : isHold
+      ? ' For a legal hold: explain that the animal is being held under a legal order, that the hold period must run its course before any placement decisions are made, and who to contact for status updates.'
+      : isSurrender
+      ? ' For an owner surrender: explain that the animal has been signed over to the shelter, staff will complete a health and behavior assessment, and once cleared it will be listed for adoption.'
+      : isAdopt
+      ? ' For adoption-ready: explain the adoption process at Heartland — how to visit, what the adoption fee covers (vaccines, microchip, spay/neuter if applicable), and how to apply.'
+      : ' For a stray in care: explain that Nebraska law requires a ' + (HOLD_DAYS_BY_SOURCE[r.intakeSource]||5) + '-day hold so owners can claim their pet, that staff have scanned for a microchip, and what happens if no owner comes forward after the hold period.')
+    + ' Do not speculate about owners searching or emotional states. Use plain language. Under 55 words. No bullet points.';
 
   try {
     var resp = await fetch('/api/anthropic', {
@@ -3240,12 +3039,15 @@ async function generateWhatNext(r) {
       bodyEl.textContent = text;
       bodyEl.style.fontStyle = 'normal';
       bodyEl.style.color = 'var(--warm-dk)';
-      bodyEl.style.display = 'block';
-      var arrow = document.getElementById('whn-arrow-' + r.id);
-      if (arrow) arrow.style.transform = 'rotate(0deg)';
+      /* Scroll the pin card so text is visible on mobile */
+      setTimeout(function(){
+        var card = document.getElementById('pin-card-body');
+        if (card) card.scrollTop = card.scrollHeight;
+        else bodyEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 100);
     } else if (bodyEl) {
-      bodyEl.textContent = 'Unable to generate at this time.';
-      bodyEl.style.fontStyle = 'italic';
+      bodyEl.textContent = '';  /* Hide gracefully if no content */
+      bodyEl.style.fontStyle = 'normal';
     }
   } catch(e) {
     console.error('What Happens Next error:', e.message);
@@ -3472,6 +3274,10 @@ async function autoMatchOnIntake(intake) {
     pushBannerEvent('\uD83D\uDD0D ' + matches.length + ' possible lost pet match' + (matches.length>1?'es':'') + ' for this intake \u2014 ' + petName + ' was reported missing nearby. Check the map.', '#2050a0');
     intake.possibleMatchIds = matches.map(function(m){return m.id;});
     save();
+    if (USE_FIREBASE && _fbReady && db) {
+      db.collection('reports').doc(String(intake.id)).update({ possibleMatchIds: intake.possibleMatchIds })
+        .catch(function(e){ console.warn('Match sync error:', e.message); });
+    }
   } catch(e) { console.warn('Auto-match error:', e.message); }
 }
 
@@ -3582,6 +3388,15 @@ function markReunited(id) {
   r.reunited = true;
   r.reunitedDate = new Date().toISOString();
   save();
+  /* Sync to Firestore so ALL devices see the pin disappear immediately */
+  if (USE_FIREBASE && _fbReady && db) {
+    db.collection('reports').doc(String(r.id)).update({ reunited: true, reunitedDate: r.reunitedDate })
+      .catch(function() {
+        /* update() fails if doc doesn't exist in Firestore — fall back to set() */
+        db.collection('reports').doc(String(r.id)).set(r)
+          .catch(function(e){ console.warn('Reunited sync error:', e.message); });
+      });
+  }
   /* Re-render card */
   var cardBody = document.getElementById('pin-card-body');
   if (cardBody) cardBody.innerHTML = cardHTML(r);
@@ -3683,15 +3498,15 @@ function renderMarkers() {
       var card = document.getElementById('pin-card');
       var body = document.getElementById('pin-card-body');
       body.innerHTML = '<div class="pc-body">'
-        + '<div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--warm-dk);margin-bottom:2px">🏛️ ' + esc(s.name) + '</div>'
+        + '<div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--warm-dk);margin-bottom:2px">🐕🐈 ' + esc(s.name) + '</div>'
         + '<div style="font-size:.76rem;color:var(--warm-mid);margin-bottom:10px">' + esc(s.address) + '</div>'
         + '<div style="display:flex;gap:10px;margin-bottom:10px">'
         + '<div style="flex:1;background:var(--cream-2);border-radius:8px;padding:8px;text-align:center"><div style="font-size:1.3rem;font-weight:800;color:#2050a0">' + inCare + '</div><div style="font-size:.68rem;color:var(--warm-mid)">In Care</div></div>'
         + '<div style="flex:1;background:var(--cream-2);border-radius:8px;padding:8px;text-align:center"><div style="font-size:1.3rem;font-weight:800;color:#c8841a">' + adoptable + '</div><div style="font-size:.68rem;color:var(--warm-mid)">Adoptable</div></div>'
         + '</div>'
         + (s.phone ? '<div style="font-size:.78rem;color:var(--warm-mid);margin-bottom:4px">📞 ' + esc(s.phone) + '</div>' : '')
-        + (s.website ? '<div style="font-size:.78rem;color:#2050a0;margin-bottom:8px">🌐 ' + esc(s.website) + '</div>' : '')
-        + '<button onclick="setView(\'adopt\',document.querySelector(\'.tab-btn[onclick*=\\\"adopt\\\"]\'))" style="width:100%;padding:9px;font-family:var(--font-display);font-size:.82rem;font-weight:700;background:var(--forest);color:#fff;border:none;border-radius:9px;cursor:pointer">See Adoptable Animals →</button>'
+        + (s.website ? '<div style="font-size:.78rem;margin-bottom:8px"><a href="https://' + esc(s.website) + '" target="_blank" style="color:#2050a0;text-decoration:none">🌐 ' + esc(s.website) + '</a></div>' : '')
+        + '<button onclick="closeCard();setView(\'adopt\',document.querySelector(\'.tab-btn.tab-public:last-of-type\'))" style="width:100%;padding:9px;font-family:var(--font-display);font-size:.82rem;font-weight:700;background:var(--forest);color:#fff;border:none;border-radius:9px;cursor:pointer">See Adoptable Animals →</button>'
         + '</div>';
       card.style.left = Math.max(14, e.containerPoint.x - 140) + 'px';
       card.style.top  = Math.max(14, e.containerPoint.y - 160) + 'px';
@@ -4182,13 +3997,12 @@ var activeShelter = shelters[0].name;
 var selectedIntakeId = null;
 var shelterTab = 'queue';       // 'queue' | 'inventory'
 var selectedInvId = null;
-var inventory = JSON.parse(localStorage.getItem('pawpulse-inv-v1') || '[]');
-var grants    = JSON.parse(localStorage.getItem('pawpulse-grants-v1') || '[]');
 
 function saveGrants() {
   localStorage.setItem('pawpulse-grants-v1', JSON.stringify(grants));
 }
 
+var grants = [];
 /* ── SHELTER ISOLATION: single source of truth helpers ───────────────── */
 /*
  * Two-stage data model:
@@ -4251,19 +4065,7 @@ function validateShelterContext() {
 }
 
 
-function saveInv() {
-  localStorage.setItem('pawpulse-inv-v1', JSON.stringify(inventory));
-  if (USE_FIREBASE && _isStaff) {
-    clearTimeout(saveInv._t);
-    saveInv._t = setTimeout(function() {
-      var batch = db.batch();
-      inventory.forEach(function(item) {
-        batch.set(db.collection('inventory').doc(String(item.id)), item);
-      });
-      batch.commit().catch(function(e){ console.warn('Inv Firestore write:', e); });
-    }, 600);
-  }
-}
+function saveInv() { /* removed */ }
 
 function setShelterTab(tab, btn) {
   shelterTab = tab;
@@ -5269,32 +5071,9 @@ function closeHold(id, outcome) {
 }
 
 /* ── INVENTORY ─────────────────────────────── */
-function getShelterInventory() {
-  return inventory.filter(function(i){ return i.shelterName === activeShelter; });
-}
+function getShelterInventory() { return []; }
 
-function renderInventoryList() {
-  var items = getShelterInventory();
-  var el = document.getElementById('sh-inventory');
-  if (!items.length) {
-    el.innerHTML = '<div class="sh-empty"><div class="sh-empty-icon">📋</div>No inventory yet<br><span style="font-size:.72rem">Tap "+ Add to Inventory" below</span></div>';
-    return;
-  }
-  el.innerHTML = items.slice().reverse().map(function(it) {
-    var photoEl = it.photo
-      ? '<img class="inv-card-photo" src="' + it.photo + '" alt="">'
-      : '<div class="inv-card-no-photo">' + (it.species==='Dog'?'🐕':it.species==='Cat'?'🐈':'🐾') + '</div>';
-    var desc = [it.breed, it.color].filter(Boolean).join(' · ') || it.description || '';
-    var date = it.dateIn ? new Date(it.dateIn).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
-    return '<div class="inv-card ' + (selectedInvId===it.id?'selected':'') + '" onclick="selectInventoryItem(' + it.id + ')">'
-      + photoEl
-      + '<div class="inv-card-info">'
-      + '<div class="inv-card-name">' + esc(it.name || (it.species||'Unknown')) + '</div>'
-      + '<div class="inv-card-desc">' + esc(desc.slice(0,40)) + '</div>'
-      + '<div class="inv-card-date">' + (date?'In since '+date:'') + '</div>'
-      + '</div></div>';
-  }).join('');
-}
+function renderInventoryList() { /* removed */ }
 
 function showAddInventoryForm() {
   document.getElementById('sh-action-empty').style.display = 'none';
@@ -5326,38 +5105,9 @@ function showAddInventoryForm() {
   setTimeout(function(){ injectMicButtons(document.getElementById('sh-action-panel-body')); }, 50);
 }
 
-function previewInvPhoto(input) {
-  var file = input.files[0]; if (!file) return;
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    var img = document.getElementById('inv-prev');
-    img.src = e.target.result; img.style.display='block';
-    document.getElementById('inv-photo-icon').style.display='none';
-    document.getElementById('inv-photo-txt').style.display='none';
-  };
-  reader.readAsDataURL(file);
-}
+function previewInvPhoto() { /* removed */ }
 
-function submitInventoryItem() {
-  var photoEl = document.getElementById('inv-prev');
-  var it = {
-    id: Date.now(),
-    shelterName: activeShelter,
-    dateIn: new Date().toISOString(),
-    species:     (document.getElementById('inv-species')||{}).value,
-    sex:         (document.getElementById('inv-sex')||{}).value,
-    breed:       getBreedValue('inv-breed-wrap'),
-    color:       ((document.getElementById('inv-color')||{}).value||'').trim(),
-    name:        ((document.getElementById('inv-name')||{}).value||'').trim(),
-    age:         (document.getElementById('inv-age')||{}).value,
-    description: ((document.getElementById('inv-desc')||{}).value||'').trim(),
-    photo:       (photoEl && photoEl.src && photoEl.src.startsWith('data:')) ? photoEl.src : null,
-    status:      'available'
-  };
-  inventory.push(it); saveInv();
-  renderInventoryList();
-  selectInventoryItem(it.id);
-}
+function submitInventoryItem() { /* removed — inventory system cut */ }
 
 function cancelInvForm() {
   selectedInvId = null;
@@ -5366,10 +5116,7 @@ function cancelInvForm() {
   document.getElementById('sh-panel-title').textContent = 'Animal Detail';
 }
 
-function selectInventoryItem(id) {
-  selectedInvId = id;
-  renderInventoryList();
-  var it = inventory.find(function(x){ return x.id===id; });
+function selectInventoryItem() { /* removed — inventory system cut */ });
   if (!it) return;
   document.getElementById('sh-action-empty').style.display = 'none';
   document.getElementById('sh-action-panel').style.display = 'flex';
@@ -5424,102 +5171,15 @@ function selectInventoryItem(id) {
   setTimeout(function(){ injectMicButtons(document.getElementById('sh-action-panel-body')); }, 50);
 }
 
-function saveInvEdit(id) {
-  var it = inventory.find(function(x){ return x.id===id; });
-  if (!it) return;
-  var nameEl = document.getElementById('inv-edit-name');
-  var breedEl = document.getElementById('inv-edit-breed');
-  var descEl  = document.getElementById('inv-edit-desc');
-  if (nameEl)  it.name        = nameEl.value.trim();
-  if (breedEl) it.breed       = breedEl.value.trim();
-  if (descEl)  it.description = descEl.value.trim();
-  saveInv();
-  renderInventoryList();
-  selectInventoryItem(id);
-}
+function saveInvEdit() { /* removed */ }
 
-function confirmRemoveInv(id) {
-  var el = document.getElementById('inv-delete-confirm-' + id);
-  if (el) el.style.display = 'block';
-}
+function confirmRemoveInv() { /* removed — inventory system cut */ }
 
-function setInvStatus(id, status) {
-  var it = inventory.find(function(x){ return x.id===id; });
-  if (!it) return;
-  it.status = status;
-  saveInv();
-  selectInventoryItem(id);
-  renderInventoryList();
-}
+function setInvStatus() { /* removed — inventory system cut */ }
 
-function removeInvItem(id) {
-  inventory = inventory.filter(function(x){ return x.id!==id; });
-  saveInv();
-  renderInventoryList();
-  cancelInvForm();
-}
+function removeInvItem() { /* removed — inventory system cut */ }
 
-async function searchInvMatches(invId) {
-  var it = inventory.find(function(x){ return x.id===invId; });
-  if (!it) return;
-  var btn = document.querySelector('[onclick="searchInvMatches(' + invId + ')"]');
-  var resultsEl = document.getElementById('inv-match-results-' + invId);
-  if (!resultsEl) return;
-
-  resultsEl.innerHTML = '<div class="ai-loading"><div class="ai-dot"></div><div class="ai-dot" style="animation-delay:.2s"></div><div class="ai-dot" style="animation-delay:.4s"></div><span style="margin-left:4px">Searching lost pet reports…</span></div>';
-  if (btn) { btn.disabled=true; btn.textContent='Searching…'; }
-
-  var lostPets = reports.filter(function(r){ return r.type==='lost' && !r.reunited; });
-  if (!lostPets.length) {
-    resultsEl.innerHTML = '<div style="font-size:.78rem;color:var(--warm-mid);padding:8px 0;font-style:italic">No active lost reports to compare.</div>';
-    if (btn) { btn.disabled=false; btn.textContent='🔍 AI Match Against Lost Pets'; }
-    return;
-  }
-
-  var itDesc = [
-    it.species      && 'Species: '  + it.species,
-    it.breed        && 'Breed: '    + it.breed,
-    it.color        && 'Color: '    + it.color,
-    it.sex          && 'Sex: '      + it.sex,
-    it.age          && 'Age: '      + it.age,
-    it.description  && 'Notes: '   + it.description
-  ].filter(Boolean).join('. ');
-
-  var lostList = lostPets.map(function(r,i){
-    return (i+1) + '. ID:' + r.id
-      + (r.name    ? ' Name:'    + r.name    : '')
-      + (r.species ? ' Species:' + r.species : '')
-      + (r.breed   ? ' Breed:'   + r.breed   : '')
-      + (r.color   ? ' Color:'   + r.color   : '')
-      + (r.notes   ? ' Notes:'   + r.notes   : '');
-  }).join('\n');
-
-  try {
-    var resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        model:'claude-sonnet-4-20250514', max_tokens:600,
-        system:'You are a pet matching assistant at a shelter in Hastings, Nebraska. Compare a shelter inventory animal against lost pet reports. Return ONLY valid JSON — array of up to 3 objects with: id (number), confidence ("high","medium","low"), reason (1-2 sentences). Return [] if no genuine matches.',
-        messages:[{role:'user', content:'SHELTER ANIMAL:\n'+itDesc+'\n\nLOST PET REPORTS:\n'+lostList+'\n\nReturn JSON.'}]
-      })
-    });
-    var data = await resp.json();
-    var text = (data.content||[]).map(function(b){ return b.text||''; }).join('').trim();
-    var matches = JSON.parse(text.replace(/```json|```/g,'').trim());
-    renderMatchResults(invId, matches, lostPets);
-    /* Re-wire comment buttons to use postMatchComment */
-    setTimeout(function(){
-      if (!matches || !matches.length) return;
-      matches.forEach(function(m){
-        var commentBtn = document.querySelector('[onclick="postMatchComment(' + m.id + ',' + invId + ')"]');
-        /* already wired via renderMatchResults */
-      });
-    }, 100);
-  } catch(e) {
-    resultsEl.innerHTML = '<div style="font-size:.78rem;color:var(--warm-mid);padding:8px 0;font-style:italic">Could not complete search. Check connection.</div>';
-  }
-  if (btn) { btn.disabled=false; btn.textContent='🔍 Search Again'; }
-}
+async function searchInvMatches() { /* removed — inventory system cut */ }
 
 function postShelterUpdate(id) {
   var r = reports.find(function(x){ return x.id===id; });
@@ -6321,37 +5981,36 @@ var CG_FORMATS = {
 
 function openContentGen(mode) {
   _cgMode = mode || 'press';
-  _cgFormat = null;
-  var panel = document.getElementById('content-gen-panel');
-  var title = document.getElementById('cg-title');
-  if (title) title.textContent = mode === 'fund' ? '💛 Funding Narrative' : '📣 Public Transparency Report';
-  showCGPicker();
-  panel.style.display = 'flex';
-  /* Pre-fill shelter name */
-  var nameEl = document.getElementById('cg-shelter-name');
-  if (nameEl && !nameEl.value) nameEl.value = activeShelter || shelters[0].name;
+  /* Auto-select the first format and generate immediately — no picker step */
+  var fmts = CG_FORMATS[_cgMode] || CG_FORMATS.press;
+  _cgFormat = fmts[0].id;
+  /* Show a simple inline overlay for the output */
+  var existing = document.getElementById('cg-inline-panel');
+  if (existing) existing.remove();
+  var overlay = document.createElement('div');
+  overlay.id = 'cg-inline-panel';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:1100;background:rgba(42,31,18,.55);display:flex;align-items:flex-end;justify-content:center';
+  overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
+  overlay.innerHTML = '<div style="background:var(--cream);border-radius:18px 18px 0 0;width:100%;max-width:600px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden">'
+    + '<div style="padding:14px 18px 10px;border-bottom:1px solid var(--cream-3);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">'
+    + '<div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--warm-dk)">' + (mode==='fund'?'💛 Donor Message':'📣 Shareable Summary') + '</div>'
+    + '<button onclick="document.getElementById(\'cg-inline-panel\').remove()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--warm-mid)">✕</button>'
+    + '</div>'
+    + '<div id="cg-inline-loading" style="padding:40px;text-align:center;color:var(--warm-mid);font-size:.86rem">✨ Writing from your real shelter data…</div>'
+    + '<div id="cg-inline-output" style="display:none;flex:1;overflow-y:auto;padding:20px;white-space:pre-wrap;font-family:Georgia,serif;font-size:.88rem;line-height:1.7;color:var(--warm-dk);-webkit-overflow-scrolling:touch"></div>'
+    + '<div id="cg-inline-actions" style="display:none;padding:12px 18px;border-top:1px solid var(--cream-3);display:flex;gap:8px;flex-shrink:0">'
+    + '<button onclick="var t=document.getElementById(\'cg-inline-output\');if(t){navigator.clipboard.writeText(t.textContent)}" style="flex:1;padding:9px;font-size:.8rem;font-weight:700;border-radius:8px;border:none;background:var(--forest);color:#fff;cursor:pointer;font-family:var(--font-display)">📋 Copy</button>'
+    + '<button onclick="var w=window.open();w.document.write(\'<pre style=font-family:Georgia;line-height:1.7;padding:32px;max-width:700px>\'+document.getElementById(\'cg-inline-output\').textContent+\'</pre>\');w.print()" style="padding:9px 14px;font-size:.8rem;font-weight:700;border-radius:8px;border:1.5px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-display)">🖨️ Print</button>'
+    + '</div>'
+    + '</div>';
+  document.body.appendChild(overlay);
+  /* Run generation immediately */
+  runContentGen();
 }
 
 function closeContentGen(e) {
-  if (e && e.target !== document.getElementById('content-gen-panel')) return;
-  document.getElementById('content-gen-panel').style.display = 'none';
-}
-
-function showCGPicker() {
-  document.getElementById('cg-picker').style.display = 'block';
-  document.getElementById('cg-output').style.display = 'none';
-  var fmts = CG_FORMATS[_cgMode] || CG_FORMATS.press;
-  document.getElementById('cg-formats').innerHTML = fmts.map(function(f) {
-    var active = _cgFormat === f.id;
-    return '<div onclick="selectCGFormat(\'' + f.id + '\')" style="padding:13px 15px;margin-bottom:8px;border-radius:10px;border:2px solid ' + (active?'var(--forest)':'var(--cream-3)') + ';background:' + (active?'#f0f8f0':'#fff') + ';cursor:pointer;transition:all .15s" id="cgf-' + f.id + '">'
-      + '<div style="font-family:var(--font-display);font-size:.9rem;font-weight:700;color:var(--warm-dk);margin-bottom:3px">' + f.icon + ' ' + f.title + '</div>'
-      + '<div style="font-size:.74rem;color:var(--warm-mid);line-height:1.4">' + f.desc + '</div></div>';
-  }).join('');
-}
-
-function selectCGFormat(id) {
-  _cgFormat = id;
-  showCGPicker(); /* re-render to show selection */
+  var panel = document.getElementById('cg-inline-panel');
+  if (panel) panel.remove();
 }
 
 function buildShelterContext() {
@@ -6450,18 +6109,20 @@ function buildCGPrompt(format, ctx) {
 async function runContentGen() {
   if (!_cgFormat) {
     var fmts = CG_FORMATS[_cgMode];
-    alert('Please select a format first.');
-    return;
+    if (fmts && fmts.length) _cgFormat = fmts[0].id;
+    else return;
   }
   var ctx = buildShelterContext();
   var prompt = buildCGPrompt(_cgFormat, ctx);
 
-  /* Show output panel with loading */
-  document.getElementById('cg-picker').style.display = 'none';
-  document.getElementById('cg-output').style.display = 'flex';
-  document.getElementById('cg-loading').style.display = 'block';
-  document.getElementById('cg-text').style.display = 'none';
-  document.getElementById('cg-text').textContent = '';
+  /* Write to inline panel */
+  var loadingEl = document.getElementById('cg-inline-loading');
+  var outputEl  = document.getElementById('cg-inline-output');
+  var actionsEl = document.getElementById('cg-inline-actions');
+  if (!outputEl) return; /* panel not open */
+  if (loadingEl) loadingEl.style.display = 'block';
+  if (outputEl)  { outputEl.style.display = 'none'; outputEl.textContent = ''; }
+  if (actionsEl) actionsEl.style.display = 'none';
 
   try {
     var resp = await fetch('/api/anthropic', {
@@ -6475,13 +6136,12 @@ async function runContentGen() {
     });
     var data = await resp.json();
     var text = (data.content || []).map(function(b){ return b.text || ''; }).join('').trim();
-    document.getElementById('cg-text').textContent = text;
-    document.getElementById('cg-text').style.display = 'block';
+    if (outputEl) { outputEl.textContent = text; outputEl.style.display = 'block'; }
+    if (actionsEl) actionsEl.style.display = 'flex';
   } catch(err) {
-    document.getElementById('cg-text').textContent = 'Could not generate — check your connection and try again.';
-    document.getElementById('cg-text').style.display = 'block';
+    if (outputEl) { outputEl.textContent = 'Could not generate — check your connection and try again.'; outputEl.style.display = 'block'; }
   } finally {
-    document.getElementById('cg-loading').style.display = 'none';
+    if (loadingEl) loadingEl.style.display = 'none';
   }
 }
 
@@ -6875,12 +6535,13 @@ function renderAdoptView() {
     var narrative    = r.adoptPersonality || null;
     var narrativeAge = lastUpdated !== null ? lastUpdated : null;
 
-    /* Staff-only Update Profile button */
-    var staffBtn = _isStaff
+    /* Staff-only Refresh button — Generate is now automatic */
+    var staffBtn = _isStaff && narrative
       ? '<button onclick="updateAdoptProfile(' + r.id + ')" style="width:100%;margin-bottom:8px;padding:8px;font-size:.72rem;font-weight:600;border-radius:8px;border:1.5px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body);color:var(--warm-mid)">'
-        + '✨ ' + (narrative ? 'Refresh Story' : 'Generate Story')
-        + (narrativeAge !== null ? ' · updated ' + narrativeAge + 'd ago' : '')
+        + '✨ Refresh Bio' + (narrativeAge !== null ? ' · updated ' + narrativeAge + 'd ago' : '')
         + '</button>'
+      : _isStaff && !narrative
+      ? '<button onclick="updateAdoptProfile(' + r.id + ')" style="width:100%;margin-bottom:8px;padding:8px;font-size:.72rem;font-weight:600;border-radius:8px;border:1.5px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body);color:var(--warm-mid)">✨ Generate Bio</button>'
       : '';
 
     return '<div class="adopt-card">'
@@ -6889,10 +6550,8 @@ function renderAdoptView() {
       + '<div class="adopt-card-body">'
       + '<div class="adopt-card-name">' + esc(name) + '</div>'
       + (meta ? '<div style="font-size:.76rem;color:var(--warm-mid);margin-bottom:8px">' + esc(meta) + '</div>' : '')
-      /* Personality narrative — the hook */
-      + '<div id="adopt-narrative-' + r.id + '" style="font-size:.82rem;color:var(--warm-dk);line-height:1.6;margin-bottom:10px;min-height:48px">'
-      + (narrative ? esc(narrative) : '<span style="color:var(--warm-mid);font-style:italic">Tap "Generate Story" to write ' + esc(firstName) + '\'s profile.</span>')
-      + '</div>'
+      /* Bio — only shown if it exists */
+      + (narrative ? '<div id="adopt-narrative-' + r.id + '" style="font-size:.82rem;color:var(--warm-dk);line-height:1.6;margin-bottom:10px">' + esc(narrative) + '</div>' : '')
       /* Tags */
       + (tags.length ? '<div class="adopt-tags" style="margin-bottom:8px">' + tags.map(function(t){ return '<span class="adopt-tag">' + esc(t.trim()) + '</span>'; }).join('') + '</div>' : '')
       /* Days + fee */
@@ -6902,7 +6561,7 @@ function renderAdoptView() {
       + '</div>'
       + (r.adoptionFee != null ? '<div style="font-size:.72rem;color:var(--warm-mid);margin-top:2px">Adoption fee: <strong style="color:var(--warm-dk)">$' + r.adoptionFee + '</strong></div>' : '')
       + '</div>'
-      /* Staff: refresh story button */
+      /* Staff: refresh bio button */
       + staffBtn
       /* Public CTA */
       + '<button class="adopt-ask-btn" onclick="contactShelterForAdoption(' + r.id + ')">👉 Meet ' + esc(firstName) + '</button>'
@@ -6933,7 +6592,7 @@ async function updateAdoptProfile(id) {
     r.energy ? r.energy + ' energy' : null,
   ].filter(Boolean).join(', ');
 
-  var prompt = 'Write a short, warm, first-person adoption profile for an animal at Heartland Pet Connection in Hastings, Nebraska.'
+  var prompt = 'Write a short adoption bio for an animal at Heartland Pet Connection in Hastings, Nebraska.'
     + '\n\nAnimal: ' + name
     + '\nSpecies: ' + (r.species || 'animal')
     + (r.breed ? '\nBreed: ' + r.breed : '')
@@ -6941,16 +6600,14 @@ async function updateAdoptProfile(id) {
     + (r.sex ? '\nSex: ' + r.sex : '')
     + (r.age ? '\nAge: ' + r.age : '')
     + '\nDays waiting for adoption: ' + days
-    + (lastDays !== null ? '\nDays since last profile update: ' + lastDays : '')
-    + (traits ? '\nTraits: ' + traits : '')
+    + (traits ? '\nKnown traits: ' + traits : '')
     + (tags ? '\nTags: ' + tags : '')
     + (about ? '\nStaff notes: ' + about : '')
-    + '\n\nWrite 2-3 sentences in the voice of the animal — warm, specific, a little playful.'
-    + ' If they\'ve been waiting a long time (14+ days), let that come through naturally without being sad.'
-    + ' If this is a profile refresh (days since last update > 0), reference something new or that time has passed.'
-    + ' Make it feel like a real personality, not a template.'
-    + ' End with one specific thing they\'re looking for in a home.'
-    + ' Under 60 words. No headers. No bullet points. Just the voice.';
+    + '\n\nWrite 2-3 sentences in third person describing this animal warmly and specifically.'
+    + ' Focus on personality and what makes them a good companion — avoid generic phrases like \"loving\" or \"great pet.\"'
+    + ' If they have been waiting a long time (14+ days), mention it naturally without being dramatic.'
+    + ' End with one specific need for their home (yard, quiet home, another dog, etc.) only if known — otherwise skip it.'
+    + ' Under 55 words. No headers. No bullet points. Third person only — do not write as the animal.';
 
   try {
     var resp = await fetch('/api/anthropic', {
@@ -6970,6 +6627,14 @@ async function updateAdoptProfile(id) {
     r.adoptPersonality   = text;
     r.profileUpdatedAt   = new Date().toISOString();
     save();
+
+    /* Persist to Firestore so story survives real-time listener overwrites */
+    if (USE_FIREBASE && _fbReady && db) {
+      db.collection('reports').doc(String(r.id)).update({
+        adoptPersonality: text,
+        profileUpdatedAt: r.profileUpdatedAt
+      }).catch(function(e){ console.warn('Story sync error:', e.message); });
+    }
 
     /* Update the narrative inline without re-rendering everything */
     var narrativeEl = document.getElementById('adopt-narrative-' + id);
@@ -7375,7 +7040,13 @@ function quickAdoptReady(id) {
   r.dateAvailable  = new Date().toISOString();
   r.masterStatus   = 'available';
   save(); renderIncareView(); renderAdoptView(); updateNavCounts();
+  if (USE_FIREBASE && _fbReady && db && _isStaff) {
+    db.collection('reports').doc(String(r.id)).set(r)
+      .catch(function(e){ console.warn('Adopt ready sync error:', e.message); });
+  }
   pushBannerEvent('🌟 ' + (r.name||r.species||'Animal') + ' is now listed for adoption!', 'var(--found-g)');
+  /* Auto-generate bio — no staff action needed */
+  setTimeout(function(){ updateAdoptProfile(r.id); }, 500);
 }
 
 
@@ -7415,46 +7086,6 @@ try {
 }
 setTimeout(function(){ injectMicButtons(document.getElementById('side-panel')); }, 100);
 </script>
-
-<!-- Press Release / Fundraiser Generator -->
-<div id="content-gen-panel" onclick="closeContentGen(event)" style="position:fixed;inset:var(--nav-h) 0 0 0;z-index:960;background:rgba(42,31,18,.6);display:none;align-items:flex-end;justify-content:center">
-  <div id="content-gen-inner" style="background:var(--cream);border-radius:18px 18px 0 0;width:100%;max-width:600px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden" onclick="event.stopPropagation()">
-    <div style="padding:16px 20px 12px;border-bottom:1px solid var(--cream-3);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
-      <div id="cg-title" style="font-family:var(--font-display);font-size:1.05rem;font-weight:700;color:var(--warm-dk)">📣 Public Transparency Report</div>
-      <button onclick="closeContentGen()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--warm-mid);padding:2px 6px">✕</button>
-    </div>
-
-    <!-- Format picker -->
-    <div id="cg-picker" style="padding:16px 20px;overflow-y:auto;flex:1">
-      <div style="font-size:.78rem;color:var(--warm-mid);margin-bottom:14px">Choose a format — your real data will be used automatically.</div>
-      <div id="cg-formats"></div>
-      <div class="fg" style="margin-top:14px">
-        <label>Organization Name (for the release)</label>
-        <input type="text" id="cg-shelter-name" placeholder="e.g. Adams County Humane Society" style="width:100%;padding:8px 11px;font-size:.86rem;border:1.5px solid var(--cream-3);border-radius:8px;font-family:var(--font-body)">
-      </div>
-      <div class="fg">
-        <label>Contact Name & Phone (optional)</label>
-        <input type="text" id="cg-contact" placeholder="e.g. Jane Smith · (402) 462-7387" style="width:100%;padding:8px 11px;font-size:.86rem;border:1.5px solid var(--cream-3);border-radius:8px;font-family:var(--font-body)">
-      </div>
-      <button id="cg-generate-btn" onclick="runContentGen()" style="width:100%;padding:12px;font-family:var(--font-display);font-size:.92rem;font-weight:700;background:var(--forest);color:var(--cream);border:none;border-radius:10px;cursor:pointer;margin-top:4px">✨ Generate</button>
-    </div>
-
-    <!-- Output -->
-    <div id="cg-output" style="display:none;flex-direction:column;flex:1;overflow:hidden">
-      <div style="padding:10px 20px;border-bottom:1px solid var(--cream-3);display:flex;gap:8px;flex-shrink:0">
-        <button onclick="showCGPicker()" style="font-size:.76rem;padding:5px 12px;border-radius:6px;border:1.5px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body)">← Back</button>
-        <button onclick="copyCGOutput()" style="font-size:.76rem;padding:5px 12px;border-radius:6px;border:1.5px solid var(--forest);background:var(--forest);color:#fff;cursor:pointer;font-family:var(--font-body)">📋 Copy</button>
-        <button onclick="printCGOutput()" style="font-size:.76rem;padding:5px 12px;border-radius:6px;border:1.5px solid var(--amber);background:var(--amber);color:#fff;cursor:pointer;font-family:var(--font-body)">🖨️ Print</button>
-      </div>
-      <div id="cg-loading" style="display:none;padding:32px;text-align:center">
-        <div style="font-size:2rem;margin-bottom:12px">✨</div>
-        <div style="font-size:.86rem;color:var(--warm-mid);font-weight:600">Writing your release using real shelter data…</div>
-        <div class="ai-loading" style="justify-content:center;margin-top:16px"><div class="ai-dot"></div><div class="ai-dot" style="animation-delay:.2s"></div><div class="ai-dot" style="animation-delay:.4s"></div></div>
-      </div>
-      <div id="cg-text" style="flex:1;overflow-y:auto;padding:20px;white-space:pre-wrap;font-family:Georgia,serif;font-size:.88rem;line-height:1.7;color:var(--warm-dk);-webkit-overflow-scrolling:touch"></div>
-    </div>
-  </div>
-</div>
 
 <!-- Adoption inquiry slide-up -->
 <div id="adopt-inquiry-panel" onclick="closeInquiryPanel(event)">
