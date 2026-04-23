@@ -5133,8 +5133,7 @@ function cancelInvForm() {
 
 
 
-async 
-function postShelterUpdate(id) {
+async function postShelterUpdate(id) {
   var r = reports.find(function(x){ return x.id===id; });
   var txt = document.getElementById('sh-update-txt');
   if (!r || !txt || !txt.value.trim()) return;
