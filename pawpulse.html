@@ -3998,15 +3998,23 @@ function v(id) { var el=document.getElementById(id); return el ? el.value.trim()
 
 function submitLost() {
   if (!pLat.lost) {
-    /* Show inline error and open map in pin-placement mode */
-    var prompt = document.getElementById('l-prompt');
-    if (prompt) {
-      prompt.querySelector('button').style.borderColor = 'var(--lost-r)';
-      prompt.querySelector('button').style.background = '#fff0ee';
-      prompt.querySelector('button').textContent = '⚠️ Tap here to set location first';
-      prompt.querySelector('button').style.animation = 'none';
+    /* Flash the location button and scroll to it — keep panel open */
+    var locBtn = document.getElementById('l-loc-btn') || document.querySelector('#l-prompt button');
+    if (locBtn) {
+      locBtn.style.background = '#fff0ee';
+      locBtn.style.borderColor = 'var(--lost-r)';
+      locBtn.style.color = 'var(--lost-r)';
+      locBtn.textContent = '📍 Set location on map first';
+      locBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(function(){ 
+        if (locBtn) {
+          locBtn.style.background = '';
+          locBtn.style.borderColor = '';
+          locBtn.style.color = '';
+          locBtn.textContent = '📍 Tap to Set Location on Map';
+        }
+      }, 3000);
     }
-    startPlace('lost');
     return;
   }
   var r = { id:Date.now(), type:'lost', date:new Date().toISOString(),
@@ -4027,13 +4035,22 @@ function submitLost() {
 
 function submitFound() {
   if (!pLat.found) {
-    var prompt = document.getElementById('f-prompt');
-    if (prompt) {
-      prompt.querySelector('button').style.borderColor = '#3a7d44';
-      prompt.querySelector('button').style.background = '#f0fff2';
-      prompt.querySelector('button').textContent = '⚠️ Tap here to set location first';
+    var locBtn = document.getElementById('f-loc-btn') || document.querySelector('#f-prompt button');
+    if (locBtn) {
+      locBtn.style.background = '#f0fff2';
+      locBtn.style.borderColor = 'var(--found-g)';
+      locBtn.style.color = 'var(--found-g)';
+      locBtn.textContent = '📍 Set location on map first';
+      locBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(function(){ 
+        if (locBtn) {
+          locBtn.style.background = '';
+          locBtn.style.borderColor = '';
+          locBtn.style.color = '';
+          locBtn.textContent = '📍 Tap to Set Location on Map';
+        }
+      }, 3000);
     }
-    startPlace('found');
     return;
   }
   var shelter = document.getElementById('f-shelter').checked;
