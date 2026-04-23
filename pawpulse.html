@@ -115,7 +115,7 @@ body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);h
 .view.active{display:flex}
 
 /* MAP CONTAINER — same as PublicPulse */
-#map-container{flex:1;position:relative;overflow:hidden}
+#map-container{flex:1;position:relative;overflow:hidden;margin-top:22px}
 #map{width:100%;height:100%}
 .leaflet-tile{filter:saturate(.82) brightness(1.02) sepia(.06)}
 .leaflet-container{background:#d4c9b0}
@@ -556,7 +556,7 @@ textarea{min-height:64px}
     <button class="tab-btn tab-public"        onclick="setView('adopt',this)" title="Adoption">🏠 <span class="tab-lbl">Adopt</span></button>
     <!-- STAFF MODE -->
     <div class="nav-mode-sep"></div>
-    <button class="tab-btn tab-ops" onclick="setView('incare',this)"   title="In Care">🏥 <span class="tab-lbl">In Care</span> <span id="nav-incare-count" style="display:none;background:var(--found-g);color:#fff;border-radius:999px;font-size:.6rem;padding:1px 5px;margin-left:2px"></span></button>
+    <button class="tab-btn tab-ops" onclick="setView('incare',this)"   title="In Care">🏥 <span class="tab-lbl">At Shelter</span> <span id="nav-incare-count" style="display:none;background:var(--found-g);color:#fff;border-radius:999px;font-size:.6rem;padding:1px 5px;margin-left:2px"></span></button>
     <!-- ADMIN MODE -->
     <div class="nav-mode-sep"></div>
     <button class="tab-btn tab-admin" onclick="setView('reports',this)" title="Reports & Admin">📊 <span class="tab-lbl">Reports</span></button>
@@ -574,6 +574,8 @@ textarea{min-height:64px}
     </div>
   </div>
 </nav>
+<!-- Orientation strip -->
+<div id="orientation-strip" style="position:fixed;top:var(--nav-h);left:0;right:0;z-index:999;background:rgba(45,74,53,.92);color:rgba(255,255,255,.78);text-align:center;font-size:.68rem;font-family:var(--font-body);padding:4px 12px;letter-spacing:.01em;pointer-events:none">Live map of lost, found, and shelter animals in Hastings, NE.</div>
 
 <!-- ADOPT VIEW -->
 <div id="view-adopt" class="view">
@@ -609,7 +611,7 @@ textarea{min-height:64px}
   <div class="mode-banner ops"><div class="mode-banner-dot" style="background:#3a7d44"></div>Heartland Pet Connection — Staff</div>
   <!-- Header with shelter name + intake button -->
   <div style="padding:12px 16px;background:var(--cream);border-bottom:1px solid var(--cream-3);flex-shrink:0">
-    <div style="font-family:var(--font-display);font-size:.95rem;font-weight:700;color:var(--warm-dk)" id="incare-shelter-label">Animals In Care</div>
+    <div style="font-family:var(--font-display);font-size:.95rem;font-weight:700;color:var(--warm-dk)" id="incare-shelter-label">Animals at Shelter</div>
     <div style="font-size:.7rem;color:var(--warm-mid);margin-top:1px">Tap an animal to manage · <span id="incare-count" style="font-weight:700;color:var(--forest)">0</span> in care</div>
     <div id="incare-stats-bar" style="display:none;margin-top:6px;flex-wrap:wrap;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none"></div>
   </div>
@@ -792,7 +794,7 @@ textarea{min-height:64px}
 <div id="map-legend" style="display:flex;flex-direction:column;gap:5px">
       <div class="legend-item"><div class="stat-dot lost"></div><span id="cnt-lost" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span>Lost</span></div>
       <div class="legend-item"><div class="stat-dot found"></div><span id="cnt-found" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span>Found</span></div>
-      <div class="legend-item"><div class="legend-pin" style="background:#1a3f8a"></div><span id="cnt-shelter" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span id="legend-shelter-label">In Care of Heartland</span></div>
+      <div class="legend-item"><div class="legend-pin" style="background:#1a3f8a"></div><span id="cnt-shelter" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span id="legend-shelter-label">At Heartland Shelter</span></div>
       <div class="legend-item" style="padding-left:18px"><div class="legend-pin" style="background:#c8841a"></div><span id="cnt-adopt" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span>↳ Adoptable</span></div>
       <div style="font-size:.55rem;color:var(--warm-mid);line-height:1.4;margin-top:2px;max-width:160px">Info may change. Contact shelter for official status.</div>
     </div>
@@ -3545,7 +3547,7 @@ var bannerEvents = [
   { text:'🐾 PawPulse is live — helping Hastings pets get home', dot:'var(--moss)' },
   { text:'🔴 Lost a pet? Tap "Lost Pet" to alert the community',  dot:'var(--moss)' },
   { text:'🟢 Found a stray? Tap "Found Pet" to post it on the map', dot:'var(--moss)' },
-  { text:'🏠 Shelters can log intake and search for owners in the Shelters tab', dot:'var(--moss)' },
+  { text:'🏠 Shelter staff can log intake and search lost pet reports', dot:'var(--moss)' },
 ];
 var bannerIdx = 0;
 
@@ -7299,7 +7301,13 @@ function quickAdoptReady(id) {
 
 
 
+function updateOrientationStrip(view) {
+  var strip = document.getElementById('orientation-strip');
+  if (strip) strip.style.display = view === 'map' ? 'block' : 'none';
+}
+
 function setView(v, btn) {
+  updateOrientationStrip(v);
   /* Redirect old shelters tab to incare */
   if (v === 'shelters') v = 'incare';
   document.querySelectorAll('.view').forEach(function(x){ x.classList.remove('active'); });
