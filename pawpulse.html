@@ -5117,50 +5117,6 @@ function cancelInvForm() {
 }
 
 function selectInventoryItem() { /* removed — inventory system cut */ }
-  if (!it) return;
-  document.getElementById('sh-action-empty').style.display = 'none';
-  document.getElementById('sh-action-panel').style.display = 'flex';
-  document.getElementById('sh-panel-title').textContent = 'Animal Detail';
-
-  var statusBadge = '<span class="inv-status-badge ' + (it.status||'available') + '">'
-    + (it.status==='adopted'?'🎉 Adopted':it.status==='returned'?'🏡 Returned to Owner':'🟢 Available') + '</span>';
-
-  var details = [
-    it.species && ('<div class="pc-row"><strong>Species:</strong> ' + esc(it.species) + (it.breed?' · '+esc(it.breed):'') + '</div>'),
-    it.color   && ('<div class="pc-row"><strong>Color:</strong> '   + esc(it.color)   + '</div>'),
-    it.sex     && ('<div class="pc-row"><strong>Sex:</strong> '     + esc(it.sex)     + '</div>'),
-    it.age     && ('<div class="pc-row"><strong>Age:</strong> '     + esc(it.age)     + '</div>'),
-    it.description && ('<div class="pc-row" style="margin-top:4px">' + esc(it.description) + '</div>'),
-    it.dateIn  && ('<div class="pc-date">In since ' + new Date(it.dateIn).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) + '</div>')
-  ].filter(Boolean).join('');
-
-  document.getElementById('sh-action-panel-body').innerHTML =
-    (it.photo ? '<img class="inv-detail-photo" src="' + it.photo + '" alt="animal photo">' : '')
-    + statusBadge
-    + '<div class="sh-panel-name">' + esc(it.name || (it.species||'Unknown animal')) + '</div>'
-    + details
-
-    + '<div class="sh-sec">Update Status</div>'
-    + '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">'
-    + '<button class="sh-btn' + (it.status==='available'?' primary':'') + '" onclick="setInvStatus('+it.id+',\'available\')">🟢 Available</button>'
-    + '<button class="sh-btn' + (it.status==='returned'?' primary':'') + '" onclick="setInvStatus('+it.id+',\'returned\')">🏡 Returned</button>'
-    + '<button class="sh-btn' + (it.status==='adopted'?' primary':'') + '"  onclick="setInvStatus('+it.id+',\'adopted\')">🎉 Adopted</button>'
-    + '</div>'
-
-    + '<div class="sh-sec">Edit Details</div>'
-    + '<div class="fr"><div class="fg" style="margin:0"><label>Name</label><input type="text" id="inv-edit-name" value="' + esc(it.name||'') + '" placeholder="Name if known"></div>'
-    + '<div class="fg" style="margin:0"><label>Breed</label><input type="text" id="inv-edit-breed" value="' + esc(it.breed||'') + '" placeholder="Breed"></div></div>'
-    + '<div class="fg" style="margin-top:10px"><label>Notes / Description</label>'
-    + '<textarea id="inv-edit-desc" style="min-height:52px">' + esc(it.description||'') + '</textarea></div>'
-    + '<div style="display:flex;gap:6px;margin-bottom:16px">'
-    + '<button class="sh-btn primary" style="flex:1" onclick="saveInvEdit('+it.id+')">💾 Save Changes</button>'
-    + '</div>'
-
-    + '<div class="sh-sec">Search Lost Reports</div>'
-    + '<button class="sh-btn primary" style="width:100%;margin-bottom:6px" onclick="searchInvMatches('+it.id+')">🔍 AI Match Against Lost Pets</button>'
-    + '<div id="inv-match-results-' + it.id + '"></div>'
-
-    + '<hr style="border:none;border-top:1px solid var(--cream-3);margin:16px 0">'
 
 function saveInvEdit() { /* removed */ }
 
