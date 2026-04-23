@@ -6015,8 +6015,8 @@ function buildShelterContext() {
   });
 
   return {
-    shelterName: document.getElementById('cg-shelter-name').value || activeShelter,
-    contact:     document.getElementById('cg-contact').value || '',
+    shelterName: activeShelter || shelters[0].name,
+    contact:     shelters[0] ? shelters[0].phone : '',
     month:       now.toLocaleDateString('en-US',{month:'long',year:'numeric'}),
     year:        now.getFullYear(),
     yearIntake:  allYear.length,
@@ -6126,7 +6126,7 @@ async function runContentGen() {
 }
 
 function copyCGOutput() {
-  var text = document.getElementById('cg-text').textContent;
+  var text = document.getElementById('cg-inline-output') ? document.getElementById('cg-inline-output').textContent : '';
   if (!text) return;
   navigator.clipboard.writeText(text).then(function() {
     var btn = document.querySelector('#cg-output button:nth-child(2)');
@@ -6135,8 +6135,8 @@ function copyCGOutput() {
 }
 
 function printCGOutput() {
-  var text = document.getElementById('cg-text').textContent;
-  var shelter = document.getElementById('cg-shelter-name').value || activeShelter;
+  var text = document.getElementById('cg-inline-output') ? document.getElementById('cg-inline-output').textContent : '';
+  var shelter = activeShelter || shelters[0].name;
   var today = new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
   var fmtLabels = { monthly:'Monthly Transparency Update', appeal:'Urgent Adoption Report', story:'Outcome Story', general:'General Funding Appeal', medical:'Medical Care Campaign', sponsor:'Sponsor an Animal' };
   var label = fmtLabels[_cgFormat] || 'Public Transparency Report';
