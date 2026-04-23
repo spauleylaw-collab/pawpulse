@@ -864,6 +864,8 @@ textarea{min-height:64px}
           </div>
           <div class="fg"><label>Microchip # (optional)</label><input type="text" id="l-chip" placeholder="15-digit number"></div>
           <div class="fg"><label>Additional Details</label><textarea id="l-notes" placeholder="Collar, markings, behavior…"></textarea></div>
+          <!-- Honeypot: hidden from real users, bots fill it in -->
+          <div style="position:absolute;left:-9999px;top:-9999px;opacity:0;pointer-events:none" aria-hidden="true"><input type="text" id="l-confirm-email" name="confirm_email" tabindex="-1" autocomplete="off"></div>
           <button class="submit-btn lost" onclick="submitLost()">🔴 Submit Lost Pet Report</button>
         </div>
 
@@ -905,6 +907,8 @@ textarea{min-height:64px}
             <label>Shelter / Vet Name</label>
             <input type="text" id="f-sname" placeholder="e.g. Adams County Humane Society">
           </div>
+          <!-- Honeypot: hidden from real users, bots fill it in -->
+          <div style="position:absolute;left:-9999px;top:-9999px;opacity:0;pointer-events:none" aria-hidden="true"><input type="text" id="f-confirm-email" name="confirm_email" tabindex="-1" autocomplete="off"></div>
           <button class="submit-btn found" onclick="submitFound()">🟢 Submit Found Pet Report</button>
         </div>
 
@@ -946,6 +950,9 @@ var lMarkers = [];
 var curFilter = 'all';
 var placing   = null;
 var pLat = {}, pLng = {};
+var _submissionCount = 0;  /* resets on page reload */
+var SUBMIT_COOLDOWN_MS = 30 * 60 * 1000;  /* 30 min between submissions */
+var SUBMIT_SESSION_MAX = 3;  /* max per session */
 var tmpMarker = null;
 var _fbReady  = false; /* true once Firestore listener is live */
 var _isStaff  = false;
@@ -3996,6 +4003,30 @@ function injectMicButtons(scopeEl) {
 
 function v(id) { var el=document.getElementById(id); return el ? el.value.trim() : ''; }
 
+function checkSpamGuard(type) {
+  /* Layer 4: Session limit */
+  if (_submissionCount >= SUBMIT_SESSION_MAX) {
+    alert('You\'ve submitted ' + SUBMIT_SESSION_MAX + ' reports this session. Please contact Heartland Pet Connection directly at (402) 462-7387 if you have additional reports.');
+    return false;
+  }
+  /* Layer 2: Cooldown */
+  var key = 'pp_last_submit_' + type;
+  var last = parseInt(localStorage.getItem(key) || '0');
+  var now = Date.now();
+  if (last && (now - last) < SUBMIT_COOLDOWN_MS) {
+    var mins = Math.ceil((SUBMIT_COOLDOWN_MS - (now - last)) / 60000);
+    alert('You recently submitted a ' + type + ' pet report. Please wait ' + mins + ' more minute' + (mins!==1?'s':'') + ' before submitting another, or call Heartland directly at (402) 462-7387.');
+    return false;
+  }
+  /* Layer 3: Honeypot check (done inline at submit) */
+  return true;
+}
+
+function recordSubmission(type) {
+  _submissionCount++;
+  localStorage.setItem('pp_last_submit_' + type, String(Date.now()));
+}
+
 function submitLost() {
   if (!pLat.lost) {
     /* Flash the location button and scroll to it — keep panel open */
@@ -4017,6 +4048,10 @@ function submitLost() {
     }
     return;
   }
+  /* Layer 3: Honeypot — bots fill hidden fields, humans don't see them */
+  if ((document.getElementById('l-confirm-email')||{}).value) return;
+  /* Layers 2 & 4: Cooldown + session limit */
+  if (!checkSpamGuard('lost')) return;
   var r = { id:Date.now(), type:'lost', date:new Date().toISOString(),
     lat:pLat.lost, lng:pLng.lost, shelter: false, reunited: false,
     name:v('l-name'), species:v('l-species'), breed:v('l-breed'), color:v('l-color'),
@@ -4030,6 +4065,7 @@ function submitLost() {
   }
   closePanel(); resetForm('lost');
   pLat.lost = null; pLng.lost = null;
+  recordSubmission('lost');
   showToast('lost');
 }
 
@@ -4053,6 +4089,10 @@ function submitFound() {
     }
     return;
   }
+  /* Layer 3: Honeypot */
+  if ((document.getElementById('f-confirm-email')||{}).value) return;
+  /* Layers 2 & 4: Cooldown + session limit */
+  if (!checkSpamGuard('found')) return;
   var shelter = document.getElementById('f-shelter').checked;
   var r = { id:Date.now(), type:'found', date:new Date().toISOString(),
     lat:pLat.found, lng:pLng.found, shelter: shelter, reunited: false,
@@ -4067,6 +4107,7 @@ function submitFound() {
   }
   closePanel(); resetForm('found');
   pLat.found = null; pLng.found = null;
+  recordSubmission('found');
   showToast('found');
 }
 
