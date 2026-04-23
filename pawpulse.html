@@ -567,6 +567,7 @@ textarea{min-height:64px}
       <div id="staff-name-badge" style="color:var(--cream);font-size:.7rem;font-weight:700;white-space:nowrap;opacity:.85">🔐 Staff</div>
       <div style="display:flex;gap:4px">
         <button onclick="clearTestData()" title="Clear Test Data" style="padding:5px 8px;font-size:.65rem;font-weight:600;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);cursor:pointer;color:var(--cream);font-family:var(--font-body)">🗑</button>
+        <button onclick="loadDemoData()" title="Load Demo Animals" style="padding:5px 8px;font-size:.65rem;font-weight:600;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);cursor:pointer;color:var(--cream);font-family:var(--font-body)">🐾</button>
         <button onclick="openChangePw()" title="Change Password" style="padding:5px 8px;font-size:.65rem;font-weight:600;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);cursor:pointer;color:var(--cream);font-family:var(--font-body)">🔑</button>
         <button onclick="doSignOut()" style="padding:5px 10px;font-size:.65rem;font-weight:700;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);cursor:pointer;color:var(--cream);font-family:var(--font-body)">Sign Out</button>
       </div>
@@ -1115,6 +1116,115 @@ function sendPasswordReset() {
     .catch(function(e) {
       if (errEl) { errEl.style.color = 'var(--lost-r)'; errEl.textContent = e.message; errEl.style.display = 'block'; }
     });
+}
+
+function loadDemoData() {
+  /* Real animals from Heartland Pet Connection — for demo purposes */
+  if (reports.filter(function(r){ return r._isDemoData; }).length > 0) {
+    alert('Demo animals already loaded.'); return;
+  }
+  var now = Date.now();
+  var day = 86400000;
+  var shelter = 'Heartland Pet Connection';
+
+  var demo = [
+    /* ── ADOPTION READY ─────────────────────────────────────────────── */
+    { id:now+1, shelter:true, shelterName:shelter, masterStatus:'available',
+      adoptionStatus:'available', intakeSource:'stray', intakeType:'stray',
+      name:'Omni', species:'Dog', breed:'Labrador Retriever Mix', color:'Black', sex:'Female',
+      age:'2 years', adoptionFee:125, tags:'Good with kids, House-trained',
+      date:new Date(now-18*day).toISOString(), dateAvailable:new Date(now-12*day).toISOString(),
+      lat:40.5932, lng:-98.3875, address:'Near Brickyard Park',
+      about:'Found wandering near the park. Sweet, calm, good on leash.',
+      _isDemoData:true },
+
+    { id:now+2, shelter:true, shelterName:shelter, masterStatus:'available',
+      adoptionStatus:'available', intakeSource:'surrender', intakeType:'stray',
+      name:'Romeo', species:'Cat', breed:'Siamese Mix', color:'Cream & brown', sex:'Male',
+      age:'4 years', adoptionFee:75, tags:'Indoor cat, Quiet home',
+      date:new Date(now-22*day).toISOString(), dateAvailable:new Date(now-15*day).toISOString(),
+      lat:40.5870, lng:-98.3960, address:'Owner surrender — W 3rd St',
+      about:'Owner moved out of state. Loves sunny spots and gentle handling.',
+      _isDemoData:true },
+
+    { id:now+3, shelter:true, shelterName:shelter, masterStatus:'available',
+      adoptionStatus:'available', intakeSource:'stray', intakeType:'stray',
+      name:'Bailey', species:'Cat', breed:'Domestic Longhair', color:'Orange tabby', sex:'Female',
+      age:'5 months', adoptionFee:75, tags:'Playful, Good with cats',
+      date:new Date(now-14*day).toISOString(), dateAvailable:new Date(now-7*day).toISOString(),
+      lat:40.5910, lng:-98.3820, address:'Near Hastings College campus',
+      _isDemoData:true },
+
+    { id:now+4, shelter:true, shelterName:shelter, masterStatus:'available',
+      adoptionStatus:'available', intakeSource:'stray', intakeType:'stray',
+      name:'Parker', species:'Dog', breed:'Husky Mix', color:'Gray & white', sex:'Male',
+      age:'3 months', adoptionFee:150, tags:'Puppy, Active home needed',
+      date:new Date(now-10*day).toISOString(), dateAvailable:new Date(now-3*day).toISOString(),
+      lat:40.5845, lng:-98.4010, address:'Found near W 12th Ave',
+      _isDemoData:true },
+
+    /* ── IN CARE — STRAY HOLD ────────────────────────────────────────── */
+    { id:now+5, shelter:true, shelterName:shelter, masterStatus:'intake',
+      adoptionStatus:'', intakeSource:'stray', intakeType:'stray',
+      name:'Fuzz', species:'Cat', breed:'Domestic Shorthair', color:'Gray & white', sex:'Female',
+      age:'1 year', shelterHoldStart:new Date(now-3*day).toISOString(),
+      date:new Date(now-3*day).toISOString(), lat:40.5920, lng:-98.3990,
+      address:'Picked up near Denver Ave & 5th St',
+      desc:'Friendly, no collar. Microchip scan negative.',
+      _isDemoData:true },
+
+    { id:now+6, shelter:true, shelterName:shelter, masterStatus:'intake',
+      adoptionStatus:'', intakeSource:'ac', intakeType:'stray',
+      name:'Toad', species:'Cat', breed:'Domestic Shorthair', color:'Black & white', sex:'Male',
+      age:'2 months', shelterHoldStart:new Date(now-1*day).toISOString(),
+      date:new Date(now-1*day).toISOString(), lat:40.5888, lng:-98.3910,
+      address:'Brought in by AC — Burlington Ave',
+      desc:'Very young, likely separated from litter.',
+      _isDemoData:true },
+
+    /* ── IN CARE — BITE HOLD ─────────────────────────────────────────── */
+    { id:now+7, shelter:true, shelterName:shelter, masterStatus:'intake',
+      adoptionStatus:'', intakeSource:'ac', intakeType:'hold', holdType:'bite',
+      name:'Duke', species:'Dog', breed:'Pit Bull Mix', color:'Brindle', sex:'Male',
+      age:'3 years', shelterHoldStart:new Date(now-6*day).toISOString(),
+      date:new Date(now-6*day).toISOString(), lat:40.5850, lng:-98.3850,
+      address:'Incident at Hastings City Park — W 3rd',
+      desc:'Bite incident — child. Under mandatory 10-day quarantine.',
+      medical: { healthStatus:'Monitoring', spayNeuter:'Unknown' },
+      enforcement: { dailyCost:35, acInvolved:true },
+      _isDemoData:true },
+
+    /* ── PUBLIC LOST PET ──────────────────────────────────────────────── */
+    { id:now+8, type:'lost', shelter:false, reunited:false,
+      name:'Biscuit', species:'Dog', breed:'Golden Retriever Mix', color:'Golden',
+      date:new Date(now-2*day).toISOString(), lat:40.5975, lng:-98.3840,
+      address:'Near Brickyard Park — Hastings',
+      owner:'Sarah M.', phone:'402-555-0142',
+      notes:'Friendly. Red collar. Responds to his name.',
+      _isDemoData:true },
+
+    /* ── PUBLIC FOUND PET ────────────────────────────────────────────── */
+    { id:now+9, type:'found', shelter:false, reunited:false,
+      species:'Cat', color:'Orange tabby, white paws',
+      date:new Date(now-1*day).toISOString(), lat:40.5910, lng:-98.3980,
+      address:'3rd & Hastings Ave',
+      finder:'Tom B.', fphone:'402-555-0133',
+      desc:'Friendly young cat found on my porch this morning. No collar.',
+      _isDemoData:true }
+  ];
+
+  demo.forEach(function(r){ reports.push(r); });
+  save(); renderMarkers(); renderIncareView(); renderAdoptView(); updateNavCounts();
+
+  /* Sync to Firestore */
+  if (USE_FIREBASE && _fbReady && db) {
+    demo.forEach(function(r){
+      db.collection('reports').doc(String(r.id)).set(r)
+        .catch(function(e){ console.warn('Demo seed sync error:', e); });
+    });
+  }
+
+  alert('✅ ' + demo.length + ' demo animals loaded — 4 adoption-ready, 2 stray holds, 1 bite hold, 1 lost pet, 1 found pet.');
 }
 
 function doLogin() {
