@@ -1054,6 +1054,7 @@ function startFirestoreListener() {
         _fbReady = true;
         showShelterPicker();
       } else {
+        if (window._pauseFirestoreSync) return; /* demo load in progress */
         reports = [];
         snapshot.forEach(function(doc) { reports.push(doc.data()); });
         localStorage.setItem('pawpulse-v2', JSON.stringify(reports));
@@ -1128,6 +1129,7 @@ function loadDemoData() {
   var idsToDelete = reports.map(function(r){ return String(r.id); });
   reports = [];
   save();
+  window._pauseFirestoreSync = true; /* hold listener until demo animals are written */
   if (USE_FIREBASE && _fbReady && db) {
     /* Delete in small batches to avoid freezing */
     var batchSize = 20;
@@ -1234,10 +1236,19 @@ function loadDemoData() {
   demo.forEach(function(r){ reports.push(r); });
   save(); renderMarkers(); renderIncareView(); renderAdoptView(); updateNavCounts();
 
-  /* Sync to Firestore */
+  /* Sync demo animals to Firestore — pause listener so it doesn't reload old data */
   if (USE_FIREBASE && _fbReady && db) {
+    window._pauseFirestoreSync = true;
+    var synced = 0;
     demo.forEach(function(r){
       db.collection('reports').doc(String(r.id)).set(r)
+        .then(function(){
+          synced++;
+          if (synced === demo.length) {
+            /* All demo animals written — safe to resume listener */
+            setTimeout(function(){ window._pauseFirestoreSync = false; }, 2000);
+          }
+        })
         .catch(function(e){ console.warn('Demo seed sync error:', e); });
     });
   }
@@ -1664,7 +1675,7 @@ function openAnimalEdit(id) {
         /* Photo — preview if exists, add button if not */
         '<div style="margin-bottom:12px">'
         + (r.photo
-          ? '<div style="position:relative;height:140px;border-radius:8px;overflow:hidden;margin-bottom:6px"><img src="' + esc(r.photo) + '" style="width:100%;height:100%;object-fit:cover"><button onclick="document.getElementById(\'ae-photo-input\').click()" style="position:absolute;bottom:6px;right:6px;padding:4px 10px;font-size:.68rem;font-weight:600;border:none;border-radius:6px;background:rgba(0,0,0,.55);color:#fff;cursor:pointer">📷 Replace</button></div>'
+          ? '<div style="position:relative;height:140px;border-radius:8px;overflow:hidden;margin-bottom:6px"><img src="' + esc(r.photo) + '" style="width:100%;height:100%;object-fit:cover"><button onclick="document.getElementById(\'ae-photo-input\').click()" style="position:absolute;bottom:6px;right:6px;padding:4px 10px;font-size:.68rem;font-weight:600;border:none;border-radius:6px;background:rgba(0,0,0,.55);color:#fff;cursor:pointer">📷 Replace</button><button onclick="deleteAnimalPhoto(' + r.id + ')" style="position:absolute;bottom:6px;left:6px;padding:4px 10px;font-size:.68rem;font-weight:600;border:none;border-radius:6px;background:rgba(180,40,20,.75);color:#fff;cursor:pointer">🗑 Delete</button></div>'
           : '<button onclick="document.getElementById(\'ae-photo-input\').click()" style="width:100%;padding:10px;border:1.5px dashed var(--cream-3);border-radius:8px;background:var(--cream-2);font-family:var(--font-body);font-size:.78rem;color:var(--warm-mid);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px"><span style="font-size:1.2rem">📷</span> Add Photo</button>')
         + '<input type="file" id="ae-photo-input" accept="image/*" style="display:none" onchange="previewEditPhoto(this,' + r.id + ')">'
         + '</div>'
@@ -7221,6 +7232,21 @@ function printDischargeForm(id) {
   var w = window.open('','_blank','width=800,height=900');
   w.document.write(html); w.document.close();
   setTimeout(function(){ w.print(); }, 400);
+}
+
+function deleteAnimalPhoto(id) {
+  var r = reports.find(function(x){ return x.id === id; });
+  if (!r) return;
+  r.photo = null;
+  save();
+  if (USE_FIREBASE && _fbReady && db && _isStaff) {
+    db.collection('reports').doc(String(r.id)).update({ photo: null })
+      .catch(function(e){ console.warn('Photo delete sync error:', e); });
+  }
+  /* Rebuild the photo section in the edit modal */
+  openAnimalEdit(id);
+  renderIncareView();
+  renderAdoptView();
 }
 
 function previewEditPhoto(input, id) {
