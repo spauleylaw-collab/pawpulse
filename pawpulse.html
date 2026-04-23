@@ -143,9 +143,9 @@ input:focus,select:focus,textarea:focus{border-color:var(--amber);box-shadow:0 0
 textarea{min-height:64px}
 .sl{font-family:var(--font-display);font-size:.9rem;font-weight:600;color:var(--warm-dk);margin-bottom:11px}
 .div{border:none;border-top:1px solid var(--cream-3);margin:16px 0}
-.loc-prompt{background:var(--amber);color:#fff;font-size:.78rem;font-weight:600;padding:8px 12px;border-radius:8px;margin-bottom:12px;display:none;align-items:center;gap:7px}
+.loc-prompt{font-size:.78rem;font-weight:600;margin-bottom:12px;display:none;flex-direction:column;gap:6px}
 .loc-prompt.on{display:flex}
-.loc-set{background:var(--found-g);color:#fff;font-size:.78rem;font-weight:600;padding:8px 12px;border-radius:8px;margin-bottom:12px;display:none;align-items:center;gap:7px}
+.loc-set{font-size:.78rem;font-weight:600;padding:6px 0;margin-bottom:8px;display:none;align-items:center;gap:6px;color:var(--found-g)}
 .loc-set.on{display:flex}
 .reset-loc{background:var(--cream-2);color:var(--warm-mid);border:1.5px dashed var(--cream-3);font-size:.78rem;font-weight:600;padding:7px 12px;border-radius:8px;cursor:pointer;margin-bottom:12px;display:none;transition:all .15s;font-family:var(--font-body);width:100%}
 .reset-loc:hover{border-color:var(--amber);color:var(--amber)}
@@ -909,6 +909,10 @@ textarea{min-height:64px}
     <div id="drop-hint">
       📍 Tap the map to place pin
       <button id="drop-cancel" onclick="cancelPlace(); document.getElementById('side-panel').classList.add('open');">✕ Back to form</button>
+    </div>
+    <!-- Shown after pin placed on mobile — big tap target to return to form -->
+    <div id="pin-set-btn" style="display:none;position:absolute;bottom:80px;left:50%;transform:translateX(-50%);z-index:900;background:var(--forest);color:var(--cream);border:none;border-radius:999px;padding:14px 28px;font-size:.9rem;font-weight:700;font-family:var(--font-display);box-shadow:0 4px 20px rgba(0,0,0,.35);cursor:pointer;white-space:nowrap;animation:hpulse 1.4s ease-in-out infinite" onclick="document.getElementById('pin-set-btn').style.display='none'; document.getElementById('side-panel').classList.add('open'); setTimeout(function(){map.invalidateSize();},340);">
+      ✅ Pin placed — tap to continue →
     </div>
 
     <div id="pin-card">
@@ -3794,11 +3798,28 @@ map.on('click', function(e) {
   document.getElementById(pre+'-prompt').classList.remove('on');
   document.getElementById(pre+'-locset').classList.add('on');
   document.getElementById(pre+'-loctxt').textContent = 'Placed at ' + pLat[t].toFixed(4) + ', ' + pLng[t].toFixed(4);
-  document.getElementById(pre+'-resetbtn').style.display = 'block';
+  var resetBtn = document.getElementById(pre+'-resetbtn');
+  if (resetBtn) resetBtn.style.display = 'block'; /* guard — may have been replaced */
   cancelPlace();
-  /* Open panel now — on mobile this is the first time it opens (no flash) */
-  document.getElementById('side-panel').classList.add('open');
-  setTimeout(function(){ map.invalidateSize(); }, 340);
+  /* Show a floating button so user can return to form — more reliable than auto-open on mobile */
+  var pinBtn = document.getElementById('pin-set-btn');
+  if (pinBtn) {
+    pinBtn.style.display = 'block';
+    setTimeout(function(){ 
+      /* Also try to open panel — works on desktop, button is fallback for mobile */
+      document.getElementById('side-panel').classList.add('open');
+      setTimeout(function(){ map.invalidateSize(); }, 340);
+      /* Hide button once panel opens */
+      setTimeout(function(){
+        if (document.getElementById('side-panel').classList.contains('open')) {
+          pinBtn.style.display = 'none';
+        }
+      }, 500);
+    }, 100);
+  } else {
+    document.getElementById('side-panel').classList.add('open');
+    setTimeout(function(){ map.invalidateSize(); }, 340);
+  }
   setTimeout(function(){ injectMicButtons(document.getElementById('side-panel')); }, 380);
 });
 
