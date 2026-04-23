@@ -926,11 +926,12 @@ window.addEventListener('unhandledrejection', function(e) {
 });
 
 var HASTINGS = [40.5888, -98.3910];
+var MAP_ZOOM = window.innerWidth < 700 ? 10 : 11;
 
 /* Map init — synchronous. Script tag is at bottom of body so #map div exists. */
 var map;
 try {
-  map = L.map('map', { center: HASTINGS, zoom: 11, zoomControl: false });
+  map = L.map('map', { center: HASTINGS, zoom: MAP_ZOOM, zoomControl: false });
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     maxZoom: 19
@@ -7065,7 +7066,10 @@ function quickAdoptReady(id) {
   if (!r) return;
   var wait = daysUntilAdoptEligible(r);
   if (wait > 0) {
-    alert('This animal is still in the required ' + (HOLD_DAYS_BY_SOURCE[r.intakeSource]||5) + '-day stray hold period. Eligible for adoption in ' + wait + ' more day' + (wait!==1?'s':'') + '.\n\nThis ensures owners have time to claim their pet.');
+    var isBite = r.intakeType === 'hold' && r.holdType === 'bite';
+    alert(isBite
+      ? '⛔ Bite quarantine in progress — ' + wait + ' day' + (wait!==1?'s':'') + ' remaining on mandatory 10-day hold. Cannot list for adoption until quarantine is complete.'
+      : '⛔ Hold period — ' + wait + ' day' + (wait!==1?'s':'') + ' remaining before this animal is eligible for adoption.');
     return;
   }
   r.adoptionStatus = 'available';
