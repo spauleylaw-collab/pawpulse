@@ -183,7 +183,7 @@ textarea{min-height:64px}
 #pin-card.open{display:flex;flex-direction:column;animation:cpop .2s cubic-bezier(.34,1.56,.64,1)}
 #pin-card.fading{opacity:0;transform:translateY(-10px) scale(.97);pointer-events:none}
 @keyframes cpop{from{opacity:0;transform:scale(.9) translateY(6px)}to{opacity:1;transform:scale(1) translateY(0)}}
-.pc-close{position:absolute;top:7px;right:7px;background:rgba(42,31,18,.5);color:#fff;border:none;cursor:pointer;width:22px;height:22px;border-radius:50%;font-size:.75rem;line-height:22px;text-align:center;z-index:1}
+.pc-close{position:absolute;top:4px;right:4px;background:rgba(42,31,18,.5);color:#fff;border:none;cursor:pointer;width:36px;height:36px;border-radius:50%;font-size:.85rem;line-height:36px;text-align:center;z-index:1}
 .pc-img{width:100%;height:120px;object-fit:cover;display:block}
 .pc-no-img{width:100%;height:62px;display:flex;align-items:center;justify-content:center;font-size:2rem}
 .pc-body{padding:11px 13px 13px}
@@ -396,7 +396,7 @@ textarea{min-height:64px}
 #rpt-search:focus{border-color:var(--amber)}
 #rpt-search::placeholder{color:var(--warm-mid)}
 .rpt-chips{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
-.rpt-chip{font-family:var(--font-body);font-size:.72rem;font-weight:600;padding:4px 11px;border-radius:999px;border:none;background:transparent;color:var(--warm-mid);cursor:pointer;transition:all .12s}
+.rpt-chip{font-family:var(--font-body);font-size:.72rem;font-weight:600;padding:7px 11px;border-radius:999px;border:none;background:transparent;color:var(--warm-mid);cursor:pointer;transition:all .12s}
 .rpt-chip:hover{background:var(--cream-2);color:var(--warm-dk)}
 .rpt-chip.active{background:var(--forest);color:#fff;box-shadow:0 1px 4px rgba(42,74,42,.25)}
 .rpt-chip.active.lost{background:var(--lost-r)}
@@ -515,9 +515,9 @@ textarea{min-height:64px}
 <div id="staff-badge" style="display:none;position:fixed;bottom:12px;left:12px;z-index:800;flex-direction:column;align-items:flex-start;gap:5px">
   <div id="staff-name-badge" style="background:var(--forest);color:var(--cream);border-radius:999px;padding:5px 14px;font-size:.7rem;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.2);white-space:nowrap">🔐 Staff</div>
   <div style="display:flex;gap:5px">
-    <button onclick="clearTestData()" style="padding:4px 12px;font-size:.66rem;font-weight:600;border-radius:999px;border:1px solid #f0c0a0;background:#fff8f0;cursor:pointer;font-family:var(--font-body);color:#a04010;box-shadow:0 1px 4px rgba(0,0,0,.08)">🗑 Clear Test Data</button>
-    <button onclick="openChangePw()" style="padding:4px 12px;font-size:.66rem;font-weight:600;border-radius:999px;border:1px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body);color:var(--warm-mid);box-shadow:0 1px 4px rgba(0,0,0,.08)">🔑 Change PW</button>
-    <button onclick="doSignOut()" style="padding:4px 12px;font-size:.66rem;font-weight:600;border-radius:999px;border:1px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body);color:var(--warm-mid);box-shadow:0 1px 4px rgba(0,0,0,.08)">Sign Out</button>
+    <button onclick="clearTestData()" style="padding:8px 12px;font-size:.66rem;font-weight:600;border-radius:999px;border:1px solid #f0c0a0;background:#fff8f0;cursor:pointer;font-family:var(--font-body);color:#a04010;box-shadow:0 1px 4px rgba(0,0,0,.08)">🗑 Clear Test Data</button>
+    <button onclick="openChangePw()" style="padding:8px 12px;font-size:.66rem;font-weight:600;border-radius:999px;border:1px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body);color:var(--warm-mid);box-shadow:0 1px 4px rgba(0,0,0,.08)">🔑 Change PW</button>
+    <button onclick="doSignOut()" style="padding:8px 12px;font-size:.66rem;font-weight:600;border-radius:999px;border:1px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body);color:var(--warm-mid);box-shadow:0 1px 4px rgba(0,0,0,.08)">Sign Out</button>
   </div>
 </div>
 
