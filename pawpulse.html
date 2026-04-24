@@ -1418,6 +1418,9 @@ function doChangePw() {
 
 
 function bootApp() {
+  /* Ensure badge hidden until auth resolves */
+  var badge = document.getElementById('staff-badge');
+  if (badge && !_isStaff) badge.style.display = 'none';
   /* Dismiss the loading screen */
   var loading = document.getElementById('app-loading');
   if (loading) {
@@ -1440,6 +1443,59 @@ function bootApp() {
 }
 
 /* ── INTAKE MODAL (replaces separate Intake tab) ─────────────────────── */
+function checkFoundPinMatch() {
+  /* When staff selects species during intake, check for matching found pins */
+  var species = (document.getElementById('si-species')||{}).value || '';
+  if (!species) return;
+
+  /* Find unresolved found pins matching this species */
+  var matches = reports.filter(function(r){
+    return r.type === 'found' && !r.shelter && !r.reunited &&
+      (!r.species || r.species.toLowerCase() === species.toLowerCase());
+  });
+
+  var container = document.getElementById('found-pin-matches');
+  if (!container) {
+    /* Inject container after species row */
+    var speciesRow = document.querySelector('#intake-modal-body .fr');
+    if (!speciesRow) return;
+    container = document.createElement('div');
+    container.id = 'found-pin-matches';
+    container.style.cssText = 'margin-top:8px';
+    speciesRow.parentNode.insertBefore(container, speciesRow.nextSibling);
+  }
+
+  if (!matches.length) { container.innerHTML = ''; return; }
+
+  container.innerHTML = '<div style="background:#e8f4e9;border:1.5px solid var(--found-g);border-radius:8px;padding:10px 14px;margin-bottom:6px">'
+    + '<div style="font-size:.78rem;font-weight:700;color:#1a5c28;margin-bottom:6px">📍 ' + matches.length + ' found ' + species.toLowerCase() + ' pin' + (matches.length>1?'s':'') + ' on the map — is this one of them?</div>'
+    + matches.map(function(r){
+        var daysAgo = Math.floor(daysSince(r.date));
+        var when = daysAgo === 0 ? 'today' : daysAgo === 1 ? 'yesterday' : daysAgo + ' days ago';
+        return '<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-top:1px solid #b0d8b8">'
+          + '<div style="font-size:.76rem;color:#2a5a30;line-height:1.4">'
+          + '<strong>' + esc(r.species||'Unknown') + '</strong> · ' + esc(r.color||'unknown color')
+          + '<br>' + esc(r.address || 'Location unknown') + ' · found ' + when
+          + (r.finder ? '<br>Found by: ' + esc(r.finder) : '')
+          + '</div>'
+          + '<button onclick="confirmFoundPinMatch(' + r.id + ')" style="margin-left:8px;padding:5px 10px;font-size:.72rem;font-weight:700;border:none;border-radius:6px;background:var(--forest);color:#fff;cursor:pointer;white-space:nowrap">✓ Yes, this one</button>'
+          + '</div>';
+      }).join('')
+    + '</div>';
+}
+
+function confirmFoundPinMatch(foundId) {
+  /* Link this intake to the found pin — will remove it when intake is saved */
+  window._migrateFromId = foundId;
+  var r = reports.find(function(x){ return x.id == foundId; });
+  var container = document.getElementById('found-pin-matches');
+  if (container && r) {
+    container.innerHTML = '<div style="background:#e8f4e9;border:1px solid var(--found-g);border-radius:8px;padding:8px 12px;font-size:.76rem;color:#1a5c28;margin-bottom:6px">'
+      + '✅ Linked to found pin near ' + esc(r.address||'map') + '. Pin will disappear when you complete intake.'
+      + '</div>';
+  }
+}
+
 function openIntakeModal() {
   var overlay = document.getElementById('intake-modal-overlay');
   var body    = document.getElementById('intake-modal-body');
@@ -1502,7 +1558,7 @@ function openIntakeForm(intakeSource) {
     + '<div class="ai-id-result" id="si-ai-result"></div></div>'
 
     + '<div class="fr"><div class="fg" style="margin:0"><label>Species</label>'
-    + '<select id="si-species" onchange="updateBreedField(\'si-species\',\'si-breed-wrap\')"><option value="">Select…</option><option>Dog</option><option>Cat</option><option>Bird</option><option>Rabbit</option><option>Other</option></select></div>'
+    + '<select id="si-species" onchange="updateBreedField(\'si-species\',\'si-breed-wrap\');checkFoundPinMatch()"><option value="">Select…</option><option>Dog</option><option>Cat</option><option>Bird</option><option>Rabbit</option><option>Other</option></select></div>'
     + '<div class="fg" style="margin:0"><label>Sex</label><select id="si-sex"><option value="">Unknown</option><option>Male</option><option>Female</option></select></div></div>'
     + '<div class="fr" style="margin-top:10px"><div class="fg" style="margin:0"><label>Breed</label><div id="si-breed-wrap"><input type="text" id="si-breed" placeholder="Select species first"></div></div>'
     + '<div class="fg" style="margin:0"><label>Color / Markings</label><input type="text" id="si-color" placeholder="e.g. Black &amp; tan"></div></div>'
@@ -3797,7 +3853,6 @@ function renderMarkers() {
   document.getElementById('empty-hint').style.opacity = reports.length ? '0' : '1';
   updateNavCounts();
   var rptView = document.getElementById('view-reports');
-  if (rptView && rptView.classList.contains('active')) renderReportsList();
   var adoptView = document.getElementById('view-adopt');
   if (adoptView && adoptView.classList.contains('active')) renderAdoptView();
   var incareView = document.getElementById('view-incare');
@@ -5254,7 +5309,7 @@ function toggleIntakeForm(intakeSource) {
     + '<div class="ai-id-result" id="si-ai-result"></div></div>'
 
     + '<div class="fr"><div class="fg" style="margin:0"><label>Species</label>'
-    + '<select id="si-species" onchange="updateBreedField(\'si-species\',\'si-breed-wrap\')"><option value="">Select…</option><option>Dog</option><option>Cat</option><option>Bird</option><option>Rabbit</option><option>Other</option></select></div>'
+    + '<select id="si-species" onchange="updateBreedField(\'si-species\',\'si-breed-wrap\');checkFoundPinMatch()"><option value="">Select…</option><option>Dog</option><option>Cat</option><option>Bird</option><option>Rabbit</option><option>Other</option></select></div>'
     + '<div class="fg" style="margin:0"><label>Sex</label><select id="si-sex"><option value="">Unknown</option><option>Male</option><option>Female</option></select></div></div>'
     + '<div class="fr" style="margin-top:10px"><div class="fg" style="margin:0"><label>Breed</label><div id="si-breed-wrap"><input type="text" id="si-breed" placeholder="Select species first"></div></div>'
     + '<div class="fg" style="margin:0"><label>Color / Markings</label><input type="text" id="si-color" placeholder="e.g. Black &amp; tan"></div></div>'
