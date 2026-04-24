@@ -1030,7 +1030,6 @@ function initFirebase() {
 
 function startFirestoreListener() {
   if (!db) {
-    /* Firestore not available — use localStorage data and proceed */
     console.warn('Firestore unavailable — using localStorage');
     _fbReady = true;
     showShelterPicker();
@@ -1038,23 +1037,47 @@ function startFirestoreListener() {
   }
   try {
     db.collection('reports').onSnapshot(function(snapshot) {
+      if (window._pauseFirestoreSync) {
+        /* Demo load or major write in progress — skip listener */
+        if (!_fbReady) { _fbReady = true; showShelterPicker(); }
+        return;
+      }
+
       if (!_fbReady) {
-        if (snapshot.empty && reports.length > 0) {
-          syncReportsToFirestore();
-        } else if (!snapshot.empty) {
+        /* Initial load — take everything from Firestore if it has data,
+           otherwise keep localStorage data */
+        if (!snapshot.empty) {
           reports = [];
           snapshot.forEach(function(doc) { reports.push(doc.data()); });
           localStorage.setItem('pawpulse-v2', JSON.stringify(reports));
         }
+        /* If Firestore empty, reports already loaded from localStorage in bootApp — keep them */
         _fbReady = true;
         showShelterPicker();
-      } else {
-        if (window._pauseFirestoreSync) return; /* demo load in progress */
-        reports = [];
-        snapshot.forEach(function(doc) { reports.push(doc.data()); });
+        return;
+      }
+
+      /* Real-time updates — use docChanges() to avoid full wipe */
+      var changed = false;
+      snapshot.docChanges().forEach(function(change) {
+        var data = change.doc.data();
+        var idx = -1;
+        for (var i = 0; i < reports.length; i++) {
+          if (String(reports[i].id) === String(data.id)) { idx = i; break; }
+        }
+        if (change.type === 'added' || change.type === 'modified') {
+          if (idx > -1) { reports[idx] = data; } else { reports.push(data); }
+          changed = true;
+        } else if (change.type === 'removed') {
+          if (idx > -1) { reports.splice(idx, 1); changed = true; }
+        }
+      });
+
+      if (changed) {
         localStorage.setItem('pawpulse-v2', JSON.stringify(reports));
         renderMarkers();
         renderIncareView();
+        updateNavCounts();
       }
     }, function(err) {
       console.warn('Firestore listener error:', err);
