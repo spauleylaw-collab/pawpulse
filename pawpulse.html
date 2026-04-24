@@ -1060,13 +1060,18 @@ function startFirestoreListener() {
       var changed = false;
       snapshot.docChanges().forEach(function(change) {
         var data = change.doc.data();
+        /* Use document path ID as primary key — data.id may be absent on old records */
+        var docPathId = change.doc.id;
+        var dataId = (data.id !== undefined && data.id !== null) ? String(data.id) : docPathId;
         var idx = -1;
         for (var i = 0; i < reports.length; i++) {
-          if (String(reports[i].id) === String(data.id)) { idx = i; break; }
+          var rid = String(reports[i].id);
+          if (rid === dataId || rid === docPathId) { idx = i; break; }
         }
         if (change.type === 'added' || change.type === 'modified') {
           if (idx > -1) { reports[idx] = data; } else { reports.push(data); }
-          changed = true;        } else if (change.type === 'removed') {
+          changed = true;
+        } else if (change.type === 'removed') {
           if (idx > -1) { reports.splice(idx, 1); changed = true; }
         }
       });
@@ -4506,17 +4511,6 @@ function showToast(type) {
   setTimeout(function(){ el.classList.remove('show'); }, 4500);
 }
 
-/* Demo seed */
-(function seed() {
-  if (reports.length) return;
-  reports = [
-    {id:1,type:'lost', date:new Date(Date.now()-172800000).toISOString(),lat:40.5932,lng:-98.3875,name:'Biscuit',species:'Dog',breed:'Golden Retriever Mix',color:'Golden, white belly',address:'Near Brickyard Park',owner:'Sarah M.',phone:'402-555-0142',notes:'Friendly. Red collar, responds to name.',chip:'985112004567890',photo:null},
-    {id:2,type:'lost', date:new Date(Date.now()-86400000).toISOString(), lat:40.5845,lng:-98.3955,name:'Pepper', species:'Cat',breed:'Tabby',color:'Grey & black stripes',address:'Burlington Ave area',owner:'James K.',phone:'402-555-0198',notes:'Indoor cat, very shy. No collar.',photo:null},
-    {id:3,type:'found',date:new Date(Date.now()-18000000).toISOString(), lat:40.5870,lng:-98.3830,species:'Dog',color:'Black & tan, medium',desc:'Found near fairgrounds. Well-fed, worn tags.',address:'State Fair Grounds',finder:'Maria L.',fphone:'402-555-0177',shelter:true,shelterName:'Adams County Humane Society',photo:null},
-    {id:4,type:'found',date:new Date(Date.now()-7200000).toISOString(),  lat:40.5910,lng:-98.3980,species:'Cat',color:'Orange tabby, white paws',desc:'Friendly young cat, meowing on my porch.',address:'3rd & Hastings Ave',finder:'Tom B.',fphone:'402-555-0133',shelter:false,photo:null}
-  ];
-  save();
-})();
 
 var shelters = [
   { name:'Heartland Pet Connection', address:'1807 W J St, Hastings, NE 68901', phone:'(402) 462-7387', website:'heartlandpetconnection.com', lat:40.5698, lng:-98.4150, type:'shelter' }
