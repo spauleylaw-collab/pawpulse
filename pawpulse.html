@@ -1358,11 +1358,14 @@ function doLogin() {
 }
 
 function doGuestView() {
-  _isStaff = false;
+  /* If localStorage flag exists, skip staff UI reset — bootApp will restore it */
+  if (!localStorage.getItem('pawpulse-staff')) {
+    _isStaff = false;
+    document.querySelectorAll('.tab-ops,.tab-admin').forEach(function(el){ el.style.display='none'; });
+  }
   document.getElementById('login-overlay').style.display = 'none';
   var loading = document.getElementById('app-loading');
   if (loading && loading.parentNode) loading.parentNode.removeChild(loading);
-  document.querySelectorAll('.tab-ops,.tab-admin').forEach(function(el){ el.style.display='none'; });
   if (USE_FIREBASE) { startFirestoreListener(); } else { bootApp(); }
 }
 
