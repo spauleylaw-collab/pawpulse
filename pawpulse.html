@@ -3109,9 +3109,17 @@ function cardHTML(r) {
     ? '<button class="reunite-btn done">🎉 Marked as Reunited</button>'
     : '<button class="reunite-btn" onclick="markReunited(' + r.id + ')">🎉 Mark as Reunited</button>';
 
+  /* Info note on found pins explaining how pin disappears */
+  var foundNote = (!lost && !reunited && !r.shelter)
+    ? '<div style="background:#f0faf1;border:1px solid #b0d8b8;border-radius:7px;padding:8px 12px;font-size:.74rem;color:#2a6030;margin-bottom:8px;line-height:1.5">'
+      + '📍 This pin stays on the map until the animal is brought to Heartland. '
+      + 'If you\'ve taken this pet to the shelter, staff will log them in and this pin will disappear automatically.'
+      + '</div>'
+    : '';
+
   /* Staff-only: migrate public report to shelter intake */
   var migrateBtn = (_isStaff && !r.shelter && !reunited)
-    ? '<button onclick="migrateToIntake(' + r.id + ')" style="width:100%;margin-top:6px;padding:9px;font-family:var(--font-display);font-size:.82rem;font-weight:700;border:none;border-radius:8px;cursor:pointer;background:var(--forest);color:#fff;display:flex;align-items:center;justify-content:center;gap:6px">🏠 Log Intake at Heartland</button>'
+    ? '<button onclick="migrateToIntake(' + r.id + ')" style="width:100%;margin-top:6px;padding:9px;font-family:var(--font-display);font-size:.82rem;font-weight:700;border:none;border-radius:8px;cursor:pointer;background:var(--forest);color:#fff;display:flex;align-items:center;justify-content:center;gap:6px">🏠 Log Intake at Heartland — Removes Pin</button>'
     : '';
 
   /* Adoption section — only for found strays, not holds */
@@ -3157,6 +3165,7 @@ function cardHTML(r) {
     + comments
     + matchBtn
     + adoptSection
+    + foundNote
     + reuniteBtn
     + migrateBtn
     + whatNextSection
@@ -3584,7 +3593,16 @@ function rotateBanner() {
     var rf = foundActive[Math.floor(Math.random()*foundActive.length)];
     liveMsgs.push({ text: '🟢 ' + (rf.species||'A pet') + ' found near ' + (rf.address||'Hastings') + ' — do you know this animal?', dot:'var(--found-lt)' });
   }
-  var pool = bannerEvents.concat(liveMsgs);
+  /* Recent shelter intakes — animals brought in last 3 days */
+  var recentIntake = reports.filter(function(r){
+    return r.shelter && r.shelterName && !r.reunited && daysSince(r.date) <= 3;
+  });
+  if (recentIntake.length > 0) {
+    var ri = recentIntake[Math.floor(Math.random()*recentIntake.length)];
+    var daysAgo = Math.floor(daysSince(ri.date));
+    var when = daysAgo === 0 ? 'today' : daysAgo === 1 ? 'yesterday' : daysAgo + ' days ago';
+    liveMsgs.push({ text: '🏠 ' + (ri.name || ri.species || 'A pet') + ' arrived at Heartland Pet Connection ' + when + ' — ' + (ri.intakeSource === 'stray' ? 'found stray' : ri.intakeSource === 'surrender' ? 'owner surrender' : 'brought in') + '.', dot: '#3a7d44' });
+  }
   /* Adoption messages */
   var adoptable = reports.filter(function(r){ return r.adoptionStatus==='available' && !r.reunited; });
   if (adoptable.length) {
