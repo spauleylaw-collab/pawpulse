@@ -966,13 +966,12 @@ function save() {
 }
 
 function syncReportsToFirestore() {
-  if (!USE_FIREBASE || !_isStaff) return;
-  var batch = db.batch();
+  if (!USE_FIREBASE || !_isStaff || !db) return;
+  /* Use individual set() calls — batch writes fail Firestore security rules */
   reports.forEach(function(r) {
-    var ref = db.collection('reports').doc(String(r.id));
-    batch.set(ref, r);
+    db.collection('reports').doc(String(r.id)).set(r)
+      .catch(function(e){ console.warn('Firestore sync error:', e.message); });
   });
-  batch.commit().catch(function(e){ console.warn('Firestore write error:', e); });
 }
 
 function deleteFromFirestore(id) {
@@ -1148,17 +1147,13 @@ function loadDemoData() {
   save();
   window._pauseFirestoreSync = true; /* hold listener until demo animals are written */
   if (USE_FIREBASE && _fbReady && db) {
-    /* Delete in small batches to avoid freezing */
-    var batchSize = 20;
-    function deleteBatch(ids) {
-      if (!ids.length) return;
-      var batch = db.batch();
-      ids.slice(0, batchSize).forEach(function(id){
-        batch.delete(db.collection('reports').doc(id));
-      });
-      batch.commit().then(function(){ deleteBatch(ids.slice(batchSize)); }).catch(function(){});
-    }
-    deleteBatch(idsToDelete);
+    /* Use individual deletes — batch writes fail Firestore security rules */
+    var deleteCount = 0;
+    idsToDelete.forEach(function(id){
+      db.collection('reports').doc(id).delete()
+        .catch(function(){});
+    });
+    /* Don't wait for deletes — demo animals write immediately after */
   }
   var now = Date.now();
   var day = 86400000;
@@ -1257,14 +1252,21 @@ function loadDemoData() {
   demo.forEach(function(r){ reports.push(r); });
   save(); renderMarkers(); renderIncareView(); renderAdoptView(); updateNavCounts();
 
-  /* Sync demo animals to Firestore — pause listener so it doesn't reload old data */
+  /* Sync demo animals to Firestore — use individual writes (batch fails security rules) */
   if (USE_FIREBASE && _fbReady && db) {
     window._pauseFirestoreSync = true;
+    var written = 0;
     demo.forEach(function(r){
       db.collection('reports').doc(String(r.id)).set(r)
-        .catch(function(e){ console.warn('Demo seed sync error:', e); });
+        .then(function(){
+          written++;
+          if (written === demo.length) {
+            setTimeout(function(){ window._pauseFirestoreSync = false; }, 1000);
+          }
+        })
+        .catch(function(e){ console.warn('Demo seed error:', e.message); written++; });
     });
-    /* Resume listener after 15s — enough for 9 writes on any connection */
+    /* Failsafe timeout */
     setTimeout(function(){ window._pauseFirestoreSync = false; }, 15000);
   }
 
@@ -1363,16 +1365,14 @@ function clearTestData() {
   var idsToDelete = reports.map(function(r){ return String(r.id); });
   window._pauseFirestoreSync = true;
   if (USE_FIREBASE && _fbReady && db) {
-    var batchSize = 20;
-    function deleteBatch(ids) {
-      if (!ids.length) { setTimeout(function(){ window._pauseFirestoreSync = false; }, 3000); return; }
-      var batch = db.batch();
-      ids.slice(0, batchSize).forEach(function(id){
-        batch.delete(db.collection('reports').doc(id));
-      });
-      batch.commit().then(function(){ deleteBatch(ids.slice(batchSize)); }).catch(function(){ deleteBatch(ids.slice(batchSize)); });
-    }
-    deleteBatch(idsToDelete);
+    /* Use individual deletes — batch writes fail Firestore security rules */
+    var deleteCount = 0;
+    idsToDelete.forEach(function(id){
+      db.collection('reports').doc(id).delete()
+        .then(function(){ deleteCount++; if (deleteCount === idsToDelete.length) setTimeout(function(){ window._pauseFirestoreSync = false; }, 1000); })
+        .catch(function(){ deleteCount++; });
+    });
+    if (!idsToDelete.length) setTimeout(function(){ window._pauseFirestoreSync = false; }, 500);
   } else {
     window._pauseFirestoreSync = false;
   }
