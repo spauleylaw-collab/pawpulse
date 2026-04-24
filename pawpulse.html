@@ -1447,6 +1447,10 @@ function checkFoundPinMatch() {
   /* When staff selects species during intake, check for matching found pins */
   var species = (document.getElementById('si-species')||{}).value || '';
   if (!species) return;
+  /* If intake modal not yet rendered, try again shortly */
+  if (!document.getElementById('si-species')) {
+    setTimeout(checkFoundPinMatch, 300); return;
+  }
 
   /* Find unresolved found pins matching this species */
   var matches = reports.filter(function(r){
@@ -1456,8 +1460,14 @@ function checkFoundPinMatch() {
 
   var container = document.getElementById('found-pin-matches');
   if (!container) {
-    /* Inject container after species row */
-    var speciesRow = document.querySelector('#intake-modal-body .fr');
+    /* Inject container right after the species select row */
+    var speciesEl = document.getElementById('si-species');
+    if (!speciesEl) return;
+    /* Walk up to the row wrapper */
+    var speciesRow = speciesEl.parentElement;
+    while (speciesRow && speciesRow.parentElement && speciesRow.parentElement.id !== 'intake-modal-body') {
+      speciesRow = speciesRow.parentElement;
+    }
     if (!speciesRow) return;
     container = document.createElement('div');
     container.id = 'found-pin-matches';
@@ -1598,7 +1608,7 @@ function openIntakeForm(intakeSource) {
     + '<button class="sh-btn" onclick="closeIntakeModal()">Cancel</button>'
     + '</div>';
 
-  setTimeout(function(){ injectMicButtons(body); }, 50);
+  setTimeout(function(){ injectMicButtons(body); setTimeout(checkFoundPinMatch, 150); }, 50);
 }
 
 function submitIntakeFromModal() {
