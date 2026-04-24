@@ -1079,10 +1079,8 @@ function startFirestoreListener() {
             /* Preserve local photo if Firestore version lacks it
                (happens when photo write failed due to slow auth on mobile) */
             var local = localSnapshot.find(function(r){ return String(r.id) === String(data.id); });
-            var deletedPhotos = JSON.parse(localStorage.getItem('pawpulse-photos-deleted') || '[]');
-            var wasDeleted = deletedPhotos.indexOf(String(data.id)) !== -1;
-            if (local && local.photo && !data.photo && !wasDeleted) { data.photo = local.photo; }
-            if (wasDeleted) { data.photo = null; } /* Force null even if Firestore still has it */
+            /* Preserve local photo only if Firestore lacks it (failed upload case) */
+            if (local && local.photo && !data.photo) { data.photo = local.photo; }
             reports.push(data);
           });
           localStorage.setItem('pawpulse-v2', JSON.stringify(reports));
@@ -1107,13 +1105,10 @@ function startFirestoreListener() {
         }
         if (change.type === 'added' || change.type === 'modified') {
           if (idx > -1) {
-            /* Preserve local photo if Firestore version lacks it */
-            var _dp = JSON.parse(localStorage.getItem('pawpulse-photos-deleted') || '[]');
-            var _wd = _dp.indexOf(String(data.id)) !== -1 || _dp.indexOf(docPathId) !== -1;
-            if (!data.photo && reports[idx].photo && !_wd) {
+            /* Preserve local photo if Firestore lacks it (failed upload) */
+            if (!data.photo && reports[idx].photo) {
               data.photo = reports[idx].photo;
             }
-            if (_wd) data.photo = null;
             reports[idx] = data;
           } else {
             reports.push(data);
@@ -1558,6 +1553,13 @@ function bootApp() {
   /* Update incare shelter label */
   var lbl = document.getElementById('incare-shelter-label');
   if (lbl) lbl.textContent = activeShelter + ' — Animals In Care';
+  /* Restore last view after refresh */
+  try {
+    var lastView = sessionStorage.getItem('pp-view');
+    if (lastView && lastView !== 'map') {
+      setTimeout(function(){ setView(lastView, document.querySelector('[onclick*="setView(\''+lastView+'\')"]')); }, 600);
+    }
+  } catch(e) {}
   /* Pre-set shelter filter */
   var sel = document.getElementById('rpt-filter-shelter');
   if (sel && activeShelter) sel.value = activeShelter;
@@ -7607,13 +7609,9 @@ function deleteAnimalPhoto(id) {
   var r = reports.find(function(x){ return x.id == id; }); /* == handles string/number mismatch */
   if (!r) return;
   r.photo = null;
-  /* Track deleted photo IDs so reload doesn't restore from Firestore */
-  var deleted = JSON.parse(localStorage.getItem('pawpulse-photos-deleted') || '[]');
-  if (deleted.indexOf(String(r.id)) === -1) deleted.push(String(r.id));
-  localStorage.setItem('pawpulse-photos-deleted', JSON.stringify(deleted));
   save();
+  /* Write full record to Firestore so delete is permanent */
   if (USE_FIREBASE && _fbReady && db) {
-    /* Write full record (not just update) so photo=null is definitive */
     db.collection('reports').doc(String(r.id)).set(r)
       .catch(function(e){ console.warn('Photo delete sync error:', e); });
   }
@@ -7639,10 +7637,6 @@ function previewEditPhoto(input, id) {
   if (!r) return;
   compressPhoto(input.files[0], function(dataUrl) {
     r.photo = dataUrl;
-    /* Remove from deleted list since we're adding a new photo */
-    var _del = JSON.parse(localStorage.getItem('pawpulse-photos-deleted') || '[]');
-    var _di = _del.indexOf(String(r.id));
-    if (_di !== -1) { _del.splice(_di, 1); localStorage.setItem('pawpulse-photos-deleted', JSON.stringify(_del)); }
     save();
     /* Write photo to Firestore — try even before auth confirmed, resync on auth */
     if (USE_FIREBASE && _fbReady && db) {
@@ -7732,6 +7726,8 @@ function updateOrientationStrip(view) {
 
 function setView(v, btn) {
   updateOrientationStrip(v);
+  /* Remember current view for refresh restore */
+  try { sessionStorage.setItem('pp-view', v); } catch(e) {}
   /* Redirect old shelters tab to incare */
   if (v === 'shelters') v = 'incare';
   document.querySelectorAll('.view').forEach(function(x){ x.classList.remove('active'); });
