@@ -1019,8 +1019,17 @@ function initFirebase() {
         document.querySelectorAll('.tab-ops,.tab-admin').forEach(function(el){ el.style.display = ''; });
         hideStaffLoginBtn();
         if (db) { startFirestoreListener(); } else { showShelterPicker(); }
-        /* Re-render adopt view so Generate Bio appears */
         setTimeout(function(){ renderAdoptView(); }, 1200);
+      } else {
+        /* Signed out — clear staff state */
+        _isStaff = false;
+        document.getElementById('staff-badge').classList.remove('staff-active');
+        document.querySelectorAll('.tab-ops,.tab-admin').forEach(function(el){ el.style.display = 'none'; });
+        showStaffLoginBtn();
+        /* Still need to start listener for public data */
+        if (_fbReady !== true) {
+          if (db) { startFirestoreListener(); } else { bootApp(); }
+        }
       }
     });
   }
@@ -1275,6 +1284,13 @@ function loadDemoData() {
     setTimeout(function(){ window._pauseFirestoreSync = false; }, 15000);
   }
 
+  /* Auto-generate bios for adoption-ready demo animals */
+  if (_isStaff) {
+    var adoptIds = demo.filter(function(r){ return r.adoptionStatus==='available'; }).map(function(r){ return r.id; });
+    adoptIds.forEach(function(id, i){
+      setTimeout(function(){ updateAdoptProfile(id); }, 2000 + (i * 4000));
+    });
+  }
   alert('✅ ' + demo.length + ' demo animals loaded — 4 adoption-ready, 2 stray holds, 1 bite hold, 1 lost pet, 1 found pet.');
 }
 
@@ -3738,14 +3754,10 @@ function markReunited(id) {
   /* Sync to Firestore so ALL devices see the pin disappear immediately */
   if (USE_FIREBASE && _fbReady && db) {
     window._pauseFirestoreSync = true;
-    db.collection('reports').doc(String(r.id)).update({ reunited: true, reunitedDate: r.reunitedDate })
+    /* Use set+merge so it works even if doc doesn't exist yet in Firestore */
+    db.collection('reports').doc(String(r.id)).set(r, {merge: true})
       .then(function(){ setTimeout(function(){ window._pauseFirestoreSync = false; }, 2000); })
-      .catch(function() {
-        /* update() fails if doc doesn't exist in Firestore — fall back to set() */
-        db.collection('reports').doc(String(r.id)).set(r)
-          .then(function(){ setTimeout(function(){ window._pauseFirestoreSync = false; }, 2000); })
-          .catch(function(e){ console.warn('Reunited sync error:', e.message); window._pauseFirestoreSync = false; });
-      });
+      .catch(function(e){ console.warn('Reunited sync error:', e.message); window._pauseFirestoreSync = false; });
   }
   /* Re-render card */
   var cardBody = document.getElementById('pin-card-body');
@@ -4431,23 +4443,12 @@ function submitLost() {
 }
 
 function submitFound() {
+  /* Location is helpful but not required — allow submission without pin */
   if (!pLat.found) {
-    var locBtn = document.getElementById('f-loc-btn') || document.querySelector('#f-prompt button');
-    if (locBtn) {
-      locBtn.style.background = '#f0fff2';
-      locBtn.style.borderColor = 'var(--found-g)';
-      locBtn.style.color = 'var(--found-g)';
-      locBtn.textContent = '📍 Set location on map first';
-      locBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      setTimeout(function(){ 
-        if (locBtn) {
-          locBtn.style.background = '';
-          locBtn.style.borderColor = '';
-          locBtn.style.color = '';
-          locBtn.textContent = '📍 Tap to Set Location on Map';
-        }
-      }, 3000);
-    }
+    showFormError('found', 'Please tap the map to set where you found the animal. Tap "Set Location" above.');
+    /* Highlight the location button */
+    var locBtn = document.getElementById('f-loc-btn') || document.querySelector('[onclick*="startPlace"]');
+    if (locBtn) { locBtn.style.borderColor = 'var(--found-g)'; locBtn.style.background = '#f0fff4'; setTimeout(function(){ if(locBtn){ locBtn.style.borderColor=''; locBtn.style.background=''; } }, 3000); }
     return;
   }
   /* Required fields */
@@ -6987,6 +6988,59 @@ function restitTable(restit) {
   return html;
 }
 
+function openAdoptDetail(id) {
+  var r = reports.find(function(x){ return x.id == id; });
+  if (!r) return;
+  var name = r.name || r.species || 'Animal';
+  var meta = [r.breed, r.color, r.sex, r.age].filter(Boolean).join(' · ');
+  var fee = r.adoptionFee != null ? '$' + r.adoptionFee + ' adoption fee' : '';
+  var tags = r.tags ? r.tags.split(',').filter(Boolean) : [];
+
+  var panel = document.getElementById('adopt-detail-panel');
+  if (!panel) {
+    panel = document.createElement('div');
+    panel.id = 'adopt-detail-panel';
+    panel.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:3000;background:#fff;border-radius:18px 18px 0 0;box-shadow:0 -8px 40px rgba(0,0,0,.18);max-height:90vh;overflow-y:auto;transform:translateY(100%);transition:transform .32s cubic-bezier(.34,1.2,.64,1)';
+    document.body.appendChild(panel);
+  }
+
+  panel.innerHTML = '<div style="padding:14px 20px 0;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#fff;z-index:1;border-bottom:1px solid var(--cream-3);margin-bottom:0;padding-bottom:12px">'
+    + '<div style="font-family:var(--font-display);font-size:1.1rem;font-weight:700;color:var(--warm-dk)">' + esc(name) + '</div>'
+    + '<button onclick="closeAdoptDetail()" style="background:var(--cream-2);border:none;border-radius:50%;width:32px;height:32px;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--warm-mid)">✕</button>'
+    + '</div>'
+    + '<div style="padding:16px 20px 32px">'
+    + (r.photo ? '<img src="' + esc(r.photo) + '" style="width:100%;max-height:260px;object-fit:cover;border-radius:12px;margin-bottom:14px">' : '<div style="width:100%;height:160px;background:var(--cream-2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:3rem;margin-bottom:14px">' + (r.species==='Dog'?'🐕':r.species==='Cat'?'🐈':'🐾') + '</div>')
+    + (meta ? '<div style="font-size:.82rem;color:var(--warm-mid);margin-bottom:10px">' + esc(meta) + '</div>' : '')
+    + (fee ? '<div style="font-size:.82rem;font-weight:700;color:var(--forest);margin-bottom:12px">💚 ' + esc(fee) + '</div>' : '')
+    + (r.adoptPersonality ? '<div style="font-size:.88rem;line-height:1.7;color:var(--warm-dk);margin-bottom:14px;padding:12px;background:var(--cream-2);border-radius:10px">' + esc(r.adoptPersonality) + '</div>' : '')
+    + (tags.length ? '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">' + tags.map(function(t){ return '<span style="padding:4px 10px;background:var(--cream-2);border-radius:999px;font-size:.74rem;color:var(--warm-mid)">' + esc(t.trim()) + '</span>'; }).join('') + '</div>' : '')
+    + (_isStaff ? '<button onclick="updateAdoptProfile(' + r.id + ');closeAdoptDetail()" style="width:100%;padding:10px;border:1.5px solid var(--cream-3);border-radius:10px;background:#fff;font-family:var(--font-body);font-size:.82rem;font-weight:600;cursor:pointer;color:var(--warm-mid);margin-bottom:10px">✨ ' + (r.adoptPersonality ? 'Refresh Bio' : 'Generate Bio') + '</button>' : '')
+    + '<button onclick="contactShelterForAdoption(' + r.id + ')" style="width:100%;padding:12px;border:none;border-radius:10px;background:var(--forest);color:#fff;font-family:var(--font-display);font-size:.95rem;font-weight:700;cursor:pointer">👉 Meet ' + esc(name.split(' ')[0]) + ' at Heartland</button>'
+    + '</div>';
+
+  requestAnimationFrame(function(){
+    panel.style.transform = 'translateY(0)';
+  });
+
+  /* Backdrop */
+  var bd = document.getElementById('adopt-detail-backdrop');
+  if (!bd) {
+    bd = document.createElement('div');
+    bd.id = 'adopt-detail-backdrop';
+    bd.style.cssText = 'position:fixed;inset:0;z-index:2999;background:rgba(0,0,0,.4)';
+    bd.onclick = closeAdoptDetail;
+    document.body.appendChild(bd);
+  }
+  bd.style.display = 'block';
+}
+
+function closeAdoptDetail() {
+  var panel = document.getElementById('adopt-detail-panel');
+  if (panel) panel.style.transform = 'translateY(100%)';
+  var bd = document.getElementById('adopt-detail-backdrop');
+  if (bd) bd.style.display = 'none';
+}
+
 function renderAdoptView() {
   var list = getAdoptable();
   var countEl = document.getElementById('adopt-count');
@@ -7020,7 +7074,7 @@ function renderAdoptView() {
         + '</button>'
       : '';
 
-    return '<div class="adopt-card">'
+    return '<div class="adopt-card" onclick="openAdoptDetail(' + r.id + ')" style="cursor:pointer">'
       + '<div style="height:3px;background:' + urgencyColor + ';border-radius:999px 999px 0 0"></div>'
       + imgHTML
       + '<div class="adopt-card-body">'
@@ -7491,7 +7545,7 @@ function previewEditPhoto(input, id) {
     r.photo = dataUrl;
     save();
     if (USE_FIREBASE && _fbReady && db && _isStaff) {
-      db.collection('reports').doc(String(r.id)).update({ photo: r.photo })
+      db.collection('reports').doc(String(r.id)).set({ photo: r.photo }, { merge: true })
         .catch(function(err){ console.warn('Photo sync error:', err); });
     }
     /* Update preview inline without closing the modal */
