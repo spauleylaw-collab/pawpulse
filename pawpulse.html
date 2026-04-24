@@ -1022,6 +1022,18 @@ function initFirebase() {
         if (_fbReady !== true) {
           if (db) { startFirestoreListener(); } else { showShelterPicker(); }
         }
+        /* Re-sync any records with photos that may have failed to write
+           when auth was not yet restored (common on mobile Safari) */
+        if (db && reports.length > 0) {
+          setTimeout(function(){
+            reports.forEach(function(r){
+              if (r.photo) {
+                db.collection('reports').doc(String(r.id)).set(r)
+                  .catch(function(){});
+              }
+            });
+          }, 1500);
+        }
         setTimeout(function(){ renderAdoptView(); }, 800);
       } else {
         /* null — only clear if localStorage flag also gone (real sign-out, not just slow restore) */
@@ -1082,7 +1094,16 @@ function startFirestoreListener() {
           if (rid === dataId || rid === docPathId) { idx = i; break; }
         }
         if (change.type === 'added' || change.type === 'modified') {
-          if (idx > -1) { reports[idx] = data; } else { reports.push(data); }
+          if (idx > -1) {
+            /* Preserve local photo if Firestore version lacks it
+               (happens when photo write failed due to slow auth restore on mobile) */
+            if (!data.photo && reports[idx].photo) {
+              data.photo = reports[idx].photo;
+            }
+            reports[idx] = data;
+          } else {
+            reports.push(data);
+          }
           changed = true;
         } else if (change.type === 'removed') {
           if (idx > -1) { reports.splice(idx, 1); changed = true; }
@@ -7566,8 +7587,8 @@ function previewEditPhoto(input, id) {
   compressPhoto(input.files[0], function(dataUrl) {
     r.photo = dataUrl;
     save();
-    if (USE_FIREBASE && _fbReady && db && _isStaff) {
-      /* Write full record so photo isn't orphaned if animal not yet in Firestore */
+    /* Write photo to Firestore — try even before auth confirmed, resync on auth */
+    if (USE_FIREBASE && _fbReady && db) {
       db.collection('reports').doc(String(r.id)).set(r)
         .catch(function(err){ console.warn('Photo sync error:', err); });
     }
