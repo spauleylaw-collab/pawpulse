@@ -570,6 +570,7 @@ textarea{min-height:64px}
       <div id="staff-name-badge" style="color:var(--cream);font-size:.7rem;font-weight:700;white-space:nowrap;opacity:.85">🔐 Staff</div>
       <div style="display:flex;gap:4px">
         <button onclick="clearTestData()" title="Clear All Data" style="padding:5px 8px;font-size:.65rem;font-weight:600;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);cursor:pointer;color:var(--cream);font-family:var(--font-body)">🗑</button>
+        <button onclick="forceSyncPhotos()" title="Sync Photos to Cloud" style="padding:5px 8px;font-size:.65rem;font-weight:600;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);cursor:pointer;color:var(--cream);font-family:var(--font-body)">☁️</button>
         <button onclick="loadDemoData()" title="Load Demo Animals" style="padding:5px 8px;font-size:.65rem;font-weight:600;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);cursor:pointer;color:var(--cream);font-family:var(--font-body)">🐾</button>
         <button onclick="openChangePw()" title="Change Password" style="padding:5px 8px;font-size:.65rem;font-weight:600;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);cursor:pointer;color:var(--cream);font-family:var(--font-body)">🔑</button>
         <button onclick="doSignOut()" style="padding:5px 10px;font-size:.65rem;font-weight:700;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);cursor:pointer;color:var(--cream);font-family:var(--font-body)">Sign Out</button>
@@ -1326,6 +1327,27 @@ function loadDemoData() {
   }
   alert('✅ ' + demo.length + ' demo animals loaded — 4 adoption-ready, 2 stray holds, 1 bite hold, 1 lost pet, 1 found pet.');
 }
+
+function forceSyncPhotos() {
+  if (!USE_FIREBASE || !_fbReady || !db) { alert('Not connected to cloud.'); return; }
+  var withPhotos = reports.filter(function(r){ return r.photo; });
+  if (!withPhotos.length) { alert('No photos to sync.'); return; }
+  var synced = 0, failed = 0;
+  var btn = document.querySelector('[onclick="forceSyncPhotos()"]');
+  if (btn) { btn.textContent = '🔄'; btn.disabled = true; }
+  withPhotos.forEach(function(r){
+    db.collection('reports').doc(String(r.id)).set(r)
+      .then(function(){ synced++; checkDone(); })
+      .catch(function(e){ failed++; console.warn('Sync failed:', e.message); checkDone(); });
+  });
+  function checkDone(){
+    if (synced + failed < withPhotos.length) return;
+    if (btn) { btn.textContent = failed ? '⚠️' : '✅'; btn.disabled = false; setTimeout(function(){ btn.textContent = '☁️'; }, 3000); }
+    if (failed) alert(failed + ' photo(s) failed to sync. Check internet connection.');
+    else alert('✅ ' + synced + ' photo(s) synced to cloud.');
+  }
+}
+
 
 function doLogin() {
   var email = (document.getElementById('login-email').value || '').trim().toLowerCase();
@@ -2160,7 +2182,11 @@ function saveAnimalEdit(id) {
     setTimeout(function(){ updateAdoptProfile(r.id); }, 600);
   }
   closeAnimalEdit();
-  showToast('found');
+  /* Show save confirmation */
+  var el = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = '✅ Saved';
+  el.classList.add('show');
+  setTimeout(function(){ el.classList.remove('show'); }, 2500);
 }
 
 function closeAnimalEdit() {
