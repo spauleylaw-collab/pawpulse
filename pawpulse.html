@@ -27,6 +27,7 @@ if (USE_FIREBASE) {
     });
     db   = firebase.firestore();
     auth = firebase.auth();
+    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function(){});
   } catch(e) {
     console.warn('Firebase init error:', e.message);
   }
@@ -723,19 +724,6 @@ textarea{min-height:64px}
 
     </div>
 
-    <!-- Animal record search (collapsed at bottom) -->
-    <div style="border-top:2px solid var(--cream-3);padding:10px 14px 6px">
-      <div style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--warm-mid);margin-bottom:8px">Search Animal Records</div>
-      <input id="rpt-search" type="text" placeholder="Search by name, breed, color…" oninput="renderReportsList()" autocomplete="off" style="width:100%;box-sizing:border-box;padding:7px 10px;font-size:.8rem;border:1px solid var(--cream-3);border-radius:7px;font-family:var(--font-body)">
-      <div class="rpt-chips" style="margin-top:6px">
-        <button class="rpt-chip active" id="rchip-all"      onclick="setRptFilter('all',this)">All</button>
-        <button class="rpt-chip lost"   id="rchip-lost"     onclick="setRptFilter('lost',this)">🔴 Lost</button>
-        <button class="rpt-chip found"  id="rchip-found"    onclick="setRptFilter('found',this)">🟢 Found</button>
-        <button class="rpt-chip"        id="rchip-reunited" onclick="setRptFilter('reunited',this)">🎉 Reunited</button>
-        <button class="rpt-chip"        id="rchip-adopt"    onclick="setRptFilter('adopt',this)" style="color:#3060c0;border-color:#a0c0f0">🌟 Adopt</button>
-      </div>
-      <div id="rpt-count" style="font-size:.7rem;color:var(--warm-mid);margin-top:4px"></div>
-    </div>
     <div id="rpt-list" style="flex:1;overflow-y:auto;min-height:80px;padding-bottom:8px"></div>
   </div>
 
@@ -938,7 +926,10 @@ var MAP_ZOOM = window.innerWidth < 700 ? 10 : 11;
 /* Map init — synchronous. Script tag is at bottom of body so #map div exists. */
 var map;
 try {
-  map = L.map('map', { center: HASTINGS, zoom: MAP_ZOOM, zoomControl: false });
+  map = L.map('map', { center: HASTINGS, zoom: MAP_ZOOM, zoomControl: false,
+    maxBounds: [[40.28, -98.70], [40.76, -97.95]],
+    maxBoundsViscosity: 1.0,
+    minZoom: 9 });
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     maxZoom: 19
@@ -1027,6 +1018,8 @@ function initFirebase() {
         document.querySelectorAll('.tab-ops,.tab-admin').forEach(function(el){ el.style.display = ''; });
         hideStaffLoginBtn();
         if (db) { startFirestoreListener(); } else { showShelterPicker(); }
+        /* Re-render adopt view so Generate Bio appears */
+        setTimeout(function(){ renderAdoptView(); }, 1200);
       }
     });
   }
@@ -1279,6 +1272,8 @@ function doLogin() {
     var nb = document.getElementById('staff-name-badge');
     if (nb) nb.textContent = '🔐 Staff';
     if (db) { startFirestoreListener(); } else { showShelterPicker(); }
+    /* Re-render adopt view so Generate Bio button appears now that _isStaff is true */
+    setTimeout(function(){ renderAdoptView(); }, 800);
   }
 
   function onFail() {
@@ -1327,35 +1322,42 @@ function doSignOut() {
 
 function clearTestData() {
   if (!_isStaff) return;
-  var before = reports.length;
-  /* Remove all records flagged as test data OR all shelter records if no flag */
-  var flagged = reports.filter(function(r){ return r._isTestData; });
-  if (flagged.length > 0) {
-    /* Remove only flagged test records */
-    reports = reports.filter(function(r){ return !r._isTestData; });
-  } else {
-    /* Fallback: remove all shelter records (keeps public lost/found pins) */
-    var confirmed = window.confirm(
-      'Remove all ' + reports.filter(function(r){return r.shelter;}).length +
-      ' shelter animals from the system?\n\nThis cannot be undone. Use before going live with real data.'
-    );
-    if (!confirmed) return;
-    reports = reports.filter(function(r){ return !r.shelter; });
+  var total = reports.length;
+  if (total === 0) {
+    var badge = document.getElementById('staff-name-badge');
+    if (badge) { var o = badge.textContent; badge.textContent = '✓ Already empty'; setTimeout(function(){ badge.textContent = o; }, 2000); }
+    return;
   }
-  var removed = before - reports.length;
+  var confirmed = window.confirm('Remove all ' + total + ' records from the map and system? This cannot be undone.');
+  if (!confirmed) return;
+
+  /* Delete all from Firestore in batches */
+  var idsToDelete = reports.map(function(r){ return String(r.id); });
+  window._pauseFirestoreSync = true;
+  if (USE_FIREBASE && _fbReady && db) {
+    var batchSize = 20;
+    function deleteBatch(ids) {
+      if (!ids.length) { setTimeout(function(){ window._pauseFirestoreSync = false; }, 3000); return; }
+      var batch = db.batch();
+      ids.slice(0, batchSize).forEach(function(id){
+        batch.delete(db.collection('reports').doc(id));
+      });
+      batch.commit().then(function(){ deleteBatch(ids.slice(batchSize)); }).catch(function(){ deleteBatch(ids.slice(batchSize)); });
+    }
+    deleteBatch(idsToDelete);
+  } else {
+    window._pauseFirestoreSync = false;
+  }
+
+  reports = [];
   save();
   renderMarkers();
   renderIncareView();
   renderAdoptView();
   updateNavCounts();
-  showToast('found');
-  /* Quick confirm message */
+
   var badge = document.getElementById('staff-name-badge');
-  if (badge) {
-    var orig = badge.textContent;
-    badge.textContent = '✓ Cleared ' + removed + ' test animals';
-    setTimeout(function(){ badge.textContent = orig; }, 3000);
-  }
+  if (badge) { var orig = badge.textContent; badge.textContent = '✓ Cleared ' + total + ' records'; setTimeout(function(){ badge.textContent = orig; }, 3000); }
 }
 
 function openChangePw() {
@@ -1982,10 +1984,16 @@ function saveAnimalEdit(id) {
   r.about = ((document.getElementById('ae-about')||{}).value||'').trim();
 
   save(); renderMarkers(); renderIncareView(); renderAdoptView(); updateNavCounts();
-  /* Write immediately to Firestore — don't wait for debounce, prevents onSnapshot overwrite */
+  /* Write immediately to Firestore — pause listener to prevent onSnapshot overwrite */
   if (USE_FIREBASE && _fbReady && db && _isStaff) {
+    window._pauseFirestoreSync = true;
     db.collection('reports').doc(String(r.id)).set(r)
-      .catch(function(e){ console.warn('Animal edit sync error:', e.message); });
+      .then(function(){ setTimeout(function(){ window._pauseFirestoreSync = false; }, 2000); })
+      .catch(function(e){ console.warn('Animal edit sync error:', e.message); window._pauseFirestoreSync = false; });
+  }
+  /* Auto-generate bio if just marked adoption ready and no bio yet */
+  if (masterStatus === 'available' && !r.adoptPersonality) {
+    setTimeout(function(){ updateAdoptProfile(r.id); }, 600);
   }
   closeAnimalEdit();
   showToast('found');
@@ -3605,18 +3613,21 @@ setInterval(rotateBanner, 5000);
 setTimeout(rotateBanner, 1500);
 
 function markReunited(id) {
-  var r = reports.find(function(x){ return x.id === id; });
+  var r = reports.find(function(x){ return x.id == id; });
   if (!r || r.reunited) return;
   r.reunited = true;
   r.reunitedDate = new Date().toISOString();
   save();
   /* Sync to Firestore so ALL devices see the pin disappear immediately */
   if (USE_FIREBASE && _fbReady && db) {
+    window._pauseFirestoreSync = true;
     db.collection('reports').doc(String(r.id)).update({ reunited: true, reunitedDate: r.reunitedDate })
+      .then(function(){ setTimeout(function(){ window._pauseFirestoreSync = false; }, 2000); })
       .catch(function() {
         /* update() fails if doc doesn't exist in Firestore — fall back to set() */
         db.collection('reports').doc(String(r.id)).set(r)
-          .catch(function(e){ console.warn('Reunited sync error:', e.message); });
+          .then(function(){ setTimeout(function(){ window._pauseFirestoreSync = false; }, 2000); })
+          .catch(function(e){ console.warn('Reunited sync error:', e.message); window._pauseFirestoreSync = false; });
       });
   }
   /* Re-render card */
@@ -3673,6 +3684,12 @@ function fireBurst(lat, lng) {
   } catch(e) {}
 }
 
+var ADAMS_BOUNDS = { n:40.700, s:40.348, e:-98.046, w:-98.605 };
+function inBounds(r) {
+  if (!r.lat || !r.lng) return true;
+  return r.lat <= ADAMS_BOUNDS.n && r.lat >= ADAMS_BOUNDS.s && r.lng <= ADAMS_BOUNDS.e && r.lng >= ADAMS_BOUNDS.w;
+}
+
 function isPublicVisible(r) {
   if (r.euthanized) return false;
   if (r.intakeType === 'hold' && r.adoptionStatus !== 'available') return false;
@@ -3685,6 +3702,18 @@ function isPublicVisible(r) {
 function renderMarkers() {
   lMarkers.forEach(function(m){ map.removeLayer(m); });
   lMarkers = [];
+
+  /* Adams County bounds — silently drop any out-of-bounds records */
+  var oob = reports.filter(function(r){ return !r.shelter && !inBounds(r); });
+  if (oob.length > 0) {
+    oob.forEach(function(r){
+      reports.splice(reports.indexOf(r), 1);
+      if (USE_FIREBASE && _fbReady && db) {
+        db.collection('reports').doc(String(r.id)).delete().catch(function(){});
+      }
+    });
+    save();
+  }
 
   /* Only show lost and found public reports as individual pins — not shelter animals */
   reports.filter(function(r) {
@@ -3739,8 +3768,8 @@ function renderMarkers() {
     lMarkers.push(m);
   });
 
-  document.getElementById('cnt-lost').textContent    = reports.filter(function(r){return r.type==='lost'  && !r.reunited && isPublicVisible(r);}).length;
-  document.getElementById('cnt-found').textContent   = reports.filter(function(r){return r.type==='found' && !r.reunited && isPublicVisible(r) && !r.shelter;}).length;
+  document.getElementById('cnt-lost').textContent    = reports.filter(function(r){return r.type==='lost'  && !r.reunited && isPublicVisible(r) && inBounds(r);}).length;
+  document.getElementById('cnt-found').textContent   = reports.filter(function(r){return r.type==='found' && !r.reunited && isPublicVisible(r) && !r.shelter && inBounds(r);}).length;
   var cntS = document.getElementById('cnt-shelter');
   var cntA = document.getElementById('cnt-adopt');
   var lblS = document.getElementById('legend-shelter-label');
@@ -3824,6 +3853,21 @@ function cancelPlace() {
 map.on('click', function(e) {
   if (!placing) { closeCard(); return; }
   var t = placing;
+  /* Adams County NE bounds check */
+  var ADAMS = { n:40.700, s:40.348, e:-98.046, w:-98.605 };
+  if (e.latlng.lat > ADAMS.n || e.latlng.lat < ADAMS.s ||
+      e.latlng.lng > ADAMS.e || e.latlng.lng < ADAMS.w) {
+    /* Flash a message — don't place pin */
+    var hint = document.getElementById('drop-hint');
+    if (hint) {
+      var orig = hint.querySelector('span') ? hint.querySelector('span').textContent : '';
+      hint.innerHTML = '<span style="color:#ffccaa">⚠️ Please place the pin within Adams County, NE</span>';
+      setTimeout(function(){
+        hint.innerHTML = '<span>📍 Tap the map to place pin</span><button id="drop-cancel" onclick="cancelPlace()">✕ Back to form</button>';
+      }, 2000);
+    }
+    return;
+  }
   pLat[t] = e.latlng.lat;
   pLng[t] = e.latlng.lng;
   if (tmpMarker) map.removeLayer(tmpMarker);
@@ -3886,16 +3930,38 @@ map.on('click', function(e) {
   setTimeout(function(){ injectMicButtons(document.getElementById('side-panel')); }, 380);
 });
 
+function compressPhoto(file, callback) {
+  /* Compress to max 800px wide, 0.75 quality JPEG — keeps under ~100KB */
+  var img = new Image();
+  var url = URL.createObjectURL(file);
+  img.onload = function() {
+    URL.revokeObjectURL(url);
+    var MAX = 800;
+    var w = img.width, h = img.height;
+    if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+    if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
+    var canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+    callback(canvas.toDataURL('image/jpeg', 0.75));
+  };
+  img.onerror = function() {
+    /* Fallback: read raw if canvas fails */
+    var reader = new FileReader();
+    reader.onload = function(e){ callback(e.target.result); };
+    reader.readAsDataURL(file);
+  };
+  img.src = url;
+}
+
 function previewPhoto(input, imgId, iconId, txtId) {
   var file = input.files[0]; if (!file) return;
-  var reader = new FileReader();
-  reader.onload = function(e) {
+  compressPhoto(file, function(dataUrl) {
     var img = document.getElementById(imgId);
-    img.src = e.target.result; img.style.display = 'block';
+    img.src = dataUrl; img.style.display = 'block';
     document.getElementById(iconId).style.display = 'none';
     document.getElementById(txtId).style.display  = 'none';
-  };
-  reader.readAsDataURL(file);
+  });
 }
 
 /* ── Breed data ─────────────────────────────── */
@@ -4136,6 +4202,24 @@ function injectMicButtons(scopeEl) {
 
 function v(id) { var el=document.getElementById(id); return el ? el.value.trim() : ''; }
 
+function showFormError(type, msg) {
+  var panelId = type === 'lost' ? 'l-form-err' : 'f-form-err';
+  var existing = document.getElementById(panelId);
+  if (!existing) {
+    /* Find the submit button and insert error above it */
+    var submitBtn = document.querySelector('.submit-btn.' + type);
+    if (!submitBtn) return;
+    existing = document.createElement('div');
+    existing.id = panelId;
+    existing.style.cssText = 'background:#fff0ee;border:1.5px solid var(--lost-r);border-radius:8px;padding:10px 14px;font-size:.8rem;color:#8a2010;margin-bottom:10px;display:none';
+    submitBtn.parentNode.insertBefore(existing, submitBtn);
+  }
+  existing.textContent = '⚠️ ' + msg;
+  existing.style.display = 'block';
+  existing.scrollIntoView({ behavior:'smooth', block:'center' });
+  setTimeout(function(){ if(existing) existing.style.display='none'; }, 4000);
+}
+
 function checkSpamGuard(type) {
   /* Layer 4: Session limit */
   if (_submissionCount >= SUBMIT_SESSION_MAX) {
@@ -4181,9 +4265,37 @@ function submitLost() {
     }
     return;
   }
-  /* Layer 3: Honeypot — bots fill hidden fields, humans don't see them */
+  /* Required fields — show clear feedback */
+  var _lname    = (document.getElementById('l-name')||{}).value||'';
+  var _lspecies = (document.getElementById('l-species')||{}).value||'';
+  var _lphone   = (document.getElementById('l-phone')||{}).value||'';
+  var _lowner   = (document.getElementById('l-owner')||{}).value||'';
+
+  /* Species is required — most common miss */
+  if (!_lspecies) {
+    var errSp = document.getElementById('l-species');
+    if (errSp) {
+      errSp.style.borderColor = 'var(--lost-r)';
+      errSp.scrollIntoView({ behavior:'smooth', block:'center' });
+      setTimeout(function(){ if(errSp) errSp.style.borderColor=''; }, 3000);
+    }
+    showFormError('lost', 'Please select the animal species.');
+    return;
+  }
+  /* Phone required */
+  if (!_lphone.trim()) {
+    var errPh = document.getElementById('l-phone');
+    if (errPh) {
+      errPh.style.borderColor = 'var(--lost-r)';
+      errPh.scrollIntoView({ behavior:'smooth', block:'center' });
+      setTimeout(function(){ if(errPh) errPh.style.borderColor=''; }, 3000);
+    }
+    showFormError('lost', 'Please enter a phone number so finders can reach you.');
+    return;
+  }
+  /* Honeypot */
   if ((document.getElementById('l-confirm-email')||{}).value) return;
-  /* Layers 2 & 4: Cooldown + session limit */
+  /* Rate limit */
   if (!checkSpamGuard('lost')) return;
   var r = { id:Date.now(), type:'lost', date:new Date().toISOString(),
     lat:pLat.lost, lng:pLng.lost, shelter: false, reunited: false,
@@ -4222,9 +4334,18 @@ function submitFound() {
     }
     return;
   }
-  /* Layer 3: Honeypot */
+  /* Required fields */
+  var _fspecies = (document.getElementById('f-species')||{}).value||'';
+  var _fcolor   = ((document.getElementById('f-color')||{}).value||'').trim();
+  if (!_fspecies) {
+    var errFs = document.getElementById('f-species');
+    if (errFs) { errFs.style.borderColor='var(--found-g)'; errFs.scrollIntoView({behavior:'smooth',block:'center'}); setTimeout(function(){ errFs.style.borderColor=''; },3000); }
+    showFormError('found', 'Please select the animal species.');
+    return;
+  }
+  /* Honeypot */
   if ((document.getElementById('f-confirm-email')||{}).value) return;
-  /* Layers 2 & 4: Cooldown + session limit */
+  /* Rate limit */
   if (!checkSpamGuard('found')) return;
   var shelter = document.getElementById('f-shelter').checked;
   var r = { id:Date.now(), type:'found', date:new Date().toISOString(),
@@ -5520,7 +5641,7 @@ function renderReportsList() {
 function selectReport(id) {
   selectedRptId = id;
   renderReportsList();
-  var r = reports.find(function(x){ return x.id === id; });
+  var r = reports.find(function(x){ return x.id == id; });
   if (!r) return;
 
   document.getElementById('rpt-detail-empty').style.display = 'none';
@@ -6787,13 +6908,11 @@ function renderAdoptView() {
     var narrative    = r.adoptPersonality || null;
     var narrativeAge = lastUpdated !== null ? lastUpdated : null;
 
-    /* Staff-only Refresh button — Generate is now automatic */
-    var staffBtn = _isStaff && narrative
+    /* Staff-only Refresh button — bio auto-generates on adoption ready */
+    var staffBtn = _isStaff
       ? '<button onclick="updateAdoptProfile(' + r.id + ')" style="width:100%;margin-bottom:8px;padding:8px;font-size:.72rem;font-weight:600;border-radius:8px;border:1.5px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body);color:var(--warm-mid)">'
-        + '✨ Refresh Bio' + (narrativeAge !== null ? ' · updated ' + narrativeAge + 'd ago' : '')
+        + '✨ ' + (narrative ? 'Refresh Bio' + (narrativeAge !== null ? ' · ' + narrativeAge + 'd ago' : '') : 'Generate Bio')
         + '</button>'
-      : _isStaff && !narrative
-      ? '<button onclick="updateAdoptProfile(' + r.id + ')" style="width:100%;margin-bottom:8px;padding:8px;font-size:.72rem;font-weight:600;border-radius:8px;border:1.5px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body);color:var(--warm-mid)">✨ Generate Bio</button>'
       : '';
 
     return '<div class="adopt-card">'
@@ -6880,12 +6999,18 @@ async function updateAdoptProfile(id) {
     r.profileUpdatedAt   = new Date().toISOString();
     save();
 
-    /* Persist to Firestore so story survives real-time listener overwrites */
+    /* Persist to Firestore — pause listener so it doesn't wipe reports mid-render */
     if (USE_FIREBASE && _fbReady && db) {
+      window._pauseFirestoreSync = true;
       db.collection('reports').doc(String(r.id)).update({
         adoptPersonality: text,
         profileUpdatedAt: r.profileUpdatedAt
-      }).catch(function(e){ console.warn('Story sync error:', e.message); });
+      }).then(function(){
+        setTimeout(function(){ window._pauseFirestoreSync = false; }, 2000);
+      }).catch(function(e){
+        console.warn('Story sync error:', e.message);
+        window._pauseFirestoreSync = false;
+      });
     }
 
     /* Update the narrative inline without re-rendering everything */
@@ -7255,12 +7380,10 @@ function deleteAnimalPhoto(id) {
 
 function previewEditPhoto(input, id) {
   if (!input.files || !input.files[0]) return;
-  var r = reports.find(function(x){ return x.id == id; }); /* == handles string/number mismatch */
+  var r = reports.find(function(x){ return x.id == id; });
   if (!r) return;
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    r.photo = e.target.result;
-    /* Persist immediately — don't wait for Save Changes */
+  compressPhoto(input.files[0], function(dataUrl) {
+    r.photo = dataUrl;
     save();
     if (USE_FIREBASE && _fbReady && db && _isStaff) {
       db.collection('reports').doc(String(r.id)).update({ photo: r.photo })
@@ -7271,24 +7394,21 @@ function previewEditPhoto(input, id) {
     if (body) {
       var img = body.querySelector('img[style*="object-fit:cover"]');
       if (img) {
-        img.src = e.target.result;
+        img.src = dataUrl;
       } else {
-        /* Replace the dashed "Add Photo" button with the image */
         var addBtn = body.querySelector('button[onclick*="ae-photo-input"]');
         if (addBtn && addBtn.parentNode) {
           var wrapper = document.createElement('div');
           wrapper.style.cssText = 'position:relative;height:140px;border-radius:8px;overflow:hidden;margin-bottom:6px';
-          wrapper.innerHTML = '<img src="' + e.target.result + '" style="width:100%;height:100%;object-fit:cover">'
+          wrapper.innerHTML = '<img src="' + dataUrl + '" style="width:100%;height:100%;object-fit:cover">'
             + '<button onclick="document.getElementById(\'ae-photo-input\').click()" style="position:absolute;bottom:6px;right:6px;padding:4px 10px;font-size:.68rem;font-weight:600;border:none;border-radius:6px;background:rgba(0,0,0,.55);color:#fff;cursor:pointer">📷 Replace</button>';
           addBtn.parentNode.replaceChild(wrapper, addBtn);
         }
       }
     }
-    /* Refresh the In Care and Adopt cards so photo appears immediately */
     renderIncareView();
     renderAdoptView();
-  };
-  reader.readAsDataURL(input.files[0]);
+  });
 }
 
 function triggerPhotoUpload(id) {
@@ -7301,21 +7421,19 @@ function triggerPhotoUpload(id) {
 
 function handleIncarePhotoUpload(input) {
   var id = parseInt(input.dataset.animalId);
-  var r = reports.find(function(x){ return x.id === id; });
+  var r = reports.find(function(x){ return x.id == id; });
   if (!r || !input.files || !input.files[0]) return;
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    r.photo = e.target.result;
+  compressPhoto(input.files[0], function(dataUrl) {
+    r.photo = dataUrl;
     save();
     renderIncareView();
     renderAdoptView();
     pushBannerEvent('📷 Photo added for ' + (r.name||r.species||'animal'), 'var(--found-g)');
-  };
-  reader.readAsDataURL(input.files[0]);
+  });
 }
 
 function quickAdoptReady(id) {
-  var r = reports.find(function(x){ return x.id===id; });
+  var r = reports.find(function(x){ return x.id == id; }); /* == handles string/number */
   if (!r) return;
   var wait = daysUntilAdoptEligible(r);
   if (wait > 0) {
@@ -7330,8 +7448,10 @@ function quickAdoptReady(id) {
   r.masterStatus   = 'available';
   save(); renderIncareView(); renderAdoptView(); updateNavCounts();
   if (USE_FIREBASE && _fbReady && db && _isStaff) {
+    window._pauseFirestoreSync = true;
     db.collection('reports').doc(String(r.id)).set(r)
-      .catch(function(e){ console.warn('Adopt ready sync error:', e.message); });
+      .then(function(){ setTimeout(function(){ window._pauseFirestoreSync = false; }, 2000); })
+      .catch(function(e){ console.warn('Adopt ready sync error:', e.message); window._pauseFirestoreSync = false; });
   }
   pushBannerEvent('🌟 ' + (r.name||r.species||'Animal') + ' is now listed for adoption!', 'var(--found-g)');
   /* Auto-generate bio — no staff action needed */
@@ -7363,7 +7483,6 @@ function setView(v, btn) {
   if (v === 'map')     setTimeout(function(){ map.invalidateSize(); }, 200);
   if (v === 'incare')  renderIncareView();
   if (v === 'reports') {
-    renderReportsList();
     renderReportTypeList();
     var sl = document.getElementById('rpt-shelter-label');
     if (sl) sl.textContent = activeShelter || 'No shelter selected';
