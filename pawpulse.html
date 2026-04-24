@@ -1071,8 +1071,16 @@ function startFirestoreListener() {
         /* Initial load — take everything from Firestore if it has data,
            otherwise keep localStorage data */
         if (!snapshot.empty) {
+          var localSnapshot = reports.slice(); /* save local state (has photos) */
           reports = [];
-          snapshot.forEach(function(doc) { reports.push(doc.data()); });
+          snapshot.forEach(function(doc) {
+            var data = doc.data();
+            /* Preserve local photo if Firestore version lacks it
+               (happens when photo write failed due to slow auth on mobile) */
+            var local = localSnapshot.find(function(r){ return String(r.id) === String(data.id); });
+            if (local && local.photo && !data.photo) { data.photo = local.photo; }
+            reports.push(data);
+          });
           localStorage.setItem('pawpulse-v2', JSON.stringify(reports));
         }
         /* If Firestore empty, reports already loaded from localStorage in bootApp — keep them */
@@ -7629,6 +7637,11 @@ function handleIncarePhotoUpload(input) {
   compressPhoto(input.files[0], function(dataUrl) {
     r.photo = dataUrl;
     save();
+    /* Write to Firestore so photo persists across devices and reloads */
+    if (USE_FIREBASE && _fbReady && db) {
+      db.collection('reports').doc(String(r.id)).set(r)
+        .catch(function(err){ console.warn('Photo sync error:', err); });
+    }
     renderIncareView();
     renderAdoptView();
     pushBannerEvent('📷 Photo added for ' + (r.name||r.species||'animal'), 'var(--found-g)');
@@ -7724,4 +7737,4 @@ setTimeout(function(){ injectMicButtons(document.getElementById('side-panel')); 
 </div>
 
 </body>
-</html>
+</html>s
