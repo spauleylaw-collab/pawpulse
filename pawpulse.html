@@ -455,8 +455,8 @@ textarea{min-height:64px}
 .adopt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
 .adopt-card{background:#fff;border:1px solid var(--cream-3);border-radius:14px;overflow:hidden;transition:all .18s;cursor:pointer;box-shadow:0 2px 8px rgba(42,31,18,.06)}
 .adopt-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(42,31,18,.12);border-color:#a0c0f0}
-.adopt-card-img{width:100%;height:180px;object-fit:cover;object-position:top center;display:block}
-.adopt-card-no-img{width:100%;height:180px;display:flex;align-items:center;justify-content:center;font-size:3rem;background:var(--cream-2)}
+.adopt-card-img{width:100%;max-height:240px;object-fit:contain;background:var(--cream-2);display:block}
+.adopt-card-no-img{width:100%;height:160px;display:flex;align-items:center;justify-content:center;font-size:3rem;background:var(--cream-2)}
 .adopt-card-body{padding:12px 14px 14px}
 .adopt-card-name{font-family:var(--font-display);font-size:1rem;font-weight:600;color:var(--warm-dk);margin-bottom:4px}
 .adopt-card-desc{font-size:.76rem;color:var(--warm-mid);margin-bottom:6px;line-height:1.4}
@@ -1021,16 +1021,20 @@ function initFirebase() {
         if (db) { startFirestoreListener(); } else { showShelterPicker(); }
         setTimeout(function(){ renderAdoptView(); }, 1200);
       } else {
-        /* Signed out — clear staff state */
-        _isStaff = false;
-        document.getElementById('staff-badge').classList.remove('staff-active');
-        document.querySelectorAll('.tab-ops,.tab-admin').forEach(function(el){ el.style.display = 'none'; });
-        showStaffLoginBtn();
-        /* Still need to start listener for public data */
+        /* null fires on initial load while Firebase restores session from IndexedDB.
+           Only clear staff state if we've already confirmed a session once. */
+        if (window._authResolved) {
+          _isStaff = false;
+          document.getElementById('staff-badge').classList.remove('staff-active');
+          document.querySelectorAll('.tab-ops,.tab-admin').forEach(function(el){ el.style.display = 'none'; });
+          showStaffLoginBtn();
+        }
+        /* Start listener for public data if not yet started */
         if (_fbReady !== true) {
           if (db) { startFirestoreListener(); } else { bootApp(); }
         }
       }
+      window._authResolved = true;
     });
   }
 }
@@ -7062,7 +7066,7 @@ function renderAdoptView() {
     var urgencyColor = days > 30 ? 'var(--lost-r)' : days > 14 ? 'var(--amber)' : 'var(--found-g)';
     var meta         = [r.breed, r.color, r.sex, r.age].filter(Boolean).join(' · ');
     var imgHTML      = r.photo
-      ? '<img class="adopt-card-img" src="' + r.photo + '" alt="' + esc(name) + '">'
+      ? '<img class="adopt-card-img" src="' + r.photo + '" alt="' + esc(name) + '" style="width:100%;max-height:240px;object-fit:contain;background:var(--cream-2)">'
       : '<div class="adopt-card-no-img" style="background:' + (days>30?'#fff5f5':days>14?'#fffbf0':'var(--cream-2)') + '">' + (r.species==='Dog'?'🐕':r.species==='Cat'?'🐈':'🐾') + '</div>';
 
     /* Personality narrative — Claude-generated or placeholder */
@@ -7547,7 +7551,8 @@ function previewEditPhoto(input, id) {
     r.photo = dataUrl;
     save();
     if (USE_FIREBASE && _fbReady && db && _isStaff) {
-      db.collection('reports').doc(String(r.id)).set({ photo: r.photo }, { merge: true })
+      /* Write full record so photo isn't orphaned if animal not yet in Firestore */
+      db.collection('reports').doc(String(r.id)).set(r)
         .catch(function(err){ console.warn('Photo sync error:', err); });
     }
     /* Update preview inline without closing the modal */
