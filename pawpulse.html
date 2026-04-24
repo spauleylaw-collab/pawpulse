@@ -1013,28 +1013,28 @@ function initFirebase() {
   if (auth) {
     auth.onAuthStateChanged(function(user) {
       if (user) {
+        /* Confirmed signed in — ensure state is set */
         _isStaff = true;
-        document.getElementById('login-overlay').style.display = 'none';
+        localStorage.setItem('pawpulse-staff', user.email);
         document.getElementById('staff-badge').classList.add('staff-active');
         document.querySelectorAll('.tab-ops,.tab-admin').forEach(function(el){ el.style.display = ''; });
         hideStaffLoginBtn();
-        if (db) { startFirestoreListener(); } else { showShelterPicker(); }
-        setTimeout(function(){ renderAdoptView(); }, 1200);
+        if (_fbReady !== true) {
+          if (db) { startFirestoreListener(); } else { showShelterPicker(); }
+        }
+        setTimeout(function(){ renderAdoptView(); }, 800);
       } else {
-        /* null fires on initial load while Firebase restores session from IndexedDB.
-           Only clear staff state if we've already confirmed a session once. */
-        if (window._authResolved) {
+        /* null — only clear if localStorage flag also gone (real sign-out, not just slow restore) */
+        if (!localStorage.getItem('pawpulse-staff')) {
           _isStaff = false;
           document.getElementById('staff-badge').classList.remove('staff-active');
           document.querySelectorAll('.tab-ops,.tab-admin').forEach(function(el){ el.style.display = 'none'; });
           showStaffLoginBtn();
         }
-        /* Start listener for public data if not yet started */
         if (_fbReady !== true) {
           if (db) { startFirestoreListener(); } else { bootApp(); }
         }
       }
-      window._authResolved = true;
     });
   }
 }
@@ -1319,6 +1319,9 @@ function doLogin() {
   function onSuccess() {
     btn.textContent = 'Sign In'; btn.disabled = false;
     _isStaff = true;
+    /* Store auth flag in localStorage — backup for mobile browsers where Firebase
+       IndexedDB session restore is unreliable */
+    localStorage.setItem('pawpulse-staff', email);
     document.getElementById('login-overlay').style.display = 'none';
     document.getElementById('staff-badge').classList.add('staff-active');
     /* Show staff-only tabs */
@@ -1364,6 +1367,7 @@ function doGuestView() {
 }
 
 function doSignOut() {
+  localStorage.removeItem('pawpulse-staff');
   sessionStorage.removeItem('pp-shelter');
   _isStaff = false;
   document.getElementById('staff-badge').classList.remove('staff-active');
@@ -1471,9 +1475,18 @@ function doChangePw() {
 
 
 function bootApp() {
-  /* Ensure badge hidden until auth resolves */
-  var badge = document.getElementById('staff-badge');
-  if (badge && !_isStaff) badge.classList.remove('staff-active');
+  /* Restore staff UI immediately from localStorage — before Firebase auth resolves.
+     Firebase IndexedDB session restore is unreliable on mobile Safari. */
+  var storedStaff = localStorage.getItem('pawpulse-staff');
+  if (storedStaff) {
+    _isStaff = true;
+    document.getElementById('staff-badge').classList.add('staff-active');
+    document.querySelectorAll('.tab-ops,.tab-admin').forEach(function(el){ el.style.display = ''; });
+    hideStaffLoginBtn();
+  } else {
+    var badge = document.getElementById('staff-badge');
+    if (badge) badge.classList.remove('staff-active');
+  }
   /* Dismiss the loading screen */
   var loading = document.getElementById('app-loading');
   if (loading) {
