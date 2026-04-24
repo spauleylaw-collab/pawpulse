@@ -4552,10 +4552,13 @@ function resetForm(type) {
 }
 
 function showToast(type) {
-  var n = Math.floor(Math.random()*55)+20;
-  document.getElementById('toast-msg').textContent = type==='lost'
-    ? '🔴 Alert sent — ' + n + ' neighbors notified'
-    : '🟢 Report shared — ' + n + ' people in this area notified';
+  var msg = type==='lost'
+    ? '🔴 Lost pet posted to the map'
+    : '🟢 Found pet posted to the map';
+  /* Override for specific contexts */
+  if (type==='reunited') msg = '🎉 Marked as reunited';
+  if (type==='adopted')  msg = '🌟 Marked as adopted';
+  document.getElementById('toast-msg').textContent = msg;
   var el = document.getElementById('toast');
   el.classList.add('show');
   setTimeout(function(){ el.classList.remove('show'); }, 4500);
@@ -7737,4 +7740,4 @@ setTimeout(function(){ injectMicButtons(document.getElementById('side-panel')); 
 </div>
 
 </body>
-</html>s
+</html>
