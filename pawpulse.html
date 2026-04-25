@@ -201,7 +201,7 @@ textarea{min-height:64px}
 .pc-row strong{color:var(--warm-dk);font-weight:600}
 .pc-contact{margin-top:8px;padding-top:8px;border-top:1px solid var(--cream-3);font-size:.72rem;color:var(--warm-mid)}
 .pc-date{font-size:.65rem;color:#a0907a;margin-top:6px}
-#empty-hint{position:absolute;bottom:98px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.9);backdrop-filter:blur(8px);padding:9px 18px;border-radius:999px;font-size:.8rem;color:var(--warm-mid);box-shadow:0 2px 10px rgba(0,0,0,.1);z-index:600;pointer-events:none;border:1px solid var(--cream-3);transition:opacity .3s}
+#empty-hint{position:absolute;bottom:98px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.9);backdrop-filter:blur(8px);opacity:0;padding:9px 18px;border-radius:999px;font-size:.8rem;color:var(--warm-mid);box-shadow:0 2px 10px rgba(0,0,0,.1);z-index:600;pointer-events:none;border:1px solid var(--cream-3);transition:opacity .3s}
 #toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(120px);z-index:9999;background:var(--forest);color:var(--cream);padding:11px 20px;border-radius:16px;font-size:.84rem;font-weight:600;box-shadow:0 8px 36px rgba(0,0,0,.25);display:flex;align-items:center;gap:8px;transition:transform .38s cubic-bezier(.34,1.56,.64,1);white-space:normal;max-width:calc(100vw - 32px);text-align:center;justify-content:center}
 #toast.show{transform:translateX(-50%) translateY(0)}
 #map.placing{cursor:crosshair !important}
@@ -786,6 +786,9 @@ textarea{min-height:64px}
 
 <div id="view-map" class="view active">
   <div id="map-container">
+    <div id="map-loading" style="position:absolute;inset:0;z-index:500;background:rgba(244,241,235,.7);display:flex;align-items:center;justify-content:center;pointer-events:none;transition:opacity .4s ease">
+      <div style="font-size:.85rem;color:var(--warm-mid);font-weight:600;font-family:var(--font-body)">🗺️ Loading map…</div>
+    </div>
     <!-- Map zoom controls -->
     <div id="map-zoom-ctrl" style="position:absolute;bottom:100px;right:12px;z-index:800;display:flex;flex-direction:column;gap:4px">
       <button onclick="map.zoomIn()" style="width:44px;height:44px;border:none;border-radius:10px;background:rgba(255,255,255,.92);box-shadow:0 2px 8px rgba(0,0,0,.2);font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--warm-dk)">+</button>
@@ -1113,6 +1116,10 @@ function startFirestoreListener() {
         _fbReady = true;
         installBypassDetection();
         setTimeout(function(){ assertNoInvalidStates(reports); }, 800);
+        /* Mark data as loaded — gates empty-hint and dismisses loading overlay */
+        window._firebaseLoaded = true;
+        var _ml = document.getElementById('map-loading');
+        if (_ml) { _ml.style.opacity = '0'; setTimeout(function(){ _ml.style.display='none'; }, 450); }
         showShelterPicker();
         setTimeout(rotateBanner, 200); /* Rotate banner as soon as data loads */
         return;
@@ -1578,6 +1585,12 @@ function bootApp() {
   }
   /* Force map to recalculate size now that loading screen is gone */
   setTimeout(function(){ try { map.invalidateSize(); } catch(e){} }, 300);
+  /* Dismiss map loading overlay — Firebase will dismiss it after first snapshot; this covers non-Firebase path */
+  if (!USE_FIREBASE) {
+    window._firebaseLoaded = true;
+    var _ml = document.getElementById('map-loading');
+    if (_ml) { _ml.style.opacity = '0'; setTimeout(function(){ _ml.style.display='none'; }, 450); }
+  }
   /* Update incare shelter label */
   var lbl = document.getElementById('incare-shelter-label');
   if (lbl) lbl.textContent = activeShelter + ' — Animals In Care';
@@ -4179,7 +4192,7 @@ function renderMarkers() {
   if (cntS) cntS.textContent = getShelterData({ includeHolds: true }).length;
   if (cntA) cntA.textContent = reports.filter(function(r){return r.adoptionStatus==='available' && !r.reunited;}).length;
   if (lblS && activeShelter) lblS.textContent = 'In Care of ' + activeShelter.split(' ')[0];
-  document.getElementById('empty-hint').style.opacity = reports.length ? '0' : '1';
+  document.getElementById('empty-hint').style.opacity = (window._firebaseLoaded && !reports.length) ? '1' : '0';
   updateNavCounts();
   var rptView = document.getElementById('view-reports');
   var adoptView = document.getElementById('view-adopt');
