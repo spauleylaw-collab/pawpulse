@@ -832,8 +832,8 @@ textarea{min-height:64px}
         <div id="spotlight-emoji" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:3rem;background:var(--cream-2)">🐾</div>
         <div id="spotlight-label" style="position:absolute;bottom:6px;left:6px;background:rgba(255,255,255,.9);color:var(--forest);font-size:.56rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:2px 7px;border-radius:999px;box-shadow:0 1px 4px rgba(0,0,0,.12)">Adoptable</div>
       </div>
-      <div style="padding:8px 10px 10px;background:var(--cream)">
-        <div id="spotlight-ai-bio" style="font-size:.7rem;color:var(--warm-dk);line-height:1.35;font-style:italic;margin-bottom:5px;display:none;overflow:hidden"></div>
+      <div style="padding:8px 10px 10px;background:var(--cream);min-height:120px">
+        <div id="spotlight-ai-bio" style="font-size:.7rem;color:var(--warm-dk);line-height:1.35;font-style:italic;margin-bottom:5px;overflow:hidden;min-height:47px;transition:opacity .3s ease;opacity:0"></div>
         <div id="spotlight-name" style="font-family:var(--font-display);font-size:.88rem;color:var(--warm-dk);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px"></div>
         <div id="spotlight-bio" style="font-size:.68rem;color:var(--warm-mid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:8px"></div>
         <div style="background:var(--forest);color:#fff;font-size:.68rem;font-weight:700;text-align:center;padding:6px 8px;border-radius:8px;letter-spacing:.02em" id="spotlight-cta">View Adoptable Pets →</div>
@@ -8491,14 +8491,15 @@ async function renderSpotlightCard(item) {
   /* Show AI bio if available, generate if not */
   var aiBioEl = document.getElementById('spotlight-ai-bio');
   if (aiBioEl) {
-    aiBioEl.style.display = 'none';
+    aiBioEl.style.opacity = '0';
+    aiBioEl.textContent = '';
     generateSpotlightBio(r).then(function(bio) {
       if (bio && aiBioEl) {
         aiBioEl.textContent = bio;
-        aiBioEl.style.display = 'block';
-        aiBioEl.style.webkitLineClamp = '2';
+        aiBioEl.style.webkitLineClamp = '3';
         aiBioEl.style.webkitBoxOrient = 'vertical';
         aiBioEl.style.overflow = 'hidden';
+        requestAnimationFrame(function(){ aiBioEl.style.opacity = '1'; });
       }
     });
   }
