@@ -520,6 +520,9 @@ textarea{min-height:64px}
 .pin-new-pulse {
   animation: pinPulse 1.4s ease-out forwards;
 }
+
+/* ── SPOTLIGHT HOVER ── */
+#shelter-spotlight:hover { transform: translateY(-2px) scale(1.01); box-shadow: 0 16px 48px rgba(42,31,18,.4),0 6px 16px rgba(0,0,0,.2) !important; transition: transform .2s ease, box-shadow .2s ease, opacity .5s ease !important; }
 </style>
 </head>
 <body>
@@ -609,7 +612,7 @@ textarea{min-height:64px}
   </div>
 </nav>
 <!-- Orientation strip -->
-<div id="orientation-strip" style="position:fixed;top:var(--nav-h);left:0;right:0;z-index:999;background:rgba(45,74,53,.92);color:rgba(255,255,255,.78);text-align:center;font-size:.8rem;font-family:var(--font-body);padding:6px 14px;letter-spacing:.01em;pointer-events:none">See lost pets, found animals, and pets in care — all in real time. <span style="opacity:.65;font-style:italic">You might help reunite a pet today.</span></div>
+<div id="orientation-strip" style="position:fixed;top:var(--nav-h);left:0;right:0;z-index:999;background:rgba(45,74,53,.92);color:rgba(255,255,255,.78);text-align:center;font-size:.8rem;font-family:var(--font-body);padding:6px 14px;letter-spacing:.01em;pointer-events:none">Lost or found a pet? Tap a pin to help — or tap <strong style="font-weight:700">+ Report</strong> to post one. <span style="opacity:.65;font-style:italic">You might reunite a pet today.</span></div>
 
 <!-- ADOPT VIEW -->
 <div id="view-adopt" class="view">
@@ -819,10 +822,10 @@ textarea{min-height:64px}
          Doctrine-safe presentation layer only. No pins. No map state.
          Pulls from existing shelter/adoption records only. No new writes.
     ─────────────────────────────────────────────────────────────────── -->
-    <div id="shelter-spotlight" style="display:none;position:absolute;bottom:110px;right:14px;z-index:700;width:200px;border-radius:14px;overflow:hidden;box-shadow:0 6px 24px rgba(42,31,18,.22);transition:opacity .5s ease;opacity:0;pointer-events:auto;cursor:pointer;border:1.5px solid var(--cream-3);background:var(--cream)" onclick="setView('adopt',null)">
+    <div id="shelter-spotlight" style="display:none;position:absolute;bottom:110px;right:14px;z-index:700;width:200px;border-radius:20px;overflow:hidden;box-shadow:0 12px 40px rgba(42,31,18,.35),0 4px 12px rgba(0,0,0,.15);transition:opacity .5s ease,transform .15s ease;opacity:0;pointer-events:auto;cursor:pointer;border:1.5px solid rgba(255,255,255,.8);background:var(--cream);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)" onclick="this.style.transform='scale(1.04)';setTimeout(function(){setView('adopt',null);},150)">
       <!-- Shelter companion card — NOT a map feature. No pins. No doctrine impact. -->
       <div style="background:var(--forest);padding:6px 10px;display:flex;align-items:center;gap:6px">
-        <span style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.85)">🏠 From the Shelter</span>
+        <span style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.85)" id="spotlight-header-label">🏠 From the Shelter</span>
       </div>
       <div style="position:relative;height:120px;background:var(--cream-2);overflow:hidden">
         <img id="spotlight-img" src="" alt="" style="width:100%;height:100%;object-fit:contain;object-position:center center;background:var(--cream-2);display:none">
@@ -833,7 +836,7 @@ textarea{min-height:64px}
         <div id="spotlight-ai-bio" style="font-size:.7rem;color:var(--warm-dk);line-height:1.35;font-style:italic;margin-bottom:5px;display:none;overflow:hidden"></div>
         <div id="spotlight-name" style="font-family:var(--font-display);font-size:.88rem;color:var(--warm-dk);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px"></div>
         <div id="spotlight-bio" style="font-size:.68rem;color:var(--warm-mid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:8px"></div>
-        <div style="background:var(--forest);color:#fff;font-size:.68rem;font-weight:700;text-align:center;padding:5px 8px;border-radius:7px" id="spotlight-cta">View Adoptable Pets →</div>
+        <div style="background:var(--forest);color:#fff;font-size:.68rem;font-weight:700;text-align:center;padding:6px 8px;border-radius:8px;letter-spacing:.02em" id="spotlight-cta">View Adoptable Pets →</div>
       </div>
     </div>
 
@@ -8397,9 +8400,15 @@ async function generateSpotlightBio(r) {
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514', max_tokens: 60,
         messages: [{role: 'user', content:
-          'Write one warm first-person line for a shelter animal spotlight. '
-          + 'Format: "Hi, I am [name] — [one short want/need phrase]". '
-          + 'Max 12 words total. No quotes. No period. Very warm and simple. '
+          'Write one warm first-person line for a shelter animal spotlight card. '
+          + 'Must feel like the ANIMAL is speaking. Start with "Hi, I am [name]" or "I am [name]". '
+          + 'Include one emotional detail: days waiting, what they love, or what they dream of. '
+          + 'Examples: '
+          + '"Hi, I am Romeo — I have been waiting 16 days and I am ready to come home" '
+          + '"I am Bailey — I just arrived and I am already falling in love with everyone I meet" '
+          + '"Hi, I am Omni — I love walks and I have been here 19 days looking for my person" '
+          + 'Max 16 words. No quotes. No period. Warm, simple, alive. '
+          + 'Days in care: ' + Math.floor(daysSince(r.dateAvailable||r.date)) + '. '
           + 'Animal: ' + desc + '. '
           + (personality ? 'Personality hint: ' + personality : '')
         }]
@@ -8455,6 +8464,8 @@ function getSpotlightAnimals() {
 
 async function renderSpotlightCard(item) {
   var r = item.r;
+  /* Clear cached bio if it's the first time showing this animal this session */
+  if (!r._spotlightShown) { r._spotlightShown = true; delete r.spotlightBio; }
   var strip = document.getElementById('shelter-spotlight');
   var img   = document.getElementById('spotlight-img');
   var emoji = document.getElementById('spotlight-emoji');
@@ -8473,6 +8484,11 @@ async function renderSpotlightCard(item) {
   /* Label pill shows status - shorten for compact display */
   var shortLabel = item.label.replace('Available for adoption','Available').replace('needs a home','Needs a home').replace('Recently adopted — great news! 🎉','Recently adopted 🎉');
   label.textContent = shortLabel;
+  /* Update header label with shelter name */
+  var hdrLabel = document.getElementById('spotlight-header-label');
+  if (hdrLabel && activeShelter) {
+    hdrLabel.textContent = '🏠 In care at ' + activeShelter;
+  }
   name.textContent  = r.name || r.species || 'Animal';
   bio.textContent   = [r.breed, r.color, r.age].filter(Boolean).join(' · ');
   /* Show AI bio if available, generate if not */
