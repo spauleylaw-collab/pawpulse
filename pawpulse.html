@@ -594,6 +594,12 @@ textarea{min-height:64px}
     </div>
   </div>
   <div style="font-size:.62rem;color:var(--warm-mid);text-align:center;padding:3px 16px 4px;line-height:1.5;border-bottom:1px solid var(--cream-3);background:var(--cream)">Information may change as cases are reviewed. For official records, contact the shelter directly.</div>
+  <div style="font-size:.72rem;color:var(--warm-mid);padding:5px 16px;background:var(--cream);border-bottom:1px solid var(--cream-3);display:flex;gap:14px;flex-wrap:wrap;align-items:center">
+    <span style="font-weight:600;color:var(--warm-dk)">Card border:</span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--found-g);margin-right:4px;vertical-align:middle"></span>Available — under 14 days</span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--amber);margin-right:4px;vertical-align:middle"></span>Waiting 14–29 days</span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--lost-r);margin-right:4px;vertical-align:middle"></span>Waiting 30+ days — needs a home urgently</span>
+  </div>
   <div id="adopt-search-row">
     <input id="adopt-search" type="text" placeholder="Search by species, breed, color, shelter…" oninput="renderAdoptView()" autocomplete="off">
     <select id="adopt-sort" onchange="renderAdoptView()" style="padding:7px 8px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.75rem;background:#fff;color:var(--warm-dk);flex-shrink:0">
