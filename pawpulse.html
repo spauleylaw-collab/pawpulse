@@ -496,7 +496,7 @@ textarea{min-height:64px}
 #adopt-inquiry-inner{background:var(--cream);border-radius:18px 18px 0 0;width:100%;max-width:520px;max-height:85vh;overflow-y:auto;padding:22px 22px 32px;animation:slide-up .28s cubic-bezier(.34,1.56,.64,1)}
 
 /* ── SHELTER SPOTLIGHT ── */
-@media(max-width:640px){#shelter-spotlight{bottom:10px!important;right:8px!important;width:160px!important}#spotlight-name{font-size:.8rem!important}#spotlight-bio{font-size:.62rem!important}}
+@media(max-width:640px){#shelter-spotlight{bottom:8px!important;right:8px!important;width:min(190px,44vw)!important}#spotlight-name{font-size:.78rem!important}#spotlight-bio{font-size:.6rem!important}#shelter-spotlight [style*="height:130px"]{height:100px!important}}
 
 /* ── NEW PIN PULSE — briefly animates pins added after initial load ── */
 @keyframes pinPulse {
@@ -811,13 +811,13 @@ textarea{min-height:64px}
       <div style="background:var(--forest);padding:6px 10px;display:flex;align-items:center;gap:6px">
         <span style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.85)">🏠 From the Shelter</span>
       </div>
-      <div style="position:relative;height:130px;background:var(--cream-2);overflow:hidden">
+      <div style="position:relative;height:120px;background:var(--cream-2);overflow:hidden">
         <img id="spotlight-img" src="" alt="" style="width:100%;height:100%;object-fit:contain;object-position:center center;background:var(--cream-2);display:none">
         <div id="spotlight-emoji" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:3rem;background:var(--cream-2)">🐾</div>
         <div id="spotlight-label" style="position:absolute;bottom:6px;left:6px;background:rgba(255,255,255,.9);color:var(--forest);font-size:.56rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:2px 7px;border-radius:999px;box-shadow:0 1px 4px rgba(0,0,0,.12)">Available</div>
       </div>
-      <div style="padding:9px 10px 11px;background:var(--cream)">
-        <div id="spotlight-ai-bio" style="font-size:.72rem;color:var(--warm-dk);line-height:1.4;font-style:italic;margin-bottom:4px;display:none"></div>
+      <div style="padding:8px 10px 10px;background:var(--cream)">
+        <div id="spotlight-ai-bio" style="font-size:.7rem;color:var(--warm-dk);line-height:1.35;font-style:italic;margin-bottom:5px;display:none;overflow:hidden"></div>
         <div id="spotlight-name" style="font-family:var(--font-display);font-size:.88rem;color:var(--warm-dk);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px"></div>
         <div id="spotlight-bio" style="font-size:.68rem;color:var(--warm-mid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:8px"></div>
         <div style="background:var(--forest);color:#fff;font-size:.68rem;font-weight:700;text-align:center;padding:5px 8px;border-radius:7px" id="spotlight-cta">View Adoptable Pets →</div>
@@ -8384,9 +8384,9 @@ async function generateSpotlightBio(r) {
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514', max_tokens: 60,
         messages: [{role: 'user', content:
-          'Write a single warm first-person sentence for a shelter animal spotlight card. '
-          + 'Start with "Hi, I am [name]" and end with what kind of home or person they would love. '
-          + 'Keep it under 15 words. No quotes. No period at end. '
+          'Write one warm first-person line for a shelter animal spotlight. '
+          + 'Format: "Hi, I am [name] — [one short want/need phrase]". '
+          + 'Max 12 words total. No quotes. No period. Very warm and simple. '
           + 'Animal: ' + desc + '. '
           + (personality ? 'Personality hint: ' + personality : '')
         }]
@@ -8470,6 +8470,9 @@ async function renderSpotlightCard(item) {
       if (bio && aiBioEl) {
         aiBioEl.textContent = bio;
         aiBioEl.style.display = 'block';
+        aiBioEl.style.webkitLineClamp = '2';
+        aiBioEl.style.webkitBoxOrient = 'vertical';
+        aiBioEl.style.overflow = 'hidden';
       }
     });
   }
