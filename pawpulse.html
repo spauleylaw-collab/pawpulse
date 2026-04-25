@@ -496,9 +496,8 @@ textarea{min-height:64px}
 
 /* ── SHELTER SPOTLIGHT ── */
 @media(max-width:640px){
-  #shelter-spotlight #spotlight-inner { height:56px; }
-  #shelter-spotlight #spotlight-photo { width:56px; height:56px; }
-  #spotlight-name { font-size:.84rem!important; }
+  #shelter-spotlight { width:160px!important; bottom:90px!important; right:10px!important; }
+  #shelter-spotlight img, #shelter-spotlight #spotlight-emoji { height:90px!important; }
 }
 </style>
 </head>
@@ -793,31 +792,25 @@ textarea{min-height:64px}
 </div>
 
 <div id="view-map" class="view active">
+  <div id="map-container">
 
-  <!-- ── SHELTER SPOTLIGHT ─────────────────────────────────────────────
-       Presentation layer only. No pins. No map state. No doctrine impact.
-       Pulls from existing shelter records. Hides if no eligible animals.
-  ─────────────────────────────────────────────────────────────────────── -->
-  <div id="shelter-spotlight" style="display:none;position:relative;z-index:400;background:linear-gradient(90deg,var(--forest) 0%,#1a4a30 100%);padding:0;overflow:hidden">
-    <div id="spotlight-inner" style="display:flex;align-items:center;gap:0;height:64px;cursor:pointer;transition:background .2s" onclick="setView('adopt',document.querySelector('[onclick*=\'setView(\\'adopt\\'\']'))">
-      <div id="spotlight-photo" style="width:64px;height:64px;flex-shrink:0;overflow:hidden;background:rgba(255,255,255,.1)">
+    <!-- ── SHELTER SPOTLIGHT — floating card, bottom-right of map ──────
+         Doctrine-safe presentation layer only. No pins. No map state.
+         Pulls from existing shelter/adoption records only. No new writes.
+    ─────────────────────────────────────────────────────────────────── -->
+    <div id="shelter-spotlight" style="display:none;position:absolute;bottom:110px;right:14px;z-index:700;width:210px;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.28);transition:opacity .5s ease;opacity:0;pointer-events:auto;cursor:pointer" onclick="setView('adopt',document.querySelector('[onclick*=\'setView(\\'adopt\\'\']'))">
+      <div style="position:relative;height:120px;background:var(--cream-2)">
         <img id="spotlight-img" src="" alt="" style="width:100%;height:100%;object-fit:cover;object-position:center top;display:none">
-        <div id="spotlight-emoji" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.8rem">🐾</div>
+        <div id="spotlight-emoji" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2.8rem;background:var(--cream-2)">🐾</div>
+        <div style="position:absolute;top:6px;left:6px;background:var(--forest);color:#fff;font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:2px 7px;border-radius:999px" id="spotlight-label">From the Shelter</div>
       </div>
-      <div style="flex:1;padding:0 12px;min-width:0">
-        <div id="spotlight-label" style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.6);margin-bottom:2px">From the Shelter</div>
-        <div id="spotlight-name" style="font-family:var(--font-display);font-size:.92rem;font-weight:400;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
-        <div id="spotlight-bio" style="font-size:.72rem;color:rgba(255,255,255,.75);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px"></div>
-      </div>
-      <div style="padding:0 14px;flex-shrink:0">
-        <div id="spotlight-cta" style="font-size:.7rem;font-weight:700;color:rgba(255,255,255,.85);white-space:nowrap">Meet them →</div>
+      <div style="background:var(--forest);padding:9px 11px 11px">
+        <div id="spotlight-name" style="font-family:var(--font-display);font-size:.88rem;color:#fff;font-weight:400;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+        <div id="spotlight-bio" style="font-size:.68rem;color:rgba(255,255,255,.72);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden"></div>
+        <div id="spotlight-cta" style="margin-top:6px;font-size:.65rem;font-weight:700;color:rgba(255,255,255,.6);text-align:right">Meet them →</div>
       </div>
     </div>
-    <!-- progress bar -->
-    <div id="spotlight-progress" style="position:absolute;bottom:0;left:0;height:2px;background:rgba(255,255,255,.35);width:0;transition:width linear"></div>
-  </div>
 
-  <div id="map-container">
     <div id="map-loading" style="position:absolute;inset:0;z-index:500;background:rgba(244,241,235,.7);display:flex;align-items:center;justify-content:center;pointer-events:none;transition:opacity .4s ease">
       <div style="font-size:.85rem;color:var(--warm-mid);font-weight:600;font-family:var(--font-body)">🗺️ Loading map…</div>
     </div>
@@ -8397,26 +8390,21 @@ function getSpotlightAnimals() {
 
 function renderSpotlightCard(item) {
   var r = item.r;
-  var strip  = document.getElementById('shelter-spotlight');
-  var img    = document.getElementById('spotlight-img');
-  var emoji  = document.getElementById('spotlight-emoji');
-  var label  = document.getElementById('spotlight-label');
-  var name   = document.getElementById('spotlight-name');
-  var bio    = document.getElementById('spotlight-bio');
-  var cta    = document.getElementById('spotlight-cta');
+  var strip = document.getElementById('shelter-spotlight');
+  var img   = document.getElementById('spotlight-img');
+  var emoji = document.getElementById('spotlight-emoji');
+  var label = document.getElementById('spotlight-label');
+  var name  = document.getElementById('spotlight-name');
+  var bio   = document.getElementById('spotlight-bio');
+  var cta   = document.getElementById('spotlight-cta');
   if (!strip) return;
 
-  /* Photo */
   if (r.photo) {
-    img.src = r.photo;
-    img.style.display = 'block';
-    emoji.style.display = 'none';
+    img.src = r.photo; img.style.display = 'block'; emoji.style.display = 'none';
   } else {
-    img.style.display = 'none';
-    emoji.style.display = 'flex';
+    img.style.display = 'none'; emoji.style.display = 'flex';
     emoji.textContent = r.species === 'Dog' ? '🐕' : r.species === 'Cat' ? '🐈' : '🐾';
   }
-
   label.textContent = item.label;
   name.textContent  = r.name ? r.name + (r.breed ? ' · ' + r.breed : '') : (r.species || 'Animal');
   bio.textContent   = r.adoptPersonality
@@ -8425,34 +8413,26 @@ function renderSpotlightCard(item) {
   cta.textContent   = item.cta;
 }
 
-function startSpotlightProgress() {
-  var bar = document.getElementById('spotlight-progress');
-  if (!bar) return;
-  bar.style.transition = 'none';
-  bar.style.width = '0%';
-  requestAnimationFrame(function(){
-    requestAnimationFrame(function(){
-      bar.style.transition = 'width ' + SPOTLIGHT_INTERVAL + 'ms linear';
-      bar.style.width = '100%';
-    });
-  });
-}
-
 function rotateSpotlight() {
   var animals = getSpotlightAnimals();
   var strip = document.getElementById('shelter-spotlight');
   if (!strip) return;
 
-  if (!animals.length) {
-    strip.style.display = 'none';
-    return;
-  }
+  if (!animals.length) { strip.style.display = 'none'; strip.style.opacity = '0'; return; }
 
+  /* Fade out → swap content → fade in */
   strip.style.display = 'block';
-  _spotlightIndex = (_spotlightIndex) % animals.length;
-  renderSpotlightCard(animals[_spotlightIndex]);
-  startSpotlightProgress();
-  _spotlightIndex++;
+  strip.style.opacity = '0';
+
+  setTimeout(function() {
+    _spotlightIndex = _spotlightIndex % animals.length;
+    renderSpotlightCard(animals[_spotlightIndex]);
+    _spotlightIndex++;
+    /* Fade in */
+    requestAnimationFrame(function(){
+      strip.style.opacity = '1';
+    });
+  }, 500);
 
   clearTimeout(_spotlightRotateTimer);
   _spotlightRotateTimer = setTimeout(rotateSpotlight, SPOTLIGHT_INTERVAL);
