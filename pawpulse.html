@@ -5699,7 +5699,7 @@ function selectIntake(id) {
       + '</div>'
       + (r.adoptionStatus === 'available'
           ? '<div style="font-size:.74rem;color:#3060c0;margin-bottom:10px">🏠 Visible on map as adoption-ready · Blue pin</div>'
-          : '<div style="font-size:.74rem;color:var(--warm-mid);margin-bottom:10px">Mark "Available" to surface on the public map</div>')
+          : '<div style="font-size:.74rem;color:var(--warm-mid);margin-bottom:10px">Mark "Adoptable" to surface on the public map</div>')
       : '')
     + '<div class="sh-sec">Activity Log</div>'
     + '<div class="sh-log">' + log + '</div>'
@@ -7104,12 +7104,12 @@ function buildShelterContext() {
   var spayNeut = allYear.filter(function(r){ return getMed(r).spayNeuter; });
   var medCost  = allYear.reduce(function(s,r){ var m=getMed(r); return s+(m.spayNeuterCost||0)+(m.vaccinationCost||0)+(m.vetCost||0)+(m.otherCost||0); }, 0);
   var holdCost = inCare.reduce(function(s,r){ if(r.holdType==='none'||!r.intakeType) return s; var d=daysSinceDate(r.shelterHoldStart||r.date); var rt=(r.enforcement&&r.enforcement.dailyCost!=null)?r.enforcement.dailyCost:DAILY_RATE; return s+d*rt; }, 0);
-  var longWait = inCare.filter(function(r){ return daysSince(r.dateAvailable||r.date)>=14 && r.adoptionStatus==='available'; });
+  var longWait = inCare.filter(function(r){ return daysSince(r.date)>=14 && r.adoptionStatus==='available'; });
   var adoptReady = inCare.filter(function(r){ return r.adoptionStatus==='available'; });
 
   /* Spotlight animals — longest waiting adoption-ready */
   var spotlights = adoptReady.slice().sort(function(a,b){ return daysSince(b.dateAvailable||b.date)-daysSince(a.dateAvailable||a.date); }).slice(0,3).map(function(r){
-    var d = Math.floor(daysSince(r.dateAvailable||r.date));
+    var d = Math.floor(daysSince(r.date)); /* use intake date — consistent with banner */
     return (r.name||r.species||'Unknown') + (r.breed?' ('+r.breed+')':'') + (r.color?', '+r.color:'') + ' — waiting ' + d + ' days' + (r.tags?' ['+r.tags+']':'');
   });
 
@@ -8409,7 +8409,7 @@ async function generateSpotlightBio(r) {
           + '"I\'m Bailey. I just arrived and I\'m already in love with everyone I meet." '
           + '"I\'m Omni. I\'ve been here 19 days and I\'d love a yard to run in." '
           + '"I\'m Parker. I just got here — and I already love it when you scratch my ears." '
-          + 'Days in care: ' + Math.floor(daysSince(r.dateAvailable||r.date)) + '. '
+          + 'Days in care: ' + Math.floor(daysSince(r.date)) + '. ' /* intake date — days physically at shelter */
           + 'Name: ' + (r.name||r.species||'Animal') + '. '
           + 'Personality hint: ' + (r.adoptPersonality ? r.adoptPersonality.substring(0,100) : (r.breed||r.color||'')) + '. '
           + 'Animal: ' + desc + '. '
@@ -8485,7 +8485,7 @@ async function renderSpotlightCard(item) {
     emoji.textContent = r.species === 'Dog' ? '🐕' : r.species === 'Cat' ? '🐈' : '🐾';
   }
   /* Label pill shows status - shorten for compact display */
-  var shortLabel = item.label.replace('Available for adoption','Available').replace('needs a home','Needs a home').replace('Recently adopted — great news! 🎉','Recently adopted 🎉');
+  var shortLabel = item.label.replace('Available for adoption','Adoptable').replace('needs a home','Needs a home').replace('Recently adopted — great news! 🎉','Recently adopted 🎉');
   label.textContent = shortLabel;
   /* Update header label with shelter name */
   var hdrLabel = document.getElementById('spotlight-header-label');
