@@ -8459,6 +8459,11 @@ function getSpotlightAnimals() {
   return eligible;
 }
 
+function renderSpotlightCardSync(item) {
+  /* Synchronous fields only — photo, name, label, factual bio tag */
+  renderSpotlightCard(item);
+}
+
 async function renderSpotlightCard(item) {
   var r = item.r;
   /* Clear cached bio if it's the first time showing this animal this session */
@@ -8489,20 +8494,7 @@ async function renderSpotlightCard(item) {
   name.textContent  = r.name || r.species || 'Animal';
   bio.textContent   = [r.breed, r.color, r.age].filter(Boolean).join(' · ');
   /* Show AI bio if available, generate if not */
-  var aiBioEl = document.getElementById('spotlight-ai-bio');
-  if (aiBioEl) {
-    aiBioEl.style.opacity = '0';
-    aiBioEl.textContent = '';
-    generateSpotlightBio(r).then(function(bio) {
-      if (bio && aiBioEl) {
-        aiBioEl.textContent = bio;
-        aiBioEl.style.webkitLineClamp = '3';
-        aiBioEl.style.webkitBoxOrient = 'vertical';
-        aiBioEl.style.overflow = 'hidden';
-        requestAnimationFrame(function(){ aiBioEl.style.opacity = '1'; });
-      }
-    });
-  }
+  /* bio handled by rotateSpotlight */
 
   /* CTA is static 'View Adoptable Pets →' — override only for adopted */
   if (item.label.includes('adopted')) cta.textContent = 'See who is available →';
@@ -8519,24 +8511,52 @@ function rotateSpotlight() {
   var firstShow = strip.style.display === 'none' || strip.style.opacity === '0';
 
   if (firstShow) {
-    /* First appearance — no fade out, just populate and fade in */
+    /* First appearance — fetch bio FIRST, reveal card only after bio is set */
     strip.style.display = 'block';
     strip.style.opacity = '0';
     _spotlightIndex = _spotlightIndex % animals.length;
-    renderSpotlightCard(animals[_spotlightIndex]);
+    var item = animals[_spotlightIndex];
     _spotlightIndex++;
-    requestAnimationFrame(function(){
+    /* Pre-populate synchronous fields (name, label, photo, factual bio) */
+    renderSpotlightCardSync(item);
+    /* Wait for AI bio, then reveal everything together */
+    generateSpotlightBio(item.r).then(function(bio) {
+      var aiBioEl = document.getElementById('spotlight-ai-bio');
+      if (bio && aiBioEl) {
+        aiBioEl.textContent = bio;
+        aiBioEl.style.webkitLineClamp = '3';
+        aiBioEl.style.webkitBoxOrient = 'vertical';
+        aiBioEl.style.overflow = 'hidden';
+        aiBioEl.style.opacity = '1';
+      }
+      /* Reveal card NOW — bio and card arrive together */
       requestAnimationFrame(function(){ strip.style.opacity = '1'; });
     });
   } else {
-    /* Subsequent rotations — fade out, swap, fade in */
+    /* Subsequent rotations — fade out, pre-fetch next bio during fade, reveal together */
     strip.style.opacity = '0';
-    setTimeout(function() {
-      _spotlightIndex = _spotlightIndex % animals.length;
-      renderSpotlightCard(animals[_spotlightIndex]);
-      _spotlightIndex++;
-      requestAnimationFrame(function(){ strip.style.opacity = '1'; });
-    }, 500);
+    _spotlightIndex = _spotlightIndex % animals.length;
+    var item2 = animals[_spotlightIndex];
+    _spotlightIndex++;
+    /* Start fetching next bio immediately during fade-out (500ms window) */
+    generateSpotlightBio(item2.r).then(function(bio) {
+      renderSpotlightCardSync(item2);
+      var aiBioEl2 = document.getElementById('spotlight-ai-bio');
+      if (aiBioEl2) {
+        aiBioEl2.style.opacity = '0';
+        if (bio) {
+          aiBioEl2.textContent = bio;
+          aiBioEl2.style.webkitLineClamp = '3';
+          aiBioEl2.style.webkitBoxOrient = 'vertical';
+          aiBioEl2.style.overflow = 'hidden';
+        }
+      }
+      /* Ensure at least 400ms fade-out visible before revealing */
+      setTimeout(function() {
+        if (aiBioEl2 && bio) aiBioEl2.style.opacity = '1';
+        requestAnimationFrame(function(){ strip.style.opacity = '1'; });
+      }, 400);
+    });
   }
 
   clearTimeout(_spotlightRotateTimer);
@@ -8544,8 +8564,13 @@ function rotateSpotlight() {
 }
 
 function initSpotlight() {
-  /* Only show on map view. Start after data loads. */
-  setTimeout(rotateSpotlight, 600);
+  /* Pre-warm bio cache for first animal, then reveal card with text already ready */
+  var animals = getSpotlightAnimals();
+  if (!animals.length) return;
+  generateSpotlightBio(animals[0].r).then(function() {
+    /* Bio is now cached — rotateSpotlight will reveal card + text simultaneously */
+    rotateSpotlight();
+  });
 }
 
 
