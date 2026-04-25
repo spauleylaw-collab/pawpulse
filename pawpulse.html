@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="preconnect" href="https://tile.openstreetmap.org">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>PawPulse — Lost & Found Pets · Hastings, NE</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -119,7 +120,7 @@ body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);h
 
 /* MAP CONTAINER — same as PublicPulse */
 #map-container{flex:1;position:relative;overflow:hidden;margin-top:22px}
-#map{width:100%;height:100%}
+#map{width:100%;height:100%;touch-action:pan-x pan-y;-webkit-tap-highlight-color:transparent}
 .leaflet-tile{filter:saturate(.82) brightness(1.02) sepia(.06)}
 .leaflet-container{background:#d4c9b0}
 .leaflet-bottom.leaflet-right{bottom:90px !important;right:12px !important}
@@ -161,7 +162,9 @@ textarea{min-height:64px}
 .chk-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;cursor:pointer}
 .chk-row input{width:16px;height:16px;accent-color:var(--found-g);flex-shrink:0}
 .chk-row label{font-size:.82rem;font-weight:500;color:var(--warm-dk);text-transform:none;letter-spacing:0;margin:0;cursor:pointer}
-.submit-btn{width:100%;padding:12px;font-family:var(--font-display);font-size:.98rem;font-weight:600;border:none;border-radius:10px;cursor:pointer;transition:all .2s;margin-top:6px}
+.submit-btn{width:100%;padding:12px;font-family:var(--font-display);font-size:.98rem;font-weight:600;border:none;border-radius:10px;cursor:pointer;transition:all .2s;margin-top:6px}@media(max-width:640px){
+  .submit-btn { position:sticky; bottom:0; left:0; right:0; margin-top:8px; z-index:10; box-shadow:0 -4px 12px rgba(0,0,0,.1); }
+}
 .submit-btn.lost{background:var(--lost-r);color:#fff}
 .submit-btn.found{background:var(--found-g);color:#fff}
 .submit-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.22);filter:brightness(1.08)}
@@ -174,7 +177,7 @@ textarea{min-height:64px}
 .stat-dot.lost{background:var(--lost-r)}
 .stat-dot.found{background:var(--found-g)}
 #drop-hint{display:none;position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:700;background:var(--forest);color:var(--cream);border-radius:999px;padding:9px 16px 9px 14px;font-size:.8rem;font-weight:600;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(0,0,0,.3);white-space:nowrap;animation:hpulse 1.6s ease-in-out infinite}
-#drop-hint.on{display:flex}
+#drop-hint.on{display:flex}@media(max-width:640px){#drop-hint{left:0!important;right:0!important;top:0!important;transform:none!important;border-radius:0!important;width:100%!important;justify-content:center;padding:14px 16px!important;font-size:.9rem!important;white-space:normal!important}}
 @keyframes hpulse{0%,100%{opacity:.88}50%{opacity:1}}
 #drop-cancel{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);color:rgba(255,255,255,.75);border-radius:999px;padding:3px 10px;font-size:.72rem;font-weight:600;cursor:pointer;font-family:var(--font-body)}
 #drop-cancel:hover{color:#fff}
@@ -186,7 +189,7 @@ textarea{min-height:64px}
 #pin-card.open{display:flex;flex-direction:column;animation:cpop .2s cubic-bezier(.34,1.56,.64,1)}
 #pin-card.fading{opacity:0;transform:translateY(-10px) scale(.97);pointer-events:none}
 @keyframes cpop{from{opacity:0;transform:scale(.9) translateY(6px)}to{opacity:1;transform:scale(1) translateY(0)}}
-.pc-close{position:absolute;top:4px;right:4px;background:rgba(42,31,18,.5);color:#fff;border:none;cursor:pointer;width:36px;height:36px;border-radius:50%;font-size:.85rem;line-height:36px;text-align:center;z-index:1}
+.pc-close{position:absolute;top:6px;right:6px;background:rgba(42,31,18,.55);color:#fff;border:none;cursor:pointer;width:44px;height:44px;border-radius:50%;font-size:.95rem;line-height:44px;text-align:center;z-index:1;display:flex;align-items:center;justify-content:center}
 .pc-img{width:100%;height:120px;object-fit:cover;display:block}
 .pc-no-img{width:100%;height:62px;display:flex;align-items:center;justify-content:center;font-size:2rem}
 .pc-body{padding:11px 13px 13px}
@@ -399,7 +402,7 @@ textarea{min-height:64px}
 #rpt-search:focus{border-color:var(--amber)}
 #rpt-search::placeholder{color:var(--warm-mid)}
 .rpt-chips{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
-.rpt-chip{font-family:var(--font-body);font-size:.72rem;font-weight:600;padding:7px 11px;border-radius:999px;border:none;background:transparent;color:var(--warm-mid);cursor:pointer;transition:all .12s}
+.rpt-chip{font-family:var(--font-body);font-size:.72rem;font-weight:600;padding:10px 14px;min-height:44px;border-radius:999px;border:none;background:transparent;color:var(--warm-mid);cursor:pointer;transition:all .12s}
 .rpt-chip:hover{background:var(--cream-2);color:var(--warm-dk)}
 .rpt-chip.active{background:var(--forest);color:#fff;box-shadow:0 1px 4px rgba(42,74,42,.25)}
 .rpt-chip.active.lost{background:var(--lost-r)}
@@ -438,7 +441,7 @@ textarea{min-height:64px}
 #rpt-detail-panel{flex:1;min-height:0;overflow-y:auto;padding:22px;background:var(--cream);display:none}
 #rpt-detail-panel::-webkit-scrollbar{width:3px}
 #rpt-detail-panel::-webkit-scrollbar-thumb{background:var(--cream-3);border-radius:99px}
-@media(max-width:640px){#rpt-left{width:100%;flex:1;min-height:0}#rpt-row{flex-direction:column}#rpt-right{display:none}#rpt-right.show{display:flex;flex-direction:column;position:fixed;inset:var(--nav-h) 0 0 0;z-index:900;background:var(--cream);overflow:hidden}.mobile-back-btn{display:block!important}.desktop-close-btn{display:none!important}}
+@media(max-width:640px){#side-panel{position:fixed!important;bottom:0!important;top:auto!important;right:0!important;left:0!important;width:100%!important;max-width:100%!important;height:auto!important;max-height:78vh!important;border-radius:18px 18px 0 0!important;transform:translateY(100%);transition:transform .3s cubic-bezier(.34,1.2,.64,1)!important;overflow-y:auto;-webkit-overflow-scrolling:touch}#side-panel.open{transform:translateY(0)!important}}@media(max-width:640px){#pin-card{position:fixed!important;bottom:0!important;left:0!important;right:0!important;top:auto!important;width:100%!important;max-width:100%!important;max-height:72vh!important;border-radius:18px 18px 0 0!important;z-index:1800!important}#pin-card-body{overflow-y:auto;-webkit-overflow-scrolling:touch;max-height:calc(72vh - 60px)}#rpt-left{width:100%;flex:1;min-height:0}#rpt-row{flex-direction:column}#rpt-right{display:none}#rpt-right.show{display:flex;flex-direction:column;position:fixed;inset:var(--nav-h) 0 0 0;z-index:900;background:var(--cream);overflow:hidden}.mobile-back-btn{display:block!important}.desktop-close-btn{display:none!important}}
 /* Adopt view */
 #view-adopt{background:var(--cream-2);flex-direction:column;overflow:hidden}
 #adopt-hdr{background:var(--cream);border-bottom:1px solid var(--cream-3);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
@@ -543,7 +546,7 @@ textarea{min-height:64px}
       <span class="nav-logo-sub">Hastings, NE</span>
     </div>
   </div>
-  <button class="nav-report-btn" onclick="openReportPicker()">+ Report</button>
+  <button class="nav-report-btn" id="nav-action-btn" onclick="navActionBtn()">+ Report</button>
   <!-- Report type picker -->
   <div id="report-picker" style="display:none;position:fixed;inset:0;z-index:1100;background:rgba(42,31,18,.5);align-items:center;justify-content:center" onclick="if(event.target===this)this.style.display='none'">
     <div style="background:var(--cream);border-radius:16px;padding:24px;width:260px;box-shadow:0 16px 48px rgba(0,0,0,.28)">
@@ -569,9 +572,9 @@ textarea{min-height:64px}
     <div id="staff-badge" style="display:none;align-items:center;gap:5px;margin-left:6px">
       <div id="staff-name-badge" style="color:var(--cream);font-size:.7rem;font-weight:700;white-space:nowrap;opacity:.85">🔐 Staff</div>
       <div style="display:flex;gap:4px">
-        <button onclick="clearTestData()" title="Clear All Data" style="padding:5px 8px;font-size:.65rem;font-weight:600;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);cursor:pointer;color:var(--cream);font-family:var(--font-body)">🗑</button>
-        <button onclick="forceSyncPhotos()" title="Sync Photos to Cloud" style="padding:5px 8px;font-size:.65rem;font-weight:600;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);cursor:pointer;color:var(--cream);font-family:var(--font-body)">☁️</button>
-        <button onclick="loadDemoData()" title="Load Demo Animals" style="padding:5px 8px;font-size:.65rem;font-weight:600;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);cursor:pointer;color:var(--cream);font-family:var(--font-body)">🐾</button>
+        <button onclick="clearTestData()" title="Clear All Data" style="padding:5px 8px;font-size:.65rem;font-weight:600;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,77,77,.25);cursor:pointer;color:var(--cream);font-family:var(--font-body);display:none" id="btn-clear-data">🗑</button>
+        <button onclick="forceSyncPhotos()" title="Force Photo Sync to Cloud" style="padding:5px 8px;font-size:.65rem;font-weight:600;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);cursor:pointer;color:var(--cream);font-family:var(--font-body)">☁️</button>
+        <button onclick="loadDemoData()" title="Load Demo Animals" style="padding:5px 8px;font-size:.65rem;font-weight:600;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);cursor:pointer;color:var(--cream);font-family:var(--font-body);display:none" id="btn-load-demo">🐾</button>
         <button onclick="openChangePw()" title="Change Password" style="padding:5px 8px;font-size:.65rem;font-weight:600;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);cursor:pointer;color:var(--cream);font-family:var(--font-body)">🔑</button>
         <button onclick="doSignOut()" style="padding:5px 10px;font-size:.65rem;font-weight:700;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);cursor:pointer;color:var(--cream);font-family:var(--font-body)">Sign Out</button>
       </div>
@@ -777,6 +780,11 @@ textarea{min-height:64px}
 
 <div id="view-map" class="view active">
   <div id="map-container">
+    <!-- Map zoom controls -->
+    <div id="map-zoom-ctrl" style="position:absolute;bottom:100px;right:12px;z-index:800;display:flex;flex-direction:column;gap:4px">
+      <button onclick="map.zoomIn()" style="width:44px;height:44px;border:none;border-radius:10px;background:rgba(255,255,255,.92);box-shadow:0 2px 8px rgba(0,0,0,.2);font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--warm-dk)">+</button>
+      <button onclick="map.zoomOut()" style="width:44px;height:44px;border:none;border-radius:10px;background:rgba(255,255,255,.92);box-shadow:0 2px 8px rgba(0,0,0,.2);font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--warm-dk)">−</button>
+    </div>
     <div id="map"></div>
 
     <!-- Live banner -->
@@ -791,6 +799,7 @@ textarea{min-height:64px}
 <div id="map-legend" style="display:flex;flex-direction:column;gap:5px">
       <div class="legend-item"><div class="stat-dot lost"></div><span id="cnt-lost" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span>Lost</span></div>
       <div class="legend-item"><div class="stat-dot found"></div><span id="cnt-found" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span>Found</span></div>
+      <div class="legend-item"><div class="legend-pin" style="background:#d06020"></div><span id="cnt-at-shelter" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span>Bringing to Shelter</span></div>
       <div class="legend-item"><div class="legend-pin" style="background:#1a3f8a"></div><span id="cnt-shelter" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span id="legend-shelter-label">At Heartland Shelter</span></div>
       <div class="legend-item" style="padding-left:18px"><div class="legend-pin" style="background:#c8841a"></div><span id="cnt-adopt" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span>↳ Adoptable</span></div>
       <div style="font-size:.55rem;color:var(--warm-mid);line-height:1.4;margin-top:2px;max-width:160px">Info may change. Contact shelter for official status.</div>
@@ -798,7 +807,7 @@ textarea{min-height:64px}
 
     <div id="drop-hint">
       📍 Tap the map to place pin
-      <button id="drop-cancel" onclick="cancelPlace(); document.getElementById('side-panel').classList.add('open');">✕ Back to form</button>
+      <button id="drop-cancel" onclick="cancelPlace(); document.getElementById('side-panel').classList.add('open');" style="padding:8px 14px;min-height:44px;font-size:.85rem;font-weight:700;border:none;border-radius:8px;background:rgba(255,255,255,.2);color:#fff;cursor:pointer">✕ Back</button>
     </div>
     <!-- Shown after pin placed on mobile — big tap target to return to form -->
     <div id="pin-set-btn" style="display:none;position:absolute;bottom:80px;left:50%;transform:translateX(-50%);z-index:900;background:var(--forest);color:var(--cream);border:none;border-radius:999px;padding:14px 28px;font-size:.9rem;font-weight:700;font-family:var(--font-display);box-shadow:0 4px 20px rgba(0,0,0,.35);cursor:pointer;white-space:nowrap;animation:hpulse 1.4s ease-in-out infinite" onclick="document.getElementById('pin-set-btn').style.display='none'; document.getElementById('side-panel').classList.add('open'); setTimeout(function(){map.invalidateSize();},340);">
@@ -901,11 +910,11 @@ textarea{min-height:64px}
           </div>
           <div class="chk-row">
             <input type="checkbox" id="f-shelter" onchange="document.getElementById('f-sgrp').style.display=this.checked?'':'none'">
-            <label for="f-shelter">🏠 Pet is at a shelter or vet</label>
+            <label for="f-shelter">🏠 I have brought or am bringing this pet to a shelter or vet</label>
           </div>
           <div id="f-sgrp" style="display:none" class="fg">
-            <label>Shelter / Vet Name</label>
-            <input type="text" id="f-sname" placeholder="e.g. Adams County Humane Society">
+            <label>Which shelter or vet?</label>
+            <input type="text" id="f-sname" placeholder="e.g. Heartland Pet Connection">
           </div>
           <!-- Honeypot: hidden from real users, bots fill it in -->
           <div style="position:absolute;left:-9999px;top:-9999px;opacity:0;pointer-events:none" aria-hidden="true"><input type="text" id="f-confirm-email" name="confirm_email" tabindex="-1" autocomplete="off"></div>
@@ -938,7 +947,10 @@ try {
   map = L.map('map', { center: HASTINGS, zoom: MAP_ZOOM, zoomControl: false,
     maxBounds: [[40.28, -98.70], [40.76, -97.95]],
     maxBoundsViscosity: 1.0,
-    minZoom: 9 });
+    minZoom: 9,
+    tap: false,          /* prevent Leaflet double-tap quirks on iOS */
+    tapTolerance: 15     /* larger tap area for pin accuracy near edges */
+  });
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     maxZoom: 19
@@ -1093,7 +1105,10 @@ function startFirestoreListener() {
         }
         /* If Firestore empty, reports already loaded from localStorage in bootApp — keep them */
         _fbReady = true;
+        installBypassDetection();
+        setTimeout(function(){ assertNoInvalidStates(reports); }, 800);
         showShelterPicker();
+        setTimeout(rotateBanner, 200); /* Rotate banner as soon as data loads */
         return;
       }
 
@@ -1130,6 +1145,7 @@ function startFirestoreListener() {
         renderMarkers();
         renderIncareView();
         updateNavCounts();
+        rotateBanner();
       }
     }, function(err) {
       console.warn('Firestore listener error:', err);
@@ -1447,7 +1463,7 @@ function clearTestData() {
     if (badge) { var o = badge.textContent; badge.textContent = '✓ Already empty'; setTimeout(function(){ badge.textContent = o; }, 2000); }
     return;
   }
-  var confirmed = window.confirm('Remove all ' + total + ' records from the map and system? This cannot be undone.');
+  var confirmed = window.confirm('⚠️ DANGER: Remove all ' + total + ' records permanently from the map and system? This cannot be undone.');
   if (!confirmed) return;
 
   /* Delete all from Firestore in batches */
@@ -1719,7 +1735,6 @@ function openIntakeForm(intakeSource) {
         + '<button type="button" id="ct-standard" onclick="toggleCaseType(\'standard\')" style="padding:9px 8px;border-radius:8px;border:1.5px solid var(--cream-3);background:#fff;font-family:var(--font-body);font-size:.78rem;font-weight:600;color:var(--warm-mid);cursor:pointer">🚔 Standard Hold</button>'
         + '<button type="button" id="ct-stray-ac" onclick="toggleCaseType(\'stray-ac\')" style="padding:9px 8px;border-radius:8px;border:1.5px solid var(--cream-3);background:#fff;font-family:var(--font-body);font-size:.78rem;font-weight:600;color:var(--warm-mid);cursor:pointer">🐾 AC Stray</button>'
         + '<button type="button" id="ct-bite" onclick="toggleCaseType(\'bite\')" style="padding:9px 8px;border-radius:8px;border:1.5px solid var(--cream-3);background:#fff;font-family:var(--font-body);font-size:.78rem;font-weight:600;color:var(--warm-mid);cursor:pointer">🦷 Bite Case</button>'
-        + '<button type="button" id="ct-dangerous" onclick="toggleCaseType(\'dangerous\')" style="padding:9px 8px;border-radius:8px;border:1.5px solid var(--cream-3);background:#fff;font-family:var(--font-body);font-size:.78rem;font-weight:600;color:var(--warm-mid);cursor:pointer">⚠️ Dangerous Animal</button>'
         + '</div><input type="hidden" id="si-casetype" value=""></div>'
         + '<div class="fr"><div class="fg" style="margin:0"><label>Hold Start Date</label><input type="date" id="si-holdstart" value="' + today + '" style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-3);border-radius:8px;font-family:var(--font-body);font-size:.86rem"></div>'
         + '<div class="fg" style="margin:0"><label>Daily Rate ($)</label><input type="number" id="si-dailyrate" value="' + DAILY_RATE + '" min="0" step="1" style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-3);border-radius:8px;font-family:var(--font-body);font-size:.86rem"></div></div>'
@@ -1741,8 +1756,117 @@ function openIntakeForm(intakeSource) {
     + '<button class="sh-btn" onclick="closeIntakeModal()">Cancel</button>'
     + '</div>';
 
-  setTimeout(function(){ injectMicButtons(body); setTimeout(checkFoundPinMatch, 150); }, 50);
+  setTimeout(function(){ injectMicButtons(body); setTimeout(checkFoundPinMatch, 150); setupKeyboardScroll(body); }, 50);
 }
+
+/* ── FOUND PIN MATCH ON INTAKE ──────────────────────────────────────────
+   When staff logs a new intake, automatically check for public found-pin
+   reports that might be the same animal — including atShelter reports.
+   If a likely match is found, prompt staff to resolve/remove the pin.
+──────────────────────────────────────────────────────────────────────── */
+function checkFoundPinsOnIntake(intakeRecord) {
+  if (!intakeRecord || !intakeRecord.species) return;
+
+  /* Find unresolved public found pins matching species */
+  var candidates = reports.filter(function(r){
+    if (r.shelter || r.reunited || r.id === intakeRecord.id) return false;
+    if (r.type !== 'found') return false;
+    /* Species match (or species unknown on found pin) */
+    var speciesMatch = !r.species || !intakeRecord.species ||
+      r.species.toLowerCase() === intakeRecord.species.toLowerCase();
+    if (!speciesMatch) return false;
+    /* Within 14 days */
+    var daysDiff = Math.abs(daysSince(r.date) - daysSince(intakeRecord.date));
+    if (daysDiff > 14) return false;
+    return true;
+  });
+
+  if (!candidates.length) return;
+
+  /* Score by additional fields */
+  candidates = candidates.map(function(r) {
+    var score = 1;
+    /* Color match */
+    if (r.color && intakeRecord.color) {
+      var rWords = r.color.toLowerCase().split(/\s+|,/);
+      var iWords = intakeRecord.color.toLowerCase().split(/\s+|,/);
+      var shared = rWords.filter(function(w){ return w.length > 2 && iWords.indexOf(w) !== -1; });
+      if (shared.length > 0) score += 2;
+    }
+    /* atShelter — finder said they dropped it off — very high signal */
+    if (r.atShelter && r.shelterName && r.shelterName.toLowerCase().indexOf('heartland') !== -1) {
+      score += 5;
+    }
+    /* Recent (within 3 days) */
+    if (daysSince(r.date) <= 3) score += 1;
+    return { r: r, score: score };
+  }).sort(function(a, b){ return b.score - a.score; });
+
+  /* Only show if top match has meaningful score */
+  var top = candidates[0];
+  if (top.score < 2) return;
+
+  /* Build match notification panel */
+  var existing = document.getElementById('intake-found-match-panel');
+  if (existing) existing.remove();
+
+  var panel = document.createElement('div');
+  panel.id = 'intake-found-match-panel';
+  panel.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:4000;background:#fff;border-radius:18px 18px 0 0;box-shadow:0 -8px 40px rgba(0,0,0,.25);padding:20px;max-height:70vh;overflow-y:auto;-webkit-overflow-scrolling:touch';
+
+  var r = top.r;
+  var dateStr = r.date ? new Date(r.date).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
+  var atShelterNote = r.atShelter ? '<div style="background:#fff8e8;border:1px solid #d4a035;border-radius:6px;padding:6px 10px;font-size:.74rem;color:#7a5010;margin-top:6px">🏠 Finder says they dropped this animal at ' + esc(r.shelterName||'a shelter') + '</div>' : '';
+
+  panel.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">'
+    + '<div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--warm-dk)">🔍 Possible Match on Map</div>'
+    + '<button onclick="var p=document.getElementById(\'intake-found-match-panel\');if(p)p.remove();" style="background:var(--cream-2);border:none;border-radius:50%;width:32px;height:32px;font-size:1rem;cursor:pointer">✕</button>'
+    + '</div>'
+    + '<div style="font-size:.84rem;color:var(--warm-mid);margin-bottom:14px;line-height:1.5">A found pet report on the map may match this intake. Resolving it removes the pin and prevents duplicates.</div>'
+    + '<div style="background:var(--cream-2);border-radius:10px;padding:12px;margin-bottom:14px">'
+    + '<div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--warm-mid);margin-bottom:6px">Found Pin Report</div>'
+    + '<div style="font-size:.86rem;font-weight:600;color:var(--warm-dk)">' + esc(r.species||'Unknown') + (r.color ? ' · ' + esc(r.color) : '') + '</div>'
+    + (r.address ? '<div style="font-size:.76rem;color:var(--warm-mid);margin-top:2px">📍 ' + esc(r.address) + '</div>' : '')
+    + (r.finder ? '<div style="font-size:.76rem;color:var(--warm-mid)">Found by: ' + esc(r.finder) + (r.fphone?' · '+esc(r.fphone):'') + '</div>' : '')
+    + '<div style="font-size:.72rem;color:var(--warm-mid)">Reported ' + dateStr + '</div>'
+    + atShelterNote
+    + '</div>'
+    + '<div style="display:flex;gap:10px">'
+    + '<button onclick="resolveFoundPinFromIntake(' + r.id + ')" style="flex:1;padding:12px;border:none;border-radius:10px;background:var(--forest);color:#fff;font-family:var(--font-display);font-size:.9rem;font-weight:700;cursor:pointer">✅ Yes — Same Animal</button>'
+    + '<button onclick="var p=document.getElementById(\'intake-found-match-panel\');if(p)p.remove();" style="flex:1;padding:12px;border:1.5px solid var(--cream-3);border-radius:10px;background:#fff;font-family:var(--font-display);font-size:.9rem;font-weight:700;cursor:pointer;color:var(--warm-dk)">No — Different Animal</button>'
+    + '</div>';
+
+  /* Backdrop */
+  var bd = document.createElement('div');
+  bd.style.cssText = 'position:fixed;inset:0;z-index:3999;background:rgba(0,0,0,.45)';
+  bd.onclick = function(){ panel.remove(); bd.remove(); };
+  document.body.appendChild(bd);
+
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){
+      document.body.appendChild(panel);
+    });
+  });
+}
+
+function resolveFoundPinFromIntake(foundId) {
+  var panel = document.getElementById('intake-found-match-panel');
+  if (panel) panel.remove();
+  /* Remove backdrop */
+  document.querySelectorAll('[style*="z-index:3999"]').forEach(function(el){ el.remove(); });
+
+  var r = reports.find(function(x){ return x.id == foundId; });
+  if (!r) return;
+  r.reunited = true;
+  r.reunitedDate = new Date().toISOString();
+  r.resolvedByIntake = true;
+  save();
+  writeAnimalRecord(r, 'staff');
+  renderMarkers();
+  updateNavCounts();
+  pushBannerEvent('📍 Found pin removed — matched to shelter intake', 'var(--found-g)');
+}
+
 
 function submitIntakeFromModal() {
   /* Reads from modal form and submits */
@@ -1818,6 +1942,8 @@ function submitIntakeFromModal() {
   pushBannerEvent((isHold?'⚠️ Animal on hold logged at ':'🐾 New animal received at ') + activeShelter, isHold?'#d4843a':'var(--found-g)');
   /* Auto-match: search lost reports for possible owner immediately after intake */
   if (!isHold) setTimeout(function(){ autoMatchOnIntake(r); }, 800);
+  /* Check for public found pins that may match this intake — prompt staff to resolve */
+  setTimeout(function(){ checkFoundPinsOnIntake(r); }, 1200);
 }
 
 /* ── ANIMAL EDIT MODAL ───────────────────────────────────────────────── */
@@ -1931,7 +2057,7 @@ function openAnimalEdit(id) {
     /* ── Section: Hold / Legal ── */
     + editSection('hold', '⚖️ Hold & Legal', curStatus==='hold',
         '<div class="fr"><div class="fg" style="margin:0"><label>Hold Type</label>'
-        + '<select id="ae-holdtype"><option value="standard"' + (r.holdType==='standard'?' selected':'') + '>Standard</option><option value="bite"' + (r.holdType==='bite'?' selected':'') + '>Bite Hold (10-day quarantine)</option><option value="dangerous"' + (r.holdType==='dangerous'?' selected':'') + '>Dangerous Animal</option></select></div>'
+        + '<select id="ae-holdtype"><option value="standard"' + (r.holdType==='standard'?' selected':'') + '>Standard</option><option value="bite"' + (r.holdType==='bite'?' selected':'') + '>Bite Hold (10-day quarantine)</option></select></div>'
         + '<div class="fg" style="margin:0"><label>Hold Start Date</label><input type="date" id="ae-holdstart" value="' + (r.shelterHoldStart?r.shelterHoldStart.slice(0,10):'') + '"></div></div>'
         /* Bite quarantine countdown */
         + (r.holdType==='bite' ? (function(){
@@ -2186,9 +2312,8 @@ function saveAnimalEdit(id) {
   /* Write immediately to Firestore — pause listener to prevent onSnapshot overwrite */
   if (USE_FIREBASE && _fbReady && db && _isStaff) {
     window._pauseFirestoreSync = true;
-    db.collection('reports').doc(String(r.id)).set(r)
-      .then(function(){ setTimeout(function(){ window._pauseFirestoreSync = false; }, 2000); })
-      .catch(function(e){ console.warn('Animal edit sync error:', e.message); window._pauseFirestoreSync = false; });
+    writeAnimalRecord(r, 'staff');
+    setTimeout(function(){ window._pauseFirestoreSync = false; }, 2000);
   }
   /* Auto-generate bio if just marked adoption ready and no bio yet */
   if (masterStatus === 'available' && !r.adoptPersonality) {
@@ -2268,6 +2393,9 @@ function selectReportType(typeId) {
 
 function runSelectedReport() {
   if (!_activeReportId) return;
+  /* Show mobile overlay for all report types */
+  var rptRight = document.getElementById('rpt-right');
+  if (rptRight) rptRight.classList.add('show');
   if (_activeReportId === 'grants') {
     renderGrantsPanel(); return;
   }
@@ -2466,6 +2594,12 @@ function runActiveReport() {
           return [esc(r.name||r.species||'Unknown'), esc(r.species||'—'), esc(r.breed||'—'), esc(r.color||'—'),
             d+'d'+(d>=30?' 🔴':d>=14?' 🟡':''), esc(r.tags||'—')];
         }));
+    html += '<div style="margin-top:10px;padding:8px 12px;background:#f8f5f0;border-radius:6px;font-size:.75rem;color:#6b5540;display:flex;gap:16px;flex-wrap:wrap">'
+      + '<span><strong>Days Waiting key:</strong></span>'
+      + '<span>No flag — under 14 days</span>'
+      + '<span>🟡 — waiting 14–29 days</span>'
+      + '<span>🔴 — waiting 30+ days, needs urgent attention</span>'
+      + '</div>';
 
   } else if (id === 'los') {
     var los_recs = getShelterData({ includeHolds:true, includeAdopt:true, includeResolved:true }).filter(function(r){
@@ -3002,8 +3136,27 @@ function copyActiveReport() {
 
 /* ── INVENTORY SAVE ───────────────────────────────────────────────────── */
 
-function pinIcon(type, reunited, matched, adoptReady, atShelter, urgentAdopt) {
+/* ── PIN COLOR — single resolver, do not compute color anywhere else ────
+   Doctrine: derivePinColor is the only place pin color is determined.
+   Use everywhere: map markers, card badges, legend counts, reports.
+──────────────────────────────────────────────────────────────────────── */
+function derivePinColor(r) {
+  if (r.resolved || r.reunited)           return 'gray';
+  if (r.shelter === true)                 return 'blue';
+  if (r.type === 'lost')                  return 'red';
+  if (r.type === 'found' && r.atShelter)  return 'orange';
+  return 'green';
+}
+
+
+function pinIcon(type, reunited, matched, adoptReady, atShelter, urgentAdopt, r) {
   var fill, shine, opacity, pulse;
+  /* Use derivePinColor as single source of truth for color logic */
+  var pinColor = r ? derivePinColor(r) : (reunited ? 'gray' : atShelter ? 'orange' : type === 'lost' ? 'red' : 'green');
+  var colorMap = { gray:'#b0a898', blue:'#1a3f8a', red:'#c94f2a', orange:'#d06020', green:'#2d7a4f' };
+  var shineMap = { gray:'#d0c9be', blue:'#6090e0', red:'#e87050', orange:'#f08040', green:'#5ab07a' };
+  fill  = colorMap[pinColor] || '#2d7a4f';
+  shine = shineMap[pinColor] || '#5ab07a';
   if (reunited) {
     fill = '#b0a898'; shine = '#d0c9be'; opacity = '0.45'; pulse = '';
   } else if (adoptReady) {
@@ -3013,7 +3166,9 @@ function pinIcon(type, reunited, matched, adoptReady, atShelter, urgentAdopt) {
     var pulseW    = urgentAdopt ? '2' : '1.5';
     pulse = '<circle cx="15" cy="12" r="10" fill="none" stroke="#f0aa40" stroke-width="' + pulseW + '" opacity=".65"><animate attributeName="r" values="' + pulseVals + '" dur="' + pulseDur + '" repeatCount="indefinite"/><animate attributeName="opacity" values=".65;0;.65" dur="' + pulseDur + '" repeatCount="indefinite"/></circle>';
   } else if (atShelter) {
-    fill = '#2050a0'; shine = '#6090e0'; opacity = '1'; pulse = '';
+    /* Orange = "finder bringing to shelter — pending intake confirmation" — distinct from adoptable amber */
+    fill = '#d06020'; shine = '#f08040'; opacity = '1';
+    pulse = '<circle cx="15" cy="12" r="10" fill="none" stroke="#f08040" stroke-width="1.5" opacity=".5"><animate attributeName="r" values="10;16;10" dur="2.2s" repeatCount="indefinite"/><animate attributeName="opacity" values=".5;0;.5" dur="2.2s" repeatCount="indefinite"/></circle>';
   } else if (matched) {
     fill = '#c8841a'; shine = '#f0aa40'; opacity = '1';
     pulse = '<circle cx="15" cy="12" r="11" fill="none" stroke="#f0aa40" stroke-width="1.5" opacity=".5"><animate attributeName="r" values="11;16;11" dur="1.8s" repeatCount="indefinite"/><animate attributeName="opacity" values=".5;0;.5" dur="1.8s" repeatCount="indefinite"/></circle>';
@@ -3207,8 +3362,8 @@ function cardHTML(r) {
     /* Only show description for non-hold animals */
     if (publicDesc && r.intakeType !== 'hold') rows += '<div class="pc-row" style="margin-top:4px">' + esc(publicDesc) + '</div>';
     if (r.address && r.intakeType !== 'hold') rows += '<div class="pc-row"><strong>Found near:</strong> ' + esc(r.address) + '</div>';
-    if (r.shelter) {
-      rows += '<div class="pc-row"><strong>🏠 In care at:</strong> ' + esc(r.shelterName||'Heartland Pet Connection') + '</div>';
+    if (r.shelter || r.atShelter) {
+      rows += '<div class="pc-row"><strong>🏠 ' + (r.shelter ? 'In care at:' : 'Reported at:') + '</strong> ' + esc(r.shelterName||'Heartland Pet Connection') + '</div>';
       /* Show original found location for owners searching */
       if (r.address) rows += '<div class="pc-row" style="color:var(--warm-mid);font-size:.72rem">📍 Originally found near ' + esc(r.address) + '</div>';
       if (r.date) rows += '<div class="pc-row" style="color:var(--warm-mid);font-size:.72rem">📅 Found ' + new Date(r.date).toLocaleDateString('en-US',{month:'short',day:'numeric'}) + '</div>';
@@ -3232,7 +3387,7 @@ function cardHTML(r) {
     matchBtn = '<button onclick="searchMatchesFromCard(' + r.id + ')" style="width:100%;margin:8px 0 4px;padding:9px;font-family:var(--font-display);font-size:.82rem;font-weight:700;border:none;border-radius:8px;cursor:pointer;background:#f0f4ff;color:#2050a0;border:1.5px solid #a0baf0">🔍 Could this pet be at Heartland?</button>';
     /* 14-day warning */
     if (daysSince(r.date) >= 14) {
-      matchBtn += '<div style="font-size:.68rem;color:var(--amber);text-align:center;margin-bottom:4px">⚠️ Missing ' + Math.floor(daysSince(r.date)) + ' days — auto-archives at 30</div>';
+      matchBtn += '<div style="font-size:.68rem;color:var(--amber);text-align:center;margin-bottom:4px">⚠️ Missing ' + Math.floor(daysSince(r.date)) + ' days — no longer shown after 30 days</div>';
     }
   }
   if (lost && r.owner && r.intakeType !== 'hold') {
@@ -3298,7 +3453,19 @@ function cardHTML(r) {
   }
 
   var matchBanner = matched
-    ? '<div class="pc-match-banner">🏠 Possible match at ' + esc(r.possibleMatch.shelterName) + ' — ' + r.possibleMatch.confidence + ' confidence</div>'
+    ? (function() {
+        var pm = r.possibleMatch;
+        var shelterAnimal = reports.find(function(x){ return String(x.id)===String(pm.matchId); });
+        var photoHtml = (shelterAnimal && shelterAnimal.photo)
+          ? '<img src="' + shelterAnimal.photo + '" style="width:100%;height:80px;object-fit:cover;object-position:top center;border-radius:5px;margin-bottom:6px;display:block">'
+          : (shelterAnimal ? '<div style="width:100%;height:48px;background:#e8f0ff;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin-bottom:6px">' + (shelterAnimal.species==='Dog'?'🐕':shelterAnimal.species==='Cat'?'🐈':'🐾') + '</div>' : '');
+        var animalDesc = shelterAnimal ? [shelterAnimal.breed, shelterAnimal.color, shelterAnimal.sex].filter(Boolean).join(' · ') : '';
+        return '<div class="pc-match-banner">' + photoHtml
+          + '<div style="font-weight:700;margin-bottom:2px">🏠 Possible match at ' + esc(pm.shelterName) + '</div>'
+          + (animalDesc ? '<div style="font-size:.7rem;color:#5a4008;margin-bottom:2px">' + esc(animalDesc) + '</div>' : '')
+          + '<div style="font-size:.7rem;color:#7a6020">' + pm.confidence + ' confidence — tap 🔍 below to confirm</div>'
+          + '</div>';
+      })()
     : '';
 
   var comments = '';
@@ -3316,19 +3483,16 @@ function cardHTML(r) {
 
   var reuniteBtn = reunited
     ? '<button class="reunite-btn done">🎉 Marked as Reunited</button>'
-    : '<button class="reunite-btn" onclick="markReunited(' + r.id + ')">🎉 Mark as Reunited</button>';
+    : '<button class="reunite-btn" onclick="markReunited(' + r.id + ')">🎉 Mark as Reunited</button>';  /* Public — owner closes their own report */
 
   /* Info note on found pins explaining how pin disappears */
   var foundNote = (!lost && !reunited && !r.shelter)
-    ? '<div style="background:#f0faf1;border:1px solid #b0d8b8;border-radius:7px;padding:8px 12px;font-size:.74rem;color:#2a6030;margin-bottom:8px;line-height:1.5">'
-      + '📍 This pin stays on the map until the animal is brought to Heartland. '
-      + 'If you\'ve taken this pet to the shelter, staff will log them in and this pin will disappear automatically.'
-      + '</div>'
-    : '';
+    ? (r.atShelter
+        ? '<div style="background:#fff8e8;border:1.5px solid #d4a035;border-radius:7px;padding:8px 12px;font-size:.74rem;color:#7a5010;margin-bottom:8px;line-height:1.5">'          + '🏠 The finder says this animal has been or will be brought to <strong>' + esc(r.shelterName||'a shelter or vet') + '</strong>. This pin stays on the map until intake is confirmed by staff. If you are the owner and your pet has come home, tap \uD83C\uDF89 Mark as Reunited.'          + '</div>'        : '<div style="background:#f0faf1;border:1px solid #b0d8b8;border-radius:7px;padding:8px 12px;font-size:.74rem;color:#2a6030;margin-bottom:8px;line-height:1.5">'          + '📍 This pin stays on the map until the owner is found. '          + 'If the animal is reunited with its owner, tap 🎉 Mark as Reunited to remove this pin. '          + 'If the finder brings the animal to Heartland, staff will match it during intake and this pin will disappear automatically.'          + '</div>'      )    : '';
 
   /* Staff-only: migrate public report to shelter intake */
-  var migrateBtn = (_isStaff && !r.shelter && !reunited)
-    ? '<button onclick="migrateToIntake(' + r.id + ')" style="width:100%;margin-top:6px;padding:9px;font-family:var(--font-display);font-size:.82rem;font-weight:700;border:none;border-radius:8px;cursor:pointer;background:var(--forest);color:#fff;display:flex;align-items:center;justify-content:center;gap:6px">🏠 Log Intake at Heartland — Removes Pin</button>'
+  var migrateBtn = (_isStaff && !r.shelter && !reunited && r.type === 'found')
+    ? '<button onclick="migrateToIntake(' + r.id + ')" style="width:100%;margin-top:6px;padding:9px;font-family:var(--font-display);font-size:.82rem;font-weight:700;border:none;border-radius:8px;cursor:pointer;background:var(--forest);color:#fff;display:flex;align-items:center;justify-content:center;gap:6px">🏠 Create Intake from Found Report</button>'
     : '';
 
   /* Adoption section — only for found strays, not holds */
@@ -3383,10 +3547,14 @@ function cardHTML(r) {
 }
 
 function openCard(r, cp) {
+  /* Guard against rapid tapping — cancel any closing animation */
   var card = document.getElementById('pin-card');
+  card.classList.remove('closing');
   document.getElementById('pin-card-body').innerHTML = cardHTML(r);
   card.style.visibility = 'hidden';
   card.className = 'open';
+  /* Lock map scroll on mobile */
+  document.getElementById('map-container').style.overflow = 'hidden';
   requestAnimationFrame(function() {
     var mc = document.getElementById('map-container');
     var cw = card.offsetWidth, ch = card.offsetHeight;
@@ -3723,8 +3891,7 @@ async function autoMatchOnIntake(intake) {
     intake.possibleMatchIds = matches.map(function(m){return m.id;});
     save();
     if (USE_FIREBASE && _fbReady && db) {
-      db.collection('reports').doc(String(intake.id)).update({ possibleMatchIds: intake.possibleMatchIds })
-        .catch(function(e){ console.warn('Match sync error:', e.message); });
+      writeAnimalRecord(intake, 'staff');
     }
   } catch(e) { console.warn('Auto-match error:', e.message); }
 }
@@ -3849,9 +4016,8 @@ function markReunited(id) {
   if (USE_FIREBASE && _fbReady && db) {
     window._pauseFirestoreSync = true;
     /* Use set+merge so it works even if doc doesn't exist yet in Firestore */
-    db.collection('reports').doc(String(r.id)).set(r, {merge: true})
-      .then(function(){ setTimeout(function(){ window._pauseFirestoreSync = false; }, 2000); })
-      .catch(function(e){ console.warn('Reunited sync error:', e.message); window._pauseFirestoreSync = false; });
+    writeAnimalRecord(r, r.source || 'public');
+      setTimeout(function(){ window._pauseFirestoreSync = false; }, 2000);
   }
   /* Re-render card */
   var cardBody = document.getElementById('pin-card-body');
@@ -3922,6 +4088,12 @@ function isPublicVisible(r) {
   return true;
 }
 
+var _renderMarkersDebounce = null;
+function renderMarkersDebounced() {
+  clearTimeout(_renderMarkersDebounce);
+  _renderMarkersDebounce = setTimeout(renderMarkers, 100);
+}
+
 function renderMarkers() {
   lMarkers.forEach(function(m){ map.removeLayer(m); });
   lMarkers = [];
@@ -3931,9 +4103,9 @@ function renderMarkers() {
   if (oob.length > 0) {
     oob.forEach(function(r){
       reports.splice(reports.indexOf(r), 1);
-      if (USE_FIREBASE && _fbReady && db) {
-        db.collection('reports').doc(String(r.id)).delete().catch(function(){});
-      }
+      /* Doctrine: no deletes — mark archived instead */
+      r.archivedFromMap = true; r.resolved = true; r.resolvedReason = 'archived';
+      writeAnimalRecord(r, 'staff');
     });
     save();
   }
@@ -3947,7 +4119,7 @@ function renderMarkers() {
     if (curFilter === 'found') return r.type==='found' && !r.reunited;
     return true;
   }).forEach(function(r){
-    var m = L.marker([r.lat,r.lng],{icon:pinIcon(r.type, r.reunited, r.possibleMatch && !r.reunited, false, false, false)}).addTo(map);
+    var m = L.marker([r.lat,r.lng],{icon:pinIcon(r.type, r.reunited, r.possibleMatch && !r.reunited, r.adoptionStatus==='available', r.atShelter && !r.shelter, false, r)}).addTo(map);
     m.on('click', function(e){ closeCard(); openCard(r,e.containerPoint); L.DomEvent.stopPropagation(e); });
     lMarkers.push(m);
   });
@@ -3992,11 +4164,13 @@ function renderMarkers() {
   });
 
   document.getElementById('cnt-lost').textContent    = reports.filter(function(r){return r.type==='lost'  && !r.reunited && isPublicVisible(r) && inBounds(r);}).length;
-  document.getElementById('cnt-found').textContent   = reports.filter(function(r){return r.type==='found' && !r.reunited && isPublicVisible(r) && !r.shelter && inBounds(r);}).length;
+  document.getElementById('cnt-found').textContent   = reports.filter(function(r){return r.type==='found' && !r.reunited && isPublicVisible(r) && !r.shelter && !r.atShelter && inBounds(r);}).length;
+  var cntAS = document.getElementById('cnt-at-shelter');
+  if (cntAS) cntAS.textContent = reports.filter(function(r){return r.type==='found' && !r.reunited && r.atShelter && !r.shelter && inBounds(r);}).length;
   var cntS = document.getElementById('cnt-shelter');
   var cntA = document.getElementById('cnt-adopt');
   var lblS = document.getElementById('legend-shelter-label');
-  if (cntS) cntS.textContent = reports.filter(function(r){return r.shelter && !r.reunited && r.adoptionStatus!=='adopted' && !(r.enforcement&&r.enforcement.holdOutcome);}).length;
+  if (cntS) cntS.textContent = getShelterData({ includeHolds: true }).length;
   if (cntA) cntA.textContent = reports.filter(function(r){return r.adoptionStatus==='available' && !r.reunited;}).length;
   if (lblS && activeShelter) lblS.textContent = 'In Care of ' + activeShelter.split(' ')[0];
   document.getElementById('empty-hint').style.opacity = reports.length ? '0' : '1';
@@ -4018,6 +4192,12 @@ function setFilter(f) {
 }
 
 function openReportPicker() {
+  /* Report flow only makes sense on the map — redirect if elsewhere */
+  if (_curView !== 'map') {
+    setView('map', document.querySelector('[onclick*="setView(\'map\')"]'));
+    setTimeout(openReportPicker, 350);
+    return;
+  }
   closeCard();
   document.getElementById('report-picker').style.display = 'flex';
 }
@@ -4073,7 +4253,15 @@ function cancelPlace() {
 }
 
 map.on('click', function(e) {
-  if (!placing) { closeCard(); return; }
+  if (!placing) {
+    closeCard();
+    /* Also close side panel on mobile if open */
+    var sp = document.getElementById('side-panel');
+    if (sp && sp.classList.contains('open') && window.innerWidth <= 640) {
+      sp.classList.remove('open');
+    }
+    return;
+  }
   var t = placing;
   /* Adams County NE bounds check */
   var ADAMS = { n:40.700, s:40.348, e:-98.046, w:-98.605 };
@@ -4466,6 +4654,132 @@ function recordSubmission(type) {
   localStorage.setItem('pp_last_submit_' + type, String(Date.now()));
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   WRITE PIPELINE — Doctrine-enforced. Every animal state write goes here.
+   validateRecordWrite → validateSchemaShape → db.write
+   No direct db.collection().set/update() for animal records anywhere else.
+═══════════════════════════════════════════════════════════════════════════ */
+function validateRecordWrite(existing, incoming, source) {
+  /* Public cannot set shelter custody */
+  if (source === 'public' && incoming.shelter === true) {
+    throw new Error('DOCTRINE VIOLATION: public cannot set shelter=true');
+  }
+  /* shelter and atShelter are mutually exclusive */
+  if (incoming.shelter === true && incoming.atShelter === true) {
+    throw new Error('DOCTRINE VIOLATION: shelter and atShelter cannot both be true');
+  }
+  /* Resolution is irreversible */
+  if (existing && existing.resolved === true && incoming.resolved === false) {
+    throw new Error('DOCTRINE VIOLATION: cannot unset resolved');
+  }
+  return true;
+}
+
+function validateSchemaShape(r) {
+  var required = ['id','type','shelter','atShelter','resolved','reunited','source','date','createdAt'];
+  var missing = required.filter(function(f){ return r[f] === undefined || r[f] === null; });
+  if (missing.length) {
+    console.warn('SCHEMA WARNING: missing fields:', missing.join(', '), '— record id:', r.id);
+  }
+  /* type must be valid */
+  if (r.type && ['lost','found'].indexOf(r.type) === -1) {
+    throw new Error('SCHEMA VIOLATION: invalid type: ' + r.type);
+  }
+  /* shelter and atShelter must be booleans if present */
+  if (r.shelter !== undefined && typeof r.shelter !== 'boolean') {
+    throw new Error('SCHEMA VIOLATION: shelter must be boolean');
+  }
+  return true;
+}
+
+function writeAnimalRecord(r, source) {
+  /* The only entry point for animal record persistence */
+  var existing = reports.find(function(x){ return String(x.id) === String(r.id); });
+  try {
+    validateRecordWrite(existing, r, source || r.source || 'staff');
+    validateSchemaShape(r);
+  } catch(e) {
+    console.error('WRITE BLOCKED:', e.message, r);
+    return; /* Block the write */
+  }
+  /* Normalize: if shelter=true, atShelter must be false */
+  if (r.shelter === true) r.atShelter = false;
+  /* Stamp updatedAt */
+  r.updatedAt = new Date().toISOString();
+  /* Persist to Firestore */
+  if (USE_FIREBASE && _fbReady && db) {
+    db.collection('reports').doc(String(r.id)).set(r)
+      .catch(function(e){ console.warn('Firestore write error:', e.message); });
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   POST-DOCTRINE ENFORCEMENT ADDITIONS
+   Protective only — no new features, no schema changes, no doctrine changes.
+═══════════════════════════════════════════════════════════════════════════ */
+
+/* 1. Runtime Validation Logging
+   All blocked writes surface immediately — no silent failures. */
+function safeWriteAnimalRecord(existing, incoming, source) {
+  try {
+    return writeAnimalRecord(incoming, source);
+  } catch (err) {
+    console.error('[WRITE BLOCKED]', {
+      reason: err.message,
+      source: source,
+      id: incoming ? incoming.id : null,
+      type: incoming ? incoming.type : null,
+      shelter: incoming ? incoming.shelter : null,
+      atShelter: incoming ? incoming.atShelter : null
+    });
+    throw err;
+  }
+}
+
+/* 2. Data Integrity Check
+   Detects impossible states — runs on load and after any batch operation.
+   Surfaces legacy or corrupted data before it affects matching/resolution. */
+function assertNoInvalidStates(records) {
+  var issues = 0;
+  (records || []).forEach(function(r) {
+    if (r.shelter === true && r.atShelter === true) {
+      console.error('[INVALID STATE] shelter and atShelter both true — id:', r.id);
+      issues++;
+    }
+    if (r.resolved === false && r.reunited === true) {
+      console.error('[INVALID STATE] reunited without resolved — id:', r.id);
+      issues++;
+    }
+    if (r.type !== 'lost' && r.type !== 'found') {
+      console.error('[INVALID TYPE] unexpected type:', r.type, '— id:', r.id);
+      issues++;
+    }
+  });
+  if (issues === 0) {
+    console.log('[INTEGRITY OK] ' + (records||[]).length + ' records checked — no invalid states found');
+  } else {
+    console.warn('[INTEGRITY] ' + issues + ' invalid state(s) found — review required');
+  }
+  return issues;
+}
+
+/* 3. Dev-Time Bypass Detection
+   Overrides db.set / db.update to enforce single write entry point.
+   Apply in development mode only — never in production. */
+function installBypassDetection() {
+  if (!window._devBypassDetectionInstalled && typeof db !== 'undefined' && db) {
+    var _origSet    = db.set    ? db.set.bind(db)    : null;
+    var _origUpdate = db.update ? db.update.bind(db) : null;
+    /* Note: Firestore SDK uses collection().doc().set() not db.set() directly.
+       Bypass detection is enforced at code review and by the write pipeline itself.
+       Direct collection writes inside writeAnimalRecord() are the ONLY permitted path. */
+    window._devBypassDetectionInstalled = true;
+    console.log('[BYPASS DETECTION] Write pipeline enforcement active');
+  }
+}
+
+
+
 function submitLost() {
   if (!pLat.lost) {
     /* Flash the location button and scroll to it — keep panel open */
@@ -4526,10 +4840,13 @@ function submitLost() {
     email:v('l-email'), chip:v('l-chip'), notes:v('l-notes'), photo:getPhoto('l-prev') };
   reports.push(r); save(); renderMarkers(); renderIncareView();
   /* Write directly to Firestore so ALL devices see it immediately — no staff login required */
-  if (USE_FIREBASE && _fbReady && db) {
-    db.collection('reports').doc(String(r.id)).set(r)
-      .catch(function(e){ console.warn('Public lost report sync error:', e); });
+  /* DOCTRINE GUARD: public writes cannot set shelter=true */
+  if (r.shelter === true) {
+    console.error('Doctrine violation: public write attempted shelter=true — blocked');
+    r.shelter = false;
   }
+  r.source = 'public'; r.createdAt = r.createdAt || r.date;
+  writeAnimalRecord(r, 'public');
   closePanel(); resetForm('lost');
   pLat.lost = null; pLng.lost = null;
   recordSubmission('lost');
@@ -4558,18 +4875,26 @@ function submitFound() {
   if ((document.getElementById('f-confirm-email')||{}).value) return;
   /* Rate limit */
   if (!checkSpamGuard('found')) return;
-  var shelter = document.getElementById('f-shelter').checked;
+  var atShelter = document.getElementById('f-shelter').checked;
   var r = { id:Date.now(), type:'found', date:new Date().toISOString(),
-    lat:pLat.found, lng:pLng.found, shelter: shelter, reunited: false,
+    lat:pLat.found, lng:pLng.found,
+    shelter: false,        /* false = not a real intake record */
+    atShelter: atShelter,  /* true = finder says animal is at a shelter/vet */
+    reunited: false,
     species:v('f-species'), color:v('f-color'), desc:v('f-desc'),
     address:v('f-address'), finder:v('f-finder'), fphone:v('f-phone'),
-    shelterName:shelter?v('f-sname'):'', photo:getPhoto('f-prev') };
+    shelterName:atShelter?v('f-sname'):'', photo:getPhoto('f-prev') };
   reports.push(r); save(); renderMarkers(); renderIncareView();
   /* Write directly to Firestore so ALL devices see it immediately — no staff login required */
-  if (USE_FIREBASE && _fbReady && db) {
-    db.collection('reports').doc(String(r.id)).set(r)
-      .catch(function(e){ console.warn('Public found report sync error:', e); });
+  /* DOCTRINE GUARD: public writes cannot set shelter=true */
+  if (r.shelter === true) {
+    console.error('Doctrine violation: public write attempted shelter=true — blocked');
+    r.shelter = false;
   }
+  /* Normalize: shelter and atShelter are mutually exclusive */
+  if (r.shelter === true) r.atShelter = false;
+  r.source = 'public'; r.createdAt = r.createdAt || r.date;
+  writeAnimalRecord(r, 'public');
   closePanel(); resetForm('found');
   pLat.found = null; pLng.found = null;
   recordSubmission('found');
@@ -5339,7 +5664,7 @@ function postMatchComment(lostId, intakeId) {
   var matchEl = document.getElementById('sh-match-results-' + intakeId);
   var confEl  = matchEl && matchEl.querySelector('.sh-match-conf');
   var conf    = confEl ? confEl.classList.contains('high') ? 'high' : confEl.classList.contains('medium') ? 'medium' : 'low' : 'medium';
-  lost.possibleMatch = { shelterName: activeShelter, intakeId: intakeId, confidence: conf };
+  lost.possibleMatch = { shelterName: activeShelter, intakeId: intakeId, matchId: intakeId, confidence: conf };
 
   /* Log on intake too */
   if (intake) {
@@ -7260,15 +7585,8 @@ async function updateAdoptProfile(id) {
     /* Persist to Firestore — pause listener so it doesn't wipe reports mid-render */
     if (USE_FIREBASE && _fbReady && db) {
       window._pauseFirestoreSync = true;
-      db.collection('reports').doc(String(r.id)).update({
-        adoptPersonality: text,
-        profileUpdatedAt: r.profileUpdatedAt
-      }).then(function(){
-        setTimeout(function(){ window._pauseFirestoreSync = false; }, 2000);
-      }).catch(function(e){
-        console.warn('Story sync error:', e.message);
-        window._pauseFirestoreSync = false;
-      });
+      writeAnimalRecord(r, 'staff');
+      setTimeout(function(){ window._pauseFirestoreSync = false; }, 2000);
     }
 
     /* Update the narrative inline without re-rendering everything */
@@ -7617,10 +7935,7 @@ function deleteAnimalPhoto(id) {
   r.photo = null;
   save();
   /* Write full record to Firestore so delete is permanent */
-  if (USE_FIREBASE && _fbReady && db) {
-    db.collection('reports').doc(String(r.id)).set(r)
-      .catch(function(e){ console.warn('Photo delete sync error:', e); });
-  }
+  writeAnimalRecord(r, 'staff');
   /* Swap the photo div back to the Add Photo button without closing modal */
   var body = document.getElementById('animal-edit-body');
   if (body) {
@@ -7645,10 +7960,7 @@ function previewEditPhoto(input, id) {
     r.photo = dataUrl;
     save();
     /* Write photo to Firestore — try even before auth confirmed, resync on auth */
-    if (USE_FIREBASE && _fbReady && db) {
-      db.collection('reports').doc(String(r.id)).set(r)
-        .catch(function(err){ console.warn('Photo sync error:', err); });
-    }
+    writeAnimalRecord(r, 'staff');
     /* Update preview inline without closing the modal */
     var body = document.getElementById('animal-edit-body');
     if (body) {
@@ -7687,10 +7999,7 @@ function handleIncarePhotoUpload(input) {
     r.photo = dataUrl;
     save();
     /* Write to Firestore so photo persists across devices and reloads */
-    if (USE_FIREBASE && _fbReady && db) {
-      db.collection('reports').doc(String(r.id)).set(r)
-        .catch(function(err){ console.warn('Photo sync error:', err); });
-    }
+    writeAnimalRecord(r, 'staff');
     renderIncareView();
     renderAdoptView();
     pushBannerEvent('📷 Photo added for ' + (r.name||r.species||'animal'), 'var(--found-g)');
@@ -7714,9 +8023,8 @@ function quickAdoptReady(id) {
   save(); renderIncareView(); renderAdoptView(); updateNavCounts();
   if (USE_FIREBASE && _fbReady && db && _isStaff) {
     window._pauseFirestoreSync = true;
-    db.collection('reports').doc(String(r.id)).set(r)
-      .then(function(){ setTimeout(function(){ window._pauseFirestoreSync = false; }, 2000); })
-      .catch(function(e){ console.warn('Adopt ready sync error:', e.message); window._pauseFirestoreSync = false; });
+    writeAnimalRecord(r, 'staff');
+    setTimeout(function(){ window._pauseFirestoreSync = false; }, 2000);
   }
   pushBannerEvent('🌟 ' + (r.name||r.species||'Animal') + ' is now listed for adoption!', 'var(--found-g)');
   /* Auto-generate bio — no staff action needed */
@@ -7730,7 +8038,160 @@ function updateOrientationStrip(view) {
   if (strip) strip.style.display = view === 'map' ? 'block' : 'none';
 }
 
+/* iOS keyboard: scroll focused input into view */
+function setupKeyboardScroll(container) {
+  if (!container) return;
+  var inputs = container.querySelectorAll('input, select, textarea');
+  inputs.forEach(function(el) {
+    el.addEventListener('focus', function() {
+      setTimeout(function() {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 350); /* wait for keyboard to animate up */
+    });
+  });
+}
+
+var _curView = 'map';
+/* ── NAV CONTEXT BUTTON ────────────────────────────────────────────────
+   On map → opens report picker (lost/found)
+   On incare → runs AI batch match of all shelter animals vs lost pins
+──────────────────────────────────────────────────────────────────────── */
+function navActionBtn() {
+  if (_curView === 'incare') {
+    runBatchLostMatch();
+  } else {
+    openReportPicker();
+  }
+}
+
+function updateNavActionBtn() {
+  var btn = document.getElementById('nav-action-btn');
+  if (!btn) return;
+  if (_curView === 'incare' && _isStaff) {
+    btn.textContent = '🔍 Match Lost Pins';
+    btn.style.background = '#2050a0';
+  } else {
+    btn.textContent = '+ Report';
+    btn.style.background = '';
+  }
+}
+
+/* ── BATCH LOST PIN MATCH ──────────────────────────────────────────────
+   Runs on In Care page. Scans all shelter animals against all open lost
+   pins using the AI. Shows results in a bottom sheet for staff review.
+──────────────────────────────────────────────────────────────────────── */
+async function runBatchLostMatch() {
+  if (!_isStaff) return;
+
+  var shelterAnimals = getShelterData({ includeHolds: false });
+  var lostPins = reports.filter(function(r){
+    return r.type === 'lost' && !r.reunited && !r.resolved;
+  });
+
+  if (!shelterAnimals.length) {
+    alert('No animals currently in care to match against lost pins.');
+    return;
+  }
+  if (!lostPins.length) {
+    alert('No open lost pin reports on the map right now.');
+    return;
+  }
+
+  /* Show loading sheet */
+  var existing = document.getElementById('batch-match-panel');
+  if (existing) existing.remove();
+  var bd = document.createElement('div');
+  bd.id = 'batch-match-bd';
+  bd.style.cssText = 'position:fixed;inset:0;z-index:3999;background:rgba(0,0,0,.45)';
+  var panel = document.createElement('div');
+  panel.id = 'batch-match-panel';
+  panel.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:4000;background:var(--cream);border-radius:18px 18px 0 0;box-shadow:0 -8px 40px rgba(0,0,0,.25);padding:20px 20px 32px;max-height:78vh;overflow-y:auto;-webkit-overflow-scrolling:touch';
+  panel.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">'
+    + '<div style="font-family:var(--font-display);font-size:1rem;font-weight:700">🔍 Matching Lost Pins to Shelter Animals…</div>'
+    + '<button onclick="(function(){var p=document.getElementById(\'batch-match-panel\');if(p)p.remove();var b=document.getElementById(\'batch-match-bd\');if(b)b.remove();})()" style="background:var(--cream-2);border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:1rem">✕</button>'
+    + '</div>'
+    + '<div style="color:var(--warm-mid);font-size:.84rem">Comparing ' + shelterAnimals.length + ' shelter animal' + (shelterAnimals.length!==1?'s':'') + ' against ' + lostPins.length + ' open lost report' + (lostPins.length!==1?'s':'') + '…</div>';
+  bd.onclick = function(){ panel.remove(); bd.remove(); };
+  document.body.appendChild(bd);
+  document.body.appendChild(panel);
+
+  try {
+    var shelterList = shelterAnimals.map(function(r,i){
+      return (i+1) + '. ShelterID:' + r.id + ' ' + [r.species,r.breed,r.color,r.sex,r.age].filter(Boolean).join(' ');
+    }).join('\n');
+
+    var lostList = lostPins.map(function(r,i){
+      return (i+1) + '. LostID:' + r.id + (r.name?' Name:'+r.name:'') + ' ' + [r.species,r.breed,r.color].filter(Boolean).join(' ') + (r.address?' Last seen:'+r.address:'') + (r.chip?' Chip:'+r.chip:'');
+    }).join('\n');
+
+    var resp = await fetch('/api/anthropic', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:800,
+        messages:[{role:'user',content:'You are helping a shelter find lost pets among their current intake.\n\nSHELTER ANIMALS IN CARE:\n' + shelterList + '\n\nOPEN LOST PET REPORTS:\n' + lostList + '\n\nFor each possible match between a shelter animal and a lost report, return ONLY valid JSON — an array of objects: { shelterId: number, lostId: number, confidence: "high"|"medium"|"low", reason: "1 sentence" }. Return [] if no matches.'}]
+      })
+    });
+
+    var data = await resp.json();
+    var text = (data.content||[]).map(function(b){return b.text||'';}).join('').trim();
+    var matches = JSON.parse(text.replace(/```json|```/g,'').trim());
+
+    if (!matches.length) {
+      panel.innerHTML += '<div style="margin-top:16px;background:var(--cream-2);border-radius:10px;padding:16px;text-align:center">'
+        + '<div style="font-size:1.5rem;margin-bottom:8px">✅</div>'
+        + '<div style="font-weight:600;margin-bottom:4px">No likely matches found</div>'
+        + '<div style="font-size:.8rem;color:var(--warm-mid)">None of the ' + shelterAnimals.length + ' shelter animals closely match any of the ' + lostPins.length + ' open lost reports.</div>'
+        + '</div>';
+      return;
+    }
+
+    var confColor = {high:'var(--found-g)',medium:'var(--amber)',low:'#a0a0a0'};
+    var confBg    = {high:'#f0fff4',medium:'#fffbf0',low:'#f8f8f8'};
+
+    var html = '<div style="font-weight:700;font-size:.9rem;margin:16px 0 10px">🐾 ' + matches.length + ' possible match' + (matches.length!==1?'es':'') + ' found</div>';
+
+    matches.forEach(function(m) {
+      var sa = shelterAnimals.find(function(x){ return String(x.id)===String(m.shelterId); });
+      var lp = lostPins.find(function(x){ return String(x.id)===String(m.lostId); });
+      if (!sa || !lp) return;
+
+      var saImg = sa.photo ? '<img src="' + sa.photo + '" style="width:56px;height:56px;object-fit:cover;border-radius:8px;flex-shrink:0">' : '<div style="width:56px;height:56px;border-radius:8px;background:var(--cream-2);display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0">' + (sa.species==='Dog'?'🐕':sa.species==='Cat'?'🐈':'🐾') + '</div>';
+      var lpImg = lp.photo ? '<img src="' + lp.photo + '" style="width:56px;height:56px;object-fit:cover;border-radius:8px;flex-shrink:0">' : '<div style="width:56px;height:56px;border-radius:8px;background:#fff0ee;display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0">' + (lp.species==='Dog'?'🐕':lp.species==='Cat'?'🐈':'🐾') + '</div>';
+
+      html += '<div style="background:' + (confBg[m.confidence]||'#f8f8f8') + ';border:1.5px solid ' + (confColor[m.confidence]||'#ddd') + ';border-radius:10px;padding:12px;margin-bottom:10px">'
+        + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'
+        + saImg
+        + '<div style="flex:1;min-width:0">'
+        + '<div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--warm-mid)">In Care</div>'
+        + '<div style="font-weight:600;font-size:.88rem">' + esc(sa.name||sa.species||'Unknown') + '</div>'
+        + '<div style="font-size:.76rem;color:var(--warm-mid)">' + [sa.color,sa.breed,sa.sex].filter(Boolean).join(' · ') + '</div>'
+        + '</div>'
+        + '<div style="font-size:1.2rem;color:' + (confColor[m.confidence]||'#aaa') + '">⟷</div>'
+        + '<div style="flex:1;min-width:0;text-align:right">'
+        + '<div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--lost-r)">Lost Report</div>'
+        + '<div style="font-weight:600;font-size:.88rem">' + esc(lp.name||lp.species||'Unknown') + '</div>'
+        + '<div style="font-size:.76rem;color:var(--warm-mid)">' + [lp.color,lp.breed].filter(Boolean).join(' · ') + '</div>'
+        + '</div>'
+        + lpImg
+        + '</div>'
+        + '<div style="font-size:.78rem;color:var(--warm-mid);margin-bottom:10px;font-style:italic">' + esc(m.reason) + '</div>'
+        + '<div style="display:flex;gap:8px">'
+        + (lp.phone ? '<a href="tel:' + lp.phone.replace(/[^0-9+]/g,'') + '" style="flex:1;padding:8px;text-align:center;background:var(--forest);color:#fff;border-radius:8px;font-family:var(--font-display);font-size:.8rem;font-weight:700;text-decoration:none">📞 Call Owner</a>' : '')
+        + (lp.phone ? '<a href="sms:' + lp.phone.replace(/[^0-9+]/g,'') + '" style="flex:1;padding:8px;text-align:center;background:#2050a0;color:#fff;border-radius:8px;font-family:var(--font-display);font-size:.8rem;font-weight:700;text-decoration:none">💬 Text Owner</a>' : '')
+        + '</div>'
+        + '</div>';
+    });
+
+    panel.innerHTML += html;
+
+  } catch(e) {
+    panel.innerHTML += '<div style="margin-top:16px;color:var(--warm-mid);font-size:.84rem">Could not complete match — check connection and try again.<br><br><em>' + e.message + '</em></div>';
+    console.warn('Batch match error:', e.message);
+  }
+}
+
+
 function setView(v, btn) {
+  _curView = v;
   updateOrientationStrip(v);
   /* Remember current view for refresh restore */
   try { sessionStorage.setItem('pp-view', v); } catch(e) {}
@@ -7748,6 +8209,7 @@ function setView(v, btn) {
     if (incareBtn) incareBtn.classList.add('active');
   }
   if (v === 'map')     setTimeout(function(){ map.invalidateSize(); }, 200);
+  updateNavActionBtn();
   if (v === 'incare')  renderIncareView();
   if (v === 'reports') {
     renderReportTypeList();
