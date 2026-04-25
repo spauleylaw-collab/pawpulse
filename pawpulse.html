@@ -1999,7 +1999,10 @@ function showInquiryPopup(id) {
 
   var pop = document.createElement('div');
   pop.id = 'inq-popup';
-  pop.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:5001;background:var(--cream);border-radius:18px 18px 0 0;padding:20px 20px 32px;max-height:70vh;overflow-y:auto;-webkit-overflow-scrolling:touch;box-shadow:0 -8px 40px rgba(0,0,0,.25)';
+  var isMobile = window.innerWidth <= 640;
+  pop.style.cssText = isMobile
+    ? 'position:fixed;bottom:0;left:0;right:0;z-index:5001;background:var(--cream);border-radius:18px 18px 0 0;padding:20px 20px 32px;max-height:70vh;overflow-y:auto;-webkit-overflow-scrolling:touch;box-shadow:0 -8px 40px rgba(0,0,0,.25)'
+    : 'position:fixed;bottom:40px;left:50%;transform:translateX(-50%);width:420px;z-index:5001;background:var(--cream);border-radius:14px;padding:20px 20px 24px;max-height:70vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.3)';
 
   var name = esc(r.name || r.species || 'Animal');
   var html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">'
