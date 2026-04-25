@@ -523,6 +523,65 @@ textarea{min-height:64px}
 
 /* ── SPOTLIGHT HOVER ── */
 #shelter-spotlight:hover { transform: translateY(-2px) scale(1.01); box-shadow: 0 16px 48px rgba(42,31,18,.4),0 6px 16px rgba(0,0,0,.2) !important; transition: transform .2s ease, box-shadow .2s ease, opacity .5s ease !important; }
+
+/* ── STAFF TUTORIAL ── */
+#staff-tutorial-overlay {
+  position:fixed;inset:0;z-index:9999;background:rgba(20,30,20,.72);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-body);
+}
+#staff-tutorial-card {
+  background:var(--cream);border-radius:20px;width:min(520px,92vw);
+  max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.4);
+  position:relative;
+}
+.st-header {
+  background:var(--forest);color:#fff;border-radius:20px 20px 0 0;
+  padding:18px 22px 16px;
+}
+.st-header h2 { margin:0;font-family:var(--font-display);font-size:1.15rem;font-weight:700; }
+.st-header p  { margin:4px 0 0;font-size:.78rem;opacity:.8; }
+.st-steps { padding:18px 22px; }
+.st-step {
+  display:flex;gap:14px;align-items:flex-start;
+  padding:12px 0;border-bottom:1px solid var(--cream-3);
+}
+.st-step:last-child { border-bottom:none; }
+.st-icon {
+  width:40px;height:40px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.3rem;background:var(--cream-2);
+}
+.st-step-body h3 { margin:0 0 3px;font-size:.85rem;color:var(--warm-dk);font-weight:700; }
+.st-step-body p  { margin:0;font-size:.75rem;color:var(--warm-mid);line-height:1.45; }
+.st-step-body .st-tip {
+  display:inline-block;margin-top:5px;font-size:.7rem;font-weight:700;
+  color:var(--forest);background:rgba(45,74,53,.1);
+  padding:2px 8px;border-radius:999px;
+}
+.st-footer {
+  padding:14px 22px 18px;display:flex;justify-content:space-between;align-items:center;
+  border-top:1px solid var(--cream-3);gap:10px;
+}
+.st-btn-primary {
+  background:var(--forest);color:#fff;border:none;border-radius:9px;
+  padding:10px 22px;font-size:.82rem;font-weight:700;cursor:pointer;
+  font-family:var(--font-body);letter-spacing:.02em;
+}
+.st-btn-skip {
+  background:none;border:none;color:var(--warm-mid);font-size:.75rem;
+  cursor:pointer;font-family:var(--font-body);text-decoration:underline;
+  text-underline-offset:3px;
+}
+.st-progress {
+  display:flex;gap:5px;align-items:center;
+}
+.st-dot {
+  width:7px;height:7px;border-radius:50%;background:var(--cream-3);
+  transition:background .2s;
+}
+.st-dot.active { background:var(--forest); }
+
 </style>
 </head>
 <body>
@@ -1094,6 +1153,7 @@ function initFirebase() {
         /* Confirmed signed in — ensure state is set */
         _isStaff = true;
         localStorage.setItem('pawpulse-staff', user.email);
+        setTimeout(maybeShowTutorial, 800);
         document.getElementById('staff-badge').classList.add('staff-active');
         document.querySelectorAll('.tab-ops,.tab-admin').forEach(function(el){ el.style.display = ''; });
         hideStaffLoginBtn();
@@ -4118,12 +4178,12 @@ function rotateBanner() {
     var r = lostActive[Math.floor(Math.random()*lostActive.length)];
     var name = r.name ? r.name : (r.species || 'A pet');
     var lostAddr = r.address && !r.address.match(/^-?\d+\.\d+/) ? r.address : null;
-    liveMsgs.push({ text: '\U0001f534 ' + name + ' is still missing' + (lostAddr ? ' \u2014 last seen near ' + lostAddr : '') + '. Can you help?', dot:'var(--lost-lt)' });
+    liveMsgs.push({ text: '🔴 ' + name + ' is still missing' + (lostAddr ? ' \u2014 last seen near ' + lostAddr : '') + '. Can you help?', dot:'var(--lost-lt)' });
   }
   if (foundActive.length) {
     var rf = foundActive[Math.floor(Math.random()*foundActive.length)];
     var rfAddr = rf.address && !rf.address.match(/^-?\d+\.\d+/) ? rf.address : 'Hastings';
-    liveMsgs.push({ text: '\U0001f7e2 ' + (rf.species||'A pet') + ' found near ' + rfAddr + '\u2014 do you know this animal?', dot:'var(--found-lt)' });
+    liveMsgs.push({ text: '🟢 ' + (rf.species||'A pet') + ' found near ' + rfAddr + ' — do you know this animal?', dot:'var(--found-lt)' });
   }
   /* Recent shelter intakes — animals brought in last 3 days */
   var recentIntake = reports.filter(function(r){
@@ -8291,7 +8351,8 @@ async function runBatchLostMatch() {
   panel.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:4000;background:var(--cream);border-radius:18px 18px 0 0;box-shadow:0 -8px 40px rgba(0,0,0,.25);padding:20px 20px 32px;max-height:78vh;overflow-y:auto;-webkit-overflow-scrolling:touch';
   panel.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">'
     + '<div style="font-family:var(--font-display);font-size:1rem;font-weight:700">🔍 Matching Lost Pins to Shelter Animals…</div>'
-    + '<button onclick="(function(){var p=document.getElementById(\'batch-match-panel\');if(p)p.remove();var b=document.getElementById(\'batch-match-bd\');if(b)b.remove();})()" style="background:var(--cream-2);border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:1rem">✕</button>'
+    + '<button onclick="showTutorial()" style="background:rgba(255,255,255,.12);border:none;color:rgba(255,255,255,.8);font-size:.72rem;cursor:pointer;padding:4px 10px;border-radius:6px;margin-right:6px;font-family:var(--font-body)">? Help</button>' + 
+    '<button onclick="(function(){var p=document.getElementById(\'batch-match-panel\');if(p)p.remove();var b=document.getElementById(\'batch-match-bd\');if(b)b.remove();})()" style="background:var(--cream-2);border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:1rem">✕</button>'
     + '</div>'
     + '<div style="color:var(--warm-mid);font-size:.84rem">Comparing ' + shelterAnimals.length + ' shelter animal' + (shelterAnimals.length!==1?'s':'') + ' against ' + lostPins.length + ' open lost report' + (lostPins.length!==1?'s':'') + '…</div>';
   bd.onclick = function(){ panel.remove(); bd.remove(); };
@@ -8618,6 +8679,103 @@ try {
   if (lo) lo.style.display = 'flex';
 }
 setTimeout(function(){ injectMicButtons(document.getElementById('side-panel')); }, 100);
+
+/* ═══ STAFF TUTORIAL ═══════════════════════════════════════════════════ */
+var _tutorialStep = 0;
+var TUTORIAL_STEPS = [
+  {
+    icon: '🗺️',
+    title: 'The map is your live feed',
+    body: 'Every pin is a real-time signal from the community. The map updates automatically — no refresh needed.',
+    tip: 'Pins update within seconds of a report being posted'
+  },
+  {
+    icon: '🔴🟢',
+    title: 'Pin colors tell the story',
+    body: 'Red = lost pet (owner searching). Green = found animal (someone has it). Orange = finder is bringing it to a shelter or vet. Blue = confirmed in your care.',
+    tip: 'Only you can create blue pins via intake'
+  },
+  {
+    icon: '🟠',
+    title: 'Orange pins need your action',
+    body: 'When someone checks they are bringing a pet to a shelter, an orange pin appears. Tap it, then tap "Confirm Intake" once the animal arrives. This turns it blue and runs an auto-match against lost reports.',
+    tip: 'Auto-match fires automatically — check for alerts'
+  },
+  {
+    icon: '🏥',
+    title: 'Manage animals in At Shelter',
+    body: 'The At Shelter tab shows every animal in your care. From here you can edit details, add photos, update status, and mark animals as available for adoption.',
+    tip: 'At Shelter is staff-only — the public cannot see this view'
+  },
+  {
+    icon: '🐾',
+    title: 'Making an animal adoptable',
+    body: 'In At Shelter, tap any animal, then Edit, and set Adoption Status to Available. This adds them to the Adopt page and the spotlight card on the map.',
+    tip: 'Pending = inquiry received. Adopted = complete'
+  },
+  {
+    icon: '📊',
+    title: 'Reports gives you the full picture',
+    body: 'The Reports tab shows the adoption pipeline, intake history, and any inquiry emails from the public. Check it daily.',
+    tip: 'Tap "Print Report" to get a shareable summary'
+  }
+];
+
+function showTutorial() {
+  var overlay = document.getElementById('staff-tutorial-overlay');
+  if (!overlay) return;
+  _tutorialStep = 0;
+  renderTutorialStep();
+  overlay.style.display = 'flex';
+  overlay.onclick = function(e) { if (e.target === overlay) closeTutorial(false); };
+}
+
+function renderTutorialStep() {
+  var step = TUTORIAL_STEPS[_tutorialStep];
+  var total = TUTORIAL_STEPS.length;
+  var container = document.getElementById('st-steps-container');
+  var nextBtn = document.getElementById('st-next-btn');
+  var progress = document.getElementById('st-progress');
+
+  container.innerHTML = '<div class="st-step">'
+    + '<div class="st-icon">' + step.icon + '</div>'
+    + '<div class="st-step-body">'
+    + '<h3>' + step.title + '</h3>'
+    + '<p>' + step.body + '</p>'
+    + '<span class="st-tip">💡 ' + step.tip + '</span>'
+    + '</div></div>';
+
+  nextBtn.textContent = _tutorialStep === total - 1 ? 'Got it ✓' : 'Next →';
+  nextBtn.onclick = _tutorialStep === total - 1
+    ? function(){ closeTutorial(true); }
+    : tutorialNext;
+
+  progress.innerHTML = TUTORIAL_STEPS.map(function(s, i){
+    return '<div class="st-dot' + (i === _tutorialStep ? ' active' : '') + '"></div>';
+  }).join('');
+}
+
+function tutorialNext() {
+  if (_tutorialStep < TUTORIAL_STEPS.length - 1) {
+    _tutorialStep++;
+    renderTutorialStep();
+  }
+}
+
+function closeTutorial(markDone) {
+  var overlay = document.getElementById('staff-tutorial-overlay');
+  if (overlay) overlay.style.display = 'none';
+  if (markDone) localStorage.setItem('pp_tutorial_done', '1');
+}
+
+function maybeShowTutorial() {
+  /* Show tutorial on first staff login if not yet seen */
+  if (!localStorage.getItem('pp_tutorial_done')) {
+    setTimeout(showTutorial, 800);
+  }
+}
+/* ═══════════════════════════════════════════════════════════════════════ */
+
 </script>
 
 <!-- Adoption inquiry slide-up -->
