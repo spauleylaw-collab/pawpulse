@@ -806,15 +806,16 @@ textarea{min-height:64px}
          Doctrine-safe presentation layer only. No pins. No map state.
          Pulls from existing shelter/adoption records only. No new writes.
     ─────────────────────────────────────────────────────────────────── -->
-    <div id="shelter-spotlight" style="display:none;position:absolute;bottom:110px;right:14px;z-index:700;width:220px;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.28);transition:opacity .5s ease;opacity:0;pointer-events:auto;cursor:pointer" onclick="setView('adopt',document.querySelector('[onclick*=\'setView(\\'adopt\\'\']'))">
+    <div id="shelter-spotlight" style="display:none;position:absolute;bottom:110px;right:14px;z-index:700;width:220px;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.28);transition:opacity .5s ease;opacity:0;pointer-events:auto;cursor:pointer" onclick="setView('adopt',null)">
       <div style="position:relative;height:150px;background:var(--cream-2)">
         <img id="spotlight-img" src="" alt="" style="width:100%;height:100%;object-fit:contain;object-position:center center;background:var(--cream-2);display:none">
         <div id="spotlight-emoji" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2.8rem;background:var(--cream-2)">🐾</div>
-        <div style="position:absolute;top:6px;left:6px;background:var(--forest);color:#fff;font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:2px 7px;border-radius:999px" id="spotlight-label">From the Shelter</div>
+        <div style="position:absolute;top:8px;left:8px;background:rgba(255,255,255,.92);color:var(--forest);font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;padding:3px 8px;border-radius:999px;box-shadow:0 1px 4px rgba(0,0,0,.15)" id="spotlight-label">From the Shelter</div>
       </div>
-      <div style="background:var(--forest);padding:9px 11px 11px">
+      <div style="background:var(--ink);padding:10px 12px 12px">
         <div id="spotlight-name" style="font-family:var(--font-display);font-size:.88rem;color:#fff;font-weight:400;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
-        <div id="spotlight-bio" style="font-size:.68rem;color:rgba(255,255,255,.72);line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+        <div id="spotlight-ai-bio" style="font-size:.70rem;color:rgba(255,255,255,.88);line-height:1.45;font-style:italic;margin-bottom:4px;display:none"></div>
+        <div id="spotlight-bio" style="font-size:.63rem;color:rgba(255,255,255,.55);line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
         <div id="spotlight-cta" style="margin-top:6px;font-size:.65rem;font-weight:700;color:rgba(255,255,255,.6);text-align:right">Meet them →</div>
       </div>
     </div>
@@ -833,7 +834,7 @@ textarea{min-height:64px}
 
     <!-- Floating filter pills -->
     <!-- Map legend — bottom left -->
-    <div id="map-disclaimer" style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);z-index:600;background:rgba(255,255,255,.85);backdrop-filter:blur(4px);border-radius:7px;padding:3px 10px;font-size:.58rem;color:var(--warm-mid);white-space:nowrap;max-width:90%">Information may change — contact shelter for official status</div>
+
 <div id="map-legend" style="display:flex;flex-direction:column;gap:5px">
       <div class="legend-item"><div class="stat-dot lost"></div><span id="cnt-lost" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span>Lost</span></div>
       <div class="legend-item"><div class="stat-dot found"></div><span id="cnt-found" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span>Found</span></div>
@@ -8363,6 +8364,42 @@ var _spotlightAnimTimer = null;
 var _spotlightRotateTimer = null;
 var SPOTLIGHT_INTERVAL = 8000; /* 8 seconds per animal */
 
+/* ── SPOTLIGHT AI BIO ──────────────────────────────────────────────────
+   Generates a short first-person intro for the spotlight card.
+   "Hi, I'm Romeo! I'd love a quiet home..."
+   Cached on r.spotlightBio — generates once, reuses after.
+   No new records. No schema changes. Presentation only.
+─────────────────────────────────────────────────────────────────────── */
+async function generateSpotlightBio(r) {
+  if (r.spotlightBio) return r.spotlightBio;
+  var desc = [r.name, r.species, r.breed, r.color, r.sex, r.age ? r.age + ' old' : ''].filter(Boolean).join(', ');
+  var personality = r.adoptPersonality ? r.adoptPersonality.substring(0, 200) : '';
+  try {
+    var resp = await fetch('/api/anthropic', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514', max_tokens: 60,
+        messages: [{role: 'user', content:
+          'Write a single warm first-person sentence for a shelter animal spotlight card. '
+          + 'Start with "Hi, I am [name]" and end with what kind of home or person they would love. '
+          + 'Keep it under 15 words. No quotes. No period at end. '
+          + 'Animal: ' + desc + '. '
+          + (personality ? 'Personality hint: ' + personality : '')
+        }]
+      })
+    });
+    var data = await resp.json();
+    var bio = (data.content||[]).map(function(b){return b.text||'';}).join('').trim();
+    bio = bio.replace(/^["']|["']$/g,'').replace(/\.$/,'');
+    if (bio.length > 5) {
+      r.spotlightBio = bio;
+      return bio;
+    }
+  } catch(e) { console.warn('Spotlight bio error:', e.message); }
+  return null;
+}
+
+
 function getSpotlightAnimals() {
   /* Presentation layer only — reads existing records, writes nothing */
   if (!reports || !reports.length) return [];
@@ -8399,7 +8436,7 @@ function getSpotlightAnimals() {
   return eligible;
 }
 
-function renderSpotlightCard(item) {
+async function renderSpotlightCard(item) {
   var r = item.r;
   var strip = document.getElementById('shelter-spotlight');
   var img   = document.getElementById('spotlight-img');
@@ -8419,6 +8456,17 @@ function renderSpotlightCard(item) {
   label.textContent = item.label;
   name.textContent  = r.name || r.species || 'Animal';
   bio.textContent   = [r.breed, r.color, r.age].filter(Boolean).join(' · ');
+  /* Show AI bio if available, generate if not */
+  var aiBioEl = document.getElementById('spotlight-ai-bio');
+  if (aiBioEl) {
+    aiBioEl.style.display = 'none';
+    generateSpotlightBio(r).then(function(bio) {
+      if (bio && aiBioEl) {
+        aiBioEl.textContent = bio;
+        aiBioEl.style.display = 'block';
+      }
+    });
+  }
   cta.textContent   = item.cta;
 }
 
