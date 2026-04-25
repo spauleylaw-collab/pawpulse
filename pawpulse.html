@@ -182,7 +182,7 @@ textarea{min-height:64px}
 @keyframes hpulse{0%,100%{opacity:.88}50%{opacity:1}}
 #drop-cancel{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);color:rgba(255,255,255,.75);border-radius:999px;padding:3px 10px;font-size:.72rem;font-weight:600;cursor:pointer;font-family:var(--font-body)}
 #drop-cancel:hover{color:#fff}
-#pin-card{display:none;position:absolute;z-index:850;width:280px;background:var(--cream);border:1px solid var(--cream-3);border-radius:14px;overflow:hidden;box-shadow:0 16px 50px rgba(0,0,0,.2);transition:opacity .55s ease,transform .55s ease;max-height:80vh;flex-direction:column}
+#pin-card{display:none;position:absolute;z-index:850;width:280px;background:var(--cream);border:1.5px solid rgba(42,31,18,.18);border-radius:14px;overflow:hidden;box-shadow:0 16px 50px rgba(0,0,0,.32);transition:opacity .55s ease,transform .55s ease;max-height:80vh;flex-direction:column}
 /* Keep Leaflet controls below pin card */
 .leaflet-pane{z-index:400 !important}
 .leaflet-top,.leaflet-bottom{z-index:500 !important}
@@ -197,8 +197,8 @@ textarea{min-height:64px}
 .pc-badge{display:inline-flex;align-items:center;gap:4px;font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:2px 8px;border-radius:999px;margin-bottom:6px}
 .pc-badge.lost{background:#fde8e0;color:var(--lost-r)}
 .pc-badge.found{background:#e0f0e4;color:var(--found-g)}
-.pc-name{font-family:var(--font-display);font-size:1.05rem;font-weight:600;color:var(--warm-dk);margin-bottom:5px}
-.pc-row{font-size:.76rem;color:var(--warm-mid);margin-bottom:2px;display:flex;gap:4px}
+.pc-name{font-family:var(--font-display);font-size:1.05rem;font-weight:600;color:#1a1208;margin-bottom:5px}
+.pc-row{font-size:.76rem;color:#4a3d2e;margin-bottom:2px;display:flex;gap:4px}
 .pc-row strong{color:var(--warm-dk);font-weight:600}
 .pc-contact{margin-top:8px;padding-top:8px;border-top:1px solid var(--cream-3);font-size:.72rem;color:var(--warm-mid)}
 .pc-date{font-size:.65rem;color:#a0907a;margin-top:6px}
@@ -497,6 +497,16 @@ textarea{min-height:64px}
 
 /* ── SHELTER SPOTLIGHT ── */
 @media(max-width:640px){#shelter-spotlight{bottom:10px!important;right:8px!important;width:150px!important}#shelter-spotlight>div:last-child{padding:6px 8px 8px}#spotlight-name{font-size:.78rem!important}#spotlight-bio{font-size:.62rem!important}}
+
+/* ── NEW PIN PULSE — briefly animates pins added after initial load ── */
+@keyframes pinPulse {
+  0%   { filter: drop-shadow(0 0 0px rgba(255,255,255,0)); transform: scale(1); }
+  30%  { filter: drop-shadow(0 0 8px rgba(255,255,255,.9)); transform: scale(1.18); }
+  100% { filter: drop-shadow(0 0 0px rgba(255,255,255,0)); transform: scale(1); }
+}
+.pin-new-pulse {
+  animation: pinPulse 1.4s ease-out forwards;
+}
 </style>
 </head>
 <body>
@@ -586,7 +596,7 @@ textarea{min-height:64px}
   </div>
 </nav>
 <!-- Orientation strip -->
-<div id="orientation-strip" style="position:fixed;top:var(--nav-h);left:0;right:0;z-index:999;background:rgba(45,74,53,.92);color:rgba(255,255,255,.78);text-align:center;font-size:.68rem;font-family:var(--font-body);padding:4px 12px;letter-spacing:.01em;pointer-events:none">Live map of lost, found, and shelter animals in Hastings, NE.</div>
+<div id="orientation-strip" style="position:fixed;top:var(--nav-h);left:0;right:0;z-index:999;background:rgba(45,74,53,.92);color:rgba(255,255,255,.78);text-align:center;font-size:.68rem;font-family:var(--font-body);padding:4px 12px;letter-spacing:.01em;pointer-events:none">See lost pets, found animals, and pets in care — all in real time. <span style="opacity:.65;font-style:italic">You might help reunite a pet today.</span></div>
 
 <!-- ADOPT VIEW -->
 <div id="view-adopt" class="view">
@@ -797,8 +807,8 @@ textarea{min-height:64px}
          Pulls from existing shelter/adoption records only. No new writes.
     ─────────────────────────────────────────────────────────────────── -->
     <div id="shelter-spotlight" style="display:none;position:absolute;bottom:110px;right:14px;z-index:700;width:210px;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.28);transition:opacity .5s ease;opacity:0;pointer-events:auto;cursor:pointer" onclick="setView('adopt',document.querySelector('[onclick*=\'setView(\\'adopt\\'\']'))">
-      <div style="position:relative;height:120px;background:var(--cream-2)">
-        <img id="spotlight-img" src="" alt="" style="width:100%;height:100%;object-fit:cover;object-position:center top;display:none">
+      <div style="position:relative;height:150px;background:var(--cream-2)">
+        <img id="spotlight-img" src="" alt="" style="width:100%;height:100%;object-fit:contain;object-position:center center;background:var(--cream-2);display:none">
         <div id="spotlight-emoji" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2.8rem;background:var(--cream-2)">🐾</div>
         <div style="position:absolute;top:6px;left:6px;background:var(--forest);color:#fff;font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:2px 7px;border-radius:999px" id="spotlight-label">From the Shelter</div>
       </div>
@@ -3650,15 +3660,14 @@ function cardHTML(r) {
   return img
     + '<div class="pc-body" style="background:' + bg + '">'
     + badge
+    + '<div class="pc-name" style="' + (reunited ? 'color:#9a8a78' : '') + '">' + name + '</div>'
+    + actionBtns
     + pubStatusHTML
+    + matchBanner
     + trailHTML
+    + rows + contactWithDate + dateStandalone
     + daysCtxHTML
     + daysInShelterHTML
-    + (matched ? '<div style="margin-bottom:4px"></div>' : '')
-    + matchBanner
-    + '<div class="pc-name" style="' + (reunited ? 'color:#9a8a78' : '') + '">' + name + '</div>'
-    + rows + contactWithDate + dateStandalone
-    + actionBtns
     + comments
     + matchBtn
     + adoptSection
@@ -4246,6 +4255,14 @@ function renderMarkers() {
     return true;
   }).forEach(function(r){
     var m = L.marker([r.lat,r.lng],{icon:pinIcon(r.type, r.reunited, r.possibleMatch && !r.reunited, r.adoptionStatus==='available', r.atShelter && !r.shelter, false, r)}).addTo(map);
+    /* Brief pulse on pins added after initial load */
+    if (r._isNewPin) {
+      r._isNewPin = false;
+      setTimeout(function(){
+        var el = m.getElement ? m.getElement() : null;
+        if (el) { el.classList.add('pin-new-pulse'); setTimeout(function(){ el.classList.remove('pin-new-pulse'); }, 1500); }
+      }, 50);
+    }
     m.on('click', function(e){ closeCard(); openCard(r,e.containerPoint); L.DomEvent.stopPropagation(e); });
     lMarkers.push(m);
   });
