@@ -190,7 +190,7 @@ textarea{min-height:64px}
 #pin-card.fading{opacity:0;transform:translateY(-10px) scale(.97);pointer-events:none}
 @keyframes cpop{from{opacity:0;transform:scale(.9) translateY(6px)}to{opacity:1;transform:scale(1) translateY(0)}}
 .pc-close{position:absolute;top:6px;right:6px;background:rgba(42,31,18,.55);color:#fff;border:none;cursor:pointer;width:44px;height:44px;border-radius:50%;font-size:.95rem;line-height:44px;text-align:center;z-index:1;display:flex;align-items:center;justify-content:center}
-.pc-img{width:100%;height:120px;object-fit:cover;display:block}
+.pc-img{width:100%;height:190px;object-fit:cover;object-position:center top;display:block}
 .pc-no-img{width:100%;height:62px;display:flex;align-items:center;justify-content:center;font-size:2rem}
 .pc-body{padding:11px 13px 13px}
 .pc-badge{display:inline-flex;align-items:center;gap:4px;font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:2px 8px;border-radius:999px;margin-bottom:6px}
@@ -441,7 +441,7 @@ textarea{min-height:64px}
 #rpt-detail-panel{flex:1;min-height:0;overflow-y:auto;padding:22px;background:var(--cream);display:none}
 #rpt-detail-panel::-webkit-scrollbar{width:3px}
 #rpt-detail-panel::-webkit-scrollbar-thumb{background:var(--cream-3);border-radius:99px}
-@media(max-width:640px){#side-panel{position:fixed!important;bottom:0!important;top:auto!important;right:0!important;left:0!important;width:100%!important;max-width:100%!important;height:auto!important;max-height:78vh!important;border-radius:18px 18px 0 0!important;transform:translateY(100%);transition:transform .3s cubic-bezier(.34,1.2,.64,1)!important;overflow-y:auto;-webkit-overflow-scrolling:touch}#side-panel.open{transform:translateY(0)!important}}@media(max-width:640px){#pin-card{position:fixed!important;bottom:0!important;left:0!important;right:0!important;top:auto!important;width:100%!important;max-width:100%!important;max-height:72vh!important;border-radius:18px 18px 0 0!important;z-index:1800!important}#pin-card-body{overflow-y:auto;-webkit-overflow-scrolling:touch;max-height:calc(72vh - 60px)}#rpt-left{width:100%;flex:1;min-height:0}#rpt-row{flex-direction:column}#rpt-right{display:none}#rpt-right.show{display:flex;flex-direction:column;position:fixed;inset:var(--nav-h) 0 0 0;z-index:900;background:var(--cream);overflow:hidden}.mobile-back-btn{display:block!important}.desktop-close-btn{display:none!important}}
+@media(max-width:640px){#side-panel{position:fixed!important;bottom:0!important;top:auto!important;right:0!important;left:0!important;width:100%!important;max-width:100%!important;height:auto!important;max-height:78vh!important;border-radius:18px 18px 0 0!important;transform:translateY(100%);transition:transform .3s cubic-bezier(.34,1.2,.64,1)!important;overflow-y:auto;-webkit-overflow-scrolling:touch}#side-panel.open{transform:translateY(0)!important}}@media(max-width:640px){#pin-card{position:fixed!important;bottom:0!important;left:0!important;right:0!important;top:auto!important;width:100%!important;max-width:100%!important;max-height:72vh!important;border-radius:18px 18px 0 0!important;z-index:1800!important}#pin-card .pc-img{height:240px!important}#pin-card-body{overflow-y:auto;-webkit-overflow-scrolling:touch;max-height:calc(72vh - 60px)}#rpt-left{width:100%;flex:1;min-height:0}#rpt-row{flex-direction:column}#rpt-right{display:none}#rpt-right.show{display:flex;flex-direction:column;position:fixed;inset:var(--nav-h) 0 0 0;z-index:900;background:var(--cream);overflow:hidden}.mobile-back-btn{display:block!important}.desktop-close-btn{display:none!important}}
 /* Adopt view */
 #view-adopt{background:var(--cream-2);flex-direction:column;overflow:hidden}
 #adopt-hdr{background:var(--cream);border-bottom:1px solid var(--cream-3);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
@@ -1594,13 +1594,26 @@ function bootApp() {
   /* Update incare shelter label */
   var lbl = document.getElementById('incare-shelter-label');
   if (lbl) lbl.textContent = activeShelter + ' — Animals In Care';
-  /* Restore last view after refresh */
+  /* Restore last view after refresh — apply IMMEDIATELY to prevent map flash */
+  var _restoredView = 'map';
   try {
     var lastView = sessionStorage.getItem('pp-view');
-    if (lastView && lastView !== 'map') {
-      setTimeout(function(){ setView(lastView, document.querySelector('[onclick*="setView(\''+lastView+'\')"]')); }, 600);
+    if (lastView) {
+      _restoredView = lastView;
+      /* Apply the correct view class right now — before any render */
+      document.querySelectorAll('.view').forEach(function(x){ x.classList.remove('active'); });
+      var _el = document.getElementById('view-' + lastView);
+      if (_el) _el.classList.add('active');
+      document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+      var _tb = document.querySelector('[onclick*="setView(\''+lastView+'\')"]');
+      if (_tb) _tb.classList.add('active');
+      _curView = lastView;
     }
   } catch(e) {}
+  /* Full setView wires side effects (incare render, map resize etc) — 80ms is imperceptible */
+  if (_restoredView !== 'map') {
+    setTimeout(function(){ setView(_restoredView, document.querySelector('[onclick*="setView(\''+_restoredView+'\')"]')); }, 80);
+  }
   /* Pre-set shelter filter */
   var sel = document.getElementById('rpt-filter-shelter');
   if (sel && activeShelter) sel.value = activeShelter;
@@ -3998,6 +4011,8 @@ function rotateBanner() {
     var when = daysAgo === 0 ? 'today' : daysAgo === 1 ? 'yesterday' : daysAgo + ' days ago';
     liveMsgs.push({ text: '🏠 ' + (ri.name || ri.species || 'A pet') + ' arrived at Heartland Pet Connection ' + when + ' — ' + (ri.intakeSource === 'stray' ? 'found stray' : ri.intakeSource === 'surrender' ? 'owner surrender' : 'brought in') + '.', dot: '#3a7d44' });
   }
+  /* Build pool: static events + live report messages */
+  var pool = bannerEvents.concat(liveMsgs);
   /* Adoption messages */
   var adoptable = reports.filter(function(r){ return r.adoptionStatus==='available' && !r.reunited; });
   if (adoptable.length) {
