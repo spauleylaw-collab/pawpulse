@@ -1161,7 +1161,6 @@ function initFirebase() {
         /* Confirmed signed in — ensure state is set */
         _isStaff = true;
         localStorage.setItem('pawpulse-staff', user.email);
-        setTimeout(maybeShowTutorial, 800);
         document.getElementById('staff-badge').classList.add('staff-active');
         document.querySelectorAll('.tab-ops,.tab-admin').forEach(function(el){ el.style.display = ''; });
         hideStaffLoginBtn();
@@ -8703,102 +8702,6 @@ try {
 }
 setTimeout(function(){ injectMicButtons(document.getElementById('side-panel')); }, 100);
 
-/* ═══ STAFF TUTORIAL ═══════════════════════════════════════════════════ */
-var _tutorialStep = 0;
-var TUTORIAL_STEPS = [
-  {
-    icon: '🗺️',
-    title: 'The map is your live feed',
-    body: 'Every pin is a real-time signal from the community. The map updates automatically — no refresh needed.',
-    tip: 'Pins update within seconds of a report being posted'
-  },
-  {
-    icon: '🔴🟢',
-    title: 'Pin colors tell the story',
-    body: 'Red = lost pet (owner searching). Green = found animal (someone has it). Orange = finder is bringing it to a shelter or vet. Blue = confirmed in your care.',
-    tip: 'Only you can create blue pins via intake'
-  },
-  {
-    icon: '🟠',
-    title: 'Orange pins need your action',
-    body: 'When someone checks they are bringing a pet to a shelter, an orange pin appears. Tap it, then tap "Confirm Intake" once the animal arrives. This turns it blue and runs an auto-match against lost reports.',
-    tip: 'Auto-match fires automatically — check for alerts'
-  },
-  {
-    icon: '🏥',
-    title: 'Manage animals in At Shelter',
-    body: 'The At Shelter tab shows every animal in your care. From here you can edit details, add photos, update status, and mark animals as available for adoption.',
-    tip: 'At Shelter is staff-only — the public cannot see this view'
-  },
-  {
-    icon: '🐾',
-    title: 'Making an animal adoptable',
-    body: 'In At Shelter, tap any animal, then Edit, and set Adoption Status to Available. This adds them to the Adopt page and the spotlight card on the map.',
-    tip: 'Pending = inquiry received. Adopted = complete'
-  },
-  {
-    icon: '📊',
-    title: 'Reports gives you the full picture',
-    body: 'The Reports tab shows the adoption pipeline, intake history, and any inquiry emails from the public. Check it daily.',
-    tip: 'Tap "Print Report" to get a shareable summary'
-  }
-];
-
-function showTutorial() {
-  var overlay = document.getElementById('staff-tutorial-overlay');
-  if (!overlay) return;
-  _tutorialStep = 0;
-  renderTutorialStep();
-  overlay.style.display = 'flex';
-  overlay.onclick = function(e) { if (e.target === overlay) closeTutorial(false); };
-}
-
-function renderTutorialStep() {
-  var step = TUTORIAL_STEPS[_tutorialStep];
-  var total = TUTORIAL_STEPS.length;
-  var container = document.getElementById('st-steps-container');
-  var nextBtn = document.getElementById('st-next-btn');
-  var progress = document.getElementById('st-progress');
-
-  container.innerHTML = '<div class="st-step">'
-    + '<div class="st-icon">' + step.icon + '</div>'
-    + '<div class="st-step-body">'
-    + '<h3>' + step.title + '</h3>'
-    + '<p>' + step.body + '</p>'
-    + '<span class="st-tip">💡 ' + step.tip + '</span>'
-    + '</div></div>';
-
-  nextBtn.textContent = _tutorialStep === total - 1 ? 'Got it ✓' : 'Next →';
-  nextBtn.onclick = _tutorialStep === total - 1
-    ? function(){ closeTutorial(true); }
-    : tutorialNext;
-
-  progress.innerHTML = TUTORIAL_STEPS.map(function(s, i){
-    return '<div class="st-dot' + (i === _tutorialStep ? ' active' : '') + '"></div>';
-  }).join('');
-}
-
-function tutorialNext() {
-  if (_tutorialStep < TUTORIAL_STEPS.length - 1) {
-    _tutorialStep++;
-    renderTutorialStep();
-  }
-}
-
-function closeTutorial(markDone) {
-  var overlay = document.getElementById('staff-tutorial-overlay');
-  if (overlay) overlay.style.display = 'none';
-  if (markDone) localStorage.setItem('pp_tutorial_done', '1');
-}
-
-function maybeShowTutorial() {
-  /* Show tutorial on first staff login if not yet seen */
-  if (!localStorage.getItem('pp_tutorial_done')) {
-    setTimeout(showTutorial, 800);
-  }
-}
-/* ═══════════════════════════════════════════════════════════════════════ */
-
 </script>
 
 <!-- Adoption inquiry slide-up -->
@@ -8821,21 +8724,4 @@ function maybeShowTutorial() {
 </div>
 
 
-
-<!-- STAFF TUTORIAL OVERLAY -->
-<div id="staff-tutorial-overlay" style="display:none">
-  <div id="staff-tutorial-card">
-    <div class="st-header">
-      <h2>Welcome to PawPulse Staff</h2>
-      <p>Your quick walkthrough — 6 steps, 60 seconds</p>
-    </div>
-    <div class="st-steps" id="st-steps-container"></div>
-    <div class="st-footer">
-      <button class="st-btn-skip" onclick="closeTutorial(true)">Skip for now</button>
-      <div class="st-progress" id="st-progress"></div>
-      <button class="st-btn-primary" id="st-next-btn" onclick="tutorialNext()">Next →</button>
-    </div>
-  </div>
-</div>
 </body>
-</html>
