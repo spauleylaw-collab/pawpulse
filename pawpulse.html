@@ -8400,15 +8400,18 @@ async function generateSpotlightBio(r) {
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514', max_tokens: 60,
         messages: [{role: 'user', content:
-          'Write one warm first-person line for a shelter animal spotlight card. '
-          + 'Must feel like the ANIMAL is speaking. Start with "Hi, I am [name]" or "I am [name]". '
-          + 'Include one emotional detail: days waiting, what they love, or what they dream of. '
-          + 'Examples: '
-          + '"Hi, I am Romeo — I have been waiting 16 days and I am ready to come home" '
-          + '"I am Bailey — I just arrived and I am already falling in love with everyone I meet" '
-          + '"Hi, I am Omni — I love walks and I have been here 19 days looking for my person" '
-          + 'Max 16 words. No quotes. No period. Warm, simple, alive. '
+          'Write two short sentences in the voice of a shelter animal for a spotlight card. '
+          + 'Sentence 1: "I\'m [name]." '
+          + 'Sentence 2: One warm personal detail — days waiting, what they love, or what home they dream of. '
+          + 'Rules: No dashes. No "Hi I am". Contractions only (I\'m, I\'ve, I\'d). Short words. Under 15 words total. '
+          + 'Good examples: '
+          + '"I\'m Romeo. I\'ve been waiting 16 days to find my sunbeam-sharing family." '
+          + '"I\'m Bailey. I just arrived and I\'m already in love with everyone I meet." '
+          + '"I\'m Omni. I\'ve been here 19 days and I\'d love a yard to run in." '
+          + '"I\'m Parker. I just got here — and I already love it when you scratch my ears." '
           + 'Days in care: ' + Math.floor(daysSince(r.dateAvailable||r.date)) + '. '
+          + 'Name: ' + (r.name||r.species||'Animal') + '. '
+          + 'Personality hint: ' + (r.adoptPersonality ? r.adoptPersonality.substring(0,100) : (r.breed||r.color||'')) + '. '
           + 'Animal: ' + desc + '. '
           + (personality ? 'Personality hint: ' + personality : '')
         }]
