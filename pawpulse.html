@@ -830,11 +830,7 @@ textarea{min-height:64px}
       <div style="position:relative;height:120px;background:var(--cream-2);overflow:hidden">
         <img id="spotlight-img" src="" alt="" style="width:100%;height:100%;object-fit:contain;object-position:center center;background:var(--cream-2);display:none">
         <div id="spotlight-emoji" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:3rem;background:var(--cream-2)">🐾</div>
-        <div style="position:absolute;bottom:6px;left:6px;right:6px;display:flex;gap:4px;flex-wrap:nowrap;overflow:hidden">
-          <div id="spotlight-label" style="background:rgba(255,255,255,.9);color:var(--forest);font-size:.56rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:2px 7px;border-radius:999px;box-shadow:0 1px 4px rgba(0,0,0,.12);white-space:nowrap;flex-shrink:0">Adoptable</div>
-          <div id="spotlight-pill-1" style="background:rgba(255,255,255,.75);color:var(--warm-dk);font-size:.56rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:2px 7px;border-radius:999px;white-space:nowrap;flex-shrink:0;display:none"></div>
-          <div id="spotlight-pill-2" style="background:rgba(255,255,255,.75);color:var(--warm-dk);font-size:.56rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:2px 7px;border-radius:999px;white-space:nowrap;flex-shrink:0;display:none"></div>
-        </div>
+        <div id="spotlight-label" style="position:absolute;bottom:6px;left:6px;background:rgba(255,255,255,.9);color:var(--forest);font-size:.56rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:2px 7px;border-radius:999px;box-shadow:0 1px 4px rgba(0,0,0,.12)">Adoptable</div>
       </div>
       <div style="padding:8px 10px 10px;background:var(--cream)">
         <div id="spotlight-ai-bio" style="font-size:.7rem;color:var(--warm-dk);line-height:1.35;font-style:italic;margin-bottom:5px;display:none;overflow:hidden"></div>
@@ -8394,65 +8390,33 @@ var SPOTLIGHT_INTERVAL = 8000; /* 8 seconds per animal */
    Cached on r.spotlightBio — generates once, reuses after.
    No new records. No schema changes. Presentation only.
 ─────────────────────────────────────────────────────────────────────── */
-async function generateSpotlightPills(r) {
-  if (r._spotlightPills) return r._spotlightPills;
-  var desc = [r.species, r.breed, r.color, r.sex, r.age].filter(Boolean).join(', ');
-  var personality = r.adoptPersonality ? r.adoptPersonality.substring(0, 150) : '';
-  try {
-    var resp = await fetch('/api/anthropic', {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514', max_tokens: 30,
-        messages: [{role: 'user', content:
-          'Generate exactly 2 playful one-word personality descriptors for a shelter animal. '          + 'Words like: Lovable, Scratchable, Cuddly, Snuggly, Zoomable, Walkable, Nappable, Purrable, Boopable, Fetchable, Tummyable, Curlable. '          + 'Must end in -able or -ible or similar fun suffix. '          + 'Return ONLY the 2 words separated by a comma. No other text. '          + 'Animal: ' + desc + '. ' + (personality ? 'Personality: ' + personality : '')
-        }]
-      })
-    });
-    var data = await resp.json();
-    var raw = (data.content||[]).map(function(b){return b.text||'';}).join('').trim();
-    var pills = raw.split(',').map(function(p){ return p.trim().replace(/[^a-zA-Z]/g,''); }).filter(Boolean).slice(0,2);
-    if (pills.length === 2) { r._spotlightPills = pills; return pills; }
-  } catch(e) { console.warn('Pills error:', e.message); }
-  return null;
-}
-
-
 async function generateSpotlightBio(r) {
   if (r.spotlightBio) return r.spotlightBio;
   var desc = [r.name, r.species, r.breed, r.color, r.sex, r.age ? r.age + ' old' : ''].filter(Boolean).join(', ');
-  var personality = r.adoptPersonality ? r.adoptPersonality.substring(0, 200) : '';
+  var days = Math.floor(daysSince(r.dateAvailable||r.date));
+  var personality = r.adoptPersonality ? r.adoptPersonality.substring(0, 150) : '';
   try {
     var resp = await fetch('/api/anthropic', {
       method: 'POST', headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514', max_tokens: 60,
         messages: [{role: 'user', content:
-          'Write two short sentences in the voice of a shelter animal for a spotlight card. '
-          + 'Sentence 1: "I\'m [name]." '
-          + 'Sentence 2: One warm personal detail — days waiting, what they love, or what home they dream of. '
-          + 'Rules: No dashes. No "Hi I am". Contractions only (I\'m, I\'ve, I\'d). Short words. Under 15 words total. '
-          + 'Good examples: '
-          + '"I\'m Romeo. I\'ve been waiting 16 days to find my sunbeam-sharing family." '
-          + '"I\'m Bailey. I just arrived and I\'m already in love with everyone I meet." '
-          + '"I\'m Omni. I\'ve been here 19 days and I\'d love a yard to run in." '
-          + '"I\'m Parker. I just got here — and I already love it when you scratch my ears." '
-          + 'Days in care: ' + Math.floor(daysSince(r.date)) + '. ' /* intake date — days physically at shelter */
-          + 'Name: ' + (r.name||r.species||'Animal') + '. '
-          + 'Personality hint: ' + (r.adoptPersonality ? r.adoptPersonality.substring(0,100) : (r.breed||r.color||'')) + '. '
-          + 'Animal: ' + desc + '. '
-          + (personality ? 'Personality hint: ' + personality : '')
+          'Write two short sentences in the voice of a shelter animal. '
+          + 'Sentence 1: I am [name]. Sentence 2: one warm detail about days waiting or what they dream of. '
+          + 'No dashes. Contractions only. Under 15 words total. '
+          + 'Name: ' + (r.name||r.species||'Animal') + '. Days in care: ' + days + '. '
+          + (personality ? 'Personality: ' + personality : '')
         }]
       })
     });
     var data = await resp.json();
-    var bio = (data.content||[]).map(function(b){return b.text||'';}).join('').trim();
-    bio = bio.replace(/^["']|["']$/g,'').replace(/\.$/,'');
-    if (bio.length > 5) {
-      r.spotlightBio = bio;
-      return bio;
-    }
+    var bio = (data.content||[]).map(function(b){return b.text||'';}).join('').trim().replace(/^["']|["']$/g,'');
+    if (bio.length > 5) { r.spotlightBio = bio; return bio; }
   } catch(e) { console.warn('Spotlight bio error:', e.message); }
   return null;
+}
+async function generateSpotlightPills(r) {
+  var c = await generateSpotlightContent(r); return (c && c.word) ? [c.word] : null;
 }
 
 
@@ -8535,17 +8499,7 @@ async function renderSpotlightCard(item) {
       }
     });
   }
-  /* AI personality pills */
-  var p1 = document.getElementById('spotlight-pill-1');
-  var p2 = document.getElementById('spotlight-pill-2');
-  if (p1) p1.style.display = 'none';
-  if (p2) p2.style.display = 'none';
-  generateSpotlightPills(r).then(function(pills) {
-    if (pills && pills.length === 2) {
-      if (p1) { p1.textContent = pills[0]; p1.style.display = 'block'; }
-      if (p2) { p2.textContent = pills[1]; p2.style.display = 'block'; }
-    }
-  });
+
   /* CTA is static 'View Adoptable Pets →' — override only for adopted */
   if (item.label.includes('adopted')) cta.textContent = 'See who is available →';
   else cta.textContent = 'View Adoptable Pets →';
