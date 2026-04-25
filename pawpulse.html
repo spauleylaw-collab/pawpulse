@@ -651,6 +651,7 @@ textarea{min-height:64px}
     <button class="rpt-chip"        id="ic-chip-hold"      onclick="setIncareFilter('hold',this)">⚠️ On Hold</button>
     <button class="rpt-chip"        id="ic-chip-adopt"     onclick="setIncareFilter('adopt',this)">🌟 Adoption Ready</button>
     <button class="rpt-chip"        id="ic-chip-long"      onclick="setIncareFilter('long',this)">🔴 30+ Days</button>
+    <button class="rpt-chip"        id="ic-chip-inq"       onclick="setIncareFilter('inq',this)">💬 Has Inquiries</button>
   </div>
   <div id="incare-list" style="flex:1;overflow-y:auto;padding:12px;min-height:0;-webkit-overflow-scrolling:touch"></div>
 </div>
@@ -1980,6 +1981,50 @@ function submitIntakeFromModal() {
 
 /* ── ANIMAL EDIT MODAL ───────────────────────────────────────────────── */
 /* Render adoption inquiries into the animal edit modal — called after body.innerHTML is set */
+/* ── INQUIRY POPUP ─────────────────────────────────────────────────────
+   Lightweight popup showing adoption inquiries — no full edit modal.
+──────────────────────────────────────────────────────────────────────── */
+function showInquiryPopup(id) {
+  var r = reports.find(function(x){ return x.id===id; });
+  if (!r || !r.inquiries || !r.inquiries.length) return;
+
+  var existing = document.getElementById('inq-popup');
+  if (existing) existing.remove();
+  var existingBd = document.getElementById('inq-popup-bd');
+  if (existingBd) existingBd.remove();
+
+  var bd = document.createElement('div');
+  bd.id = 'inq-popup-bd';
+  bd.style.cssText = 'position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,.45)';
+
+  var pop = document.createElement('div');
+  pop.id = 'inq-popup';
+  pop.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:5001;background:var(--cream);border-radius:18px 18px 0 0;padding:20px 20px 32px;max-height:70vh;overflow-y:auto;-webkit-overflow-scrolling:touch;box-shadow:0 -8px 40px rgba(0,0,0,.25)';
+
+  var name = esc(r.name || r.species || 'Animal');
+  var html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">'
+    + '<div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--warm-dk)">💬 Inquiries for ' + name + '</div>'
+    + '<button onclick="(function(){var p=document.getElementById(\'inq-popup\');var b=document.getElementById(\'inq-popup-bd\');if(p)p.remove();if(b)b.remove();})()" style="background:var(--cream-2);border:none;border-radius:50%;width:32px;height:32px;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>'
+    + '</div>';
+
+  r.inquiries.slice().reverse().forEach(function(inq) {
+    var t = inq.time ? new Date(inq.time).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) : '';
+    html += '<div style="background:#fff8e8;border:1.5px solid #f0c040;border-radius:10px;padding:12px 14px;margin-bottom:10px">'
+      + '<div style="font-weight:700;font-size:.9rem;color:var(--warm-dk);margin-bottom:4px">' + esc(inq.name||'Unknown') + '</div>'
+      + (inq.phone ? '<a href="tel:' + inq.phone.replace(/[^0-9+]/g,'') + '" style="display:block;color:var(--forest);font-weight:600;font-size:.86rem;margin-bottom:2px">📞 ' + esc(inq.phone) + '</a>' : '')
+      + (inq.email ? '<div style="font-size:.8rem;color:var(--warm-mid);margin-bottom:2px">✉️ ' + esc(inq.email) + '</div>' : '')
+      + (inq.msg   ? '<div style="font-size:.82rem;font-style:italic;margin-top:6px;color:var(--warm-dk)">"' + esc(inq.msg) + '"</div>' : '')
+      + (t         ? '<div style="font-size:.7rem;color:var(--warm-mid);margin-top:6px">' + t + '</div>' : '')
+      + '</div>';
+  });
+
+  pop.innerHTML = html;
+  bd.onclick = function(){ pop.remove(); bd.remove(); };
+  document.body.appendChild(bd);
+  document.body.appendChild(pop);
+}
+
+
 function renderInquiries(r, container) {
   if (!r || !r.inquiries || !r.inquiries.length) return;
   var div = document.createElement('div');
@@ -7817,6 +7862,7 @@ function renderIncareView() {
   if (incareFilter === 'hold')  filtered = all.filter(function(r){ return r.intakeType === 'hold'; });
   if (incareFilter === 'adopt') filtered = all.filter(function(r){ return r.adoptionStatus === 'available'; });
   if (incareFilter === 'long')  filtered = all.filter(function(r){ return daysSince(r.date) >= 30; });
+  if (incareFilter === 'inq')   filtered = all.filter(function(r){ return r.inquiries && r.inquiries.length > 0; });
 
   if (!filtered.length) {
     el.innerHTML = '<div style="text-align:center;padding:32px 16px;color:var(--warm-mid)">'
@@ -7881,7 +7927,7 @@ function renderIncareView() {
       + (isHold?'<span style="font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:999px;background:#fff8f0;color:#8a5010;border:1px solid #e8c090">⚠️ Hold</span>':'')
       + (isAdopt?'<span style="font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:999px;background:#e8f0ff;color:#2050a0">🌟 Adopt</span>':'')
       + (srcLabel?'<span style="font-size:.6rem;padding:2px 6px;border-radius:999px;background:var(--cream-2);color:var(--warm-mid)">' + srcLabel + '</span>':'')
-      + (r.inquiries && r.inquiries.length ? '<span title="' + r.inquiries.length + ' adoption inquiry pending — open Edit to view" style="font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:999px;background:#fff3cd;color:#7a5010;border:1px solid #f0c040;cursor:pointer" onclick="event.stopPropagation();openAnimalEdit(' + r.id + ')">💬 ' + r.inquiries.length + ' inquiry' + (r.inquiries.length!==1?'s':'') + '</span>' : '')
+      + (r.inquiries && r.inquiries.length ? '<span title="View adoption inquiries" style="font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:999px;background:#fff3cd;color:#7a5010;border:1px solid #f0c040;cursor:pointer" onclick="event.stopPropagation();showInquiryPopup(' + r.id + ')">💬 ' + r.inquiries.length + ' inquiry' + (r.inquiries.length!==1?'s':'') + '</span>' : '')
       + '</div>'
       + '<div style="font-size:.7rem;font-weight:700;color:' + urgencyColor + '">' + daysLabel + '</div>'
       + '</div>'
