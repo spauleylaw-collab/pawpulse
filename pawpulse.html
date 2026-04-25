@@ -4117,11 +4117,13 @@ function rotateBanner() {
   if (lostActive.length) {
     var r = lostActive[Math.floor(Math.random()*lostActive.length)];
     var name = r.name ? r.name : (r.species || 'A pet');
-    liveMsgs.push({ text: '🔴 ' + name + ' is still missing' + (r.address ? ' — last seen near ' + r.address : '') + '. Can you help?', dot:'var(--lost-lt)' });
+    var lostAddr = r.address && !r.address.match(/^-?\d+\.\d+/) ? r.address : null;
+    liveMsgs.push({ text: '\U0001f534 ' + name + ' is still missing' + (lostAddr ? ' \u2014 last seen near ' + lostAddr : '') + '. Can you help?', dot:'var(--lost-lt)' });
   }
   if (foundActive.length) {
     var rf = foundActive[Math.floor(Math.random()*foundActive.length)];
-    liveMsgs.push({ text: '🟢 ' + (rf.species||'A pet') + ' found near ' + (rf.address||'Hastings') + ' — do you know this animal?', dot:'var(--found-lt)' });
+    var rfAddr = rf.address && !rf.address.match(/^-?\d+\.\d+/) ? rf.address : 'Hastings';
+    liveMsgs.push({ text: '\U0001f7e2 ' + (rf.species||'A pet') + ' found near ' + rfAddr + '\u2014 do you know this animal?', dot:'var(--found-lt)' });
   }
   /* Recent shelter intakes — animals brought in last 3 days */
   var recentIntake = reports.filter(function(r){
@@ -8435,8 +8437,9 @@ function getSpotlightAnimals() {
   });
 
   /* Priority 2: Longest in care (not adoptable, not hold) */
+  /* Longest in care — only include animals without any adoption status (not pending/available/adopted) */
   var longest = getShelterData({ includeHolds: false }).filter(function(r){
-    return r.adoptionStatus !== 'available' && r.intakeType !== 'hold'
+    return !r.adoptionStatus && r.intakeType !== 'hold'
         && !r.reunited && !r.resolved && daysSince(r.date) >= 14;
   }).sort(function(a,b){ return daysSince(b.date) - daysSince(a.date); }).slice(0,3);
   longest.forEach(function(r){
