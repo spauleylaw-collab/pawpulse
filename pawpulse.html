@@ -532,8 +532,16 @@ textarea{min-height:64px}
 }
 #staff-tutorial-card {
   background:var(--cream);border-radius:20px;width:min(520px,92vw);
-  max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.4);
+  max-height:88vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.4);
   position:relative;
+}
+@media(max-width:640px){
+  #staff-tutorial-card { border-radius:16px; width:94vw; max-height:85vh; }
+  .st-header { padding:14px 16px 12px; }
+  .st-steps { padding:12px 16px; }
+  .st-footer { padding:10px 16px 14px; }
+  .st-step { gap:10px; padding:10px 0; }
+  .st-icon { width:34px; height:34px; font-size:1.1rem; }
 }
 .st-header {
   background:var(--forest);color:#fff;border-radius:20px 20px 0 0;
@@ -881,7 +889,7 @@ textarea{min-height:64px}
          Doctrine-safe presentation layer only. No pins. No map state.
          Pulls from existing shelter/adoption records only. No new writes.
     ─────────────────────────────────────────────────────────────────── -->
-    <div id="shelter-spotlight" style="display:none;position:absolute;bottom:110px;right:14px;z-index:700;width:200px;border-radius:20px;overflow:hidden;box-shadow:0 12px 40px rgba(42,31,18,.35),0 4px 12px rgba(0,0,0,.15);transition:opacity .5s ease,transform .15s ease;opacity:0;pointer-events:auto;cursor:pointer;border:1.5px solid rgba(255,255,255,.8);background:var(--cream);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)" onclick="this.style.transform='scale(1.04)';setTimeout(function(){setView('adopt',null);},150)">
+    <div id="shelter-spotlight" style="display:none;position:absolute;bottom:110px;right:14px;z-index:700;width:200px;border-radius:20px;overflow:hidden;box-shadow:0 12px 40px rgba(42,31,18,.35),0 4px 12px rgba(0,0,0,.15);transition:opacity .6s ease,transform .15s ease;opacity:0;pointer-events:auto;cursor:pointer;border:1.5px solid rgba(255,255,255,.8);background:var(--cream);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)" onclick="this.style.transform='scale(1.04)';setTimeout(function(){setView('adopt',null);},150)">
       <!-- Shelter companion card — NOT a map feature. No pins. No doctrine impact. -->
       <div style="background:var(--forest);padding:6px 10px;display:flex;align-items:center;gap:6px">
         <span style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.85)" id="spotlight-header-label">🏠 From the Shelter</span>
@@ -3302,7 +3310,8 @@ function printGrantDraft() {
   w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Grant Application — ' + esc(activeShelter) + '</title>'
     + '<style>body{font-family:Georgia,serif;max-width:680px;margin:50px auto;font-size:13px;line-height:1.8;color:#222}h2{font-size:1rem;text-transform:uppercase;letter-spacing:.08em;border-bottom:1px solid #ccc;padding-bottom:4px;margin-top:28px}@media print{body{margin:0}}</style></head>'
     + '<body><h1 style="font-size:1.1rem;margin-bottom:4px">Grant Application</h1><p style="color:#666;font-size:.8rem">' + esc(activeShelter) + ' · ' + new Date().toLocaleDateString() + '</p>'
-    + '<div style="white-space:pre-wrap">' + esc(el.textContent) + '</div></body></html>');
+    + '<div style="white-space:pre-wrap">' + esc(el.textContent) + '</div>
+</body></html>');
   w.document.close(); w.focus(); setTimeout(function(){ w.print(); }, 400);
 }
 
@@ -3334,7 +3343,8 @@ function printActiveReport() {
     + '<style>body{font-family:Georgia,serif;max-width:720px;margin:40px auto;padding:0 24px;font-size:13px;line-height:1.6}h3{font-size:1rem}table{width:100%;border-collapse:collapse;margin-bottom:20px}th,td{padding:6px 10px;border-bottom:1px solid #ddd;text-align:left}th{background:#f5f5f5}@media print{body{margin:0}}</style></head><body>'
     + '<h2 style="font-size:1.1rem;margin-bottom:4px">' + rt.label + '</h2>'
     + '<p style="color:#666;font-size:.8rem;margin-top:0">' + (activeShelter||'All Shelters') + ' · Generated ' + new Date().toLocaleDateString() + '</p>'
-    + body.innerHTML + '</body></html>');
+    + body.innerHTML + '
+</body></html>');
   w.document.close(); w.focus(); setTimeout(function(){ w.print(); }, 400);
 }
 
@@ -4142,7 +4152,8 @@ function printCageCard(id) {
     + '<div class="section"><div class="stitle">Medical</div><div class="grid"><div class="field"><label>Health</label><span>' + esc(med.healthStatus||'---') + '</span></div><div class="field"><label>S/N</label><span>' + esc(med.spayNeuter||'Unknown') + '</span></div><div class="field"><label>Vaccines</label><span>' + esc(med.vaccinations||'Unknown') + '</span></div><div class="field"><label>Parasites</label><span>' + esc(med.parasite||'None') + '</span></div></div>' + (med.notes?'<div style="font-size:10px;color:#555;margin-top:3px">'+esc(med.notes)+'</div>':'') + '</div>'
     + '<div class="section"><div class="stitle">Behavioral</div><div class="grid"><div class="field"><label>Temperament</label><span>' + esc(r.temperament||'Pending') + '</span></div><div class="field"><label>Energy</label><span>' + esc(r.energy||'---') + '</span></div><div class="field"><label>Dogs</label><span>' + esc(r.goodWithDogs||'Unknown') + '</span></div><div class="field"><label>Cats</label><span>' + esc(r.goodWithCats||'Unknown') + '</span></div><div class="field"><label>Kids</label><span>' + esc(r.goodWithKids||'Unknown') + '</span></div><div class="field"><label>House</label><span>' + esc(r.houseTrained||'Unknown') + '</span></div></div>' + (r.behaviorNotes?'<div style="font-size:10px;color:#555;margin-top:3px">'+esc(r.behaviorNotes)+'</div>':'') + '</div>'
     + '<div class="footer"><span>' + new Date().toLocaleDateString() + '</span><span>ID: ' + r.id + '</span><span>pawpulse.net</span></div>'
-    + '</body></html>';
+    + '
+</body></html>';
   var w = window.open('','_blank','width=500,height=750');
   w.document.write(html); w.document.close();
   setTimeout(function(){w.print();}, 400);
@@ -4177,14 +4188,24 @@ function rotateBanner() {
   if (lostActive.length) {
     var r = lostActive[Math.floor(Math.random()*lostActive.length)];
     var name = r.name ? r.name : (r.species || 'A pet');
-    var lostAddr = r.address && !r.address.match(/^-?\d+\.\d+/) ? r.address : null;
+    var lostAddr = r.address && !r.address.match(/^-?\d+\.\d+/) ? r.address.trim() : null;
     liveMsgs.push({ text: '🔴 ' + name + ' is still missing' + (lostAddr ? ' \u2014 last seen near ' + lostAddr : '') + '. Can you help?', dot:'var(--lost-lt)' });
   }
   if (foundActive.length) {
     var rf = foundActive[Math.floor(Math.random()*foundActive.length)];
-    var rfAddr = rf.address && !rf.address.match(/^-?\d+\.\d+/) ? rf.address : 'Hastings';
+    var rfAddr = rf.address && !rf.address.match(/^-?\d+\.\d+/) ? rf.address.trim() : 'Hastings';
     liveMsgs.push({ text: '🟢 ' + (rf.species||'A pet') + ' found near ' + rfAddr + ' — do you know this animal?', dot:'var(--found-lt)' });
   }
+  /* Adoptable animals by name */
+  var adoptableNamed = reports.filter(function(r){
+    return r.shelter && r.adoptionStatus === 'available' && r.name && !r.reunited && !r.resolved;
+  });
+  adoptableNamed.forEach(function(r) {
+    var d = Math.floor(daysSince(r.dateAvailable||r.date));
+    var dText = d === 0 ? 'just became available' : d === 1 ? 'been available for 1 day' : 'been available for ' + d + ' days';
+    liveMsgs.push({ text: '🐾 ' + r.name + ' has ' + dText + ' — tap Adopt to meet them', dot:'var(--forest)' });
+  });
+
   /* Recent shelter intakes — animals brought in last 3 days */
   var recentIntake = reports.filter(function(r){
     return r.shelter && r.shelterName && !r.reunited && daysSince(r.date) <= 3;
@@ -5631,7 +5652,8 @@ function printCostReport(shelterName) {
       + '<p>Outstanding balance: <strong style="color:' + (balance>0?'#c00':'#2d6a35') + '">$' + balance.toLocaleString() + '</strong></p>'
       + '</div>' : '')
     + '<div class="footer"><span>' + shelterName + '</span><span>PawPulse · Hastings, NE · ' + asOf + '</span></div>'
-    + '</body></html>';
+    + '
+</body></html>';
 
   var w = window.open('', '_blank', 'width=980,height=750');
   w.document.write(html);
@@ -6610,7 +6632,8 @@ function printReport(id) {
     + (r.photo ? '<img class="photo" src="' + r.photo + '" alt="pet photo">' : '')
     + '<table>' + rows.map(function(row){ return '<tr><td>'+row[0]+'</td><td>'+row[1]+'</td></tr>'; }).join('') + '</table>'
     + (date ? '<div class="footer">Reported ' + date + ' · PawPulse — Hastings, NE</div>' : '')
-    + '</body></html>';
+    + '
+</body></html>';
   var w = window.open('', '_blank', 'width=680,height=780');
   w.document.write(html);
   w.document.close();
@@ -7313,7 +7336,8 @@ function printCGOutput() {
     + '<h2>' + label + ' · ' + today + '</h2>'
     + '<pre>' + text + '</pre>'
     + '<div class="footer">Generated by PawPulse · Hastings, NE · pawpulse.net · ' + today + '</div>'
-    + '</body></html>');
+    + '
+</body></html>');
   w.document.close();
   w.focus();
   setTimeout(function(){ w.print(); }, 400);
@@ -7599,7 +7623,8 @@ function generateReport(type) {
   var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>PawPulse Report</title>' + css + '</head><body>'
     + header + body
     + '<div class="footer"><span>PawPulse — Hastings, NE</span><span>' + asOf + '</span></div>'
-    + '</body></html>';
+    + '
+</body></html>';
 
   var w = window.open('', '_blank', 'width=960,height=800');
   w.document.write(html);
@@ -8165,7 +8190,8 @@ function printDischargeForm(id) {
     + '<div style="margin-top:20px"><div class="sig-line"></div><div class="sig-label">Date</div></div>'
     + '</div>'
     + '<div style="text-align:center;margin-top:20px;font-size:10px;color:#aaa">Generated by PawPulse · pawpulse.net</div>'
-    + '</body></html>';
+    + '
+</body></html>';
 
   var w = window.open('','_blank','width=800,height=900');
   w.document.write(html); w.document.close();
@@ -8583,44 +8609,49 @@ function rotateSpotlight() {
     /* Wait for AI bio, then reveal everything together */
     generateSpotlightBio(item.r).then(function(bio) {
       var aiBioEl = document.getElementById('spotlight-ai-bio');
-      if (bio && aiBioEl) {
-        aiBioEl.textContent = bio;
-        aiBioEl.style.webkitLineClamp = '3';
-        aiBioEl.style.webkitBoxOrient = 'vertical';
-        aiBioEl.style.overflow = 'hidden';
-        aiBioEl.style.opacity = '1';
+      if (aiBioEl) {
+        if (bio) {
+          aiBioEl.textContent = bio;
+          aiBioEl.style.webkitLineClamp = '3';
+          aiBioEl.style.webkitBoxOrient = 'vertical';
+          aiBioEl.style.overflow = 'hidden';
+          aiBioEl.style.opacity = '1';
+        } else {
+          aiBioEl.style.minHeight = '0'; /* no bio = collapse space */
+        }
       }
-      /* Reveal card NOW — bio and card arrive together */
+      /* Reveal card regardless — bio may or may not be present */
       requestAnimationFrame(function(){ strip.style.opacity = '1'; });
     });
   } else {
-    /* Subsequent rotations — fade out, pre-fetch next bio during fade, reveal together */
+    /* Subsequent rotations — fixed 700ms out, content swap, fade in together */
     strip.style.opacity = '0';
     _spotlightIndex = _spotlightIndex % animals.length;
     var item2 = animals[_spotlightIndex];
     _spotlightIndex++;
-    /* Start fetching next bio immediately during fade-out (500ms window) */
-    generateSpotlightBio(item2.r).then(function(bio) {
-      renderSpotlightCardSync(item2);
-      var aiBioEl2 = document.getElementById('spotlight-ai-bio');
-      if (aiBioEl2) {
-        aiBioEl2.style.opacity = '0';
-        if (bio) {
-          aiBioEl2.textContent = bio;
-          aiBioEl2.style.webkitLineClamp = '3';
-          aiBioEl2.style.webkitBoxOrient = 'vertical';
-          aiBioEl2.style.overflow = 'hidden';
+    var bioPromise2 = generateSpotlightBio(item2.r);
+    setTimeout(function() {
+      bioPromise2.then(function(bio2) {
+        renderSpotlightCardSync(item2);
+        var aiBioEl2 = document.getElementById('spotlight-ai-bio');
+        if (aiBioEl2) {
+          aiBioEl2.style.opacity = '0';
+          if (bio2) {
+            aiBioEl2.textContent = bio2;
+            aiBioEl2.style.webkitLineClamp = '3';
+            aiBioEl2.style.webkitBoxOrient = 'vertical';
+            aiBioEl2.style.overflow = 'hidden';
+          }
         }
-      }
-      /* Ensure at least 400ms fade-out visible before revealing */
-      setTimeout(function() {
-        if (aiBioEl2 && bio) aiBioEl2.style.opacity = '1';
-        requestAnimationFrame(function(){ strip.style.opacity = '1'; });
-      }, 400);
-    });
+        requestAnimationFrame(function() {
+          strip.style.opacity = '1';
+          if (aiBioEl2 && bio2) setTimeout(function(){ aiBioEl2.style.opacity = '1'; }, 50);
+        });
+      });
+    }, 700);
   }
 
-  clearTimeout(_spotlightRotateTimer);
+    clearTimeout(_spotlightRotateTimer);
   _spotlightRotateTimer = setTimeout(rotateSpotlight, SPOTLIGHT_INTERVAL);
 }
 
@@ -8797,5 +8828,22 @@ function maybeShowTutorial() {
   </div>
 </div>
 
+
+
+<!-- STAFF TUTORIAL OVERLAY -->
+<div id="staff-tutorial-overlay" style="display:none">
+  <div id="staff-tutorial-card">
+    <div class="st-header">
+      <h2>Welcome to PawPulse Staff</h2>
+      <p>Your quick walkthrough — 6 steps, 60 seconds</p>
+    </div>
+    <div class="st-steps" id="st-steps-container"></div>
+    <div class="st-footer">
+      <button class="st-btn-skip" onclick="closeTutorial(true)">Skip for now</button>
+      <div class="st-progress" id="st-progress"></div>
+      <button class="st-btn-primary" id="st-next-btn" onclick="tutorialNext()">Next →</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
