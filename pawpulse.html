@@ -2182,7 +2182,10 @@ function checkFoundPinsOnIntake(intakeRecord) {
   bd.style.cssText = 'position:fixed;inset:0;z-index:3999;background:rgba(0,0,0,.45)';
   bd.onclick = function(){ panel.remove(); bd.remove(); };
   document.body.appendChild(bd);
-
+  /* Panel was missing its appendChild — this was the phone freeze bug */
+  panel.style.transform = 'translateY(100%)';
+  panel.style.transition = 'transform .3s cubic-bezier(.34,1.2,.64,1)';
+  document.body.appendChild(panel);
   requestAnimationFrame(function(){
     requestAnimationFrame(function(){
       panel.style.transform = 'translateY(0)';
@@ -2651,6 +2654,22 @@ function saveAnimalEdit(id) {
 
   /* Master status — drives adoptionStatus, reunited, euthanized */
   var masterStatus = (document.getElementById('ae-status')||{}).value;
+  /* Warn before irreversible final outcomes */
+  if (masterStatus === 'euthanized' && r.masterStatus !== 'euthanized') {
+    if (!window.confirm('⚠️ Mark as Euthanized?\n\nThis is a permanent outcome. The animal will be removed from the active list and this action cannot be undone. Proceed?')) {
+      /* Re-enable save button and abort */
+      var _aesb = document.getElementById('ae-save-btn');
+      if (_aesb) { _aesb.disabled = false; _aesb.textContent = '✓ Save Changes'; }
+      return;
+    }
+  }
+  if (masterStatus === 'adopted' && r.masterStatus !== 'adopted') {
+    if (!window.confirm('✅ Confirm Adoption?\n\nMark this animal as adopted? They will leave the active in-care list. This can be reviewed in reports.')) {
+      var _aesb2 = document.getElementById('ae-save-btn');
+      if (_aesb2) { _aesb2.disabled = false; _aesb2.textContent = '✓ Save Changes'; }
+      return;
+    }
+  }
   r.masterStatus = masterStatus;
   r.reunited    = masterStatus === 'reunited';
   r.euthanized  = masterStatus === 'euth';
@@ -2804,6 +2823,7 @@ var REPORT_TYPES = [
   { id:'adopt',     icon:'🌟', label:'Adoption Pipeline' },
   { id:'outcomes',  icon:'🎉', label:'Outcomes Report' },
   { id:'species',   icon:'🐾', label:'Species Breakdown' },
+  { id:'inquiries', icon:'💬', label:'Adoption Inquiries' },
   { id:'grants',    icon:'💵', label:'AI Grant Opportunities', highlight: true },
 ];
 
@@ -3122,6 +3142,69 @@ function runActiveReport() {
       return '<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:.84rem;margin-bottom:4px"><span>' + sp + '</span><span style="font-weight:700">' + counts[sp] + ' (' + pct + '%)</span></div>'
         + '<div style="background:var(--cream-2);border-radius:999px;height:8px"><div style="background:var(--forest);height:8px;border-radius:999px;width:' + pct + '%"></div></div></div>';
     }).join('') + '</div>';
+
+  } else if (id === 'inquiries') {
+    /* Adoption Inquiries — all animals with pending inquiries, newest first */
+    var inq_recs = getShelterData({ includeHolds:true, includeAdopt:true })
+      .filter(function(r){ return r.inquiries && r.inquiries.length > 0; })
+      .sort(function(a,b){ return (b.inquiries.length||0) - (a.inquiries.length||0); });
+
+    if (!inq_recs.length) {
+      html = '<div style="padding:32px;text-align:center;color:var(--warm-mid)">'
+        + '<div style="font-size:2rem;margin-bottom:8px">💬</div>'
+        + '<div style="font-weight:600;margin-bottom:4px">No adoption inquiries yet</div>'
+        + '<div style="font-size:.82rem">Inquiries submitted through the Adopt page will appear here.</div>'
+        + '</div>';
+    } else {
+      /* Summary line */
+      var totalInq = inq_recs.reduce(function(s,r){ return s+(r.inquiries||[]).length; }, 0);
+      html = '<div style="background:var(--cream-2);border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;gap:20px">'
+        + '<div style="text-align:center"><div style="font-size:1.4rem;font-weight:800;color:var(--forest)">' + inq_recs.length + '</div><div style="font-size:.7rem;color:var(--warm-mid)">Animals</div></div>'
+        + '<div style="text-align:center"><div style="font-size:1.4rem;font-weight:800;color:#2050a0">' + totalInq + '</div><div style="font-size:.7rem;color:var(--warm-mid)">Total Inquiries</div></div>'
+        + '</div>';
+
+      html += reportTable('Adoption Inquiries — ' + activeShelter,
+        ['Animal', 'Species', 'Days Waiting', '# Inquiries', 'Latest Inquiry', 'Contact'],
+        inq_recs.map(function(r) {
+          var inqs = r.inquiries || [];
+          var latest = inqs[inqs.length-1] || {};
+          var latestDate = latest.date ? new Date(latest.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
+          var contact = latest.phone || latest.email || latest.name || '—';
+          return [
+            esc(r.name || r.species || '—'),
+            esc(r.species || '—'),
+            Math.floor(daysSince(r.date)) + 'd',
+            '<strong>' + inqs.length + '</strong>',
+            latestDate,
+            esc(contact)
+          ];
+        }),
+        ['<b>TOTAL: ' + inq_recs.length + ' animals, ' + totalInq + ' inquiries</b>', '', '', '', '', '']
+      );
+
+      /* Detail cards for each inquiry */
+      html += '<h3 style="font-family:var(--font-display);font-size:.9rem;margin:16px 0 8px">Inquiry Details</h3>';
+      inq_recs.forEach(function(r) {
+        var inqs = r.inquiries || [];
+        html += '<div style="border:1px solid var(--cream-3);border-radius:10px;padding:12px 14px;margin-bottom:10px">'
+          + '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">'
+          + '<div><div style="font-family:var(--font-display);font-size:.9rem;font-weight:700">' + esc(r.name||r.species||'Unknown') + '</div>'
+          + '<div style="font-size:.72rem;color:var(--warm-mid)">' + esc(r.species||'') + (r.breed?' · '+esc(r.breed):'') + ' · ' + Math.floor(daysSince(r.date)) + ' days in care</div></div>'
+          + '<span style="font-size:.68rem;font-weight:700;padding:3px 8px;border-radius:999px;background:#e8f0ff;color:#2050a0">' + inqs.length + ' ' + (inqs.length===1?'inquiry':'inquiries') + '</span>'
+          + '</div>';
+        inqs.forEach(function(inq, i) {
+          var d = inq.date ? new Date(inq.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
+          html += '<div style="background:var(--cream-2);border-radius:7px;padding:8px 10px;margin-bottom:6px;font-size:.78rem">'
+            + '<div style="font-weight:600;color:var(--warm-dk)">' + esc(inq.name||'Anonymous') + '</div>'
+            + (inq.phone ? '<div>📞 <a href="tel:' + esc(inq.phone) + '">' + esc(inq.phone) + '</a></div>' : '')
+            + (inq.email ? '<div>✉️ <a href="mailto:' + esc(inq.email) + '">' + esc(inq.email) + '</a></div>' : '')
+            + (inq.message ? '<div style="margin-top:4px;color:var(--warm-mid);font-style:italic">"' + esc(inq.message.slice(0,120)) + (inq.message.length>120?'…':'') + '"</div>' : '')
+            + (d ? '<div style="font-size:.68rem;color:var(--warm-mid);margin-top:2px">' + d + '</div>' : '')
+            + '</div>';
+        });
+        html += '</div>';
+      });
+    }
 
   } else {
     /* Fall through to existing generateReport for complex reports */
