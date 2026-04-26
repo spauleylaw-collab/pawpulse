@@ -199,7 +199,7 @@ textarea{min-height:64px}
 @keyframes hpulse{0%,100%{opacity:.88}50%{opacity:1}}
 #drop-cancel{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);color:rgba(255,255,255,.75);border-radius:999px;padding:3px 10px;font-size:.72rem;font-weight:600;cursor:pointer;font-family:var(--font-body)}
 #drop-cancel:hover{color:#fff}
-#pin-card{display:none;position:absolute;z-index:850;width:280px;background:var(--cream);border:1.5px solid rgba(42,31,18,.18);border-radius:14px;overflow:hidden;box-shadow:0 16px 50px rgba(0,0,0,.32);transition:opacity .55s ease,transform .55s ease;max-height:80vh;flex-direction:column}
+#pin-card{display:none;position:absolute;z-index:850;width:280px;background:var(--cream);border:1.5px solid rgba(42,31,18,.18);border-radius:14px;overflow:hidden;box-shadow:0 16px 50px rgba(0,0,0,.32);transition:opacity .55s ease,transform .55s ease;max-height:80vh;flex-direction:column;overflow-y:auto}
 /* Keep Leaflet controls below pin card */
 .leaflet-pane{z-index:400 !important}
 .leaflet-top,.leaflet-bottom{z-index:500 !important}
@@ -876,6 +876,13 @@ textarea{min-height:64px}
     <button class="rpt-chip"        id="ic-chip-long"      onclick="setIncareFilter('long',this)">🔴 30+ Days</button>
     <button class="rpt-chip"        id="ic-chip-inq"       onclick="setIncareFilter('inq',this)">💬 Has Inquiries</button>
   </div>
+  <!-- Day count legend — same color system as Adopt page -->
+  <div id="incare-legend" style="font-size:.72rem;color:var(--warm-mid);padding:5px 16px;background:var(--cream);border-bottom:1px solid var(--cream-3);display:flex;gap:14px;flex-wrap:wrap;align-items:center">
+    <span style="font-weight:600;color:var(--warm-dk)">Card border:</span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#3a7d44;margin-right:4px;vertical-align:middle"></span>Under 14 days</span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#d4843a;margin-right:4px;vertical-align:middle"></span>14–29 days</span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#c94f2a;margin-right:4px;vertical-align:middle"></span>30+ days — urgent</span>
+  </div>
   <div id="incare-list" style="flex:1;overflow-y:auto;padding:12px;min-height:0;-webkit-overflow-scrolling:touch;padding-bottom:96px"></div>
   <!-- Floating intake FAB — fixed bottom-right, thumb-friendly -->
   <button onclick="openIntakeModal()"
@@ -1021,6 +1028,7 @@ textarea{min-height:64px}
         <div style="display:flex;gap:5px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px">
           <button onclick="printActiveReport()" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body);white-space:nowrap;flex-shrink:0;touch-action:manipulation">🖨️ Print</button>
           <button onclick="exportReportWord()" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid #2050a0;background:#fff;cursor:pointer;font-family:var(--font-body);white-space:nowrap;flex-shrink:0;color:#2050a0;touch-action:manipulation">📄 Word</button>
+          <button onclick="emailActiveReport()" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid #059669;background:#fff;cursor:pointer;font-family:var(--font-body);white-space:nowrap;flex-shrink:0;color:#059669;touch-action:manipulation">✉️ Email</button>
           <button onclick="openContentGen('press')" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid #e0a090;background:#fff;cursor:pointer;font-family:var(--font-body);color:#c0392b;white-space:nowrap;flex-shrink:0">📣 Shareable Summary</button>
           <button onclick="openContentGen('fund')" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid #e0c090;background:#fff;cursor:pointer;font-family:var(--font-body);color:#b06010;white-space:nowrap;flex-shrink:0">💛 Donor Message</button>
           <button onclick="copyActiveReport()" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid var(--forest);background:var(--forest);color:#fff;cursor:pointer;font-family:var(--font-body);white-space:nowrap;flex-shrink:0">📋 Copy</button>
@@ -1907,6 +1915,10 @@ function bootApp() {
   updateNavCounts();
   /* Orientation strip: starts display:none, must be shown for map view */
   updateOrientationStrip(_restoredView || 'map');
+  /* Ensure map tiles load properly after boot */
+  if (_restoredView === 'map' || !_restoredView) {
+    setTimeout(function(){ try { map.invalidateSize(); } catch(e){} }, 400);
+  }
 }
 
 /* ── INTAKE MODAL (replaces separate Intake tab) ─────────────────────── */
@@ -2287,11 +2299,17 @@ function submitIntakeFromModal() {
   } catch(e) {
     console.warn('Intake write error (local save succeeded):', e.message);
   }
-  renderMarkers(); renderIncareView(); updateNavCounts();
+  /* Close modal FIRST so phone UI doesn't freeze while rendering */
   closeIntakeModal();
-  pushBannerEvent((isHold?'⚠️ Animal on hold logged at ':'🐾 New animal received at ') + activeShelter, isHold?'#d4843a':'var(--found-g)');
-  if (!isHold) setTimeout(function(){ autoMatchOnIntake(r); }, 800);
-  setTimeout(function(){ checkFoundPinsOnIntake(r); }, 1200);
+  /* Defer heavy rendering so modal close animation plays immediately */
+  setTimeout(function() {
+    renderMarkers();
+    renderIncareView();
+    updateNavCounts();
+    pushBannerEvent((isHold?'⚠️ Animal on hold logged at ':'🐾 New animal received at ') + activeShelter, isHold?'#d4843a':'var(--found-g)');
+    if (!isHold) setTimeout(function(){ autoMatchOnIntake(r); }, 800);
+    setTimeout(function(){ checkFoundPinsOnIntake(r); }, 1200);
+  }, 100);
 }
 
 /* ── ANIMAL EDIT MODAL ───────────────────────────────────────────────── */
@@ -3578,6 +3596,22 @@ function closeReportPanel() {
   if (rptRight) rptRight.classList.remove('show');
 }
 
+function emailActiveReport() {
+  var body = document.getElementById('rpt-report-body');
+  if (!body) return;
+  var rt = REPORT_TYPES.find(function(r){ return r.id===_activeReportId; }) || {label:'Report'};
+  var subject = rt.label + ' — ' + activeShelter + ' — ' + new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  /* Strip HTML tags to plain text for email body */
+  var tmp = document.createElement('div');
+  tmp.innerHTML = body.innerHTML;
+  /* Convert table cells to tab-separated, rows to newlines */
+  tmp.querySelectorAll('th,td').forEach(function(el){ el.textContent = el.textContent + '\t'; });
+  tmp.querySelectorAll('tr').forEach(function(el){ el.textContent = el.textContent.trim() + '\n'; });
+  var plainText = tmp.textContent.replace(/\t\n/g,'\n').replace(/\t+/g,'\t').trim();
+  var mailtoUrl = 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(plainText.slice(0, 2000) + (plainText.length > 2000 ? '\n\n[Report truncated — open Word export for full version]' : ''));
+  window.open(mailtoUrl);
+}
+
 function exportReportWord() {
   var body = document.getElementById('rpt-report-body');
   if (!body) return;
@@ -4072,7 +4106,13 @@ function openCard(r, cp) {
     /* bottomMargin accounts for SEO footer (16px) + safe gap */
     var _seo = document.getElementById('seo-footer');
     var _seoH = (_seo && _seo.style.display !== 'none') ? (_seo.offsetHeight || 16) : 0;
-    var bottomMargin = M + 80 + _seoH;
+    var bottomMargin = M + 30 + _seoH;
+    /* Cap card height so it never overflows available space */
+    var maxAvail = mh - M - bottomMargin;
+    if (ch > maxAvail) {
+      card.style.maxHeight = maxAvail + 'px';
+      ch = maxAvail;
+    }
     var left = Math.max(M, Math.min(cp.x - cw/2, mw - cw - rightMargin));
     var top  = cp.y - ch - 16;
     if (top < M) top = cp.y + 22;
@@ -4348,7 +4388,7 @@ async function searchMatchesFromCard(lostId) {
           var aFound = a.address ? '📍 Found near ' + a.address : '';
           var aDate  = a.date ? '📅 ' + new Date(a.date).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
           var aImg   = a.photo
-            ? '<img src="' + a.photo + '" style="width:100%;height:90px;object-fit:cover;border-radius:6px;margin-bottom:8px">'
+            ? '<img src="' + a.photo + '" style="width:100%;height:120px;object-fit:contain;background:var(--cream-2);border-radius:6px;margin-bottom:8px">'
             : '<div style="width:100%;height:60px;background:var(--cream-2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin-bottom:8px">' + (a.species==='Dog'?'🐕':a.species==='Cat'?'🐈':'🐾') + '</div>';
           return '<div style="background:' + (confBg[m.confidence]||'#f8f8f8') + ';border:1.5px solid ' + (confColor[m.confidence]||'#ccc') + ';border-radius:10px;padding:12px;margin-bottom:8px">'
             + aImg
@@ -4794,14 +4834,14 @@ function openPanel(type) {
     return;
   }
 
-  /* Desktop: open panel then start placing */
-  /* Hide orientation strip so it doesn't overlap panel header */
+  /* Desktop: go straight to placing mode — no premature panel open.
+     Panel opens after pin is placed (map.on click handler).
+     This eliminates the flicker of panel sliding in then immediately back out. */
+  /* Hide orientation strip while in report mode */
   var _strip = document.getElementById('orientation-strip');
   if (_strip) _strip.style.display = 'none';
-  document.getElementById('side-panel').classList.add('open');
-  setTimeout(function(){ map.invalidateSize(); }, 340);
-  setTimeout(function(){ startPlace(type); }, 360);
-  setTimeout(function(){ injectMicButtons(document.getElementById('side-panel')); }, 420);
+  startPlace(type);
+  setTimeout(function(){ injectMicButtons(document.getElementById('side-panel')); }, 100);
 }
 
 function closePanel() {
@@ -4908,22 +4948,16 @@ map.on('click', function(e) {
   cancelPlace();
   /* Show a floating button so user can return to form — more reliable than auto-open on mobile */
   var pinBtn = document.getElementById('pin-set-btn');
-  if (pinBtn) {
-    pinBtn.style.display = 'block';
-    setTimeout(function(){ 
-      /* Also try to open panel — works on desktop, button is fallback for mobile */
-      document.getElementById('side-panel').classList.add('open');
-      setTimeout(function(){ map.invalidateSize(); }, 340);
-      /* Hide button once panel opens */
-      setTimeout(function(){
-        if (document.getElementById('side-panel').classList.contains('open')) {
-          pinBtn.style.display = 'none';
-        }
-      }, 500);
-    }, 100);
-  } else {
+  if (window.innerWidth > 600) {
+    /* Desktop: open panel immediately — pin is already visually placed */
     document.getElementById('side-panel').classList.add('open');
-    setTimeout(function(){ map.invalidateSize(); }, 340);
+    setTimeout(function(){ map.invalidateSize(); }, 300);
+    if (pinBtn) pinBtn.style.display = 'none';
+  } else {
+    /* Mobile: show the "Tap to continue" button — panel can't open over map */
+    if (pinBtn) {
+      pinBtn.style.display = 'block';
+    }
   }
   setTimeout(function(){ injectMicButtons(document.getElementById('side-panel')); }, 380);
 });
@@ -8482,6 +8516,20 @@ function renderIncareView() {
       + (srcLabel?'<span style="font-size:.6rem;padding:2px 6px;border-radius:999px;background:var(--cream-2);color:var(--warm-mid)">' + srcLabel + '</span>':'')
       + (r.inquiries && r.inquiries.length ? '<span title="View adoption inquiries" style="font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:999px;background:#fff3cd;color:#7a5010;border:1px solid #f0c040;cursor:pointer" onclick="event.stopPropagation();showInquiryPopup(' + r.id + ')">💬 ' + r.inquiries.length + ' inquiry' + (r.inquiries.length!==1?'s':'') + '</span>' : '')
       + '</div>'
+      + (function() {
+          /* Status pill — most important field for shelter ops */
+          var statusMap = {
+            'intake':   ['Intake', '#6b7280', '#f3f4f6'],
+            'hold':     ['Hold Active', '#92400e', '#fef3c7'],
+            'adopt':    ['Adoption Ready', '#1d4ed8', '#eff6ff'],
+            'medical':  ['Medical', '#7c3aed', '#f5f3ff'],
+            'foster':   ['In Foster', '#9333ea', '#fdf4ff'],
+            'pending':  ['Review Pending', '#b45309', '#fffbeb'],
+          };
+          var sKey = r.masterStatus || 'intake';
+          var sInfo = statusMap[sKey] || ['In Care', '#6b7280', '#f3f4f6'];
+          return '<div style="font-size:.62rem;font-weight:700;padding:2px 7px;border-radius:4px;background:' + sInfo[2] + ';color:' + sInfo[1] + ';margin-bottom:3px;display:inline-block">' + sInfo[0] + '</div>';
+        })()
       + '<div style="font-size:.7rem;font-weight:700;color:' + urgencyColor + '">' + daysLabel + '</div>'
       + '</div>'
       + '<div style="padding:6px 8px;border-top:1px solid var(--cream-3);background:var(--cream-2);display:flex;gap:5px">'
@@ -9104,7 +9152,10 @@ function setView(v, btn) {
     if (fab && _isStaff) fab.style.display = 'flex';
   }
   if (v === 'map') {
-    setTimeout(function(){ map.invalidateSize(); }, 200);
+    /* Call immediately for instant tile layout, and again after CSS transitions */
+    try { map.invalidateSize(); } catch(e) {}
+    setTimeout(function(){ try { map.invalidateSize(); } catch(e){} }, 50);
+    setTimeout(function(){ try { map.invalidateSize(); } catch(e){} }, 300);
     rotateSpotlight();
   } else {
     /* Pause spotlight when not on map */
