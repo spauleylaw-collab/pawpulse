@@ -141,7 +141,7 @@ body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);h
 .leaflet-bar a{width:32px !important;height:32px !important;line-height:32px !important;font-size:18px !important}
 
 /* SIDE PANEL */
-#side-panel{position:absolute;top:0;right:0;bottom:0;width:var(--panel-w);max-width:100%;background:var(--cream);border-left:1px solid var(--cream-3);z-index:800;display:flex;flex-direction:column;overflow-y:auto;transform:translateX(100%);transition:transform .32s cubic-bezier(.4,0,.2,1);box-shadow:-4px 0 24px rgba(42,31,18,.12)}
+#side-panel{position:absolute;top:0;right:0;bottom:0;width:var(--panel-w);max-width:100%;background:var(--cream);border-left:1px solid var(--cream-3);z-index:800;display:flex;flex-direction:column;overflow:hidden;transform:translateX(100%);transition:transform .32s cubic-bezier(.4,0,.2,1);box-shadow:-4px 0 24px rgba(42,31,18,.12)}
 #side-panel.open{transform:translateX(0)}
 #side-panel::-webkit-scrollbar{width:4px}
 #side-panel::-webkit-scrollbar-thumb{background:var(--cream-3);border-radius:99px}
@@ -150,7 +150,7 @@ body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);h
 .panel-sub{font-size:.76rem;color:var(--warm-mid);margin-top:4px}
 .panel-close{background:none;border:none;cursor:pointer;font-size:1.25rem;color:var(--warm-mid);line-height:1;padding:2px 5px;border-radius:6px}
 .panel-close:hover{color:var(--warm-dk)}
-.panel-body{padding:18px 20px;flex:1}
+.panel-body{padding:18px 20px;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0}
 
 /* FORM */
 .fg{margin-bottom:14px}
@@ -178,8 +178,7 @@ textarea{min-height:64px}
 .chk-row input{width:16px;height:16px;accent-color:var(--found-g);flex-shrink:0}
 .chk-row label{font-size:.82rem;font-weight:500;color:var(--warm-dk);text-transform:none;letter-spacing:0;margin:0;cursor:pointer}
 .submit-btn{width:100%;padding:12px;font-family:var(--font-display);font-size:.98rem;font-weight:600;border:none;border-radius:10px;cursor:pointer;transition:all .2s;margin-top:6px;touch-action:manipulation;-webkit-tap-highlight-color:rgba(0,0,0,.08)}@media(max-width:640px){
-  .submit-btn { position:sticky; bottom:0; left:0; right:0; margin-top:8px; z-index:10; box-shadow:0 -4px 12px rgba(0,0,0,.1); }
-}
+  #panel-footer{padding-bottom:max(14px,env(safe-area-inset-bottom,14px))!important}
 .submit-btn.lost{background:var(--lost-r);color:#fff}
 .submit-btn.found{background:var(--found-g);color:#fff}
 .submit-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.22);filter:brightness(1.08)}
@@ -1129,7 +1128,6 @@ textarea{min-height:64px}
           <div class="fg"><label>Additional Details</label><textarea id="l-notes" placeholder="Collar, markings, behavior…"></textarea></div>
           <!-- Honeypot: hidden from real users, bots fill it in -->
           <div style="position:absolute;left:-9999px;top:-9999px;opacity:0;pointer-events:none" aria-hidden="true"><input type="text" id="l-confirm-email" name="confirm_email" tabindex="-1" autocomplete="off"></div>
-          <button class="submit-btn lost" onclick="submitLost()">🔴 Submit Lost Pet Report</button>
         </div>
 
         <!-- FOUND FORM -->
@@ -1169,38 +1167,17 @@ textarea{min-height:64px}
           <div id="f-sgrp" style="display:none" class="fg">
             <label>Which shelter or vet?</label>
             <input type="text" id="f-sname" placeholder="e.g. Heartland Pet Connection">
-          </divntent:center;gap:8px">📍 Tap to Set Location on Map</button>
-            <div style="font-size:.66rem;color:var(--warm-mid);text-align:center;margin-top:4px">The map will open — tap where you found the pet</div>
           </div>
-          <div class="loc-set" id="f-locset">✅ <span id="f-loctxt">Location set</span> — <button onclick="startPlace('found')" style="background:none;border:none;color:var(--forest);font-size:.72rem;font-weight:600;cursor:pointer;padding:0;font-family:var(--font-body);text-decoration:underline">Move pin</button></div>
-          <div class="fg"><label>Landmark / Address (optional)</label><input type="text" id="f-address" placeholder="e.g. Near the fairgrounds"></div>
-          <hr class="div">
-          <div class="sl">🖼️ Photo</div>
-          <div class="photo-drop">
-            <input type="file" id="f-photo" accept="image/*" onchange="previewPhoto(this,'f-prev','f-dicon','f-dtxt')">
-            <div class="photo-drop-icon" id="f-dicon">📷</div>
-            <div class="photo-drop-txt"  id="f-dtxt">Tap to upload a photo</div>
-            <img id="f-prev" class="photo-prev" alt="preview">
-          </div>
-          <hr class="div">
-          <div class="sl">📞 Your Contact</div>
-          <div class="fr">
-            <div class="fg" style="margin:0"><label>Your Name</label><input type="text" id="f-finder" placeholder="Your name"></div>
-            <div class="fg" style="margin:0"><label>Phone</label><input type="tel" id="f-phone" placeholder="555-0100"></div>
-          </div>
-          <div class="chk-row">
-            <input type="checkbox" id="f-shelter" onchange="document.getElementById('f-sgrp').style.display=this.checked?'':'none'">
-            <label for="f-shelter">🏠 I have brought or am bringing this pet to a shelter or vet</label>
-          </div>
-          <div id="f-sgrp" style="display:none" class="fg">
-            <label>Which shelter or vet?</label>
-            <input type="text" id="f-sname" placeholder="e.g. Heartland Pet Connection">
-          </div>
-          <!-- Honeypot: hidden from real users, bots fill it in -->
           <div style="position:absolute;left:-9999px;top:-9999px;opacity:0;pointer-events:none" aria-hidden="true"><input type="text" id="f-confirm-email" name="confirm_email" tabindex="-1" autocomplete="off"></div>
-          <button class="submit-btn found" onclick="submitFound()">🟢 Submit Found Pet Report</button>
         </div>
 
+      </div>
+      <!-- ═══ PANEL FOOTER — always visible, never scrolls ═══ -->
+      <div id="panel-footer" style="flex-shrink:0;padding:10px 20px 14px;background:var(--cream);border-top:1px solid var(--cream-3)">
+        <div id="l-form-err" style="display:none;background:#fff0ee;border:1.5px solid #c94f2a;border-radius:8px;padding:8px 12px;font-size:.78rem;color:#8a2010;margin-bottom:8px;line-height:1.4"></div>
+        <div id="f-form-err" style="display:none;background:#fff0ee;border:1.5px solid #c94f2a;border-radius:8px;padding:8px 12px;font-size:.78rem;color:#8a2010;margin-bottom:8px;line-height:1.4"></div>
+        <button class="submit-btn lost"  id="panel-submit-lost"  onclick="submitLost()"  style="display:none;margin-top:0">🔴 Submit Lost Pet Report</button>
+        <button class="submit-btn found" id="panel-submit-found" onclick="submitFound()" style="display:none;margin-top:0">🟢 Submit Found Pet Report</button>
       </div>
     </div>
   </div>
@@ -3635,13 +3612,35 @@ function closeInquiryPanel(e) {
   _inquiryReportId = null;
 }
 
+function showInquiryError(msg) {
+  var err = document.getElementById('inq-err');
+  if (!err) {
+    err = document.createElement('div');
+    err.id = 'inq-err';
+    err.style.cssText = 'background:#fff0ee;border:1.5px solid #c94f2a;border-radius:8px;padding:8px 12px;font-size:.78rem;color:#8a2010;margin-bottom:10px;line-height:1.4';
+    var inner = document.getElementById('adopt-inquiry-inner');
+    if (inner) inner.insertBefore(err, inner.firstChild);
+  }
+  err.textContent = '⚠️ ' + msg;
+  err.style.display = 'block';
+  setTimeout(function(){ if(err) err.style.display='none'; }, 4000);
+}
+
 function submitInquiry() {
   var name  = (document.getElementById('inq-name') ||{}).value.trim();
   var phone = (document.getElementById('inq-phone')||{}).value.trim();
   var email = (document.getElementById('inq-email')||{}).value.trim();
   var msg   = (document.getElementById('inq-msg')  ||{}).value.trim();
-  if (!name) { document.getElementById('inq-name').focus(); return; }
-  if (!phone && !email) { alert('Please add a phone number or email so the shelter can reach you.'); return; }
+  if (!name) {
+    var nf = document.getElementById('inq-name');
+    if (nf) { nf.style.border='2px solid #c94f2a'; nf.focus(); setTimeout(function(){ nf.style.border=''; },3000); }
+    showInquiryError('Please enter your name so the shelter knows who to contact.');
+    return;
+  }
+  if (!phone && !email) {
+    showInquiryError('Please add a phone number or email so the shelter can reach you.');
+    return;
+  }
   /* Save inquiry to report record */
   if (_inquiryReportId) {
     var r = reports.find(function(x){ return x.id===_inquiryReportId; });
@@ -4667,6 +4666,16 @@ function openPanel(type) {
   document.getElementById('form-found').style.display = type==='found' ? '' : 'none';
   document.getElementById('panel-title').textContent  = type==='lost'  ? 'Report a Lost Pet'  : 'Report a Found Pet';
   document.getElementById('panel-sub').textContent    = type==='lost'  ? 'Help your community find them 🐶' : 'Help this pet get home 🏡';
+  /* Show correct footer submit button — always visible, never scrolls away */
+  var lBtn = document.getElementById('panel-submit-lost');
+  var fBtn = document.getElementById('panel-submit-found');
+  if (lBtn) lBtn.style.display = type === 'lost'  ? '' : 'none';
+  if (fBtn) fBtn.style.display = type === 'found' ? '' : 'none';
+  /* Clear any lingering error messages */
+  var lErr = document.getElementById('l-form-err');
+  var fErr = document.getElementById('f-form-err');
+  if (lErr) lErr.style.display = 'none';
+  if (fErr) fErr.style.display = 'none';
 
   if (window.innerWidth <= 600) {
     /* Mobile: skip the panel entirely — just enter placing mode.
@@ -5356,6 +5365,10 @@ function submitFound() {
 }
 
 function resetForm(type) {
+  /* Clear footer error messages */
+  var errId = type === 'lost' ? 'l-form-err' : 'f-form-err';
+  var err = document.getElementById(errId);
+  if (err) err.style.display = 'none';
   var ids = type==='lost'
     ? ['l-name','l-species','l-breed','l-color','l-address','l-owner','l-phone','l-email','l-chip','l-notes']
     : ['f-species','f-color','f-desc','f-address','f-finder','f-phone','f-sname'];
