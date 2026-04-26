@@ -2753,6 +2753,9 @@ function saveAnimalEdit(id) {
   setTimeout(function(){ el.classList.remove('show'); }, 2500);
   } catch(e) {
     console.error('saveAnimalEdit error:', e.message);
+    /* Re-enable save button so user can retry */
+    var _aesb2 = document.getElementById('ae-save-btn');
+    if (_aesb2) { _aesb2.disabled = false; _aesb2.textContent = '✓ Save Changes'; }
     var el2 = document.getElementById('toast');
     var msg2 = document.getElementById('toast-msg');
     if (el2 && msg2) {
