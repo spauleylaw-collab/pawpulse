@@ -122,7 +122,7 @@ body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);h
 .mode-banner-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 
 /* Map legend */
-@media(max-width:640px){#map-legend{bottom:22px!important;left:8px!important;right:auto!important;flex-direction:row!important;flex-wrap:wrap!important;gap:4px 10px!important;padding:5px 8px!important;max-width:calc(100vw - 230px)}}
+@media(max-width:640px){#map-legend{bottom:32px!important;left:8px!important;right:auto!important;flex-direction:row!important;flex-wrap:wrap!important;gap:4px 10px!important;padding:5px 8px!important;max-width:calc(100vw - 230px)}}
 #map-legend{position:absolute;bottom:24px;left:12px;z-index:600;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-radius:8px;padding:6px 10px;display:flex;flex-direction:column;gap:5px;box-shadow:0 2px 10px rgba(0,0,0,.1);border:1px solid var(--cream-3)}
 .legend-item{display:flex;align-items:center;gap:7px;font-size:.7rem;font-weight:500;color:var(--warm-mid);white-space:nowrap}
 .legend-pin{width:10px;height:10px;border-radius:50%;flex-shrink:0}
@@ -181,7 +181,7 @@ textarea{min-height:64px}
 .submit-btn{width:100%;padding:12px;font-family:var(--font-display);font-size:.98rem;font-weight:600;border:none;border-radius:10px;cursor:pointer;transition:all .2s;margin-top:6px;touch-action:manipulation;-webkit-tap-highlight-color:rgba(0,0,0,.08)}@media(max-width:640px){
   /* Ensure panel-body is scroll container, footer never scrolls away */
   .panel-body{overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;flex:1!important;min-height:0!important}
-  #panel-footer{flex-shrink:0!important;padding-bottom:max(14px,env(safe-area-inset-bottom,14px))!important;padding-top:10px!important}
+  #panel-footer{flex-shrink:0!important;padding-bottom:max(16px,env(safe-area-inset-bottom,16px))!important;padding-top:10px!important}
 }
 .submit-btn.lost{background:var(--lost-r);color:#fff}
 .submit-btn.found{background:var(--found-g);color:#fff}
@@ -1019,7 +1019,8 @@ textarea{min-height:64px}
         </div>
         <!-- Action buttons — horizontal scroll on mobile -->
         <div style="display:flex;gap:5px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px">
-          <button onclick="printActiveReport()" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body);white-space:nowrap;flex-shrink:0">🖨️ Print</button>
+          <button onclick="printActiveReport()" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body);white-space:nowrap;flex-shrink:0;touch-action:manipulation">🖨️ Print</button>
+          <button onclick="exportReportWord()" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid #2050a0;background:#fff;cursor:pointer;font-family:var(--font-body);white-space:nowrap;flex-shrink:0;color:#2050a0;touch-action:manipulation">📄 Word</button>
           <button onclick="openContentGen('press')" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid #e0a090;background:#fff;cursor:pointer;font-family:var(--font-body);color:#c0392b;white-space:nowrap;flex-shrink:0">📣 Shareable Summary</button>
           <button onclick="openContentGen('fund')" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid #e0c090;background:#fff;cursor:pointer;font-family:var(--font-body);color:#b06010;white-space:nowrap;flex-shrink:0">💛 Donor Message</button>
           <button onclick="copyActiveReport()" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid var(--forest);background:var(--forest);color:#fff;cursor:pointer;font-family:var(--font-body);white-space:nowrap;flex-shrink:0">📋 Copy</button>
@@ -1251,7 +1252,7 @@ var curFilter = 'all';
 var placing   = null;
 var pLat = {}, pLng = {};
 var _submissionCount = 0;  /* resets on page reload */
-var SUBMIT_COOLDOWN_MS = 3 * 60 * 1000;  /* 3 min between submissions */
+var SUBMIT_COOLDOWN_MS = 1 * 60 * 1000;  /* 1 min between submissions (keep short for usability) */
 var SUBMIT_SESSION_MAX = 3;  /* max per session */
 var tmpMarker = null;
 var _fbReady  = false; /* true once Firestore listener is live */
@@ -2002,6 +2003,10 @@ function closeIntakeModal() {
   if (overlay) overlay.style.display = 'none';
   var imf = document.getElementById('intake-modal-footer');
   if (imf) imf.style.display = 'none';
+  /* Always reset the submit button so it can be used again */
+  var isb = document.getElementById('intake-submit-btn');
+  if (isb) { isb.disabled = false; isb.textContent = '✓ Log Intake'; }
+  window._migrateFromId = null;
 }
 
 function openIntakeForm(intakeSource) {
@@ -2241,8 +2246,8 @@ function submitIntakeFromModal() {
     address:     ((getIntakeEl('si-address')||{}).value||'').trim() || (shelter?shelter.address:''),
     finder:      activeShelter, fphone: shelter?shelter.phone:'',
     animalId:    animalId, intakeSource: intakeSource, intakeSourceLabel: srcLabel,
-    owner:       ownerName||undefined, phone: ownerPhone||undefined,
-    surrenderReason: surReason||undefined,
+    owner:       ownerName||null, phone: ownerPhone||null,
+    surrenderReason: surReason||null,
     shelter:     true, shelterName: activeShelter, intakeType: intakeType, holdType: holdType,
     /* Explicit state fields — never implicit */
     masterStatus:    isHold ? 'hold' : 'intake',
@@ -2272,18 +2277,20 @@ function submitIntakeFromModal() {
   }
 
   reports.push(r); save();
-  /* Write through doctrine pipeline */
-  if (USE_FIREBASE && _fbReady && db && _isStaff) {
-    window._pauseFirestoreSync = true;
-    writeAnimalRecord(r, 'staff');
-    setTimeout(function(){ window._pauseFirestoreSync = false; }, 5000);
+  /* Write through doctrine pipeline — wrapped to prevent undefined-field Firebase error from freezing modal */
+  try {
+    if (USE_FIREBASE && _fbReady && db && _isStaff) {
+      window._pauseFirestoreSync = true;
+      writeAnimalRecord(r, 'staff');
+      setTimeout(function(){ window._pauseFirestoreSync = false; }, 5000);
+    }
+  } catch(e) {
+    console.warn('Intake write error (local save succeeded):', e.message);
   }
   renderMarkers(); renderIncareView(); updateNavCounts();
   closeIntakeModal();
   pushBannerEvent((isHold?'⚠️ Animal on hold logged at ':'🐾 New animal received at ') + activeShelter, isHold?'#d4843a':'var(--found-g)');
-  /* Auto-match: search lost reports for possible owner immediately after intake */
   if (!isHold) setTimeout(function(){ autoMatchOnIntake(r); }, 800);
-  /* Check for public found pins that may match this intake — prompt staff to resolve */
   setTimeout(function(){ checkFoundPinsOnIntake(r); }, 1200);
 }
 
@@ -2762,6 +2769,9 @@ function closeAnimalEdit() {
   if (overlay) overlay.style.display = 'none';
   var aef = document.getElementById('animal-edit-footer');
   if (aef) aef.style.display = 'none';
+  /* Reset save button */
+  var aesb = document.getElementById('ae-save-btn');
+  if (aesb) { aesb.disabled = false; aesb.textContent = '✓ Save Changes'; }
   window._aeEditId = null;
 }
 
@@ -2951,13 +2961,18 @@ function runActiveReport() {
     var recs = getShelterData({ includeHolds:true }).filter(function(r){
       return !fSpecies || (r.species||'').toLowerCase()===fSpecies.toLowerCase();
     });
+    var incare_total_days = recs.reduce(function(s,r){ return s+Math.floor(daysSince(r.date)); }, 0);
+    var incare_avg_days = recs.length ? Math.round(incare_total_days/recs.length) : 0;
+    var incare_dogs = recs.filter(function(r){ return (r.species||'').toLowerCase()==='dog'; }).length;
+    var incare_cats = recs.filter(function(r){ return (r.species||'').toLowerCase()==='cat'; }).length;
     html = reportTable('Animals Currently In Care — ' + activeShelter + ' (' + recs.length + ')',
       ['Animal','ID / Tag','Species','Color','Intake Source','Days In Care','Status'],
       recs.map(function(r){
         return [esc(r.name||'—'), esc(r.animalId||'—'), esc(r.species||'—'), esc(r.color||'—'),
           esc(r.intakeSourceLabel||'—'), Math.floor(daysSince(r.date))+'d',
           esc((r.enforcement&&r.enforcement.internalStatus)||'Intake Logged')];
-      }));
+      }),
+      ['<b>TOTAL: ' + recs.length + ' animals</b>', '', incare_dogs+' dogs / '+incare_cats+' cats', '', '', 'Avg stay: '+incare_avg_days+'d', '']);
 
   } else if (id === 'intake30' || id === 'intake60') {
     var days2 = id==='intake30' ? 30 : 60;
@@ -3001,15 +3016,21 @@ function runActiveReport() {
       + '<div style="font-size:.76rem;color:var(--warm-mid)">' + activeShelter + ' — Total Hold Cost Exposure</div>'
       + '<div style="font-family:var(--font-display);font-size:2rem;font-weight:800;color:#8a5010">' + fmtMoney(totalCost) + '</div>'
       + '</div>'
-      + reportTable('Cost Breakdown by Animal',
-        ['Animal','Days','Rate','Hold Cost','Med Cost','Total'],
-        cost_holds.map(function(r){
+      + (function(){
+        var _th=0,_tm=0;
+        var _rows=cost_holds.map(function(r){
           var e=r.enforcement||{}; var m=getMed(r)||{};
           var d=daysSince(r.shelterHoldStart||r.date);
           var rate=e.dailyCost!=null?e.dailyCost:DAILY_RATE;
           var hold=d*rate; var med=(m.spayNeuterCost||0)+(m.vaccinationCost||0)+(m.vetCost||0)+(m.otherCost||0);
+          _th+=hold; _tm+=med;
           return [esc(r.name||r.species||'Unknown'), Math.floor(d)+'d', '$'+rate, fmtMoney(hold), fmtMoney(med), fmtMoney(hold+med)];
-        }))
+        });
+        return reportTable('Cost Breakdown by Animal',
+          ['Animal','Days','Rate','Hold Cost','Med Cost','Total'],
+          _rows,
+          ['<b>TOTALS ('+cost_holds.length+' animals)</b>','','','<b>'+fmtMoney(_th)+'</b>','<b>'+fmtMoney(_tm)+'</b>','<b>'+fmtMoney(_th+_tm)+'</b>']);
+      })()
       + '<div style="margin-top:12px;padding:12px 16px;background:var(--warm-dk);border-radius:10px;display:flex;justify-content:space-between;align-items:center">'
       + '<div style="font-family:var(--font-display);font-size:.88rem;font-weight:700;color:var(--cream)">Grand Total — Hold + Medical</div>'
       + '<div style="font-family:var(--font-display);font-size:1.2rem;font-weight:800;color:var(--amber)">' + fmtMoney(grandTotal) + '</div>'
@@ -3091,14 +3112,22 @@ function runActiveReport() {
   bodyEl.innerHTML = html;
 }
 
-function reportTable(title, headers, rows) {
-  return '<h3 style="font-family:var(--font-display);font-size:.9rem;margin:0 0 10px">' + title + '</h3>'
+function reportTable(title, headers, rows, totals) {
+  /* totals: optional array of strings for a summary footer row */
+  var totalsHtml = '';
+  if (totals && totals.length) {
+    totalsHtml = '<tfoot><tr style="background:var(--cream-2);font-weight:700;border-top:2px solid var(--cream-3)">'
+      + totals.map(function(cell){ return '<td style="padding:6px 10px;font-size:.8rem;color:var(--warm-dk)">' + cell + '</td>'; }).join('') + '</tr></tfoot>';
+  }
+  /* Summary badge below title */
+  var countBadge = rows.length ? '<span style="font-size:.7rem;background:var(--forest);color:#fff;border-radius:999px;padding:2px 8px;margin-left:8px;vertical-align:middle">' + rows.length + ' records</span>' : '';
+  return '<h3 style="font-family:var(--font-display);font-size:.9rem;margin:0 0 10px">' + title + countBadge + '</h3>'
     + '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:.8rem">'
     + '<thead><tr>' + headers.map(function(h){ return '<th style="text-align:left;padding:6px 10px;background:var(--cream-2);border-bottom:2px solid var(--cream-3);white-space:nowrap">' + h + '</th>'; }).join('') + '</tr></thead>'
     + '<tbody>' + rows.map(function(row,i){
         return '<tr style="background:' + (i%2===0?'#fff':'var(--cream-2)') + '">'
           + row.map(function(cell){ return '<td style="padding:6px 10px;border-bottom:1px solid var(--cream-3)">' + cell + '</td>'; }).join('') + '</tr>';
-      }).join('') + '</tbody></table></div>';
+      }).join('') + '</tbody>' + totalsHtml + '</table></div>';
 }
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -3544,6 +3573,24 @@ function closeReportPanel() {
   /* On mobile, hide the right panel overlay */
   var rptRight = document.getElementById('rpt-right');
   if (rptRight) rptRight.classList.remove('show');
+}
+
+function exportReportWord() {
+  var body = document.getElementById('rpt-report-body');
+  if (!body) return;
+  var rt = REPORT_TYPES.find(function(r){ return r.id===_activeReportId; }) || {label:'Report'};
+  var title = rt.label + ' — ' + activeShelter;
+  var date = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  /* HTML wrapper that Word recognizes as a Word document */
+  var html = '<!DOCTYPE html>\n<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">\n<head><meta charset="UTF-8">\n<title>' + title + '</title>\n<style>\nbody{font-family:Calibri,sans-serif;font-size:11pt;margin:1in;color:#222}\nh1{font-size:16pt;color:#2d4a35}\nh3{font-size:12pt;color:#2d4a35;margin-top:16pt}\ntable{border-collapse:collapse;width:100%;margin-bottom:12pt}\nth{background:#2d4a35;color:#fff;padding:6pt 8pt;font-size:10pt;text-align:left}\ntd{padding:5pt 8pt;font-size:10pt;border-bottom:1pt solid #e0d8cc}\ntr:nth-child(even) td{background:#f9f5ef}\n</style></head>\n<body>\n<h1>' + title + '</h1>\n<p style="color:#888;font-size:9pt">Generated ' + date + '</p>\n' + body.innerHTML + '\n</body></html>';
+  var blob = new Blob([html], {type:'application/msword'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = (rt.label||'Report').replace(/[^a-z0-9]/gi,'_') + '_' + new Date().toISOString().slice(0,10) + '.doc';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); }, 1000);
 }
 
 function printActiveReport() {
@@ -4019,7 +4066,10 @@ function openCard(r, cp) {
     var mw = mc.offsetWidth,   mh = mc.offsetHeight;
     var M = 14;
     var rightMargin  = M + 50;
-    var bottomMargin = M + 118;
+    /* bottomMargin accounts for SEO footer (16px) + safe gap */
+    var _seo = document.getElementById('seo-footer');
+    var _seoH = (_seo && _seo.style.display !== 'none') ? (_seo.offsetHeight || 16) : 0;
+    var bottomMargin = M + 80 + _seoH;
     var left = Math.max(M, Math.min(cp.x - cw/2, mw - cw - rightMargin));
     var top  = cp.y - ch - 16;
     if (top < M) top = cp.y + 22;
@@ -4742,6 +4792,9 @@ function openPanel(type) {
   }
 
   /* Desktop: open panel then start placing */
+  /* Hide orientation strip so it doesn't overlap panel header */
+  var _strip = document.getElementById('orientation-strip');
+  if (_strip) _strip.style.display = 'none';
   document.getElementById('side-panel').classList.add('open');
   setTimeout(function(){ map.invalidateSize(); }, 340);
   setTimeout(function(){ startPlace(type); }, 360);
@@ -4760,6 +4813,8 @@ function closePanel() {
   if (fBtn) fBtn.style.display = 'none';
   if (lErr) lErr.style.display = 'none';
   if (fErr) fErr.style.display = 'none';
+  /* Restore orientation strip */
+  updateOrientationStrip('map');
   setTimeout(function(){ map.invalidateSize(); }, 340);
 }
 
@@ -6472,9 +6527,9 @@ function submitIntake() {
     animalId:    animalId,
     intakeSource: intakeSource,
     intakeSourceLabel: srcLabel,
-    owner:       ownerName  || undefined,
-    phone:       ownerPhone || undefined,
-    surrenderReason: surReason || undefined,
+    owner:       ownerName  || null,
+    phone:       ownerPhone || null,
+    surrenderReason: surReason || null,
     shelter:     true,
     shelterName: activeShelter,
     intakeType:  intakeType,
