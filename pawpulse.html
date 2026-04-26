@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>PawPulse — Lost &amp; Found Pets · Hastings, NE</title>
-<meta name="description" content="PawPulse is the live lost and found pet map for Hastings, NE. See lost pets, found animals, and shelter intake in real time.">
+<title>PawPulse — Lost &amp; Found Pet Map | Hastings, Nebraska</title>
+<meta name="description" content="Live lost and found pet map for Hastings, Nebraska and Adams County. Report a lost pet, help reunite animals, and see pets in care at Heartland Pet Connection.">
 <meta name="theme-color" content="#2d4a35">
 <link rel="canonical" href="https://pawpulse.net">
 <!-- Open Graph -->
@@ -15,8 +15,8 @@
 <meta property="og:site_name" content="PawPulse">
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="PawPulse — Lost &amp; Found Pets">
-<meta name="twitter:description" content="Live lost and found pet map for Hastings, NE.">
+<meta name="twitter:title" content="PawPulse — Lost &amp; Found Pet Map | Hastings, Nebraska">
+<meta name="twitter:description" content="Live lost and found pet map for Hastings, Nebraska and Adams County. Report lost pets, find strays, see shelter animals.">
 <link rel="preconnect" href="https://tile.openstreetmap.org">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -155,6 +155,7 @@ body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);h
 /* FORM */
 .fg{margin-bottom:14px}
 .fr{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+@media(max-width:400px){.fr{grid-template-columns:1fr}}
 label{display:block;font-size:.7rem;font-weight:600;color:var(--warm-mid);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
 input[type=text],input[type=email],input[type=tel],select,textarea{width:100%;padding:8px 11px;font-family:var(--font-body);font-size:.86rem;color:var(--warm-dk);background:#fff;border:1.5px solid var(--cream-3);border-radius:8px;outline:none;resize:vertical;transition:border-color .15s,box-shadow .15s}
 input:focus,select:focus,textarea:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(212,132,58,.14)}
@@ -204,7 +205,7 @@ textarea{min-height:64px}
 #pin-card.fading{opacity:0;transform:translateY(-10px) scale(.97);pointer-events:none}
 @keyframes cpop{from{opacity:0;transform:scale(.9) translateY(6px)}to{opacity:1;transform:scale(1) translateY(0)}}
 .pc-close{position:absolute;top:6px;right:6px;background:rgba(42,31,18,.55);color:#fff;border:none;cursor:pointer;width:44px;height:44px;border-radius:50%;font-size:.95rem;line-height:44px;text-align:center;z-index:1;display:flex;align-items:center;justify-content:center}
-.pc-img{width:100%;height:190px;object-fit:cover;object-position:center top;display:block}
+.pc-img{width:100%;height:190px;object-fit:contain;object-position:center center;display:block;background:var(--cream-2)}
 .pc-no-img{width:100%;height:62px;display:flex;align-items:center;justify-content:center;font-size:2rem}
 .pc-body{padding:11px 13px 13px}
 .pc-badge{display:inline-flex;align-items:center;gap:4px;font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:2px 8px;border-radius:999px;margin-bottom:6px}
@@ -215,7 +216,7 @@ textarea{min-height:64px}
 .pc-row strong{color:var(--warm-dk);font-weight:600}
 .pc-contact{margin-top:8px;padding-top:8px;border-top:1px solid var(--cream-3);font-size:.72rem;color:var(--warm-mid)}
 .pc-date{font-size:.65rem;color:#a0907a;margin-top:6px}
-#empty-hint{position:absolute;bottom:98px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.9);backdrop-filter:blur(8px);opacity:0;padding:9px 18px;border-radius:999px;font-size:.8rem;color:var(--warm-mid);box-shadow:0 2px 10px rgba(0,0,0,.1);z-index:600;pointer-events:none;border:1px solid var(--cream-3);transition:opacity .3s}
+#empty-hint{position:absolute;top:72px;left:50%;transform:translateX(-50%);background:rgba(42,31,18,.82);backdrop-filter:blur(8px);opacity:0;padding:9px 18px;border-radius:999px;font-size:.8rem;color:rgba(255,255,255,.9);box-shadow:0 4px 16px rgba(0,0,0,.18);z-index:600;pointer-events:none;white-space:nowrap;transition:opacity .3s}
 #toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(120px);z-index:9999;background:var(--forest);color:var(--cream);padding:11px 20px;border-radius:16px;font-size:.84rem;font-weight:600;box-shadow:0 8px 36px rgba(0,0,0,.25);display:flex;align-items:center;gap:8px;transition:transform .38s cubic-bezier(.34,1.56,.64,1);white-space:normal;max-width:calc(100vw - 32px);text-align:center;justify-content:center}
 #toast.show{transform:translateX(-50%) translateY(0)}
 #map.placing{cursor:crosshair !important}
@@ -270,15 +271,15 @@ textarea{min-height:64px}
 .sh-col:last-child{border-right:none}
 .sh-col-left{width:280px;flex-shrink:0}
 .sh-col-right{flex:1;min-width:0;display:flex;flex-direction:column;min-height:0}
-.sh-col-hdr{padding:14px 16px;border-bottom:1px solid var(--cream-3);background:var(--cream);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.sh-col-hdr{padding:9px 14px;border-bottom:1px solid var(--cream-3);background:var(--cream);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .sh-col-title{font-family:var(--font-display);font-size:.82rem;font-weight:700;color:var(--warm-mid);text-transform:uppercase;letter-spacing:.06em}
-.sh-col-body{flex:1;overflow-y:auto;padding:10px;min-height:0;-webkit-overflow-scrolling:touch}
+.sh-col-body{flex:1;overflow-y:auto;padding:8px;min-height:0;-webkit-overflow-scrolling:touch}
 .sh-col-body::-webkit-scrollbar{width:3px}
 .sh-col-body::-webkit-scrollbar-thumb{background:var(--cream-3);border-radius:99px}
 .sh-select{width:100%;padding:9px 12px;font-family:var(--font-body);font-size:.84rem;font-weight:600;color:var(--warm-dk);background:var(--cream);border:1.5px solid var(--cream-3);border-radius:8px;outline:none;cursor:pointer;margin-bottom:0;appearance:none}
 .sh-select:focus{border-color:var(--amber)}
-.sh-selector-wrap{padding:10px;border-bottom:1px solid var(--cream-3);flex-shrink:0;background:var(--cream)}
-.sh-queue-item{background:#fff;border:1px solid var(--cream-3);border-radius:10px;padding:11px 13px;margin-bottom:8px;cursor:pointer;transition:all .15s}
+.sh-selector-wrap{padding:7px 10px;border-bottom:1px solid var(--cream-3);flex-shrink:0;background:var(--cream)}
+.sh-queue-item{background:#fff;border:1px solid var(--cream-3);border-radius:10px;padding:8px 11px;margin-bottom:8px;cursor:pointer;transition:all .15s}
 .sh-queue-item:hover{border-color:var(--amber);box-shadow:0 2px 8px rgba(42,31,18,.08)}
 .sh-queue-item.selected{border-color:var(--found-g);background:#f5faf6}
 .sh-queue-item.reunited{opacity:.5}
@@ -292,28 +293,28 @@ textarea{min-height:64px}
 .adopt-btn{width:100%;margin-top:8px;padding:9px;font-family:var(--font-display);font-size:.88rem;font-weight:600;background:#2050a0;color:#fff;border:none;border-radius:8px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px}
 .adopt-btn:hover{filter:brightness(1.1)}
 .sh-qi-time{font-size:.68rem;color:var(--warm-mid)}
-.sh-qi-name{font-family:var(--font-display);font-size:.95rem;font-weight:600;color:var(--warm-dk);margin-bottom:2px}
+.sh-qi-name{font-family:var(--font-display);font-size:.9rem;font-weight:600;color:var(--warm-dk);margin-bottom:1px}
 .sh-qi-desc{font-size:.75rem;color:var(--warm-mid)}
 .sh-empty{padding:32px 16px;text-align:center;color:var(--warm-mid);font-size:.82rem}
 .sh-empty-icon{font-size:2rem;margin-bottom:8px;opacity:.4}
 /* Action panel */
 .sh-action-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--warm-mid);gap:8px;padding:24px;background:var(--cream)}
 .sh-action-empty-icon{font-size:2.2rem;opacity:.25}
-.sh-action-panel{padding:18px 20px 48px;flex:1;overflow-y:auto;min-height:0;-webkit-overflow-scrolling:touch}
+.sh-action-panel{padding:12px 16px 24px;flex:1;overflow-y:auto;min-height:0;-webkit-overflow-scrolling:touch}
 .sh-action-panel::-webkit-scrollbar{width:3px}
 .sh-action-panel::-webkit-scrollbar-thumb{background:var(--cream-3);border-radius:99px}
 .sh-panel-id{font-size:.7rem;color:var(--warm-mid);margin-bottom:3px}
-.sh-panel-name{font-family:var(--font-display);font-size:1.2rem;font-weight:600;color:var(--warm-dk);margin-bottom:6px}
-.sh-panel-desc{font-size:.82rem;color:var(--warm-mid);line-height:1.55;margin-bottom:12px}
-.sh-sec{font-family:var(--font-display);font-size:.8rem;font-weight:600;color:var(--warm-mid);text-transform:uppercase;letter-spacing:.06em;margin:16px 0 8px}
+.sh-panel-name{font-family:var(--font-display);font-size:1.05rem;font-weight:600;color:var(--warm-dk);margin-bottom:4px}
+.sh-panel-desc{font-size:.8rem;color:var(--warm-mid);line-height:1.45;margin-bottom:8px}
+.sh-sec{font-family:var(--font-display);font-size:.76rem;font-weight:600;color:var(--warm-mid);text-transform:uppercase;letter-spacing:.06em;margin:10px 0 6px}
 .sh-log{background:var(--cream-2);border:1px solid var(--cream-3);border-radius:8px;padding:10px 12px}
 .sh-log-entry{display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--cream-3);font-size:.76rem}
 .sh-log-entry:last-child{border-bottom:none}
 .sh-log-dot{width:6px;height:6px;border-radius:50%;background:var(--found-g);flex-shrink:0;margin-top:4px}
 .sh-log-body{flex:1;color:var(--warm-mid);line-height:1.4}
 .sh-log-time{font-size:.65rem;color:var(--warm-mid);flex-shrink:0}
-.sh-action-btns{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
-.sh-btn{padding:7px 13px;border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;border:1.5px solid var(--cream-3);background:var(--cream);color:var(--warm-dk);font-family:var(--font-body);transition:all .15s}
+.sh-action-btns{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
+.sh-btn{padding:5px 11px;border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;border:1.5px solid var(--cream-3);background:var(--cream);color:var(--warm-dk);font-family:var(--font-body);transition:all .15s}
 .sh-btn:hover{border-color:var(--amber);color:var(--amber)}
 .sh-btn.primary{background:var(--found-g);border-color:var(--found-g);color:#fff}
 .sh-btn.primary:hover{filter:brightness(1.08);border-color:var(--found-g);color:#fff}
@@ -328,7 +329,7 @@ textarea{min-height:64px}
 .sh-intake-btn:hover{filter:brightness(1.1)}
 /* Shelter left col tabs */
 .sh-tab-row{display:flex;border-bottom:1px solid var(--cream-3);flex-shrink:0}
-.sh-tab{flex:1;padding:8px 4px;font-size:.75rem;font-weight:600;color:var(--warm-mid);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:var(--font-body);transition:all .15s}
+.sh-tab{flex:1;padding:6px 4px;font-size:.75rem;font-weight:600;color:var(--warm-mid);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:var(--font-body);transition:all .15s}
 .sh-tab:hover{color:var(--warm-dk)}
 .sh-tab.active{color:var(--forest);border-bottom-color:var(--forest)}
 /* Footer action bar */
@@ -455,16 +456,16 @@ textarea{min-height:64px}
 #rpt-detail-panel{flex:1;min-height:0;overflow-y:auto;padding:22px;background:var(--cream);display:none}
 #rpt-detail-panel::-webkit-scrollbar{width:3px}
 #rpt-detail-panel::-webkit-scrollbar-thumb{background:var(--cream-3);border-radius:99px}
-@media(max-width:640px){#side-panel{position:fixed!important;bottom:0!important;top:auto!important;right:0!important;left:0!important;width:100%!important;max-width:100%!important;height:auto!important;max-height:78vh!important;border-radius:18px 18px 0 0!important;transform:translateY(100%);transition:transform .3s cubic-bezier(.34,1.2,.64,1)!important;overflow-y:auto;-webkit-overflow-scrolling:touch}#side-panel.open{transform:translateY(0)!important}}@media(max-width:640px){#pin-card{position:fixed!important;bottom:0!important;left:0!important;right:0!important;top:auto!important;width:100%!important;max-width:100%!important;max-height:72vh!important;border-radius:18px 18px 0 0!important;z-index:1800!important}#pin-card .pc-img{height:240px!important}#pin-card-body{overflow-y:auto;-webkit-overflow-scrolling:touch;max-height:calc(72vh - 60px)}#rpt-left{width:100%;flex:1;min-height:0}#rpt-row{flex-direction:column}#rpt-right{display:none}#rpt-right.show{display:flex;flex-direction:column;position:fixed;inset:var(--nav-h) 0 0 0;z-index:900;background:var(--cream);overflow:hidden}.mobile-back-btn{display:block!important}.desktop-close-btn{display:none!important}}
+@media(max-width:640px){#side-panel{position:fixed!important;bottom:0!important;top:auto!important;right:0!important;left:0!important;width:100%!important;max-width:100%!important;height:auto!important;max-height:78vh!important;border-radius:18px 18px 0 0!important;transform:translateY(100%);transition:transform .3s cubic-bezier(.34,1.2,.64,1)!important;overflow-y:auto;-webkit-overflow-scrolling:touch}#side-panel.open{transform:translateY(0)!important}}@media(max-width:640px){#pin-card{position:fixed!important;bottom:0!important;left:0!important;right:0!important;top:auto!important;width:100%!important;max-width:100%!important;max-height:72vh!important;border-radius:18px 18px 0 0!important;z-index:1800!important}#pin-card .pc-img{height:220px!important}#pin-card-body{overflow-y:auto;-webkit-overflow-scrolling:touch;max-height:calc(72vh - 60px)}#rpt-left{width:100%;flex:1;min-height:0}#rpt-row{flex-direction:column}#rpt-right{display:none}#rpt-right.show{display:flex;flex-direction:column;position:fixed;inset:var(--nav-h) 0 0 0;z-index:900;background:var(--cream);overflow:hidden}.mobile-back-btn{display:block!important}.desktop-close-btn{display:none!important}}
 /* Adopt view */
-#view-adopt{background:var(--cream-2);flex-direction:column;overflow:hidden}
+#view-adopt{background:var(--cream-2);flex-direction:column;overflow:hidden;max-width:100vw;box-sizing:border-box}
 #adopt-hdr{background:var(--cream);border-bottom:1px solid var(--cream-3);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 #adopt-hdr-title{font-family:var(--font-display);font-size:1.1rem;font-weight:600;color:var(--warm-dk)}
 #adopt-hdr-sub{font-size:.76rem;color:var(--warm-mid);margin-top:2px}
 #adopt-add-btn{font-family:var(--font-display);font-size:.82rem;font-weight:600;padding:8px 16px;background:#2050a0;color:#fff;border:none;border-radius:999px;cursor:pointer;transition:all .15s;flex-shrink:0}
 #adopt-add-btn:hover{filter:brightness(1.1)}
-#adopt-search-row{padding:10px 16px;border-bottom:1px solid var(--cream-3);background:var(--cream);flex-shrink:0;display:flex;gap:8px;align-items:center}
-#adopt-search{flex:1;padding:8px 12px 8px 32px;font-family:var(--font-body);font-size:.84rem;color:var(--warm-dk);background:var(--cream-2);border:1.5px solid var(--cream-3);border-radius:8px;outline:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236b5540' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:10px center}
+#adopt-search-row{padding:10px 14px;border-bottom:1px solid var(--cream-3);background:var(--cream);flex-shrink:0;display:flex;gap:6px;align-items:center;flex-wrap:wrap;overflow:hidden;box-sizing:border-box;width:100%}
+#adopt-search{flex:1;min-width:0;padding:8px 10px 8px 30px;font-family:var(--font-body);font-size:.84rem;color:var(--warm-dk);background:var(--cream-2);border:1.5px solid var(--cream-3);border-radius:8px;outline:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236b5540' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:10px center}
 #adopt-search:focus{border-color:var(--amber)}
 #adopt-body{flex:1;overflow-y:auto;padding:16px 18px}
 #adopt-body::-webkit-scrollbar{width:4px}
@@ -590,7 +591,46 @@ textarea{min-height:64px}
 }
 .st-dot.active { background:var(--forest); }
 
+
+@media(max-width:640px){
+  #adopt-search-row{padding:8px 10px;gap:5px}
+  #adopt-search{font-size:.78rem;padding:7px 8px 7px 28px}
+  #adopt-sort{font-size:.72rem;padding:5px 6px;max-width:34vw}
+}
 </style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "PawPulse",
+  "url": "https://pawpulse.net",
+  "description": "Live lost and found pet map for Hastings, Nebraska and Adams County.",
+  "areaServed": {
+    "@type": "City",
+    "name": "Hastings",
+    "containedInPlace": {
+      "@type": "AdministrativeArea",
+      "name": "Adams County, Nebraska"
+    }
+  },
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://pawpulse.net",
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  "name": "PawPulse — Hastings Lost & Found Pet Map",
+  "url": "https://pawpulse.net",
+  "description": "Live community map for lost and found pets in Hastings, Nebraska and Adams County.",
+  "areaServed": "Hastings, Nebraska",
+  "serviceType": "Lost and Found Pet Reporting"
+}
+</script>
 </head>
 <body>
 
@@ -640,7 +680,7 @@ textarea{min-height:64px}
     🐾
     <div class="nav-logo-wrap">
       PawPulse
-      <span class="nav-logo-sub">Hastings, NE</span>
+      <span class="nav-logo-sub">Hastings, NE &amp; Adams County</span>
     </div>
   </div>
   <button class="nav-report-btn" id="nav-action-btn" onclick="navActionBtn()">+ Report</button>
@@ -679,7 +719,7 @@ textarea{min-height:64px}
   </div>
 </nav>
 <!-- Orientation strip -->
-<div id="orientation-strip" style="position:fixed;top:var(--nav-h);left:0;right:0;z-index:999;background:rgba(45,74,53,.92);color:rgba(255,255,255,.78);text-align:center;font-size:.8rem;font-family:var(--font-body);padding:6px 14px;letter-spacing:.01em;pointer-events:none">Lost or found a pet? Tap a pin to help — or tap <strong style="font-weight:700">+ Report</strong> to post one. <span style="opacity:.65;font-style:italic">You might reunite a pet today.</span></div>
+<div id="orientation-strip" style="position:fixed;top:var(--nav-h);left:0;right:0;z-index:999;background:rgba(45,74,53,.92);color:rgba(255,255,255,.78);text-align:center;font-size:.8rem;font-family:var(--font-body);padding:6px 14px;letter-spacing:.01em;pointer-events:none"><div style="font-size:.82rem;font-weight:600;color:rgba(255,255,255,.95);margin-bottom:2px">See lost pets, found animals, and pets in care — all in real time.</div><div style="font-size:.72rem;color:rgba(255,255,255,.75)">Tap a pin to help, or tap <strong style="font-weight:700">+ Report</strong> to post one. <span style="opacity:.7;font-style:italic">You might reunite a pet today.</span></div></div>
 
 <!-- ADOPT VIEW -->
 <div id="view-adopt" class="view">
@@ -699,7 +739,7 @@ textarea{min-height:64px}
   </div>
   <div id="adopt-search-row">
     <input id="adopt-search" type="text" placeholder="Search by species, breed, color, shelter…" oninput="renderAdoptView()" autocomplete="off">
-    <select id="adopt-sort" onchange="renderAdoptView()" style="padding:7px 8px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.75rem;background:#fff;color:var(--warm-dk);flex-shrink:0">
+    <select id="adopt-sort" onchange="renderAdoptView()" style="padding:7px 8px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.75rem;background:#fff;flex-shrink:0;max-width:36vw;color:var(--warm-dk);flex-shrink:0">
       <option value="longest">Longest Wait</option>
       <option value="newest">Newest First</option>
       <option value="alpha">A → Z</option>
@@ -731,7 +771,7 @@ textarea{min-height:64px}
       <span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:.8rem;pointer-events:none">🔍</span>
       <input type="text" id="incare-search" placeholder="Search…" oninput="renderIncareView()" style="width:100%;padding:7px 10px 7px 28px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.8rem;background:#fff;box-sizing:border-box">
     </div>
-    <select id="incare-sort" onchange="renderIncareView()" style="padding:7px 8px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.75rem;background:#fff;color:var(--warm-dk);width:auto;flex-shrink:0">
+    <select id="incare-sort" onchange="renderIncareView()" style="padding:7px 8px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.75rem;background:#fff;flex-shrink:0;max-width:36vw;color:var(--warm-dk);width:auto;flex-shrink:0">
       <option value="status">By Status</option>
       <option value="alpha">A → Z</option>
       <option value="newest">Newest First</option>
@@ -750,7 +790,22 @@ textarea{min-height:64px}
     <button class="rpt-chip"        id="ic-chip-long"      onclick="setIncareFilter('long',this)">🔴 30+ Days</button>
     <button class="rpt-chip"        id="ic-chip-inq"       onclick="setIncareFilter('inq',this)">💬 Has Inquiries</button>
   </div>
-  <div id="incare-list" style="flex:1;overflow-y:auto;padding:12px;min-height:0;-webkit-overflow-scrolling:touch"></div>
+  <div id="incare-list" style="flex:1;overflow-y:auto;padding:12px;min-height:0;-webkit-overflow-scrolling:touch;padding-bottom:80px"></div>
+  <!-- Floating intake FAB — fixed bottom-right, thumb-friendly -->
+  <button onclick="openIntakeModal()"
+    style="position:fixed;bottom:24px;right:18px;z-index:800;
+           width:56px;height:56px;border-radius:50%;
+           background:var(--forest);color:#fff;border:none;
+           font-size:1.5rem;line-height:1;cursor:pointer;
+           box-shadow:0 6px 20px rgba(42,31,18,.35);
+           display:none;align-items:center;justify-content:center;
+           transition:transform .15s ease,box-shadow .15s ease"
+    id="intake-fab"
+    title="Log New Intake"
+    onmousedown="this.style.transform='scale(.93)'"
+    onmouseup="this.style.transform=''"
+    ontouchstart="this.style.transform='scale(.93)'"
+    ontouchend="this.style.transform=''">＋</button>
 </div>
 
 <!-- Intake modal overlay -->
@@ -891,8 +946,8 @@ textarea{min-height:64px}
     ─────────────────────────────────────────────────────────────────── -->
     <div id="shelter-spotlight" style="display:none;position:absolute;bottom:110px;right:14px;z-index:700;width:200px;border-radius:20px;overflow:hidden;box-shadow:0 12px 40px rgba(42,31,18,.35),0 4px 12px rgba(0,0,0,.15);transition:opacity .6s ease,transform .15s ease;opacity:0;pointer-events:auto;cursor:pointer;border:1.5px solid rgba(255,255,255,.8);background:var(--cream);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)" onclick="this.style.transform='scale(1.04)';setTimeout(function(){setView('adopt',null);},150)">
       <!-- Shelter companion card — NOT a map feature. No pins. No doctrine impact. -->
-      <div style="background:var(--forest);padding:6px 10px;display:flex;align-items:center;gap:6px">
-        <span style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.85)" id="spotlight-header-label">🏠 From the Shelter</span>
+      <div style="background:var(--forest);padding:6px 8px 6px 10px;display:flex;align-items:center;gap:6px;width:100%">
+        <span style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.85)" id="spotlight-header-label">🏠 From the Shelter</span><button onclick="event.stopPropagation();dismissSpotlight()" style="background:none;border:none;color:rgba(255,255,255,.6);font-size:.85rem;line-height:1;cursor:pointer;padding:0 2px;margin-left:auto;flex-shrink:0" title="Dismiss">✕</button>
       </div>
       <div style="position:relative;height:120px;background:var(--cream-2);overflow:hidden">
         <img id="spotlight-img" src="" alt="" style="width:100%;height:100%;object-fit:contain;object-position:center center;background:var(--cream-2);display:none">
@@ -945,7 +1000,7 @@ textarea{min-height:64px}
       <div id="pin-card-body" style="overflow-y:auto;max-height:calc(80vh - 40px);-webkit-overflow-scrolling:touch"></div>
     </div>
 
-    <div id="empty-hint">🐾 No reports yet<br><span style="font-size:.76rem;opacity:.8">Tap Lost Pet or Found Pet to post on the map.</span></div>
+    <div id="empty-hint">🐾 No reports yet — tap <strong>+ Report</strong> to post the first one.</div>
 
     <div id="side-panel">
       <div class="panel-hdr">
@@ -1161,6 +1216,7 @@ function initFirebase() {
         /* Confirmed signed in — ensure state is set */
         _isStaff = true;
         localStorage.setItem('pawpulse-staff', user.email);
+        setTimeout(maybeShowTutorial, 800);
         document.getElementById('staff-badge').classList.add('staff-active');
         document.querySelectorAll('.tab-ops,.tab-admin').forEach(function(el){ el.style.display = ''; });
         hideStaffLoginBtn();
@@ -1720,6 +1776,8 @@ function bootApp() {
       _restoredView = lastView;
       /* Apply the correct view class right now — before any render */
       document.querySelectorAll('.view').forEach(function(x){ x.classList.remove('active'); });
+  var fab = document.getElementById('intake-fab');
+  if (fab) fab.style.display = 'none';
       var _el = document.getElementById('view-' + lastView);
       if (_el) _el.classList.add('active');
       document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
@@ -1994,7 +2052,7 @@ function checkFoundPinsOnIntake(intakeRecord) {
 
   requestAnimationFrame(function(){
     requestAnimationFrame(function(){
-      document.body.appendChild(panel);
+      panel.style.transform = 'translateY(0)';
     });
   });
 }
@@ -2087,7 +2145,14 @@ function submitIntakeFromModal() {
     window._migrateFromId = null;
   }
 
-  reports.push(r); save(); renderMarkers(); renderIncareView(); updateNavCounts();
+  reports.push(r); save();
+  /* Write through doctrine pipeline */
+  if (USE_FIREBASE && _fbReady && db && _isStaff) {
+    window._pauseFirestoreSync = true;
+    writeAnimalRecord(r, 'staff');
+    setTimeout(function(){ window._pauseFirestoreSync = false; }, 5000);
+  }
+  renderMarkers(); renderIncareView(); updateNavCounts();
   closeIntakeModal();
   pushBannerEvent((isHold?'⚠️ Animal on hold logged at ':'🐾 New animal received at ') + activeShelter, isHold?'#d4843a':'var(--found-g)');
   /* Auto-match: search lost reports for possible owner immediately after intake */
@@ -2224,7 +2289,7 @@ function openAnimalEdit(id) {
         + '<div class="fr"><div class="fg" style="margin:0"><label>Name</label><input type="text" id="ae-name" value="' + esc(r.name||'') + '" placeholder="Leave blank if unknown"></div>'
         + '<div class="fg" style="margin:0"><label>Animal ID / Tag #</label><input type="text" id="ae-animalid" value="' + esc(r.animalId||'') + '"></div></div>'
         + '<div class="fr" style="margin-top:8px"><div class="fg" style="margin:0"><label>Species</label>'
-        + '<select id="ae-species"><option value="">Select…</option><option' + (r.species==='Dog'?' selected':'') + '>Dog</option><option' + (r.species==='Cat'?' selected':'') + '>Cat</option><option' + (r.species==='Bird'?' selected':'') + '>Bird</option><option' + (r.species==='Rabbit'?' selected':'') + '>Rabbit</option><option' + (r.species==='Other'?' selected':'') + '>Other</option></select></div>'
+        + '<select id="ae-species" style="width:100%;font-size:.9rem;padding:8px 10px;border-radius:8px;border:1.5px solid var(--cream-3);font-family:var(--font-body);background:#fff;color:var(--warm-dk)"><option value="">Select…</option><option' + (r.species==='Dog'?' selected':'') + '>Dog</option><option' + (r.species==='Cat'?' selected':'') + '>Cat</option><option' + (r.species==='Bird'?' selected':'') + '>Bird</option><option' + (r.species==='Rabbit'?' selected':'') + '>Rabbit</option><option' + (r.species==='Other'?' selected':'') + '>Other</option></select></div>'
         + '<div class="fg" style="margin:0"><label>Sex</label><select id="ae-sex"><option value="">Unknown</option><option' + (r.sex==='Male'?' selected':'') + '>Male</option><option' + (r.sex==='Female'?' selected':'') + '>Female</option></select></div></div>'
         + '<div class="fr" style="margin-top:8px"><div class="fg" style="margin:0"><label>Breed</label><input type="text" id="ae-breed" value="' + esc(r.breed||'') + '"></div>'
         + '<div class="fg" style="margin:0"><label>Estimated Age</label><input type="text" id="ae-age" value="' + esc(r.age||'') + '" placeholder="e.g. 2 years, puppy"></div></div>'
@@ -2414,7 +2479,8 @@ function updateEditSections() {
 function saveAnimalEdit(id) {
   var r = reports.find(function(x){ return x.id===id; });
   if (!r) return;
-
+  try {
+  var today = new Date().toISOString().slice(0,10);
   /* Core identity */
   r.name       = ((document.getElementById('ae-name')||{}).value||'').trim();
   r.animalId   = ((document.getElementById('ae-animalid')||{}).value||'').trim();
@@ -2505,8 +2571,9 @@ function saveAnimalEdit(id) {
     r.transferNotes   = ((document.getElementById('ae-transfer-notes')||{}).value||'').trim();
   }
 
-  /* Euthanasia */
+  /* Euthanasia — require confirmation */
   if (masterStatus === 'euth') {
+    if (!confirm('⚫ Mark this animal as euthanized? This cannot be undone from the app.')) return;
     r.euthReason = (document.getElementById('ae-euth-reason')||{}).value || '';
     r.euthNotes  = ((document.getElementById('ae-euth-notes')||{}).value||'').trim();
   }
@@ -2531,22 +2598,33 @@ function saveAnimalEdit(id) {
   r.about = ((document.getElementById('ae-about')||{}).value||'').trim();
 
   save(); renderMarkers(); renderIncareView(); renderAdoptView(); updateNavCounts();
-  /* Write immediately to Firestore — pause listener to prevent onSnapshot overwrite */
+  closeAnimalEdit();
+  /* Write to Firestore — pause listener long enough for write to confirm */
   if (USE_FIREBASE && _fbReady && db && _isStaff) {
     window._pauseFirestoreSync = true;
     writeAnimalRecord(r, 'staff');
-    setTimeout(function(){ window._pauseFirestoreSync = false; }, 2000);
+    /* Auto-generate bio if just marked adoption ready */
+    if (masterStatus === 'available' && !r.adoptPersonality) {
+      setTimeout(function(){ updateAdoptProfile(r.id); }, 800);
+    }
+    setTimeout(function(){ window._pauseFirestoreSync = false; }, 5000);
   }
-  /* Auto-generate bio if just marked adoption ready and no bio yet */
-  if (masterStatus === 'available' && !r.adoptPersonality) {
-    setTimeout(function(){ updateAdoptProfile(r.id); }, 600);
-  }
-  closeAnimalEdit();
   /* Show save confirmation */
   var el = document.getElementById('toast');
   document.getElementById('toast-msg').textContent = '✅ Saved';
   el.classList.add('show');
   setTimeout(function(){ el.classList.remove('show'); }, 2500);
+  } catch(e) {
+    console.error('saveAnimalEdit error:', e.message);
+    var el2 = document.getElementById('toast');
+    var msg2 = document.getElementById('toast-msg');
+    if (el2 && msg2) {
+      msg2.textContent = '⚠️ Could not save: ' + (e.message || 'unknown error');
+      msg2.style.color = 'var(--lost-lt)';
+      el2.classList.add('show');
+      setTimeout(function(){ el2.classList.remove('show'); msg2.style.color = ''; }, 4000);
+    }
+  }
 }
 
 function closeAnimalEdit() {
@@ -3095,6 +3173,15 @@ function renderGrantsPanel() {
   panel.style.display = 'flex';
   if (title)  title.textContent = '💵 AI Grant Opportunities';
   if (sub)    sub.textContent   = activeShelter + ' · Based on live operational data';
+  /* Note: grants always use all shelter data, not filtered view */
+  var grantNote = document.getElementById('rpt-grant-note');
+  if (!grantNote) {
+    grantNote = document.createElement('div');
+    grantNote.id = 'rpt-grant-note';
+    grantNote.style.cssText = 'font-size:.72rem;color:var(--warm-mid);background:var(--cream-2);border-radius:7px;padding:7px 12px;margin:6px 0 2px;line-height:1.5';
+    grantNote.textContent = 'ℹ️ Grant data reflects all animals at ' + activeShelter + ' — not affected by report filters. Filters above apply to the Reports tab only.';
+    if (sub && sub.parentNode) sub.parentNode.insertBefore(grantNote, sub.nextSibling);
+  }
 
   var ctx = buildGrantsContext();
   var opps = scoreGrants(ctx);
@@ -3114,12 +3201,9 @@ function renderGrantsPanel() {
   /* Tab bar */
   var shelterGrants = grants.filter(function(g){ return g.shelterId===activeShelter; });
   var queued    = shelterGrants.filter(function(g){ return g.status==='queued'; });
-  var submitted = shelterGrants.filter(function(g){ return g.status==='submitted'||g.status==='awarded'||g.status==='declined'; });
-
   var tabs = '<div style="display:flex;gap:6px;margin-bottom:16px;border-bottom:2px solid var(--cream-3);padding-bottom:10px">'
     + grantTab('opportunities', '🔍 Opportunities (' + opps.length + ')')
-    + grantTab('queue', '📝 Drafting Queue (' + queued.length + ')')
-    + grantTab('submitted', '📬 Submitted (' + submitted.length + ')')
+    + grantTab('queue', '📋 In Progress (' + queued.length + ')')
     + '</div>';
 
   var content = '';
@@ -3131,8 +3215,6 @@ function renderGrantsPanel() {
     }
   } else if (_grantsTab === 'queue') {
     content = renderGrantQueue(queued);
-  } else {
-    content = renderGrantSubmitted(submitted);
   }
 
   body.innerHTML = snap + tabs + content;
@@ -3192,7 +3274,6 @@ function renderGrantCard(o, ctx) {
 function saveGrantToQueue() { /* removed — grants queue cut */ }
 function removeGrant() { /* removed */ }
 function renderGrantQueue() { return ''; }
-function renderGrantSubmitted() { return ''; }
 
 async function generateGrantDraft(oppId) {
   var ctx  = buildGrantsContext();
@@ -3585,7 +3666,8 @@ function cardHTML(r) {
     if (publicDesc && r.intakeType !== 'hold') rows += '<div class="pc-row" style="margin-top:4px">' + esc(publicDesc) + '</div>';
     if (r.address && r.intakeType !== 'hold') rows += '<div class="pc-row"><strong>Found near:</strong> ' + esc(r.address) + '</div>';
     if (r.shelter || r.atShelter) {
-      rows += '<div class="pc-row"><strong>🏠 ' + (r.shelter ? 'In care at:' : 'Reported at:') + '</strong> ' + esc(r.shelterName||'Heartland Pet Connection') + '</div>';
+      rows += '<div class="pc-row"><strong>🏠 ' + (r.shelter ? 'In care at:' : r.atShelter ? 'Heading to shelter:' : 'Reported by:') + '</strong> ' + esc(r.shelterName||'Heartland Pet Connection') + '</div>';
+      if (r.atShelter && !r.shelter) rows += '<div class="pc-row" style="font-size:.72rem;color:var(--amber)">\u26a0\ufe0f Finder says they are bringing this pet in \u2014 not yet confirmed</div>';
       /* Show original found location for owners searching */
       if (r.address) rows += '<div class="pc-row" style="color:var(--warm-mid);font-size:.72rem">📍 Originally found near ' + esc(r.address) + '</div>';
       if (r.date) rows += '<div class="pc-row" style="color:var(--warm-mid);font-size:.72rem">📅 Found ' + new Date(r.date).toLocaleDateString('en-US',{month:'short',day:'numeric'}) + '</div>';
@@ -3710,11 +3792,11 @@ function cardHTML(r) {
   /* Info note on found pins explaining how pin disappears */
   var foundNote = (!lost && !reunited && !r.shelter)
     ? (r.atShelter
-        ? '<div style="background:#fff8e8;border:1.5px solid #d4a035;border-radius:7px;padding:8px 12px;font-size:.74rem;color:#7a5010;margin-bottom:8px;line-height:1.5">'          + '🏠 The finder says this animal has been or will be brought to <strong>' + esc(r.shelterName||'a shelter or vet') + '</strong>. This pin stays on the map until intake is confirmed by staff. If you are the owner and your pet has come home, tap \uD83C\uDF89 Mark as Reunited.'          + '</div>'        : '<div style="background:#f0faf1;border:1px solid #b0d8b8;border-radius:7px;padding:8px 12px;font-size:.74rem;color:#2a6030;margin-bottom:8px;line-height:1.5">'          + '📍 This pin stays on the map until the owner is found. '          + 'If the animal is reunited with its owner, tap 🎉 Mark as Reunited to remove this pin. '          + 'If the finder brings the animal to Heartland, staff will match it during intake and this pin will disappear automatically.'          + '</div>'      )    : '';
+        ? '<div style="background:#fff8e8;border:1.5px solid #d4a035;border-radius:7px;padding:8px 12px;font-size:.74rem;color:#7a5010;margin-bottom:8px;line-height:1.5">'          + '🏠 The finder says this animal has been or will be brought to <strong>' + esc(r.shelterName||'a shelter or vet') + '</strong>. This pin stays on the map until intake is confirmed by staff. If you are the owner and your pet has come home, tap \uD83C\uDF89 Mark as Reunited.'          + '</div>'        : '<div style="background:#f0faf1;border:1px solid #b0d8b8;border-radius:7px;padding:8px 12px;font-size:.74rem;color:#2a6030;margin-bottom:8px;line-height:1.5">'          + '📍 This pin stays on the map until the pet is reunited with its owner or brought to a shelter or vet. '          + 'If this is your pet and they have come home, tap 🎉 Mark as Reunited. '          + 'If you have brought or are bringing this pet to a shelter or vet, check the box below.'          + '</div>'      )    : '';
 
   /* Staff-only: migrate public report to shelter intake */
   var migrateBtn = (_isStaff && !r.shelter && !reunited && r.type === 'found')
-    ? '<button onclick="migrateToIntake(' + r.id + ')" style="width:100%;margin-top:6px;padding:9px;font-family:var(--font-display);font-size:.82rem;font-weight:700;border:none;border-radius:8px;cursor:pointer;background:var(--forest);color:#fff;display:flex;align-items:center;justify-content:center;gap:6px">🏠 Create Intake from Found Report</button>'
+    ? '<button onclick="migrateToIntake(' + r.id + ')" style="width:100%;margin-top:6px;padding:9px;font-family:var(--font-display);font-size:.82rem;font-weight:700;border:none;border-radius:8px;cursor:pointer;background:var(--forest);color:#fff;display:flex;align-items:center;justify-content:center;gap:6px">🏠 Populate Intake Form from This Report</button>'
     : '';
 
   /* Adoption section — only for found strays, not holds */
@@ -3918,32 +4000,51 @@ function migrateToIntake(id) {
   var r = reports.find(function(x){ return String(x.id)===String(id); });
   if (!r) return;
   closeCard();
-  /* Open the citizen intake form and pre-fill with pin card data */
+
+  /* Open the modal overlay */
+  var overlay = document.getElementById('intake-modal-overlay');
+  if (overlay) overlay.style.display = 'flex';
+
+  /* Load the citizen intake form */
   openIntakeForm('citizen');
+
+  /* Populate fields after form renders */
   setTimeout(function() {
-    /* Pre-fill fields from the public report */
-    var fields = {
-      'si-species':  r.species || '',
-      'si-color':    r.color   || '',
-      'si-breed':    r.breed   || '',
-      'si-desc':     r.desc    || '',
-      'si-address':  r.address || '',
-      'si-finder':   r.finder  || '',
-      'si-fphone':   r.fphone  || '',
+    var populate = {
+      'si-species': r.species || '',
+      'si-color':   r.color   || '',
+      'si-breed':   r.breed   || '',
+      'si-desc':    r.desc    || r.notes || '',
+      'si-address': r.address || '',
+      'si-name':    r.name    || ''
     };
-    Object.keys(fields).forEach(function(fid) {
+    Object.keys(populate).forEach(function(fid) {
       var el = document.getElementById(fid);
-      if (el) el.value = fields[fid];
+      if (el && populate[fid]) el.value = populate[fid];
     });
-    /* Mark this as migrated from an existing report */
+
+    /* Select the correct species option */
+    var speciesEl = document.getElementById('si-species');
+    if (speciesEl && r.species) {
+      Array.from(speciesEl.options).forEach(function(opt) {
+        if (opt.value === r.species || opt.text === r.species) opt.selected = true;
+      });
+      /* Trigger breed field update */
+      if (typeof updateBreedField === 'function') updateBreedField('si-species', 'si-breed-wrap');
+    }
+
+    /* Mark source report for linking on save */
     window._migrateFromId = id;
-    /* Show notice */
-    var body = document.getElementById('intake-modal-body') || document.getElementById('side-panel');
-    var notice = document.createElement('div');
-    notice.style.cssText = 'background:#e8f4e9;border:1px solid var(--found-g);border-radius:8px;padding:8px 12px;font-size:.74rem;color:#2a6030;margin-bottom:10px';
-    notice.textContent = '✓ Pre-filled from public report. Review and complete remaining fields.';
-    if (body && body.firstChild) body.insertBefore(notice, body.firstChild);
-  }, 400);
+
+    /* Show pre-fill notice at top of form */
+    var body = document.getElementById('intake-modal-body');
+    if (body) {
+      var notice = document.createElement('div');
+      notice.style.cssText = 'background:#e8f4e9;border:1px solid #8bc898;border-radius:8px;padding:9px 13px;font-size:.75rem;color:#2a6030;margin-bottom:12px;line-height:1.5';
+      notice.innerHTML = '✓ <strong>Pre-filled from found report.</strong> Review all fields, add a photo, and save to create the intake record.';
+      body.insertBefore(notice, body.firstChild);
+    }
+  }, 350);
 }
 
 async function searchMatchesFromCard(lostId) {
@@ -4416,7 +4517,10 @@ function renderMarkers() {
   if (cntS) cntS.textContent = getShelterData({ includeHolds: true }).length;
   if (cntA) cntA.textContent = reports.filter(function(r){return r.adoptionStatus==='available' && !r.reunited;}).length;
   if (lblS && activeShelter) lblS.textContent = 'In Care of ' + activeShelter.split(' ')[0];
-  document.getElementById('empty-hint').style.opacity = (window._firebaseLoaded && !reports.length) ? '1' : '0';
+  var _eh = document.getElementById('empty-hint');
+  var _bn = document.getElementById('banner');
+  if (_eh) _eh.style.opacity = (window._firebaseLoaded && !reports.length) ? '1' : '0';
+  if (_bn) _bn.style.opacity = (window._firebaseLoaded && !reports.length) ? '0' : '1';
   updateNavCounts();
   var rptView = document.getElementById('view-reports');
   var adoptView = document.getElementById('view-adopt');
@@ -4488,6 +4592,14 @@ function startPlace(type) {
   setTimeout(function(){ map.invalidateSize(); }, 50);
 }
 
+
+function showOOBMessage() {
+  var el = document.getElementById('oob-overlay');
+  if (!el) return;
+  el.style.display = 'flex';
+  setTimeout(function(){ el.style.display = 'none'; }, 2200);
+}
+
 function cancelPlace() {
   placing = null;
   map.getContainer().classList.remove('placing');
@@ -4510,15 +4622,8 @@ map.on('click', function(e) {
   var ADAMS = { n:40.700, s:40.348, e:-98.046, w:-98.605 };
   if (e.latlng.lat > ADAMS.n || e.latlng.lat < ADAMS.s ||
       e.latlng.lng > ADAMS.e || e.latlng.lng < ADAMS.w) {
-    /* Flash a message — don't place pin */
-    var hint = document.getElementById('drop-hint');
-    if (hint) {
-      var orig = hint.querySelector('span') ? hint.querySelector('span').textContent : '';
-      hint.innerHTML = '<span style="color:#ffccaa">⚠️ Please place the pin within Adams County, NE</span>';
-      setTimeout(function(){
-        hint.innerHTML = '<span>📍 Tap the map to place pin</span><button id="drop-cancel" onclick="cancelPlace()">✕ Back to form</button>';
-      }, 2000);
-    }
+    /* Show centered overlay — doesn't cover banner or legend */
+    showOOBMessage();
     return;
   }
   pLat[t] = e.latlng.lat;
@@ -4584,19 +4689,19 @@ map.on('click', function(e) {
 });
 
 function compressPhoto(file, callback) {
-  /* Compress to max 800px wide, 0.75 quality JPEG — keeps under ~100KB */
+  /* Compress to max 1200px wide, 0.82 quality JPEG — keeps under ~200KB */
   var img = new Image();
   var url = URL.createObjectURL(file);
   img.onload = function() {
     URL.revokeObjectURL(url);
-    var MAX = 800;
+    var MAX = 1200;
     var w = img.width, h = img.height;
     if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
     if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
     var canvas = document.createElement('canvas');
     canvas.width = w; canvas.height = h;
     canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-    callback(canvas.toDataURL('image/jpeg', 0.75));
+    callback(canvas.toDataURL('image/jpeg', 0.82));
   };
   img.onerror = function() {
     /* Fallback: read raw if canvas fails */
@@ -5265,7 +5370,7 @@ function setShelterTab(tab, btn) {
   var fb = document.getElementById('sh-footer-btn');
   if (fb) {
     fb.style.display = '';
-    fb.textContent = tab==='queue' ? '+ Log New Intake' : tab==='costs' ? '+ Log New Intake' : '+ Add to Inventory';
+    fb.textContent = '+ Log New Intake';
   }
   // Reset right panel
   document.getElementById('sh-action-empty').style.display = 'flex';
@@ -6078,14 +6183,32 @@ function triggerSIPhoto() {
   if (el) el.click();
 }
 
+
+/* ── IMAGE COMPRESSION — enforced before any photo is stored ────────── */
+function compressImage(dataUrl, maxWidth, maxHeight, quality, callback) {
+  var img = new Image();
+  img.onload = function() {
+    var w = img.width, h = img.height;
+    var ratio = Math.min(1, maxWidth/w, maxHeight/h);
+    var canvas = document.createElement('canvas');
+    canvas.width  = Math.round(w * ratio);
+    canvas.height = Math.round(h * ratio);
+    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+    callback(canvas.toDataURL('image/jpeg', quality || 0.82));
+  };
+  img.src = dataUrl;
+}
+
 function previewSIPhoto(input) {
   var file = input.files[0]; if (!file) return;
   var reader = new FileReader();
   reader.onload = function(e) {
-    var img = document.getElementById('si-prev');
-    img.src = e.target.result; img.style.display = 'block';
-    document.getElementById('si-photo-icon').style.display = 'none';
-    document.getElementById('si-photo-txt').style.display  = 'none';
+    compressImage(e.target.result, 1200, 1200, 0.82, function(compressed) {
+      var img = document.getElementById('si-prev');
+      img.src = compressed; img.style.display = 'block';
+      document.getElementById('si-photo-icon').style.display = 'none';
+      document.getElementById('si-photo-txt').style.display  = 'none';
+    });
   };
   reader.readAsDataURL(file);
 }
@@ -7684,6 +7807,7 @@ function openAdoptDetail(id) {
     document.body.appendChild(panel);
   }
 
+  panel.style.transform = 'translateY(100%)';
   panel.innerHTML = '<div style="padding:14px 20px 0;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#fff;z-index:1;border-bottom:1px solid var(--cream-3);margin-bottom:0;padding-bottom:12px">'
     + '<div style="font-family:var(--font-display);font-size:1.1rem;font-weight:700;color:var(--warm-dk)">' + esc(name) + '</div>'
     + '<button onclick="closeAdoptDetail()" style="background:var(--cream-2);border:none;border-radius:50%;width:32px;height:32px;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--warm-mid)">✕</button>'
@@ -7733,6 +7857,13 @@ function renderAdoptView() {
     grid.innerHTML = '<div class="adopt-empty" style="grid-column:1/-1"><div class="adopt-empty-icon">🌟</div><div style="font-size:.9rem;font-weight:600;margin-bottom:6px;color:var(--warm-dk)">No animals listed for adoption</div><div style="font-size:.8rem;color:var(--warm-mid);line-height:1.5;margin-bottom:14px">Mark an animal as Adoption Ready from the In Care tab.</div></div>';
     return;
   }
+  /* Auto-generate missing bios — stagger 4s apart to avoid race conditions */
+  var missingBio = list.filter(function(r){ return !r.adoptPersonality; });
+  missingBio.forEach(function(r, i) {
+    if (_isStaff) {
+      setTimeout(function() { updateAdoptProfile(r.id); }, 2000 + (i * 4000));
+    }
+  });
   grid.innerHTML = list.map(function(r) {
     var name         = r.name || (r.species || 'friend');
     var firstName    = name.split(' ')[0];
@@ -7764,7 +7895,6 @@ function renderAdoptView() {
       + (meta ? '<div style="font-size:.76rem;color:var(--warm-mid);margin-bottom:8px">' + esc(meta) + '</div>' : '')
       /* Bio — only shown if it exists */
       + (narrative ? '<div id="adopt-narrative-' + r.id + '" style="font-size:.82rem;color:var(--warm-dk);line-height:1.6;margin-bottom:10px">' + esc(narrative) + '</div>' : '')
-      /* Tags */
       + (tags.length ? '<div class="adopt-tags" style="margin-bottom:8px">' + tags.map(function(t){ return '<span class="adopt-tag">' + esc(t.trim()) + '</span>'; }).join('') + '</div>' : '')
       /* Days + fee */
       + '<div style="margin-bottom:10px">'
@@ -7838,13 +7968,11 @@ async function updateAdoptProfile(id) {
 
     r.adoptPersonality   = text;
     r.profileUpdatedAt   = new Date().toISOString();
-    save();
 
-    /* Persist to Firestore — pause listener so it doesn't wipe reports mid-render */
+    /* Persist to Firestore via doctrine write pipeline */
     if (USE_FIREBASE && _fbReady && db) {
-      window._pauseFirestoreSync = true;
-      writeAnimalRecord(r, 'staff');
-      setTimeout(function(){ window._pauseFirestoreSync = false; }, 2000);
+      await writeAnimalRecord(r, 'staff');
+      console.log('Bio saved to Firestore for', r.name || r.id);
     }
 
     /* Update the narrative inline without re-rendering everything */
@@ -7882,15 +8010,13 @@ function closeAdoptForm(e) {
 
 function previewAdoptPhoto(input) {
   var file = input.files[0]; if (!file) return;
-  var reader = new FileReader();
-  reader.onload = function(ev) {
+  compressPhoto(file, function(dataUrl) {
     var img = document.getElementById('af-prev');
-    img.src = ev.target.result; img.style.display = 'block';
+    img.src = dataUrl; img.style.display = 'block';
     document.getElementById('af-photo-icon').style.display = 'none';
     document.getElementById('af-photo-txt').style.display  = 'none';
     showAIBtn('af');
-  };
-  reader.readAsDataURL(file);
+  });
 }
 
 function submitAdoptListing() {
@@ -8580,6 +8706,7 @@ async function renderSpotlightCard(item) {
 }
 
 function rotateSpotlight() {
+  if (window._spotlightDismissed) return;
   var animals = getSpotlightAnimals();
   var strip = document.getElementById('shelter-spotlight');
   if (!strip) return;
@@ -8646,6 +8773,17 @@ function rotateSpotlight() {
   _spotlightRotateTimer = setTimeout(rotateSpotlight, SPOTLIGHT_INTERVAL);
 }
 
+
+function dismissSpotlight() {
+  var strip = document.getElementById('shelter-spotlight');
+  if (!strip) return;
+  strip.style.opacity = '0';
+  setTimeout(function() { strip.style.display = 'none'; }, 600);
+  /* Session-only — clears on page reload. Does not affect data or state. */
+  window._spotlightDismissed = true;
+  clearTimeout(_spotlightRotateTimer);
+}
+
 function initSpotlight() {
   /* Pre-warm bio cache for first animal, then reveal card with text already ready */
   var animals = getSpotlightAnimals();
@@ -8674,6 +8812,8 @@ function setView(v, btn) {
   if (v === 'incare') {
     var incareBtn = document.querySelector('.tab-btn[onclick*="incare"]');
     if (incareBtn) incareBtn.classList.add('active');
+    var fab = document.getElementById('intake-fab');
+    if (fab && _isStaff) fab.style.display = 'flex';
   }
   if (v === 'map') {
     setTimeout(function(){ map.invalidateSize(); }, 200);
@@ -8702,6 +8842,102 @@ try {
 }
 setTimeout(function(){ injectMicButtons(document.getElementById('side-panel')); }, 100);
 
+/* ═══ STAFF TUTORIAL ═══════════════════════════════════════════════════ */
+var _tutorialStep = 0;
+var TUTORIAL_STEPS = [
+  {
+    icon: '🗺️',
+    title: 'The map is your live feed',
+    body: 'Every pin is a real-time signal from the community. The map updates automatically — no refresh needed.',
+    tip: 'Pins update within seconds of a report being posted'
+  },
+  {
+    icon: '🔴🟢',
+    title: 'Pin colors tell the story',
+    body: 'Red = lost pet (owner searching). Green = found animal (someone has it). Orange = finder is bringing it to a shelter or vet. Blue = confirmed in your care.',
+    tip: 'Only you can create blue pins via intake'
+  },
+  {
+    icon: '🟠',
+    title: 'Orange pins need your action',
+    body: 'When someone checks they are bringing a pet to a shelter, an orange pin appears. Tap it, then tap "Confirm Intake" once the animal arrives. This turns it blue and runs an auto-match against lost reports.',
+    tip: 'Auto-match fires automatically — check for alerts'
+  },
+  {
+    icon: '🏥',
+    title: 'Manage animals in At Shelter',
+    body: 'The At Shelter tab shows every animal in your care. From here you can edit details, add photos, update status, and mark animals as available for adoption.',
+    tip: 'At Shelter is staff-only — the public cannot see this view'
+  },
+  {
+    icon: '🐾',
+    title: 'Making an animal adoptable',
+    body: 'In At Shelter, tap any animal, then Edit, and set Adoption Status to Available. This adds them to the Adopt page and the spotlight card on the map.',
+    tip: 'Pending = inquiry received. Adopted = complete'
+  },
+  {
+    icon: '📊',
+    title: 'Reports gives you the full picture',
+    body: 'The Reports tab shows the adoption pipeline, intake history, and any inquiry emails from the public. Check it daily.',
+    tip: 'Tap "Print Report" to get a shareable summary'
+  }
+];
+
+function showTutorial() {
+  var overlay = document.getElementById('staff-tutorial-overlay');
+  if (!overlay) return;
+  _tutorialStep = 0;
+  renderTutorialStep();
+  overlay.style.display = 'flex';
+  overlay.onclick = function(e) { if (e.target === overlay) closeTutorial(false); };
+}
+
+function renderTutorialStep() {
+  var step = TUTORIAL_STEPS[_tutorialStep];
+  var total = TUTORIAL_STEPS.length;
+  var container = document.getElementById('st-steps-container');
+  var nextBtn = document.getElementById('st-next-btn');
+  var progress = document.getElementById('st-progress');
+
+  container.innerHTML = '<div class="st-step">'
+    + '<div class="st-icon">' + step.icon + '</div>'
+    + '<div class="st-step-body">'
+    + '<h3>' + step.title + '</h3>'
+    + '<p>' + step.body + '</p>'
+    + '<span class="st-tip">💡 ' + step.tip + '</span>'
+    + '</div></div>';
+
+  nextBtn.textContent = _tutorialStep === total - 1 ? 'Got it ✓' : 'Next →';
+  nextBtn.onclick = _tutorialStep === total - 1
+    ? function(){ closeTutorial(true); }
+    : tutorialNext;
+
+  progress.innerHTML = TUTORIAL_STEPS.map(function(s, i){
+    return '<div class="st-dot' + (i === _tutorialStep ? ' active' : '') + '"></div>';
+  }).join('');
+}
+
+function tutorialNext() {
+  if (_tutorialStep < TUTORIAL_STEPS.length - 1) {
+    _tutorialStep++;
+    renderTutorialStep();
+  }
+}
+
+function closeTutorial(markDone) {
+  var overlay = document.getElementById('staff-tutorial-overlay');
+  if (overlay) overlay.style.display = 'none';
+  if (markDone) localStorage.setItem('pp_tutorial_done', '1');
+}
+
+function maybeShowTutorial() {
+  /* Show tutorial on first staff login if not yet seen */
+  if (!localStorage.getItem('pp_tutorial_done')) {
+    setTimeout(showTutorial, 800);
+  }
+}
+/* ═══════════════════════════════════════════════════════════════════════ */
+
 </script>
 
 <!-- Adoption inquiry slide-up -->
@@ -8724,4 +8960,41 @@ setTimeout(function(){ injectMicButtons(document.getElementById('side-panel')); 
 </div>
 
 
+
+
+<!-- SEO footer — local signals, minimal UI footprint -->
+<footer id="seo-footer" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:1;background:rgba(42,31,18,.92);padding:6px 16px;font-size:.65rem;color:rgba(255,255,255,.5);display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap">
+  <a href="/lost-pets-hastings-ne" style="color:rgba(255,255,255,.5);text-decoration:none">Lost pets in Hastings</a>
+  <span>·</span>
+  <a href="/found-pets-hastings-ne" style="color:rgba(255,255,255,.5);text-decoration:none">Found pets in Hastings</a>
+  <span>·</span>
+  <a href="/pets-in-care-hastings-ne" style="color:rgba(255,255,255,.5);text-decoration:none">Pets in care at Heartland</a>
+  <span>·</span>
+  <span>Hastings, NE &amp; Adams County</span>
+</footer>
+
+<!-- Out-of-bounds overlay — centered on map -->
+<div id="oob-overlay" style="display:none;position:fixed;inset:0;z-index:2000;pointer-events:none;align-items:center;justify-content:center">
+  <div id="oob-msg" style="pointer-events:auto;background:rgba(42,31,18,.92);color:#fff;border-radius:14px;padding:18px 28px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.35);max-width:280px;backdrop-filter:blur(8px)">
+    <div style="font-size:1.6rem;margin-bottom:8px">📍</div>
+    <div style="font-weight:700;font-size:.95rem;margin-bottom:4px">Outside Adams County</div>
+    <div style="font-size:.8rem;opacity:.8;line-height:1.5">Please place the pin within Adams County, NE</div>
+  </div>
+</div>
+<!-- STAFF TUTORIAL OVERLAY -->
+<div id="staff-tutorial-overlay" style="display:none">
+  <div id="staff-tutorial-card">
+    <div class="st-header">
+      <h2>Welcome to PawPulse Staff</h2>
+      <p>Your quick walkthrough — 6 steps, 60 seconds</p>
+    </div>
+    <div class="st-steps" id="st-steps-container"></div>
+    <div class="st-footer">
+      <button class="st-btn-skip" onclick="closeTutorial(true)">Skip for now</button>
+      <div class="st-progress" id="st-progress"></div>
+      <button class="st-btn-primary" id="st-next-btn" onclick="tutorialNext()">Next →</button>
+    </div>
+  </div>
+</div>
 </body>
+</html>
