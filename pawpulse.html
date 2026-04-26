@@ -93,7 +93,8 @@ body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);h
 /* Staff badge hidden by default — only shown via JS after auth confirms */
 #staff-badge { display: none !important; }
 #staff-badge.staff-active { display: inline-flex !important; }
-#pp-banner{position:absolute;top:28px;left:50%;transform:translateX(-50%);z-index:600;background:rgba(45,74,53,.93);backdrop-filter:blur(12px);border:1px solid rgba(122,172,130,.3);border-radius:999px;padding:9px 18px;display:flex;align-items:center;gap:10px;min-width:280px;max-width:460px;box-shadow:0 4px 20px rgba(0,0,0,.28);pointer-events:none;transition:opacity .3s}@media(max-width:640px){#pp-banner{top:42px!important}}
+#pp-banner{position:absolute;top:28px;left:50%;transform:translateX(-50%);z-index:600;background:rgba(45,74,53,.93);backdrop-filter:blur(12px);border:1px solid rgba(122,172,130,.3);border-radius:999px;padding:9px 18px;display:flex;align-items:center;gap:10px;min-width:280px;max-width:460px;box-shadow:0 4px 20px rgba(0,0,0,.28);pointer-events:none;transition:opacity .3s}@media(max-width:640px){#map-container{margin-top:60px!important}}
+@media(max-width:640px){#pp-banner{top:42px!important}}
 .banner-dot{width:7px;height:7px;border-radius:50%;background:var(--moss);box-shadow:0 0 7px var(--moss);flex-shrink:0;animation:bdot 2s ease-in-out infinite}
 @keyframes bdot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.75)}}
 #banner-txt{font-size:.76rem;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .35s}
@@ -178,7 +179,7 @@ textarea{min-height:64px}
 .chk-row input{width:16px;height:16px;accent-color:var(--found-g);flex-shrink:0}
 .chk-row label{font-size:.82rem;font-weight:500;color:var(--warm-dk);text-transform:none;letter-spacing:0;margin:0;cursor:pointer}
 .submit-btn{width:100%;padding:12px;font-family:var(--font-display);font-size:.98rem;font-weight:600;border:none;border-radius:10px;cursor:pointer;transition:all .2s;margin-top:6px;touch-action:manipulation;-webkit-tap-highlight-color:rgba(0,0,0,.08)}@media(max-width:640px){
-  #panel-footer{padding-bottom:max(14px,env(safe-area-inset-bottom,14px))!important}
+  #panel-footer{padding-bottom:max(18px,calc(env(safe-area-inset-bottom,0px) + 18px))!important;padding-top:10px!important}
 }
 .submit-btn.lost{background:var(--lost-r);color:#fff}
 .submit-btn.found{background:var(--found-g);color:#fff}
@@ -673,7 +674,11 @@ textarea{min-height:64px}
 
 @media(max-width:640px){
   #intake-modal-footer,#animal-edit-footer{
-    padding-bottom:max(14px,env(safe-area-inset-bottom,14px))!important;
+    padding-bottom:max(18px,calc(env(safe-area-inset-bottom,0px) + 18px))!important;
+  }
+  /* Ensure intake/edit modal inner doesn't overflow home indicator */
+  #intake-modal-inner,#animal-edit-inner{
+    padding-bottom:0!important;
   }
 }
 </style>
@@ -1834,7 +1839,10 @@ function doChangePw() {
 }
 
 
+var _bootAppDone = false;
 function bootApp() {
+  if (_bootAppDone) return; /* Guard: only boot once */
+  _bootAppDone = true;
   /* Restore staff UI immediately from localStorage — before Firebase auth resolves.
      Firebase IndexedDB session restore is unreliable on mobile Safari. */
   var storedStaff = localStorage.getItem('pawpulse-staff');
@@ -1894,6 +1902,8 @@ function bootApp() {
   renderIncareView();
   renderReportTypeList();
   updateNavCounts();
+  /* Orientation strip: starts display:none, must be shown for map view */
+  updateOrientationStrip(_restoredView || 'map');
 }
 
 /* ── INTAKE MODAL (replaces separate Intake tab) ─────────────────────── */
@@ -2064,7 +2074,10 @@ function openIntakeForm(intakeSource) {
 
   /* Show the static footer with submit buttons */
   var imf = document.getElementById('intake-modal-footer');
-  if (imf) imf.style.display = 'block';
+  if (imf) { imf.style.display = 'block'; imf.style.removeProperty('display'); imf.style.display = 'block'; }
+  /* Reset intake submit button text in case it was changed */
+  var isb = document.getElementById('intake-submit-btn');
+  if (isb) { isb.textContent = '✓ Log Intake'; isb.disabled = false; }
   setTimeout(function(){ injectMicButtons(body); setTimeout(checkFoundPinMatch, 150); setupKeyboardScroll(body); }, 50);
 }
 
@@ -2178,6 +2191,9 @@ function resolveFoundPinFromIntake(foundId) {
 
 
 function submitIntakeFromModal() {
+  /* Provide immediate feedback — disable button to prevent double-tap */
+  var isb = document.getElementById('intake-submit-btn');
+  if (isb) { isb.disabled = true; isb.textContent = 'Saving…'; }
   /* Reads from modal form and submits */
   var typeEl      = document.getElementById('si-intake-type');
   var sourceEl    = document.getElementById('si-intake-source');
@@ -2581,6 +2597,9 @@ function updateEditSections() {
 function saveAnimalEdit(id) {
   var r = reports.find(function(x){ return x.id===id; });
   if (!r) return;
+  /* Immediate feedback */
+  var aesb = document.getElementById('ae-save-btn');
+  if (aesb) { aesb.disabled = true; aesb.textContent = 'Saving…'; }
   try {
   var today = new Date().toISOString().slice(0,10);
   /* Core identity */
@@ -4723,6 +4742,15 @@ function openPanel(type) {
 function closePanel() {
   document.getElementById('side-panel').classList.remove('open');
   cancelPlace();
+  /* Reset footer buttons to hidden so next openPanel starts clean */
+  var lBtn = document.getElementById('panel-submit-lost');
+  var fBtn = document.getElementById('panel-submit-found');
+  var lErr = document.getElementById('l-form-err');
+  var fErr = document.getElementById('f-form-err');
+  if (lBtn) lBtn.style.display = 'none';
+  if (fBtn) fBtn.style.display = 'none';
+  if (lErr) lErr.style.display = 'none';
+  if (fErr) fErr.style.display = 'none';
   setTimeout(function(){ map.invalidateSize(); }, 340);
 }
 
@@ -5126,7 +5154,7 @@ function showFormError(type, msg) {
 function checkSpamGuard(type) {
   /* Layer 4: Session limit */
   if (_submissionCount >= SUBMIT_SESSION_MAX) {
-    alert('You\'ve submitted ' + SUBMIT_SESSION_MAX + ' reports this session. Please contact Heartland Pet Connection directly at (402) 462-7387 if you have additional reports.');
+    showFormError(type, 'You have submitted ' + SUBMIT_SESSION_MAX + ' reports this session. Call Heartland at (402) 462-7387 for additional reports.');
     return false;
   }
   /* Layer 2: Cooldown */
@@ -5135,7 +5163,7 @@ function checkSpamGuard(type) {
   var now = Date.now();
   if (last && (now - last) < SUBMIT_COOLDOWN_MS) {
     var mins = Math.ceil((SUBMIT_COOLDOWN_MS - (now - last)) / 60000);
-    alert('You recently submitted a ' + type + ' pet report. Please wait ' + mins + ' more minute' + (mins!==1?'s':'') + ' before submitting another, or call Heartland directly at (402) 462-7387.');
+    showFormError(type, 'Please wait ' + mins + ' more minute' + (mins!==1?'s':'') + ' before submitting another ' + type + ' report. Or call Heartland at (402) 462-7387.');
     return false;
   }
   /* Layer 3: Honeypot check (done inline at submit) */
@@ -5274,6 +5302,9 @@ function installBypassDetection() {
 
 
 function submitLost() {
+  /* Immediately disable button to prevent double-tap while validating */
+  var slb = document.getElementById('panel-submit-lost');
+  if (slb) slb.style.opacity = '.6';
   if (!pLat.lost) {
     /* Flash the location button and scroll to it — keep panel open */
     var locBtn = document.getElementById('l-loc-btn') || document.querySelector('#l-prompt button');
@@ -5292,6 +5323,7 @@ function submitLost() {
         }
       }, 3000);
     }
+    if (slb) slb.style.opacity = '';
     return;
   }
   /* Required fields — show clear feedback */
@@ -5343,6 +5375,9 @@ function submitLost() {
   closePanel(); resetForm('lost');
   pLat.lost = null; pLng.lost = null;
   recordSubmission('lost');
+  /* Re-enable button (closePanel already hid it, this is safety) */
+  var slb2 = document.getElementById('panel-submit-lost');
+  if (slb2) { slb2.style.opacity = ''; }
   showToast('lost');
 }
 
@@ -9136,7 +9171,7 @@ function maybeShowTutorial() {
 
 
 <!-- SEO footer — local signals, minimal UI footprint -->
-<footer id="seo-footer" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:1;background:rgba(42,31,18,.88);padding:2px 10px;font-size:.58rem;color:rgba(255,255,255,.45);display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:nowrap;white-space:nowrap;overflow:hidden">
+<footer id="seo-footer" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:1;background:rgba(42,31,18,.88);padding:2px 10px;font-size:.58rem;color:rgba(255,255,255,.45);display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;white-space:normal;overflow:visible;row-gap:0">
   <a href="/lost-pets-hastings-ne" style="color:rgba(255,255,255,.5);text-decoration:none">Lost pets in Hastings</a>
   <span>·</span>
   <a href="/found-pets-hastings-ne" style="color:rgba(255,255,255,.5);text-decoration:none">Found pets in Hastings</a>
@@ -9170,4 +9205,4 @@ function maybeShowTutorial() {
   </div>
 </div>
 </body>
-</html>s
+</html>
