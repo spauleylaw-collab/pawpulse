@@ -314,7 +314,7 @@ textarea{min-height:64px}
 .sh-log-body{flex:1;color:var(--warm-mid);line-height:1.4}
 .sh-log-time{font-size:.65rem;color:var(--warm-mid);flex-shrink:0}
 .sh-action-btns{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
-.sh-btn{padding:5px 11px;border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;border:1.5px solid var(--cream-3);background:var(--cream);color:var(--warm-dk);font-family:var(--font-body);transition:all .15s}
+.sh-btn{padding:5px 11px;border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;border:1.5px solid var(--cream-3);background:var(--cream);color:var(--warm-dk);font-family:var(--font-body);transition:all .15s;touch-action:manipulation;-webkit-tap-highlight-color:rgba(0,0,0,.08)}
 .sh-btn:hover{border-color:var(--amber);color:var(--amber)}
 .sh-btn.primary{background:var(--found-g);border-color:var(--found-g);color:#fff}
 .sh-btn.primary:hover{filter:brightness(1.08);border-color:var(--found-g);color:#fff}
@@ -339,7 +339,7 @@ textarea{min-height:64px}
 /* Inventory */
 .inv-card.selected{border-color:var(--forest);background:#f5faf5}
 .inv-add-form{background:#fff;border:1px solid var(--cream-3);border-radius:10px;padding:14px;margin-bottom:10px}
-.inv-preview{width:100%;max-height:120px;object-fit:cover;border-radius:6px;display:none;margin-top:6px}
+.inv-preview{width:100%;max-height:200px;object-fit:contain;background:var(--cream-2);border-radius:6px;display:none;margin-top:6px}
 /* Inventory detail panel */
 .inv-status-badge{display:inline-flex;align-items:center;gap:4px;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:3px 9px;border-radius:999px;margin-bottom:8px}
 .inv-status-badge.available{background:#e0f0e4;color:var(--found-g)}
@@ -670,6 +670,12 @@ textarea{min-height:64px}
   /* FAB: clear home indicator */
   #intake-fab{bottom:calc(40px + env(safe-area-inset-bottom,0px))!important}
 }
+
+@media(max-width:640px){
+  #intake-modal-footer,#animal-edit-footer{
+    padding-bottom:max(14px,env(safe-area-inset-bottom,14px))!important;
+  }
+}
 </style>
 <script type="application/ld+json">
 {
@@ -888,18 +894,32 @@ textarea{min-height:64px}
       <div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--warm-dk)">New Animal Intake</div>
       <button onclick="closeIntakeModal()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--warm-mid)">✕</button>
     </div>
-    <div id="intake-modal-body" style="flex:1;overflow-y:auto;padding:16px 20px 32px;-webkit-overflow-scrolling:touch"></div>
+    <div id="intake-modal-body" style="flex:1;overflow-y:auto;padding:16px 20px;-webkit-overflow-scrolling:touch;min-height:0"></div>
+    <!-- Static footer: always visible, never scrolls -->
+    <div id="intake-modal-footer" style="display:none;flex-shrink:0;padding:10px 20px;border-top:1px solid var(--cream-3);background:var(--cream)">
+      <div style="display:flex;gap:8px">
+        <button class="sh-btn primary" id="intake-submit-btn" style="flex:1;padding:12px;font-size:.9rem" onclick="submitIntakeFromModal()">✓ Log Intake</button>
+        <button class="sh-btn" style="padding:12px" onclick="closeIntakeModal()">Cancel</button>
+      </div>
+    </div>
   </div>
 </div>
 
 <!-- Animal edit modal -->
 <div id="animal-edit-overlay" style="display:none;position:fixed;inset:0;z-index:920;background:rgba(42,31,18,.55);align-items:flex-end;justify-content:center">
-  <div style="background:var(--cream);border-radius:18px 18px 0 0;width:100%;max-width:600px;max-height:94vh;display:flex;flex-direction:column;overflow:hidden" onclick="event.stopPropagation()">
+  <div id="animal-edit-inner" style="background:var(--cream);border-radius:18px 18px 0 0;width:100%;max-width:600px;max-height:94vh;display:flex;flex-direction:column;overflow:hidden" onclick="event.stopPropagation()">
     <div style="padding:14px 20px 10px;border-bottom:1px solid var(--cream-3);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
       <div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--warm-dk)" id="animal-edit-title">Edit Animal Record</div>
       <button onclick="closeAnimalEdit()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--warm-mid)">✕</button>
     </div>
-    <div id="animal-edit-body" style="flex:1;overflow-y:auto;padding:16px 20px 32px;-webkit-overflow-scrolling:touch;padding-bottom:max(32px,env(safe-area-inset-bottom,32px))"></div>
+    <div id="animal-edit-body" style="flex:1;overflow-y:auto;padding:16px 20px;-webkit-overflow-scrolling:touch;min-height:0"></div>
+    <!-- Static footer: always visible, never scrolls -->
+    <div id="animal-edit-footer" style="display:none;flex-shrink:0;padding:10px 20px;border-top:1px solid var(--cream-3);background:var(--cream)">
+      <div style="display:flex;gap:8px">
+        <button class="sh-btn primary" id="ae-save-btn" style="flex:1;padding:12px;font-size:.9rem" onclick="saveAnimalEdit(window._aeEditId)">✓ Save Changes</button>
+        <button class="sh-btn" style="padding:12px" onclick="closeAnimalEdit()">Cancel</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1945,6 +1965,9 @@ function openIntakeModal() {
   var body    = document.getElementById('intake-modal-body');
   if (!overlay || !body) return;
   overlay.style.display = 'flex';
+  /* Source picker: hide footer — only shown when form is built */
+  var imf = document.getElementById('intake-modal-footer');
+  if (imf) imf.style.display = 'none';
   /* Render source picker into modal */
   body.innerHTML =
     '<div style="font-size:.82rem;color:var(--warm-mid);margin-bottom:14px">Select the intake source — this determines what we collect.</div>'
@@ -1965,6 +1988,8 @@ function openIntakeModal() {
 function closeIntakeModal() {
   var overlay = document.getElementById('intake-modal-overlay');
   if (overlay) overlay.style.display = 'none';
+  var imf = document.getElementById('intake-modal-footer');
+  if (imf) imf.style.display = 'none';
 }
 
 function openIntakeForm(intakeSource) {
@@ -2035,12 +2060,11 @@ function openIntakeForm(intakeSource) {
         + '<textarea id="si-surrender-reason" placeholder="Moving, allergies, behavioral, financial…" style="min-height:48px"></textarea></div>'
         + '</div>'
       : '')
+;
 
-    + '<div style="display:flex;gap:8px;margin-top:16px">'
-    + '<button class="sh-btn primary" style="flex:1" onclick="submitIntakeFromModal()">✓ Log Intake</button>'
-    + '<button class="sh-btn" onclick="closeIntakeModal()">Cancel</button>'
-    + '</div>';
-
+  /* Show the static footer with submit buttons */
+  var imf = document.getElementById('intake-modal-footer');
+  if (imf) imf.style.display = 'block';
   setTimeout(function(){ injectMicButtons(body); setTimeout(checkFoundPinMatch, 150); setupKeyboardScroll(body); }, 50);
 }
 
@@ -2508,11 +2532,12 @@ function openAnimalEdit(id) {
           + '<div class="fg"><label>Public Profile / About</label><textarea id="ae-about" style="min-height:60px">' + esc(r.about||'') + '</textarea></div>');
       })()
 
-    /* ── Save ── */
-    + '<div style="display:flex;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid var(--cream-3)">'
-    + '<button onclick="saveAnimalEdit(' + r.id + ')" class="sh-btn primary" style="flex:1;padding:12px;font-size:.9rem">✓ Save Changes</button>'
-    + '<button onclick="closeAnimalEdit()" class="sh-btn" style="padding:12px">Cancel</button>'
-    + '</div>';
+    /* ── Save (buttons in static footer, set id) ── */
+    + '';
+  /* Store id for footer button and show footer */
+  window._aeEditId = r.id;
+  var aeFooter = document.getElementById('animal-edit-footer');
+  if (aeFooter) aeFooter.style.display = 'block';
 
   renderInquiries(r, body);
   setTimeout(function(){ injectMicButtons(body); }, 50);
@@ -2707,6 +2732,9 @@ function saveAnimalEdit(id) {
 function closeAnimalEdit() {
   var overlay = document.getElementById('animal-edit-overlay');
   if (overlay) overlay.style.display = 'none';
+  var aef = document.getElementById('animal-edit-footer');
+  if (aef) aef.style.display = 'none';
+  window._aeEditId = null;
 }
 
 /* ── REPORTS WORKSPACE ───────────────────────────────────────────────── */
@@ -9142,4 +9170,4 @@ function maybeShowTutorial() {
   </div>
 </div>
 </body>
-</html>
+</html>s
