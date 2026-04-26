@@ -1100,7 +1100,7 @@ textarea{min-height:64px}
       <button id="drop-cancel" onclick="cancelPlace(); document.getElementById('side-panel').classList.add('open');" style="padding:8px 14px;min-height:44px;font-size:.85rem;font-weight:700;border:none;border-radius:8px;background:rgba(255,255,255,.2);color:#fff;cursor:pointer">✕ Back</button>
     </div>
     <!-- Shown after pin placed on mobile — big tap target to return to form -->
-    <div id="pin-set-btn" style="display:none;position:absolute;bottom:80px;left:50%;transform:translateX(-50%);z-index:900;background:var(--forest);color:var(--cream);border:none;border-radius:999px;padding:14px 28px;font-size:.9rem;font-weight:700;font-family:var(--font-display);box-shadow:0 4px 20px rgba(0,0,0,.35);cursor:pointer;white-space:nowrap;animation:hpulse 1.4s ease-in-out infinite" onclick="document.getElementById('pin-set-btn').style.display='none'; document.getElementById('side-panel').classList.add('open'); setTimeout(function(){map.invalidateSize();},340);">
+    <div id="pin-set-btn" style="display:none;position:absolute;bottom:80px;left:50%;transform:translateX(-50%);z-index:900;background:var(--forest);color:var(--cream);border:none;border-radius:999px;padding:14px 28px;font-size:.9rem;font-weight:700;font-family:var(--font-display);box-shadow:0 4px 20px rgba(0,0,0,.35);cursor:pointer;white-space:nowrap;animation:hpulse 1.4s ease-in-out infinite" onclick="document.getElementById('pin-set-btn').style.display='none'; var _s=document.getElementById('orientation-strip'); if(_s) _s.style.display='none'; document.getElementById('side-panel').classList.add('open'); setTimeout(function(){map.invalidateSize();},300);">
       ✅ Pin placed — tap to continue →
     </div>
 
@@ -2301,15 +2301,14 @@ function submitIntakeFromModal() {
   }
   /* Close modal FIRST so phone UI doesn't freeze while rendering */
   closeIntakeModal();
-  /* Defer heavy rendering so modal close animation plays immediately */
+  /* Stagger heavy renders: markers first (fast), then incare grid (heavy) */
+  setTimeout(function() { renderMarkers(); updateNavCounts(); }, 80);
   setTimeout(function() {
-    renderMarkers();
     renderIncareView();
-    updateNavCounts();
     pushBannerEvent((isHold?'⚠️ Animal on hold logged at ':'🐾 New animal received at ') + activeShelter, isHold?'#d4843a':'var(--found-g)');
     if (!isHold) setTimeout(function(){ autoMatchOnIntake(r); }, 800);
     setTimeout(function(){ checkFoundPinsOnIntake(r); }, 1200);
-  }, 100);
+  }, 300);
 }
 
 /* ── ANIMAL EDIT MODAL ───────────────────────────────────────────────── */
@@ -3600,16 +3599,27 @@ function emailActiveReport() {
   var body = document.getElementById('rpt-report-body');
   if (!body) return;
   var rt = REPORT_TYPES.find(function(r){ return r.id===_activeReportId; }) || {label:'Report'};
-  var subject = rt.label + ' — ' + activeShelter + ' — ' + new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
-  /* Strip HTML tags to plain text for email body */
-  var tmp = document.createElement('div');
-  tmp.innerHTML = body.innerHTML;
-  /* Convert table cells to tab-separated, rows to newlines */
-  tmp.querySelectorAll('th,td').forEach(function(el){ el.textContent = el.textContent + '\t'; });
-  tmp.querySelectorAll('tr').forEach(function(el){ el.textContent = el.textContent.trim() + '\n'; });
-  var plainText = tmp.textContent.replace(/\t\n/g,'\n').replace(/\t+/g,'\t').trim();
-  var mailtoUrl = 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(plainText.slice(0, 2000) + (plainText.length > 2000 ? '\n\n[Report truncated — open Word export for full version]' : ''));
-  window.open(mailtoUrl);
+  var title = rt.label + ' — ' + activeShelter;
+  var date = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  var subject = title + ' — ' + date;
+  var filename = (rt.label||'Report').replace(/[^a-z0-9]/gi,'_') + '_' + new Date().toISOString().slice(0,10);
+
+  /* Step 1: Download Word doc so user has the file to attach */
+  var html = '<!DOCTYPE html>\n<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">\n<head><meta charset="UTF-8">\n<title>' + title + '</title>\n<style>\nbody{font-family:Calibri,sans-serif;font-size:11pt;margin:1in;color:#222}\nh1{font-size:16pt;color:#2d4a35}\nh3{font-size:12pt;color:#2d4a35;margin-top:16pt}\ntable{border-collapse:collapse;width:100%;margin-bottom:12pt}\nth{background:#2d4a35;color:#fff;padding:6pt 8pt;font-size:10pt;text-align:left}\ntd{padding:5pt 8pt;font-size:10pt;border-bottom:1pt solid #e0d8cc}\n</style></head>\n<body>\n<h1>' + title + '</h1>\n<p style="color:#888;font-size:9pt">Generated ' + date + '</p>\n' + body.innerHTML + '\n</body></html>';
+  var blob = new Blob([html], {type:'application/msword'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = filename + '.doc';
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); }, 1000);
+
+  /* Step 2: Open email client — user attaches the downloaded file */
+  setTimeout(function(){
+    var emailBody = 'Please find the ' + rt.label + ' report attached.\n\n'
+      + 'Shelter: ' + activeShelter + '\nDate: ' + date + '\n\n'
+      + '(Attach the ' + filename + '.doc file that was just downloaded to your device.)';
+    window.location.href = 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(emailBody);
+  }, 800);
 }
 
 function exportReportWord() {
@@ -4106,7 +4116,7 @@ function openCard(r, cp) {
     /* bottomMargin accounts for SEO footer (16px) + safe gap */
     var _seo = document.getElementById('seo-footer');
     var _seoH = (_seo && _seo.style.display !== 'none') ? (_seo.offsetHeight || 16) : 0;
-    var bottomMargin = M + 30 + _seoH;
+    var bottomMargin = M + 60 + _seoH;  /* 60px breathing room above SEO bar */
     /* Cap card height so it never overflows available space */
     var maxAvail = mh - M - bottomMargin;
     if (ch > maxAvail) {
@@ -4886,6 +4896,12 @@ function cancelPlace() {
   document.getElementById('drop-hint').classList.remove('on');
   if (tmpMarker) { map.removeLayer(tmpMarker); tmpMarker = null; }
 }
+function exitPlacingMode() {
+  /* Like cancelPlace but KEEPS the tmpMarker on map so user can see the dropped pin */
+  placing = null;
+  map.getContainer().classList.remove('placing');
+  document.getElementById('drop-hint').classList.remove('on');
+}
 
 map.on('click', function(e) {
   if (!placing) {
@@ -4945,7 +4961,7 @@ map.on('click', function(e) {
   });
   var resetBtn = document.getElementById(pre+'-resetbtn');
   if (resetBtn) resetBtn.style.display = 'block'; /* guard — may have been replaced */
-  cancelPlace();
+  exitPlacingMode();  /* keeps tmpMarker visible so user sees the pin they just dropped */
   /* Show a floating button so user can return to form — more reliable than auto-open on mobile */
   var pinBtn = document.getElementById('pin-set-btn');
   if (window.innerWidth > 600) {
