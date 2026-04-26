@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>PawPulse — Lost &amp; Found Pet Map | Hastings, Nebraska</title>
 <meta name="description" content="Live lost and found pet map for Hastings, Nebraska and Adams County. Report a lost pet, help reunite animals, and see pets in care at Heartland Pet Connection.">
 <meta name="theme-color" content="#2d4a35">
@@ -77,7 +77,7 @@ body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);h
 .nav-logo-wrap{display:flex;flex-direction:column}
 .nav-logo-sub{font-family:var(--font-body);font-size:.56rem;font-weight:600;color:var(--moss);letter-spacing:.09em;text-transform:uppercase}
 .nav-spacer{flex-shrink:0;width:4px}
-.nav-report-btn{font-family:var(--font-body);font-size:.72rem;font-weight:700;padding:6px 10px;border-radius:6px;border:none;cursor:pointer;transition:all .15s;flex-shrink:0;background:var(--amber);color:#fff;letter-spacing:.01em;white-space:nowrap}
+.nav-report-btn{font-family:var(--font-body);font-size:.72rem;font-weight:700;padding:6px 10px;border-radius:6px;border:none;cursor:pointer;transition:all .15s;flex-shrink:0;background:var(--amber);color:#fff;letter-spacing:.01em;white-space:nowrap;touch-action:manipulation}
 .nav-report-btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
 #nav-tabs{display:flex;gap:2px;flex:1;min-width:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 #nav-tabs::-webkit-scrollbar{display:none}
@@ -102,7 +102,7 @@ body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);h
 /* Floating filter pills on map — horizontal row at bottom center */
 #map-filters{position:absolute;bottom:54px;left:50%;transform:translateX(-50%);z-index:600;display:flex;flex-direction:row;gap:6px;pointer-events:none;white-space:nowrap}
 #map-filters .filter-btn{pointer-events:auto}
-.filter-btn{font-family:var(--font-body);font-size:.72rem;font-weight:600;padding:6px 13px;border-radius:999px;cursor:pointer;transition:all .15s;border:1.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.88);backdrop-filter:blur(8px);color:var(--warm-mid);box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.filter-btn{font-family:var(--font-body);font-size:.72rem;font-weight:600;padding:6px 13px;border-radius:999px;cursor:pointer;transition:all .15s;border:1.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.88);backdrop-filter:blur(8px);color:var(--warm-mid);box-shadow:0 2px 8px rgba(0,0,0,.12);touch-action:manipulation}
 .filter-btn.active.all{background:var(--amber);color:#fff;border-color:var(--amber)}
 .filter-btn.active.lost{background:var(--lost-r);color:#fff;border-color:var(--lost-r)}
 .filter-btn.active.found{background:var(--found-g);color:#fff;border-color:var(--found-g)}
@@ -177,7 +177,7 @@ textarea{min-height:64px}
 .chk-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;cursor:pointer}
 .chk-row input{width:16px;height:16px;accent-color:var(--found-g);flex-shrink:0}
 .chk-row label{font-size:.82rem;font-weight:500;color:var(--warm-dk);text-transform:none;letter-spacing:0;margin:0;cursor:pointer}
-.submit-btn{width:100%;padding:12px;font-family:var(--font-display);font-size:.98rem;font-weight:600;border:none;border-radius:10px;cursor:pointer;transition:all .2s;margin-top:6px}@media(max-width:640px){
+.submit-btn{width:100%;padding:12px;font-family:var(--font-display);font-size:.98rem;font-weight:600;border:none;border-radius:10px;cursor:pointer;transition:all .2s;margin-top:6px;touch-action:manipulation;-webkit-tap-highlight-color:rgba(0,0,0,.08)}@media(max-width:640px){
   .submit-btn { position:sticky; bottom:0; left:0; right:0; margin-top:8px; z-index:10; box-shadow:0 -4px 12px rgba(0,0,0,.1); }
 }
 .submit-btn.lost{background:var(--lost-r);color:#fff}
@@ -204,7 +204,7 @@ textarea{min-height:64px}
 #pin-card.open{display:flex;flex-direction:column;animation:cpop .2s cubic-bezier(.34,1.56,.64,1)}
 #pin-card.fading{opacity:0;transform:translateY(-10px) scale(.97);pointer-events:none}
 @keyframes cpop{from{opacity:0;transform:scale(.9) translateY(6px)}to{opacity:1;transform:scale(1) translateY(0)}}
-.pc-close{position:absolute;top:6px;right:6px;background:rgba(42,31,18,.55);color:#fff;border:none;cursor:pointer;width:44px;height:44px;border-radius:50%;font-size:.95rem;line-height:44px;text-align:center;z-index:1;display:flex;align-items:center;justify-content:center}
+.pc-close{position:absolute;top:6px;right:6px;background:rgba(42,31,18,.55);color:#fff;border:none;cursor:pointer;width:44px;height:44px;border-radius:50%;font-size:.95rem;line-height:44px;text-align:center;z-index:1;display:flex;align-items:center;justify-content:center;touch-action:manipulation}
 .pc-img{width:100%;height:190px;object-fit:contain;object-position:center center;display:block;background:var(--cream-2)}
 .pc-no-img{width:100%;height:62px;display:flex;align-items:center;justify-content:center;font-size:2rem}
 .pc-body{padding:11px 13px 13px}
@@ -221,7 +221,7 @@ textarea{min-height:64px}
 #toast.show{transform:translateX(-50%) translateY(0)}
 #map.placing{cursor:crosshair !important}
 .pc-badge.reunited{background:#ede9e0;color:#8a7a66}
-.reunite-btn{width:100%;margin-top:10px;padding:9px;font-family:var(--font-display);font-size:.88rem;font-weight:600;border:1.5px solid var(--cream-3);border-radius:8px;cursor:pointer;background:var(--cream-2);color:var(--warm-mid);transition:all .18s;display:flex;align-items:center;justify-content:center;gap:6px}
+.reunite-btn{width:100%;margin-top:10px;padding:9px;font-family:var(--font-display);font-size:.88rem;font-weight:600;border:1.5px solid var(--cream-3);border-radius:8px;cursor:pointer;background:var(--cream-2);color:var(--warm-mid);transition:all .18s;display:flex;align-items:center;justify-content:center;gap:6px;touch-action:manipulation;min-height:44px}
 .reunite-btn:hover{background:#e8f4e9;border-color:var(--found-g);color:var(--found-g)}
 .reunite-btn.done{background:#e8f4e9;border-color:var(--found-g);color:var(--found-g);cursor:default;pointer-events:none}
 /* Match / comment styles */
@@ -290,7 +290,7 @@ textarea{min-height:64px}
 .sh-qi-badge.adopt{background:#e0eaff;color:#3060c0}
 /* Adoption card section */
 .pc-adopt{background:linear-gradient(135deg,#e8f0ff,#dce8ff);border:1.5px solid #a0c0f0;border-radius:8px;padding:8px 11px;margin-top:8px;font-size:.78rem;color:#2050a0;font-weight:600;display:flex;align-items:center;gap:6px}
-.adopt-btn{width:100%;margin-top:8px;padding:9px;font-family:var(--font-display);font-size:.88rem;font-weight:600;background:#2050a0;color:#fff;border:none;border-radius:8px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px}
+.adopt-btn{width:100%;margin-top:8px;padding:9px;font-family:var(--font-display);font-size:.88rem;font-weight:600;background:#2050a0;color:#fff;border:none;border-radius:8px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px;touch-action:manipulation;min-height:44px}
 .adopt-btn:hover{filter:brightness(1.1)}
 .sh-qi-time{font-size:.68rem;color:var(--warm-mid)}
 .sh-qi-name{font-family:var(--font-display);font-size:.9rem;font-weight:600;color:var(--warm-dk);margin-bottom:1px}
@@ -417,7 +417,7 @@ textarea{min-height:64px}
 #rpt-search:focus{border-color:var(--amber)}
 #rpt-search::placeholder{color:var(--warm-mid)}
 .rpt-chips{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
-.rpt-chip{font-family:var(--font-body);font-size:.72rem;font-weight:600;padding:10px 14px;min-height:44px;border-radius:999px;border:none;background:transparent;color:var(--warm-mid);cursor:pointer;transition:all .12s}
+.rpt-chip{font-family:var(--font-body);font-size:.72rem;font-weight:600;padding:10px 14px;min-height:44px;border-radius:999px;border:none;background:transparent;color:var(--warm-mid);cursor:pointer;transition:all .12s;touch-action:manipulation}
 .rpt-chip:hover{background:var(--cream-2);color:var(--warm-dk)}
 .rpt-chip.active{background:var(--forest);color:#fff;box-shadow:0 1px 4px rgba(42,74,42,.25)}
 .rpt-chip.active.lost{background:var(--lost-r)}
@@ -505,7 +505,7 @@ textarea{min-height:64px}
 #adopt-form-inner{background:var(--cream);border-radius:18px 18px 0 0;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;padding:20px 22px 32px;animation:slide-up .28s cubic-bezier(.34,1.56,.64,1)}
 @keyframes slide-up{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}
 /* Adoption inquiry form */
-#adopt-inquiry-panel{position:fixed;inset:var(--nav-h) 0 0 0;z-index:4100;background:rgba(42,31,18,.55);display:none;align-items:flex-end;justify-content:center}
+#adopt-inquiry-panel{position:fixed;inset:0;z-index:4100;background:rgba(42,31,18,.55);display:none;align-items:flex-end;justify-content:center}
 #adopt-inquiry-panel.open{display:flex}
 #adopt-inquiry-inner{background:var(--cream);border-radius:18px 18px 0 0;width:100%;max-width:520px;max-height:85vh;overflow-y:auto;padding:22px 22px 32px;animation:slide-up .28s cubic-bezier(.34,1.56,.64,1)}
 
@@ -639,6 +639,36 @@ textarea{min-height:64px}
   }
   /* In Care: search bar full width on mobile */
   #incare-search{font-size:16px}
+}
+
+/* ── SAFE AREA (iPhone home indicator) ─────────────────────────────── */
+@media(max-width:640px){
+  /* Submit buttons: raise above home indicator */
+  .submit-btn{
+    bottom:env(safe-area-inset-bottom,0px)!important;
+    padding-bottom:max(12px,calc(8px + env(safe-area-inset-bottom,0px)))!important;
+    margin-bottom:0!important;
+  }
+  /* Side panel: pad so sticky button clears home indicator */
+  #side-panel{
+    padding-bottom:env(safe-area-inset-bottom,0px)!important;
+  }
+  /* Inquiry inner panel: pad bottom */
+  #adopt-inquiry-inner{
+    padding-bottom:max(32px,calc(16px + env(safe-area-inset-bottom,0px)))!important;
+  }
+  /* Intake modal: same */
+  #intake-modal-inner{
+    padding-bottom:max(32px,calc(16px + env(safe-area-inset-bottom,0px)))!important;
+  }
+  /* Animal edit modal */
+  #animal-edit-body{
+    padding-bottom:max(48px,calc(32px + env(safe-area-inset-bottom,0px)))!important;
+  }
+  /* Toast: keep above home indicator */
+  #toast{bottom:calc(26px + env(safe-area-inset-bottom,0px))!important}
+  /* FAB: clear home indicator */
+  #intake-fab{bottom:calc(40px + env(safe-area-inset-bottom,0px))!important}
 }
 </style>
 <script type="application/ld+json">
@@ -3733,7 +3763,7 @@ function cardHTML(r) {
     if (r.color)   rows += '<div class="pc-row"><strong>Color:</strong> '      + esc(r.color)   + '</div>';
     /* Only show description for non-hold animals */
     if (publicDesc && r.intakeType !== 'hold') rows += '<div class="pc-row" style="margin-top:4px">' + esc(publicDesc) + '</div>';
-    if (r.address && r.intakeType !== 'hold') rows += '<div class="pc-row"><strong>Found near:</strong> ' + esc(r.address) + '</div>';
+    if (r.address && r.intakeType !== 'hold' && !r.shelter && !r.atShelter) rows += '<div class="pc-row"><strong>Found near:</strong> ' + esc(r.address) + '</div>';
     if (r.shelter || r.atShelter) {
       rows += '<div class="pc-row"><strong>🏠 ' + (r.shelter ? 'In care at:' : r.atShelter ? 'Heading to shelter:' : 'Reported by:') + '</strong> ' + esc(r.shelterName||'Heartland Pet Connection') + '</div>';
       if (r.atShelter && !r.shelter) rows += '<div class="pc-row" style="font-size:.72rem;color:var(--amber)">\u26a0\ufe0f Finder says they are bringing this pet in \u2014 not yet confirmed</div>';
@@ -5280,12 +5310,11 @@ function submitLost() {
 
 function submitFound() {
   /* Location is helpful but not required — allow submission without pin */
+  /* Location is helpful but not required for found reports
+     — warn but don't block; staff can still see the report */
   if (!pLat.found) {
-    showFormError('found', 'Please tap the map to set where you found the animal. Tap "Set Location" above.');
-    /* Highlight the location button */
-    var locBtn = document.getElementById('f-loc-btn') || document.querySelector('[onclick*="startPlace"]');
-    if (locBtn) { locBtn.style.borderColor = 'var(--found-g)'; locBtn.style.background = '#f0fff4'; setTimeout(function(){ if(locBtn){ locBtn.style.borderColor=''; locBtn.style.background=''; } }, 3000); }
-    return;
+    showFormError('found', 'Tip: Tap the map first to set a location — but you can still submit without one.');
+    /* Don't return — allow submission without location */
   }
   /* Required fields */
   var _fspecies = (document.getElementById('f-species')||{}).value||'';
@@ -8013,16 +8042,29 @@ async function updateAdoptProfile(id) {
 
   var prompt = (function(){
     var angles = [
-      'Lead with their personality — what makes them one-of-a-kind.',
-      'Lead with how long they have been waiting and what they dream of.',
-      'Lead with a specific quirky habit or endearing trait.',
-      'Lead with the kind of home they are looking for.',
-      'Lead with what they love doing most.',
-      'Lead with their journey — how they got to the shelter and who they are now.',
-      'Lead with a funny or heartwarming moment a shelter worker might have noticed.',
+      'Open with a single vivid sensory detail — what does interacting with this animal feel like?',
+      'Open with an unexpected contrast — something surprising about them given their appearance.',
+      'Open with what they do the moment a person walks in — their signature greeting behavior.',
+      'Open with their relationship to other animals in the shelter — curious? indifferent? social?',
+      'Open with what time of day they come alive and what they do then.',
+      'Open with a small funny or endearing thing they do that is uniquely theirs.',
+      'Open with their energy level and how it plays out in daily shelter life.',
+      'Open with the specific kind of human they seem to be searching for.',
+      'Open with a moment of connection — the first thing they do when they trust someone.',
+      'Open with where they prefer to be in a room and why that reveals their personality.',
+      'Open with their backstory and how they have changed since arriving.',
+      'Open with a comparison to something unexpected — not to another animal, to a feeling or mood.',
+      'Open with what they need most right now and why giving it would be rewarding.',
+      'Open with their most misunderstood quality and what it actually means.',
     ];
     var angle = angles[Math.floor(Math.random() * angles.length)];
-    return 'Write a short adoption bio for an animal at Heartland Pet Connection in Hastings, Nebraska. ' + angle;
+    var species = (r.species || '').toLowerCase();
+    var speciesNote = species === 'cat'
+      ? ' This is a cat — absolutely never use: "independent spirit", "on their own terms", "curious nature", "love attention", "will thrive", "purr-fect", "feline", "fur baby", "cuddle", "lap cat", "gentle soul", "loving companion". Cats are individuals — describe THIS one specifically.'
+      : species === 'dog'
+      ? ' This is a dog — never use: "loyal companion", "best friend", "loves to play", "great with kids" (unless specifically true and you say why), "full of energy", "fur baby", "forever home", "gentle giant", "playful pup". Be specific to this dog.'
+      : '';
+    return 'Write a short adoption bio for an animal at Heartland Pet Connection in Hastings, Nebraska. ' + angle + speciesNote;
   })()
     + '\n\nAnimal: ' + name
     + '\nSpecies: ' + (r.species || 'animal')
@@ -9042,7 +9084,7 @@ function maybeShowTutorial() {
     <div class="fg"><label>Message (optional)</label><textarea id="inq-msg" placeholder="Tell them about yourself, your home, other pets…" style="min-height:72px"></textarea></div>
     <div id="inq-success" style="display:none;background:#e8f4e9;border:1px solid var(--found-g);border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:.84rem;color:#2d6a35;font-weight:600">✓ Interest sent! The shelter will be in touch soon.</div>
     <div style="display:flex;gap:8px" id="inq-btns">
-      <button class="adopt-ask-btn" style="flex:1;padding:11px;font-size:.9rem" onclick="submitInquiry()">📬 Send Interest</button>
+      <button class="adopt-ask-btn" style="flex:1;padding:12px 11px;font-size:.9rem;min-height:48px;-webkit-tap-highlight-color:rgba(0,0,0,.1);touch-action:manipulation" onclick="submitInquiry()">📬 Send Interest</button>
       <button class="sh-btn" onclick="closeInquiryPanel(null)" style="padding:11px 16px">Cancel</button>
     </div>
   </div>
