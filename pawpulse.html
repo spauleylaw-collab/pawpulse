@@ -179,7 +179,9 @@ textarea{min-height:64px}
 .chk-row input{width:16px;height:16px;accent-color:var(--found-g);flex-shrink:0}
 .chk-row label{font-size:.82rem;font-weight:500;color:var(--warm-dk);text-transform:none;letter-spacing:0;margin:0;cursor:pointer}
 .submit-btn{width:100%;padding:12px;font-family:var(--font-display);font-size:.98rem;font-weight:600;border:none;border-radius:10px;cursor:pointer;transition:all .2s;margin-top:6px;touch-action:manipulation;-webkit-tap-highlight-color:rgba(0,0,0,.08)}@media(max-width:640px){
-  #panel-footer{padding-bottom:max(18px,calc(env(safe-area-inset-bottom,0px) + 18px))!important;padding-top:10px!important}
+  /* Ensure panel-body is scroll container, footer never scrolls away */
+  .panel-body{overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;flex:1!important;min-height:0!important}
+  #panel-footer{flex-shrink:0!important;padding-bottom:max(14px,env(safe-area-inset-bottom,14px))!important;padding-top:10px!important}
 }
 .submit-btn.lost{background:var(--lost-r);color:#fff}
 .submit-btn.found{background:var(--found-g);color:#fff}
@@ -457,7 +459,7 @@ textarea{min-height:64px}
 #rpt-detail-panel{flex:1;min-height:0;overflow-y:auto;padding:22px;background:var(--cream);display:none}
 #rpt-detail-panel::-webkit-scrollbar{width:3px}
 #rpt-detail-panel::-webkit-scrollbar-thumb{background:var(--cream-3);border-radius:99px}
-@media(max-width:640px){#side-panel{position:fixed!important;bottom:0!important;top:auto!important;right:0!important;left:0!important;width:100%!important;max-width:100%!important;height:auto!important;max-height:78vh!important;border-radius:18px 18px 0 0!important;transform:translateY(100%);transition:transform .3s cubic-bezier(.34,1.2,.64,1)!important;overflow-y:auto;-webkit-overflow-scrolling:touch}#side-panel.open{transform:translateY(0)!important}}@media(max-width:640px){#pin-card{position:fixed!important;bottom:18px!important;left:0!important;right:0!important;top:auto!important;width:100%!important;max-width:100%!important;max-height:72vh!important;border-radius:18px 18px 0 0!important;z-index:1800!important}#pin-card .pc-img{height:220px!important}#pin-card-body{overflow-y:auto;-webkit-overflow-scrolling:touch;max-height:calc(72vh - 60px)}#rpt-left{width:100%;flex:1;min-height:0}#rpt-row{flex-direction:column}#rpt-right{display:none}#rpt-right.show{display:flex;flex-direction:column;position:fixed;inset:var(--nav-h) 0 0 0;z-index:900;background:var(--cream);overflow:hidden}.mobile-back-btn{display:block!important}.desktop-close-btn{display:none!important}}
+@media(max-width:640px){#side-panel{position:fixed!important;bottom:16px!important;top:auto!important;right:0!important;left:0!important;width:100%!important;max-width:100%!important;height:auto!important;max-height:80vh!important;border-radius:18px 18px 0 0!important;transform:translateY(calc(100% + 16px))!important;transition:transform .3s cubic-bezier(.34,1.2,.64,1)!important;overflow:hidden!important;display:flex!important;flex-direction:column!important}#side-panel.open{transform:translateY(0)!important}}@media(max-width:640px){#pin-card{position:fixed!important;bottom:18px!important;left:0!important;right:0!important;top:auto!important;width:100%!important;max-width:100%!important;max-height:72vh!important;border-radius:18px 18px 0 0!important;z-index:1800!important}#pin-card .pc-img{height:220px!important}#pin-card-body{overflow-y:auto;-webkit-overflow-scrolling:touch;max-height:calc(72vh - 60px)}#rpt-left{width:100%;flex:1;min-height:0}#rpt-row{flex-direction:column}#rpt-right{display:none}#rpt-right.show{display:flex;flex-direction:column;position:fixed;inset:var(--nav-h) 0 0 0;z-index:900;background:var(--cream);overflow:hidden}.mobile-back-btn{display:block!important}.desktop-close-btn{display:none!important}}
 /* Adopt view */
 #view-adopt{background:var(--cream-2);flex-direction:column;overflow:hidden;max-width:100vw;box-sizing:border-box}
 #adopt-hdr{background:var(--cream);border-bottom:1px solid var(--cream-3);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
@@ -1249,7 +1251,7 @@ var curFilter = 'all';
 var placing   = null;
 var pLat = {}, pLng = {};
 var _submissionCount = 0;  /* resets on page reload */
-var SUBMIT_COOLDOWN_MS = 30 * 60 * 1000;  /* 30 min between submissions */
+var SUBMIT_COOLDOWN_MS = 3 * 60 * 1000;  /* 3 min between submissions */
 var SUBMIT_SESSION_MAX = 3;  /* max per session */
 var tmpMarker = null;
 var _fbReady  = false; /* true once Firestore listener is live */
@@ -2074,7 +2076,7 @@ function openIntakeForm(intakeSource) {
 
   /* Show the static footer with submit buttons */
   var imf = document.getElementById('intake-modal-footer');
-  if (imf) { imf.style.display = 'block'; imf.style.removeProperty('display'); imf.style.display = 'block'; }
+  if (imf) imf.style.display = 'block';
   /* Reset intake submit button text in case it was changed */
   var isb = document.getElementById('intake-submit-btn');
   if (isb) { isb.textContent = '✓ Log Intake'; isb.disabled = false; }
@@ -2190,26 +2192,33 @@ function resolveFoundPinFromIntake(foundId) {
 }
 
 
+function getIntakeEl(id) {
+  /* Reads from intake modal body — prevents collision with toggleIntakeForm si-* IDs */
+  var body = document.getElementById('intake-modal-body');
+  if (body) { var el = body.querySelector('#' + id); if (el) return el; }
+  return document.getElementById(id);
+}
+
 function submitIntakeFromModal() {
   /* Provide immediate feedback — disable button to prevent double-tap */
   var isb = document.getElementById('intake-submit-btn');
   if (isb) { isb.disabled = true; isb.textContent = 'Saving…'; }
   /* Reads from modal form and submits */
-  var typeEl      = document.getElementById('si-intake-type');
-  var sourceEl    = document.getElementById('si-intake-source');
+  var typeEl      = getIntakeEl('si-intake-type');
+  var sourceEl    = getIntakeEl('si-intake-source');
   var intakeType  = typeEl   ? typeEl.value   : 'stray';
   var intakeSource= sourceEl ? sourceEl.value : 'citizen';
   var isHold      = intakeType === 'hold';
   var shelter     = shelters.find(function(s){ return s.name===activeShelter; });
 
-  var holdStart   = isHold ? (document.getElementById('si-holdstart')||{}).value : null;
-  var dailyRate   = isHold ? parseFloat((document.getElementById('si-dailyrate')||{}).value) || DAILY_RATE : null;
-  var officer     = isHold ? ((document.getElementById('si-officer')||{}).value||'').trim() : '';
-  var caseType    = isHold ? ((document.getElementById('si-casetype')||{}).value || 'standard') : '';
-  var animalId    = ((document.getElementById('si-animal-id')||{}).value||'').trim();
-  var ownerName   = intakeSource==='surrender' ? ((document.getElementById('si-owner-name')||{}).value||'').trim() : '';
-  var ownerPhone  = intakeSource==='surrender' ? ((document.getElementById('si-owner-phone')||{}).value||'').trim() : '';
-  var surReason   = intakeSource==='surrender' ? ((document.getElementById('si-surrender-reason')||{}).value||'').trim() : '';
+  var holdStart   = isHold ? (getIntakeEl('si-holdstart')||{}).value : null;
+  var dailyRate   = isHold ? parseFloat((getIntakeEl('si-dailyrate')||{}).value) || DAILY_RATE : null;
+  var officer     = isHold ? ((getIntakeEl('si-officer')||{}).value||'').trim() : '';
+  var caseType    = isHold ? ((getIntakeEl('si-casetype')||{}).value || 'standard') : '';
+  var animalId    = ((getIntakeEl('si-animal-id')||{}).value||'').trim();
+  var ownerName   = intakeSource==='surrender' ? ((getIntakeEl('si-owner-name')||{}).value||'').trim() : '';
+  var ownerPhone  = intakeSource==='surrender' ? ((getIntakeEl('si-owner-phone')||{}).value||'').trim() : '';
+  var surReason   = intakeSource==='surrender' ? ((getIntakeEl('si-surrender-reason')||{}).value||'').trim() : '';
   var srcLabels   = { ac:'Brought by Animal Control', surrender:'Owner Surrender', citizen:'Found by Citizen', other:'Transfer / Other Agency' };
   var srcLabel    = srcLabels[intakeSource] || 'Unknown';
   var holdType    = 'none';
@@ -2223,13 +2232,13 @@ function submitIntakeFromModal() {
     id: Date.now(), type: 'found', date: new Date().toISOString(),
     lat: shelter ? shelter.lat + (Math.random()-.5)*.005 : HASTINGS[0] + (Math.random()-.5)*.01,
     lng: shelter ? shelter.lng + (Math.random()-.5)*.005 : HASTINGS[1] + (Math.random()-.5)*.01,
-    name:        ((document.getElementById('si-name')||{}).value||'').trim(),
-    species:     (document.getElementById('si-species')||{}).value,
-    color:       ((document.getElementById('si-color')||{}).value||'').trim(),
-    breed:       getBreedValue('si-breed-wrap'),
-    sex:         (document.getElementById('si-sex')||{}).value,
-    desc:        ((document.getElementById('si-desc')||{}).value||'').trim(),
-    address:     ((document.getElementById('si-address')||{}).value||'').trim() || (shelter?shelter.address:''),
+    name:        ((getIntakeEl('si-name')||{}).value||'').trim(),
+    species:     (getIntakeEl('si-species')||{}).value,
+    color:       ((getIntakeEl('si-color')||{}).value||'').trim(),
+    breed:       getBreedValue('si-breed-wrap', document.getElementById('intake-modal-body')),
+    sex:         (getIntakeEl('si-sex')||{}).value,
+    desc:        ((getIntakeEl('si-desc')||{}).value||'').trim(),
+    address:     ((getIntakeEl('si-address')||{}).value||'').trim() || (shelter?shelter.address:''),
     finder:      activeShelter, fphone: shelter?shelter.phone:'',
     animalId:    animalId, intakeSource: intakeSource, intakeSourceLabel: srcLabel,
     owner:       ownerName||undefined, phone: ownerPhone||undefined,
@@ -2246,7 +2255,7 @@ function submitIntakeFromModal() {
     shelterLog:  [{ body: srcLabel + (officer?' — Officer: '+officer:'') + ' · Logged at ' + activeShelter, time: 'Just now' }],
     photo:       null
   };
-  var photoEl = document.getElementById('si-prev');
+  var photoEl = getIntakeEl('si-prev');
   if (photoEl && photoEl.src && photoEl.src.startsWith('data:')) r.photo = photoEl.src;
 
   /* If this intake was migrated from a public found report, close the original
@@ -4937,8 +4946,8 @@ function updateBreedField(speciesId, wrapId) {
   }
 }
 
-function getBreedValue(wrapId) {
-  var wrap = document.getElementById(wrapId);
+function getBreedValue(wrapId, scope) {
+  var wrap = scope ? scope.querySelector('#'+wrapId) : document.getElementById(wrapId);
   if (!wrap) return '';
   var sel = wrap.querySelector('select');
   var txt = wrap.querySelector('input.other-input') || wrap.querySelector('input');
@@ -5147,8 +5156,7 @@ function showFormError(type, msg) {
   }
   existing.textContent = '⚠️ ' + msg;
   existing.style.display = 'block';
-  existing.scrollIntoView({ behavior:'smooth', block:'center' });
-  setTimeout(function(){ if(existing) existing.style.display='none'; }, 4000);
+  setTimeout(function(){ if(existing) existing.style.display='none'; }, 6000);
 }
 
 function checkSpamGuard(type) {
@@ -5341,6 +5349,7 @@ function submitLost() {
       setTimeout(function(){ if(errSp) errSp.style.borderColor=''; }, 3000);
     }
     showFormError('lost', 'Please select the animal species.');
+    if (slb) slb.style.opacity = '';
     return;
   }
   /* Phone required */
@@ -5352,12 +5361,13 @@ function submitLost() {
       setTimeout(function(){ if(errPh) errPh.style.borderColor=''; }, 3000);
     }
     showFormError('lost', 'Please enter a phone number so finders can reach you.');
+    if (slb) slb.style.opacity = '';
     return;
   }
   /* Honeypot */
-  if ((document.getElementById('l-confirm-email')||{}).value) return;
+  if ((document.getElementById('l-confirm-email')||{}).value) { if (slb) slb.style.opacity = ''; return; }
   /* Rate limit */
-  if (!checkSpamGuard('lost')) return;
+  if (!checkSpamGuard('lost')) { if (slb) slb.style.opacity = ''; return; }
   var r = { id:Date.now(), type:'lost', date:new Date().toISOString(),
     lat:pLat.lost, lng:pLng.lost, shelter: false, reunited: false,
     name:v('l-name'), species:v('l-species'), breed:v('l-breed'), color:v('l-color'),
@@ -5382,6 +5392,9 @@ function submitLost() {
 }
 
 function submitFound() {
+  /* Immediate visual feedback */
+  var sfb = document.getElementById('panel-submit-found');
+  if (sfb) sfb.style.opacity = '.6';
   /* Location is helpful but not required — allow submission without pin */
   /* Location is helpful but not required for found reports
      — warn but don't block; staff can still see the report */
@@ -5396,12 +5409,13 @@ function submitFound() {
     var errFs = document.getElementById('f-species');
     if (errFs) { errFs.style.borderColor='var(--found-g)'; errFs.scrollIntoView({behavior:'smooth',block:'center'}); setTimeout(function(){ errFs.style.borderColor=''; },3000); }
     showFormError('found', 'Please select the animal species.');
+    if (sfb) sfb.style.opacity = '';
     return;
   }
   /* Honeypot */
-  if ((document.getElementById('f-confirm-email')||{}).value) return;
+  if ((document.getElementById('f-confirm-email')||{}).value) { if (sfb) sfb.style.opacity = ''; return; }
   /* Rate limit */
-  if (!checkSpamGuard('found')) return;
+  if (!checkSpamGuard('found')) { if (sfb) sfb.style.opacity = ''; return; }
   var atShelter = document.getElementById('f-shelter').checked;
   var r = { id:Date.now(), type:'found', date:new Date().toISOString(),
     lat:pLat.found, lng:pLng.found,
@@ -5425,6 +5439,7 @@ function submitFound() {
   closePanel(); resetForm('found');
   pLat.found = null; pLng.found = null;
   recordSubmission('found');
+  if (sfb) sfb.style.opacity = '';
   showToast('found');
 }
 
@@ -6408,23 +6423,30 @@ function cancelShelterPanel() {
   document.getElementById('sh-panel-title').textContent = 'Action Panel';
 }
 
+function getShelterIntakeEl(id) {
+  /* Reads from toggleIntakeForm panel — prevents collision with FAB modal si-* IDs */
+  var body = document.getElementById('sh-action-panel-body');
+  if (body) { var el = body.querySelector('#' + id); if (el) return el; }
+  return document.getElementById(id);
+}
+
 function submitIntake() {
   var shelter    = shelters.find(function(s){ return s.name===activeShelter; });
-  var photoEl    = document.getElementById('si-prev');
-  var typeEl      = document.getElementById('si-intake-type');
-  var sourceEl    = document.getElementById('si-intake-source');
+  var photoEl    = getShelterIntakeEl('si-prev');
+  var typeEl      = getShelterIntakeEl('si-intake-type');
+  var sourceEl    = getShelterIntakeEl('si-intake-source');
   var intakeType  = typeEl   ? typeEl.value   : 'stray';
   var intakeSource= sourceEl ? sourceEl.value : 'citizen';
   var isHold      = intakeType === 'hold';
 
-  var holdStart   = isHold ? (document.getElementById('si-holdstart')||{}).value : null;
-  var dailyRate   = isHold ? parseFloat((document.getElementById('si-dailyrate')||{}).value) || DAILY_RATE : null;
-  var officer     = isHold ? ((document.getElementById('si-officer')||{}).value||'').trim() : '';
-  var caseType    = isHold ? ((document.getElementById('si-casetype')||{}).value || 'standard') : '';
-  var animalId    = ((document.getElementById('si-animal-id')||{}).value||'').trim();
-  var ownerName   = intakeSource==='surrender' ? ((document.getElementById('si-owner-name')||{}).value||'').trim() : '';
-  var ownerPhone  = intakeSource==='surrender' ? ((document.getElementById('si-owner-phone')||{}).value||'').trim() : '';
-  var surReason   = intakeSource==='surrender' ? ((document.getElementById('si-surrender-reason')||{}).value||'').trim() : '';
+  var holdStart   = isHold ? (getShelterIntakeEl('si-holdstart')||{}).value : null;
+  var dailyRate   = isHold ? parseFloat((getShelterIntakeEl('si-dailyrate')||{}).value) || DAILY_RATE : null;
+  var officer     = isHold ? ((getShelterIntakeEl('si-officer')||{}).value||'').trim() : '';
+  var caseType    = isHold ? ((getShelterIntakeEl('si-casetype')||{}).value || 'standard') : '';
+  var animalId    = ((getShelterIntakeEl('si-animal-id')||{}).value||'').trim();
+  var ownerName   = intakeSource==='surrender' ? ((getShelterIntakeEl('si-owner-name')||{}).value||'').trim() : '';
+  var ownerPhone  = intakeSource==='surrender' ? ((getShelterIntakeEl('si-owner-phone')||{}).value||'').trim() : '';
+  var surReason   = intakeSource==='surrender' ? ((getShelterIntakeEl('si-surrender-reason')||{}).value||'').trim() : '';
   var srcLabels   = { ac:'Brought by Animal Control', surrender:'Owner Surrender', citizen:'Found by Citizen', other:'Transfer / Other Agency' };
   var srcLabel    = srcLabels[intakeSource] || 'Unknown';
   /* holdType is a legal/operational state independent of who brought the animal */
@@ -6439,12 +6461,12 @@ function submitIntake() {
     id: Date.now(), type: 'found', date: new Date().toISOString(),
     lat: shelter ? shelter.lat + (Math.random()-.5)*.005 : HASTINGS[0] + (Math.random()-.5)*.01,
     lng: shelter ? shelter.lng + (Math.random()-.5)*.005 : HASTINGS[1] + (Math.random()-.5)*.01,
-    species:     (document.getElementById('si-species')||{}).value,
-    color:       ((document.getElementById('si-color')||{}).value||'').trim(),
-    breed:       getBreedValue('si-breed-wrap'),
-    sex:         (document.getElementById('si-sex')||{}).value,
-    desc:        ((document.getElementById('si-desc')||{}).value||'').trim(),
-    address:     acLocation || ((document.getElementById('si-address')||{}).value||'').trim() || (shelter ? shelter.address : ''),
+    species:     (getShelterIntakeEl('si-species')||{}).value,
+    color:       ((getShelterIntakeEl('si-color')||{}).value||'').trim(),
+    breed:       getBreedValue('si-breed-wrap', document.getElementById('sh-action-panel-body')),
+    sex:         (getShelterIntakeEl('si-sex')||{}).value,
+    desc:        ((getShelterIntakeEl('si-desc')||{}).value||'').trim(),
+    address:     acLocation || ((getShelterIntakeEl('si-address')||{}).value||'').trim() || (shelter ? shelter.address : ''),
     finder:      activeShelter,
     fphone:      shelter ? shelter.phone : '',
     animalId:    animalId,
