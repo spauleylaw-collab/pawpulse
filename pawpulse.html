@@ -93,7 +93,7 @@ body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);h
 /* Staff badge hidden by default — only shown via JS after auth confirms */
 #staff-badge { display: none !important; }
 #staff-badge.staff-active { display: inline-flex !important; }
-#pp-banner{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:600;background:rgba(45,74,53,.93);backdrop-filter:blur(12px);border:1px solid rgba(122,172,130,.3);border-radius:999px;padding:9px 18px;display:flex;align-items:center;gap:10px;min-width:280px;max-width:460px;box-shadow:0 4px 20px rgba(0,0,0,.28);pointer-events:none;transition:opacity .3s}@media(max-width:640px){#pp-banner{top:72px!important}}
+#pp-banner{position:absolute;top:28px;left:50%;transform:translateX(-50%);z-index:600;background:rgba(45,74,53,.93);backdrop-filter:blur(12px);border:1px solid rgba(122,172,130,.3);border-radius:999px;padding:9px 18px;display:flex;align-items:center;gap:10px;min-width:280px;max-width:460px;box-shadow:0 4px 20px rgba(0,0,0,.28);pointer-events:none;transition:opacity .3s}@media(max-width:640px){#pp-banner{top:72px!important}}
 .banner-dot{width:7px;height:7px;border-radius:50%;background:var(--moss);box-shadow:0 0 7px var(--moss);flex-shrink:0;animation:bdot 2s ease-in-out infinite}
 @keyframes bdot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.75)}}
 #banner-txt{font-size:.76rem;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .35s}
@@ -121,8 +121,8 @@ body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);h
 .mode-banner-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 
 /* Map legend */
-@media(max-width:640px){#map-legend{bottom:10px!important;left:8px!important;right:auto!important;flex-direction:row!important;flex-wrap:wrap!important;gap:4px 10px!important;padding:5px 8px!important;max-width:calc(100vw - 230px)}}
-#map-legend{position:absolute;bottom:12px;left:12px;z-index:600;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-radius:8px;padding:6px 10px;display:flex;flex-direction:column;gap:5px;box-shadow:0 2px 10px rgba(0,0,0,.1);border:1px solid var(--cream-3)}
+@media(max-width:640px){#map-legend{bottom:22px!important;left:8px!important;right:auto!important;flex-direction:row!important;flex-wrap:wrap!important;gap:4px 10px!important;padding:5px 8px!important;max-width:calc(100vw - 230px)}}
+#map-legend{position:absolute;bottom:24px;left:12px;z-index:600;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-radius:8px;padding:6px 10px;display:flex;flex-direction:column;gap:5px;box-shadow:0 2px 10px rgba(0,0,0,.1);border:1px solid var(--cream-3)}
 .legend-item{display:flex;align-items:center;gap:7px;font-size:.7rem;font-weight:500;color:var(--warm-mid);white-space:nowrap}
 .legend-pin{width:10px;height:10px;border-radius:50%;flex-shrink:0}
 .print-btn{font-family:var(--font-body);font-size:.74rem;font-weight:600;padding:7px 13px;border-radius:8px;border:1.5px solid var(--cream-3);background:var(--cream-2);color:var(--warm-mid);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px;width:100%;justify-content:center;margin-top:6px}
@@ -456,7 +456,7 @@ textarea{min-height:64px}
 #rpt-detail-panel{flex:1;min-height:0;overflow-y:auto;padding:22px;background:var(--cream);display:none}
 #rpt-detail-panel::-webkit-scrollbar{width:3px}
 #rpt-detail-panel::-webkit-scrollbar-thumb{background:var(--cream-3);border-radius:99px}
-@media(max-width:640px){#side-panel{position:fixed!important;bottom:0!important;top:auto!important;right:0!important;left:0!important;width:100%!important;max-width:100%!important;height:auto!important;max-height:78vh!important;border-radius:18px 18px 0 0!important;transform:translateY(100%);transition:transform .3s cubic-bezier(.34,1.2,.64,1)!important;overflow-y:auto;-webkit-overflow-scrolling:touch}#side-panel.open{transform:translateY(0)!important}}@media(max-width:640px){#pin-card{position:fixed!important;bottom:0!important;left:0!important;right:0!important;top:auto!important;width:100%!important;max-width:100%!important;max-height:72vh!important;border-radius:18px 18px 0 0!important;z-index:1800!important}#pin-card .pc-img{height:220px!important}#pin-card-body{overflow-y:auto;-webkit-overflow-scrolling:touch;max-height:calc(72vh - 60px)}#rpt-left{width:100%;flex:1;min-height:0}#rpt-row{flex-direction:column}#rpt-right{display:none}#rpt-right.show{display:flex;flex-direction:column;position:fixed;inset:var(--nav-h) 0 0 0;z-index:900;background:var(--cream);overflow:hidden}.mobile-back-btn{display:block!important}.desktop-close-btn{display:none!important}}
+@media(max-width:640px){#side-panel{position:fixed!important;bottom:0!important;top:auto!important;right:0!important;left:0!important;width:100%!important;max-width:100%!important;height:auto!important;max-height:78vh!important;border-radius:18px 18px 0 0!important;transform:translateY(100%);transition:transform .3s cubic-bezier(.34,1.2,.64,1)!important;overflow-y:auto;-webkit-overflow-scrolling:touch}#side-panel.open{transform:translateY(0)!important}}@media(max-width:640px){#pin-card{position:fixed!important;bottom:18px!important;left:0!important;right:0!important;top:auto!important;width:100%!important;max-width:100%!important;max-height:72vh!important;border-radius:18px 18px 0 0!important;z-index:1800!important}#pin-card .pc-img{height:220px!important}#pin-card-body{overflow-y:auto;-webkit-overflow-scrolling:touch;max-height:calc(72vh - 60px)}#rpt-left{width:100%;flex:1;min-height:0}#rpt-row{flex-direction:column}#rpt-right{display:none}#rpt-right.show{display:flex;flex-direction:column;position:fixed;inset:var(--nav-h) 0 0 0;z-index:900;background:var(--cream);overflow:hidden}.mobile-back-btn{display:block!important}.desktop-close-btn{display:none!important}}
 /* Adopt view */
 #view-adopt{background:var(--cream-2);flex-direction:column;overflow:hidden;max-width:100vw;box-sizing:border-box}
 #adopt-hdr{background:var(--cream);border-bottom:1px solid var(--cream-3);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
@@ -510,7 +510,7 @@ textarea{min-height:64px}
 #adopt-inquiry-inner{background:var(--cream);border-radius:18px 18px 0 0;width:100%;max-width:520px;max-height:85vh;overflow-y:auto;padding:22px 22px 32px;animation:slide-up .28s cubic-bezier(.34,1.56,.64,1)}
 
 /* ── SHELTER SPOTLIGHT ── */
-@media(max-width:640px){#shelter-spotlight{bottom:8px!important;right:8px!important;width:min(190px,44vw)!important}#spotlight-name{font-size:.78rem!important}#spotlight-bio{font-size:.6rem!important}#shelter-spotlight [style*="height:130px"]{height:100px!important}}
+@media(max-width:640px){#shelter-spotlight{bottom:22px!important;right:8px!important;width:min(190px,44vw)!important}#spotlight-name{font-size:.78rem!important}#spotlight-bio{font-size:.6rem!important}#shelter-spotlight [style*="height:130px"]{height:100px!important}}
 
 /* ── NEW PIN PULSE — briefly animates pins added after initial load ── */
 @keyframes pinPulse {
@@ -790,10 +790,10 @@ textarea{min-height:64px}
     <button class="rpt-chip"        id="ic-chip-long"      onclick="setIncareFilter('long',this)">🔴 30+ Days</button>
     <button class="rpt-chip"        id="ic-chip-inq"       onclick="setIncareFilter('inq',this)">💬 Has Inquiries</button>
   </div>
-  <div id="incare-list" style="flex:1;overflow-y:auto;padding:12px;min-height:0;-webkit-overflow-scrolling:touch;padding-bottom:80px"></div>
+  <div id="incare-list" style="flex:1;overflow-y:auto;padding:12px;min-height:0;-webkit-overflow-scrolling:touch;padding-bottom:96px"></div>
   <!-- Floating intake FAB — fixed bottom-right, thumb-friendly -->
   <button onclick="openIntakeModal()"
-    style="position:fixed;bottom:24px;right:18px;z-index:800;
+    style="position:fixed;bottom:40px;right:18px;z-index:800;
            width:56px;height:56px;border-radius:50%;
            background:var(--forest);color:#fff;border:none;
            font-size:1.5rem;line-height:1;cursor:pointer;
@@ -944,7 +944,7 @@ textarea{min-height:64px}
          Doctrine-safe presentation layer only. No pins. No map state.
          Pulls from existing shelter/adoption records only. No new writes.
     ─────────────────────────────────────────────────────────────────── -->
-    <div id="shelter-spotlight" style="display:none;position:absolute;bottom:110px;right:14px;z-index:700;width:200px;border-radius:20px;overflow:hidden;box-shadow:0 12px 40px rgba(42,31,18,.35),0 4px 12px rgba(0,0,0,.15);transition:opacity .6s ease,transform .15s ease;opacity:0;pointer-events:auto;cursor:pointer;border:1.5px solid rgba(255,255,255,.8);background:var(--cream);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)" onclick="this.style.transform='scale(1.04)';setTimeout(function(){setView('adopt',null);},150)">
+    <div id="shelter-spotlight" style="display:none;position:absolute;bottom:124px;right:14px;z-index:700;width:200px;border-radius:20px;overflow:hidden;box-shadow:0 12px 40px rgba(42,31,18,.35),0 4px 12px rgba(0,0,0,.15);transition:opacity .6s ease,transform .15s ease;opacity:0;pointer-events:auto;cursor:pointer;border:1.5px solid rgba(255,255,255,.8);background:var(--cream);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)" onclick="this.style.transform='scale(1.04)';setTimeout(function(){setView('adopt',null);},150)">
       <!-- Shelter companion card — NOT a map feature. No pins. No doctrine impact. -->
       <div style="background:var(--forest);padding:6px 8px 6px 10px;display:flex;align-items:center;gap:6px;width:100%">
         <span style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.85)" id="spotlight-header-label">🏠 From the Shelter</span><button onclick="event.stopPropagation();dismissSpotlight()" style="background:none;border:none;color:rgba(255,255,255,.6);font-size:.85rem;line-height:1;cursor:pointer;padding:0 2px;margin-left:auto;flex-shrink:0" title="Dismiss">✕</button>
@@ -2282,7 +2282,2290 @@ function openAnimalEdit(id) {
         /* Photo — preview if exists, add button if not */
         '<div style="margin-bottom:12px">'
         + (r.photo
-          ? '<div style="position:relative;height:140px;border-radius:8px;overflow:hidden;margin-bottom:6px"><img src="' + esc(r.photo) + '" style="width:100%;height:100%;object-fit:cover;object-position:center top"><button onclick="document.getElementById(\'ae-photo-input\').click()" style="position:absolute;bottom:6px;right:6px;padding:4px 10px;font-size:.68rem;font-weight:600;border:none;border-radius:6px;background:rgba(0,0,0,.55);color:#fff;cursor:pointer">📷 Replace</button><button onclick="deleteAnimalPhoto(' + r.id + ')" style="position:absolute;bottom:6px;left:6px;padding:4px 10px;font-size:.68rem;font-weight:600;border:none;border-radius:6px;background:rgba(180,40,20,.75);color:#fff;cursor:pointer">🗑 Delete</button></div>'
+          ? '<div style="position:relative;en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>PawPulse — Lost &amp; Found Pet Map | Hastings, Nebraska</title>
+<meta name="description" content="Live lost and found pet map for Hastings, Nebraska and Adams County. Report a lost pet, help reunite animals, and see pets in care at Heartland Pet Connection.">
+<meta name="theme-color" content="#2d4a35">
+<link rel="canonical" href="https://pawpulse.net">
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://pawpulse.net">
+<meta property="og:title" content="PawPulse — Lost &amp; Found Pets · Hastings, NE">
+<meta property="og:description" content="Live lost pet map for Hastings, NE. See lost pets, found animals, and shelter intake in real time.">
+<meta property="og:site_name" content="PawPulse">
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="PawPulse — Lost &amp; Found Pet Map | Hastings, Nebraska">
+<meta name="twitter:description" content="Live lost and found pet map for Hastings, Nebraska and Adams County. Report lost pets, find strays, see shelter animals.">
+<link rel="preconnect" href="https://tile.openstreetmap.org">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script>
+var db = null; var auth = null;
+var USE_FIREBASE = (typeof firebase !== 'undefined') && "AIzaSyBVzQ84gSSnukH_JEmYN70ZjXqqmxsNVIw" !== "PASTE_YOUR_API_KEY";
+
+if (USE_FIREBASE) {
+  try {
+    /* Avoid duplicate-app error on hot reload */
+    var _fbApp = firebase.apps.length ? firebase.apps[0] : firebase.initializeApp({
+      apiKey:            "AIzaSyBVzQ84gSSnukH_JEmYN70ZjXqqmxsNVIw",
+      authDomain:        "pawpulse-24af8.firebaseapp.com",
+      projectId:         "pawpulse-24af8",
+      storageBucket:     "pawpulse-24af8.firebasestorage.app",
+      messagingSenderId: "471613221379",
+      appId:             "1:471613221379:web:461bb35bf7735f0dc33c36"
+    });
+    db   = firebase.firestore();
+    auth = firebase.auth();
+    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function(){});
+  } catch(e) {
+    console.warn('Firebase init error:', e.message);
+  }
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --forest:   #2d4a35;
+  --moss:     #7aac82;
+  --amber:    #d4843a;
+  --cream:    #faf5ec;
+  --cream-2:  #f0e8d8;
+  --cream-3:  #dfd0b8;
+  --warm-dk:  #2a1f12;
+  --warm-mid: #6b5540;
+  --lost-r:   #c94f2a;
+  --lost-lt:  #f07040;
+  --found-g:  #3a7d44;
+  --found-lt: #5caa68;
+  --nav-h:    60px;
+  --panel-w:  400px;
+  --font-display: 'Fraunces', serif;
+  --font-body:    'DM Sans', sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);height:100vh;overflow:hidden;user-select:none}
+
+/* NAV */
+#nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;gap:6px;padding:0 10px;height:var(--nav-h);background:var(--forest);box-shadow:0 2px 16px rgba(0,0,0,.3)}
+.nav-logo{font-family:var(--font-display);font-size:1.05rem;font-weight:700;color:var(--cream);letter-spacing:-.02em;display:flex;align-items:center;gap:5px;flex-shrink:0}
+.nav-logo-wrap{display:flex;flex-direction:column}
+.nav-logo-sub{font-family:var(--font-body);font-size:.56rem;font-weight:600;color:var(--moss);letter-spacing:.09em;text-transform:uppercase}
+.nav-spacer{flex-shrink:0;width:4px}
+.nav-report-btn{font-family:var(--font-body);font-size:.72rem;font-weight:700;padding:6px 10px;border-radius:6px;border:none;cursor:pointer;transition:all .15s;flex-shrink:0;background:var(--amber);color:#fff;letter-spacing:.01em;white-space:nowrap}
+.nav-report-btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
+#nav-tabs{display:flex;gap:2px;flex:1;min-width:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+#nav-tabs::-webkit-scrollbar{display:none}
+.tab-btn{font-family:var(--font-body);font-size:.65rem;font-weight:600;padding:5px 8px;border-radius:999px;border:1.5px solid rgba(255,255,255,.22);background:rgba(255,255,255,.1);color:var(--cream);cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0}
+.tab-btn.active{background:var(--cream);color:var(--forest);border-color:var(--cream)}
+.tab-btn:hover:not(.active){background:rgba(255,255,255,.18)}
+.tab-ops{border-color:rgba(90,180,120,.35)}
+.tab-ops.active{background:#d8f0e0;color:#1a4a28;border-color:#d8f0e0}
+.tab-admin{border-color:rgba(212,132,58,.45)}
+.tab-admin.active{background:#fde8c8;color:#7a3a00;border-color:#fde8c8}
+.nav-mode-sep{width:1px;height:22px;background:rgba(255,255,255,.2);flex-shrink:0;align-self:center;margin:0 2px}
+@media(max-width:700px){input,select,textarea{font-size:16px!important}.tab-btn .tab-lbl{display:none}.nav-logo-sub{display:none}.nav-report-btn .btn-lbl{display:none}}
+/* Staff badge hidden by default — only shown via JS after auth confirms */
+#staff-badge { display: none !important; }
+#staff-badge.staff-active { display: inline-flex !important; }
+#pp-banner{position:absolute;top:28px;left:50%;transform:translateX(-50%);z-index:600;background:rgba(45,74,53,.93);backdrop-filter:blur(12px);border:1px solid rgba(122,172,130,.3);border-radius:999px;padding:9px 18px;display:flex;align-items:center;gap:10px;min-width:280px;max-width:460px;box-shadow:0 4px 20px rgba(0,0,0,.28);pointer-events:none;transition:opacity .3s}@media(max-width:640px){#pp-banner{top:72px!important}}
+.banner-dot{width:7px;height:7px;border-radius:50%;background:var(--moss);box-shadow:0 0 7px var(--moss);flex-shrink:0;animation:bdot 2s ease-in-out infinite}
+@keyframes bdot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.75)}}
+#banner-txt{font-size:.76rem;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .35s}
+#banner-txt.fade{opacity:0}
+#banner-dot-reunion{background:#f0b840;box-shadow:0 0 8px #f0b840}
+/* Floating filter pills on map — horizontal row at bottom center */
+#map-filters{position:absolute;bottom:54px;left:50%;transform:translateX(-50%);z-index:600;display:flex;flex-direction:row;gap:6px;pointer-events:none;white-space:nowrap}
+#map-filters .filter-btn{pointer-events:auto}
+.filter-btn{font-family:var(--font-body);font-size:.72rem;font-weight:600;padding:6px 13px;border-radius:999px;cursor:pointer;transition:all .15s;border:1.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.88);backdrop-filter:blur(8px);color:var(--warm-mid);box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.filter-btn.active.all{background:var(--amber);color:#fff;border-color:var(--amber)}
+.filter-btn.active.lost{background:var(--lost-r);color:#fff;border-color:var(--lost-r)}
+.filter-btn.active.found{background:var(--found-g);color:#fff;border-color:var(--found-g)}
+.filter-btn.active.adopt{background:#2050a0;color:#fff;border-color:#2050a0}
+.filter-btn:hover{transform:translateY(-1px)}
+/* Reunion burst rings */
+@keyframes rburst1{0%{transform:scale(.3);opacity:.9}100%{transform:scale(4);opacity:0}}
+@keyframes rburst2{0%{transform:scale(.3);opacity:.7}100%{transform:scale(6);opacity:0}}
+@keyframes rburst3{0%{transform:scale(.3);opacity:.5}100%{transform:scale(8);opacity:0}}
+.reunion-ring{position:absolute;border-radius:50%;pointer-events:none;transform-origin:center center;border:3px solid #f0b840}
+/* Mode banners */
+.mode-banner{padding:5px 14px;font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;flex-shrink:0;display:flex;align-items:center;gap:6px}
+.mode-banner.public{background:#f0ede6;color:#6b5540;border-bottom:1px solid var(--cream-3)}
+.mode-banner.ops{background:#e8f4ec;color:#2d5a35;border-bottom:1px solid #c0ddc4}
+.mode-banner.admin{background:#fdf0e0;color:#7a4a10;border-bottom:1px solid #e8c890}
+.mode-banner-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+/* Map legend */
+@media(max-width:640px){#map-legend{bottom:22px!important;left:8px!important;right:auto!important;flex-direction:row!important;flex-wrap:wrap!important;gap:4px 10px!important;padding:5px 8px!important;max-width:calc(100vw - 230px)}}
+#map-legend{position:absolute;bottom:24px;left:12px;z-index:600;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-radius:8px;padding:6px 10px;display:flex;flex-direction:column;gap:5px;box-shadow:0 2px 10px rgba(0,0,0,.1);border:1px solid var(--cream-3)}
+.legend-item{display:flex;align-items:center;gap:7px;font-size:.7rem;font-weight:500;color:var(--warm-mid);white-space:nowrap}
+.legend-pin{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.print-btn{font-family:var(--font-body);font-size:.74rem;font-weight:600;padding:7px 13px;border-radius:8px;border:1.5px solid var(--cream-3);background:var(--cream-2);color:var(--warm-mid);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px;width:100%;justify-content:center;margin-top:6px}
+.print-btn:hover{border-color:var(--amber);color:var(--amber)}
+
+/* VIEW — position:fixed + inset, same as PublicPulse */
+.view{position:fixed;inset:var(--nav-h) 0 0 0;display:none}
+.view.active{display:flex}
+
+/* MAP CONTAINER — same as PublicPulse */
+#map-container{flex:1;position:relative;overflow:hidden;margin-top:22px}
+#map{width:100%;height:100%;touch-action:pan-x pan-y;-webkit-tap-highlight-color:transparent}
+.leaflet-tile{filter:saturate(.82) brightness(1.02) sepia(.06)}
+.leaflet-container{background:#d4c9b0}
+.leaflet-bottom.leaflet-right{bottom:90px !important;right:12px !important}
+.leaflet-bar a{width:32px !important;height:32px !important;line-height:32px !important;font-size:18px !important}
+
+/* SIDE PANEL */
+#side-panel{position:absolute;top:0;right:0;bottom:0;width:var(--panel-w);max-width:100%;background:var(--cream);border-left:1px solid var(--cream-3);z-index:800;display:flex;flex-direction:column;overflow-y:auto;transform:translateX(100%);transition:transform .32s cubic-bezier(.4,0,.2,1);box-shadow:-4px 0 24px rgba(42,31,18,.12)}
+#side-panel.open{transform:translateX(0)}
+#side-panel::-webkit-scrollbar{width:4px}
+#side-panel::-webkit-scrollbar-thumb{background:var(--cream-3);border-radius:99px}
+.panel-hdr{background:var(--cream-2);border-bottom:1px solid var(--cream-3);padding:18px 20px 14px;display:flex;align-items:flex-start;justify-content:space-between;flex-shrink:0}
+.panel-title{font-family:var(--font-display);font-size:1.3rem;font-weight:600;color:var(--warm-dk);line-height:1.2}
+.panel-sub{font-size:.76rem;color:var(--warm-mid);margin-top:4px}
+.panel-close{background:none;border:none;cursor:pointer;font-size:1.25rem;color:var(--warm-mid);line-height:1;padding:2px 5px;border-radius:6px}
+.panel-close:hover{color:var(--warm-dk)}
+.panel-body{padding:18px 20px;flex:1}
+
+/* FORM */
+.fg{margin-bottom:14px}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+@media(max-width:400px){.fr{grid-template-columns:1fr}}
+label{display:block;font-size:.7rem;font-weight:600;color:var(--warm-mid);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+input[type=text],input[type=email],input[type=tel],select,textarea{width:100%;padding:8px 11px;font-family:var(--font-body);font-size:.86rem;color:var(--warm-dk);background:#fff;border:1.5px solid var(--cream-3);border-radius:8px;outline:none;resize:vertical;transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(212,132,58,.14)}
+textarea{min-height:64px}
+.sl{font-family:var(--font-display);font-size:.9rem;font-weight:600;color:var(--warm-dk);margin-bottom:11px}
+.div{border:none;border-top:1px solid var(--cream-3);margin:16px 0}
+.loc-prompt{font-size:.78rem;font-weight:600;margin-bottom:12px;display:none;flex-direction:column;gap:6px}
+.loc-prompt.on{display:flex}
+.loc-set{font-size:.78rem;font-weight:600;padding:6px 0;margin-bottom:8px;display:none;align-items:center;gap:6px;color:var(--found-g)}
+.loc-set.on{display:flex}
+.reset-loc{background:var(--cream-2);color:var(--warm-mid);border:1.5px dashed var(--cream-3);font-size:.78rem;font-weight:600;padding:7px 12px;border-radius:8px;cursor:pointer;margin-bottom:12px;display:none;transition:all .15s;font-family:var(--font-body);width:100%}
+.reset-loc:hover{border-color:var(--amber);color:var(--amber)}
+.photo-drop{border:2px dashed var(--cream-3);border-radius:8px;padding:16px;text-align:center;cursor:pointer;background:#fff;transition:border-color .15s;position:relative;overflow:hidden}
+.photo-drop:hover{border-color:var(--amber)}
+.photo-drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.photo-drop-icon{font-size:1.5rem;margin-bottom:3px}
+.photo-drop-txt{font-size:.75rem;color:var(--warm-mid)}
+.photo-prev{width:100%;max-height:220px;object-fit:contain;border-radius:7px;margin-top:8px;display:none;background:var(--cream-2)}
+.chk-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;cursor:pointer}
+.chk-row input{width:16px;height:16px;accent-color:var(--found-g);flex-shrink:0}
+.chk-row label{font-size:.82rem;font-weight:500;color:var(--warm-dk);text-transform:none;letter-spacing:0;margin:0;cursor:pointer}
+.submit-btn{width:100%;padding:12px;font-family:var(--font-display);font-size:.98rem;font-weight:600;border:none;border-radius:10px;cursor:pointer;transition:all .2s;margin-top:6px}@media(max-width:640px){
+  .submit-btn { position:sticky; bottom:0; left:0; right:0; margin-top:8px; z-index:10; box-shadow:0 -4px 12px rgba(0,0,0,.1); }
+}
+.submit-btn.lost{background:var(--lost-r);color:#fff}
+.submit-btn.found{background:var(--found-g);color:#fff}
+.submit-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.22);filter:brightness(1.08)}
+
+/* MAP OVERLAYS */
+#stats-bar{display:none}
+#map-filters{display:none}
+.stat-pill{background:rgba(255,255,255,.92);backdrop-filter:blur(8px);padding:5px 12px;border-radius:999px;font-size:.73rem;font-weight:600;box-shadow:0 2px 10px rgba(0,0,0,.12);display:flex;align-items:center;gap:5px;border:1px solid var(--cream-3)}
+.stat-dot{width:8px;height:8px;border-radius:50%}
+.stat-dot.lost{background:var(--lost-r)}
+.stat-dot.found{background:var(--found-g)}
+#drop-hint{display:none;position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:700;background:var(--forest);color:var(--cream);border-radius:999px;padding:9px 16px 9px 14px;font-size:.8rem;font-weight:600;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(0,0,0,.3);white-space:nowrap;animation:hpulse 1.6s ease-in-out infinite}
+#drop-hint.on{display:flex}@media(max-width:640px){#drop-hint{left:0!important;right:0!important;top:0!important;transform:none!important;border-radius:0!important;width:100%!important;justify-content:center;padding:14px 16px!important;font-size:.9rem!important;white-space:normal!important}}
+@keyframes hpulse{0%,100%{opacity:.88}50%{opacity:1}}
+#drop-cancel{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);color:rgba(255,255,255,.75);border-radius:999px;padding:3px 10px;font-size:.72rem;font-weight:600;cursor:pointer;font-family:var(--font-body)}
+#drop-cancel:hover{color:#fff}
+#pin-card{display:none;position:absolute;z-index:850;width:280px;background:var(--cream);border:1.5px solid rgba(42,31,18,.18);border-radius:14px;overflow:hidden;box-shadow:0 16px 50px rgba(0,0,0,.32);transition:opacity .55s ease,transform .55s ease;max-height:80vh;flex-direction:column}
+/* Keep Leaflet controls below pin card */
+.leaflet-pane{z-index:400 !important}
+.leaflet-top,.leaflet-bottom{z-index:500 !important}
+.leaflet-control{z-index:500 !important}
+#pin-card.open{display:flex;flex-direction:column;animation:cpop .2s cubic-bezier(.34,1.56,.64,1)}
+#pin-card.fading{opacity:0;transform:translateY(-10px) scale(.97);pointer-events:none}
+@keyframes cpop{from{opacity:0;transform:scale(.9) translateY(6px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.pc-close{position:absolute;top:6px;right:6px;background:rgba(42,31,18,.55);color:#fff;border:none;cursor:pointer;width:44px;height:44px;border-radius:50%;font-size:.95rem;line-height:44px;text-align:center;z-index:1;display:flex;align-items:center;justify-content:center}
+.pc-img{width:100%;height:190px;object-fit:contain;object-position:center center;display:block;background:var(--cream-2)}
+.pc-no-img{width:100%;height:62px;display:flex;align-items:center;justify-content:center;font-size:2rem}
+.pc-body{padding:11px 13px 13px}
+.pc-badge{display:inline-flex;align-items:center;gap:4px;font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:2px 8px;border-radius:999px;margin-bottom:6px}
+.pc-badge.lost{background:#fde8e0;color:var(--lost-r)}
+.pc-badge.found{background:#e0f0e4;color:var(--found-g)}
+.pc-name{font-family:var(--font-display);font-size:1.05rem;font-weight:600;color:#1a1208;margin-bottom:5px}
+.pc-row{font-size:.76rem;color:#4a3d2e;margin-bottom:2px;display:flex;gap:4px}
+.pc-row strong{color:var(--warm-dk);font-weight:600}
+.pc-contact{margin-top:8px;padding-top:8px;border-top:1px solid var(--cream-3);font-size:.72rem;color:var(--warm-mid)}
+.pc-date{font-size:.65rem;color:#a0907a;margin-top:6px}
+#empty-hint{position:absolute;top:72px;left:50%;transform:translateX(-50%);background:rgba(42,31,18,.82);backdrop-filter:blur(8px);opacity:0;padding:9px 18px;border-radius:999px;font-size:.8rem;color:rgba(255,255,255,.9);box-shadow:0 4px 16px rgba(0,0,0,.18);z-index:600;pointer-events:none;white-space:nowrap;transition:opacity .3s}
+#toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(120px);z-index:9999;background:var(--forest);color:var(--cream);padding:11px 20px;border-radius:16px;font-size:.84rem;font-weight:600;box-shadow:0 8px 36px rgba(0,0,0,.25);display:flex;align-items:center;gap:8px;transition:transform .38s cubic-bezier(.34,1.56,.64,1);white-space:normal;max-width:calc(100vw - 32px);text-align:center;justify-content:center}
+#toast.show{transform:translateX(-50%) translateY(0)}
+#map.placing{cursor:crosshair !important}
+.pc-badge.reunited{background:#ede9e0;color:#8a7a66}
+.reunite-btn{width:100%;margin-top:10px;padding:9px;font-family:var(--font-display);font-size:.88rem;font-weight:600;border:1.5px solid var(--cream-3);border-radius:8px;cursor:pointer;background:var(--cream-2);color:var(--warm-mid);transition:all .18s;display:flex;align-items:center;justify-content:center;gap:6px}
+.reunite-btn:hover{background:#e8f4e9;border-color:var(--found-g);color:var(--found-g)}
+.reunite-btn.done{background:#e8f4e9;border-color:var(--found-g);color:var(--found-g);cursor:default;pointer-events:none}
+/* Match / comment styles */
+.pc-match-banner{background:linear-gradient(135deg,#fff8e8,#fdf3da);border:1.5px solid #d4a035;border-radius:8px;padding:8px 11px;margin-bottom:8px;font-size:.75rem;color:#7a5a10;font-weight:600;display:flex;align-items:center;gap:6px}
+.pc-comments{margin-top:10px;padding-top:10px;border-top:1px solid var(--cream-3)}
+.pc-comment{background:var(--cream-2);border-radius:7px;padding:7px 10px;margin-bottom:6px;font-size:.74rem;color:var(--warm-dk);line-height:1.45}
+.pc-comment-from{font-weight:700;color:var(--found-g);margin-bottom:2px;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em}
+.pc-comment-time{font-size:.62rem;color:var(--warm-mid);margin-top:2px}
+.sh-match-results{margin-top:14px}
+.sh-match-item{background:#fff;border:1px solid var(--cream-3);border-radius:9px;padding:11px 13px;margin-bottom:8px;transition:border-color .15s}
+.sh-match-item.high{border-left:3px solid var(--found-g)}
+.sh-match-item.medium{border-left:3px solid var(--amber)}
+.sh-match-item.low{border-left:3px solid var(--cream-3)}
+.sh-match-conf{display:inline-block;font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;padding:2px 7px;border-radius:999px;margin-bottom:5px}
+.sh-match-conf.high{background:#e0f0e4;color:var(--found-g)}
+.sh-match-conf.medium{background:#fdf0e0;color:var(--amber)}
+.sh-match-conf.low{background:var(--cream-2);color:var(--warm-mid)}
+.sh-match-name{font-family:var(--font-display);font-size:.95rem;font-weight:600;color:var(--warm-dk);margin-bottom:3px}
+.sh-match-reason{font-size:.74rem;color:var(--warm-mid);line-height:1.45;margin-bottom:8px}
+.sh-match-comment-wrap{display:none;margin-top:6px}
+.sh-match-comment-wrap.open{display:block}
+.sh-match-comment-input{width:100%;padding:7px 10px;font-family:var(--font-body);font-size:.8rem;color:var(--warm-dk);background:var(--cream-2);border:1.5px solid var(--cream-3);border-radius:7px;outline:none;resize:none;min-height:52px;transition:border-color .15s;margin-bottom:6px}
+.sh-match-comment-input:focus{border-color:var(--amber)}
+.ai-loading{display:flex;align-items:center;gap:8px;padding:14px 0;color:var(--warm-mid);font-size:.8rem}
+.ai-dot{width:6px;height:6px;border-radius:50%;background:var(--amber);animation:ai-bounce .9s ease-in-out infinite}
+@keyframes ai-bounce{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
+/* Mic button */
+.mic-wrap{display:flex;gap:6px;align-items:flex-start}
+.mic-wrap textarea,.mic-wrap input[type=text],.mic-wrap input[type=tel],.mic-wrap input[type=email]{flex:1;min-width:0}
+.mic-btn{flex-shrink:0;width:32px;height:32px;border-radius:50%;border:1.5px solid var(--cream-3);background:var(--cream-2);cursor:pointer;font-size:.82rem;display:flex;align-items:center;justify-content:center;transition:all .15s;padding:0;line-height:1;color:var(--warm-mid)}
+.mic-btn:hover{border-color:var(--amber);background:#fff8f0;color:var(--amber)}
+.mic-btn.mic-active{background:#ffe8e8;border-color:var(--lost-r);color:var(--lost-r);animation:mic-pulse .7s ease-in-out infinite}
+@keyframes mic-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+.ac-mic-btn{border-color:#a0baf0;background:#f0f4ff;color:#5070a0}
+.ac-mic-btn:hover{border-color:#1e4080;background:#e0eaff;color:#1e4080}
+/* AI identify button */
+.ai-id-btn{width:100%;padding:9px 12px;font-family:var(--font-body);font-size:.82rem;font-weight:600;background:linear-gradient(135deg,#f0e8ff,#e8f0ff);color:#5040a0;border:1.5px solid #c8b8f0;border-radius:8px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px}
+.ai-id-btn:hover{filter:brightness(1.05);border-color:#a090e0}
+.ai-id-btn:disabled{opacity:.6;cursor:not-allowed}
+.ai-id-result{background:#f8f5ff;border:1px solid #d0c0f0;border-radius:8px;padding:9px 12px;margin-top:6px;font-size:.78rem;color:#5040a0;display:none}
+.ai-id-result.show{display:block}
+@media(max-width:600px){:root{--panel-w:100vw}#nav-filters{display:none}.btn-lbl{display:none}}
+/* Shelter operational view */
+#view-shelters{background:var(--cream-2);flex-direction:column;overflow:hidden}
+#sh-row{display:flex;flex:1;min-height:0;overflow:hidden}
+.sh-col{display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--cream-3)}
+.sh-col:last-child{border-right:none}
+.sh-col-left{width:280px;flex-shrink:0}
+.sh-col-right{flex:1;min-width:0;display:flex;flex-direction:column;min-height:0}
+.sh-col-hdr{padding:9px 14px;border-bottom:1px solid var(--cream-3);background:var(--cream);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.sh-col-title{font-family:var(--font-display);font-size:.82rem;font-weight:700;color:var(--warm-mid);text-transform:uppercase;letter-spacing:.06em}
+.sh-col-body{flex:1;overflow-y:auto;padding:8px;min-height:0;-webkit-overflow-scrolling:touch}
+.sh-col-body::-webkit-scrollbar{width:3px}
+.sh-col-body::-webkit-scrollbar-thumb{background:var(--cream-3);border-radius:99px}
+.sh-select{width:100%;padding:9px 12px;font-family:var(--font-body);font-size:.84rem;font-weight:600;color:var(--warm-dk);background:var(--cream);border:1.5px solid var(--cream-3);border-radius:8px;outline:none;cursor:pointer;margin-bottom:0;appearance:none}
+.sh-select:focus{border-color:var(--amber)}
+.sh-selector-wrap{padding:7px 10px;border-bottom:1px solid var(--cream-3);flex-shrink:0;background:var(--cream)}
+.sh-queue-item{background:#fff;border:1px solid var(--cream-3);border-radius:10px;padding:8px 11px;margin-bottom:8px;cursor:pointer;transition:all .15s}
+.sh-queue-item:hover{border-color:var(--amber);box-shadow:0 2px 8px rgba(42,31,18,.08)}
+.sh-queue-item.selected{border-color:var(--found-g);background:#f5faf6}
+.sh-queue-item.reunited{opacity:.5}
+.sh-qi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.sh-qi-badge{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:2px 8px;border-radius:999px}
+.sh-qi-badge.intake{background:#e0f0e4;color:var(--found-g)}
+.sh-qi-badge.reunited{background:#ede9e0;color:#8a7a66}
+.sh-qi-badge.adopt{background:#e0eaff;color:#3060c0}
+/* Adoption card section */
+.pc-adopt{background:linear-gradient(135deg,#e8f0ff,#dce8ff);border:1.5px solid #a0c0f0;border-radius:8px;padding:8px 11px;margin-top:8px;font-size:.78rem;color:#2050a0;font-weight:600;display:flex;align-items:center;gap:6px}
+.adopt-btn{width:100%;margin-top:8px;padding:9px;font-family:var(--font-display);font-size:.88rem;font-weight:600;background:#2050a0;color:#fff;border:none;border-radius:8px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px}
+.adopt-btn:hover{filter:brightness(1.1)}
+.sh-qi-time{font-size:.68rem;color:var(--warm-mid)}
+.sh-qi-name{font-family:var(--font-display);font-size:.9rem;font-weight:600;color:var(--warm-dk);margin-bottom:1px}
+.sh-qi-desc{font-size:.75rem;color:var(--warm-mid)}
+.sh-empty{padding:32px 16px;text-align:center;color:var(--warm-mid);font-size:.82rem}
+.sh-empty-icon{font-size:2rem;margin-bottom:8px;opacity:.4}
+/* Action panel */
+.sh-action-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--warm-mid);gap:8px;padding:24px;background:var(--cream)}
+.sh-action-empty-icon{font-size:2.2rem;opacity:.25}
+.sh-action-panel{padding:12px 16px 24px;flex:1;overflow-y:auto;min-height:0;-webkit-overflow-scrolling:touch}
+.sh-action-panel::-webkit-scrollbar{width:3px}
+.sh-action-panel::-webkit-scrollbar-thumb{background:var(--cream-3);border-radius:99px}
+.sh-panel-id{font-size:.7rem;color:var(--warm-mid);margin-bottom:3px}
+.sh-panel-name{font-family:var(--font-display);font-size:1.05rem;font-weight:600;color:var(--warm-dk);margin-bottom:4px}
+.sh-panel-desc{font-size:.8rem;color:var(--warm-mid);line-height:1.45;margin-bottom:8px}
+.sh-sec{font-family:var(--font-display);font-size:.76rem;font-weight:600;color:var(--warm-mid);text-transform:uppercase;letter-spacing:.06em;margin:10px 0 6px}
+.sh-log{background:var(--cream-2);border:1px solid var(--cream-3);border-radius:8px;padding:10px 12px}
+.sh-log-entry{display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--cream-3);font-size:.76rem}
+.sh-log-entry:last-child{border-bottom:none}
+.sh-log-dot{width:6px;height:6px;border-radius:50%;background:var(--found-g);flex-shrink:0;margin-top:4px}
+.sh-log-body{flex:1;color:var(--warm-mid);line-height:1.4}
+.sh-log-time{font-size:.65rem;color:var(--warm-mid);flex-shrink:0}
+.sh-action-btns{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
+.sh-btn{padding:5px 11px;border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;border:1.5px solid var(--cream-3);background:var(--cream);color:var(--warm-dk);font-family:var(--font-body);transition:all .15s}
+.sh-btn:hover{border-color:var(--amber);color:var(--amber)}
+.sh-btn.primary{background:var(--found-g);border-color:var(--found-g);color:#fff}
+.sh-btn.primary:hover{filter:brightness(1.08);border-color:var(--found-g);color:#fff}
+.sh-btn.danger{border-color:rgba(201,79,42,.3);color:var(--lost-r)}
+.sh-btn.danger:hover{background:rgba(201,79,42,.08)}
+.sh-update-input{width:100%;padding:8px 11px;font-family:var(--font-body);font-size:.84rem;color:var(--warm-dk);background:#fff;border:1.5px solid var(--cream-3);border-radius:8px;outline:none;resize:none;min-height:60px;transition:border-color .15s;margin-bottom:8px}
+.sh-update-input:focus{border-color:var(--amber)}
+/* Log new intake form */
+.sh-intake-form{background:#fff;border:1px solid var(--cream-3);border-radius:10px;padding:14px;margin-bottom:10px;display:none}
+.sh-intake-form.open{display:block}
+.sh-intake-btn{width:100%;padding:10px;font-family:var(--font-display);font-size:.9rem;font-weight:600;background:var(--forest);color:var(--cream);border:none;border-radius:9px;cursor:pointer;transition:all .15s;margin-bottom:10px}
+.sh-intake-btn:hover{filter:brightness(1.1)}
+/* Shelter left col tabs */
+.sh-tab-row{display:flex;border-bottom:1px solid var(--cream-3);flex-shrink:0}
+.sh-tab{flex:1;padding:6px 4px;font-size:.75rem;font-weight:600;color:var(--warm-mid);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:var(--font-body);transition:all .15s}
+.sh-tab:hover{color:var(--warm-dk)}
+.sh-tab.active{color:var(--forest);border-bottom-color:var(--forest)}
+/* Footer action bar */
+.col-footer{padding:10px;border-top:1px solid var(--cream-3);flex-shrink:0;background:var(--cream-2)}
+.col-footer-btn{width:100%;padding:9px;font-family:var(--font-display);font-size:.82rem;font-weight:600;background:var(--forest);color:var(--cream);border:none;border-radius:8px;cursor:pointer;transition:all .15s}
+.col-footer-btn:hover{filter:brightness(1.1)}
+/* Inventory */
+.inv-card.selected{border-color:var(--forest);background:#f5faf5}
+.inv-add-form{background:#fff;border:1px solid var(--cream-3);border-radius:10px;padding:14px;margin-bottom:10px}
+.inv-preview{width:100%;max-height:120px;object-fit:cover;border-radius:6px;display:none;margin-top:6px}
+/* Inventory detail panel */
+.inv-status-badge{display:inline-flex;align-items:center;gap:4px;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:3px 9px;border-radius:999px;margin-bottom:8px}
+.inv-status-badge.available{background:#e0f0e4;color:var(--found-g)}
+.inv-status-badge.returned{background:#fde8e0;color:var(--lost-r)}
+.inv-status-badge.adopted{background:#ede9e0;color:#8a7a66}
+@media(max-width:700px){
+  .sh-col-left{width:100%;flex:1;min-height:0}
+  #sh-row{flex-direction:column}
+  .sh-col-right{display:none}
+  .sh-col-right.mobile-show{display:flex;position:fixed;inset:var(--nav-h) 0 0 0;z-index:850;background:var(--cream);flex-direction:column}
+}
+@media(max-width:480px){#incare-list>div[style*="grid-template-columns"]{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))!important}}
+/* Animal Control */
+.chip-field-wrap{background:#e8f0ff;border:2px solid #1e4080;border-radius:10px;padding:12px 14px;margin-bottom:14px}
+.chip-field-label{font-size:.7rem;font-weight:800;color:#1e4080;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.chip-field-input{width:100%;padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:600;color:#1e4080;background:#fff;border:1.5px solid #a0baf0;border-radius:8px;outline:none;letter-spacing:.06em;transition:border-color .15s}
+.chip-field-input:focus{border-color:#1e4080;box-shadow:0 0 0 3px rgba(30,64,128,.12)}
+.chip-match-banner{background:linear-gradient(135deg,#e8f0ff,#d0e0ff);border:2px solid #1e4080;border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:.78rem;color:#1e4080;font-weight:600;display:flex;align-items:center;gap:7px}
+.ac-search-btn{width:100%;padding:11px;font-family:var(--font-display);font-size:.92rem;font-weight:600;background:#1e4080;color:#fff;border:none;border-radius:9px;cursor:pointer;transition:all .15s;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:7px}
+.ac-search-btn:hover{filter:brightness(1.1)}
+.ac-search-btn:disabled{opacity:.6;cursor:not-allowed}
+/* Admin / Dashboard view */
+#admin-body{flex:1;overflow-y:auto;padding:20px 22px}
+#admin-body::-webkit-scrollbar{width:4px}
+#admin-body::-webkit-scrollbar-thumb{background:var(--cream-3);border-radius:99px}
+.admin-hdr{font-family:var(--font-display);font-size:1.15rem;font-weight:700;color:var(--warm-dk);margin-bottom:4px}
+.admin-sub{font-size:.78rem;color:var(--warm-mid);margin-bottom:20px}
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:24px}
+.dash-card{background:#fff;border:1px solid var(--cream-3);border-radius:12px;padding:16px 18px;box-shadow:0 2px 8px rgba(42,31,18,.05)}
+.dash-card-val{font-family:var(--font-display);font-size:2rem;font-weight:700;color:var(--warm-dk);line-height:1}
+.dash-card-lbl{font-size:.72rem;color:var(--warm-mid);margin-top:4px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.dash-card.alert .dash-card-val{color:var(--lost-r)}
+.dash-card.warn  .dash-card-val{color:var(--amber)}
+.dash-card.good  .dash-card-val{color:var(--found-g)}
+.dash-card.blue  .dash-card-val{color:#2050a0}
+.admin-sec{font-family:var(--font-display);font-size:.85rem;font-weight:700;color:var(--warm-mid);text-transform:uppercase;letter-spacing:.07em;margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--cream-3)}
+.admin-table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;border:1px solid var(--cream-3);margin-bottom:20px;font-size:.8rem}
+.admin-table th{background:var(--cream-2);padding:9px 12px;text-align:left;font-weight:600;color:var(--warm-mid);font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--cream-3)}
+.admin-table td{padding:9px 12px;border-bottom:1px solid var(--cream-3);color:var(--warm-dk);vertical-align:middle}
+.admin-table tr:last-child td{border-bottom:none}
+.admin-table tr:hover td{background:var(--cream-2)}
+.admin-badge{font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:999px;text-transform:uppercase;letter-spacing:.05em;display:inline-block}
+.admin-badge.hold{background:#fff0e0;color:#c07000}
+.admin-badge.court{background:#e0eaff;color:#2050a0}
+.admin-badge.cite{background:#fde8e0;color:var(--lost-r)}
+.admin-badge.closed{background:#ede9e0;color:#8a7a66}
+.admin-badge.restitution{background:#e8f0ff;color:#1a4090;font-weight:800}
+/* Enforcement panel inside shelter/AC */
+.enf-panel{background:#fff8f0;border:1.5px solid #e8c090;border-radius:10px;padding:14px 16px;margin-top:14px}
+.enf-panel-hdr{font-family:var(--font-display);font-size:.82rem;font-weight:700;color:#8a5010;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;display:flex;align-items:center;gap:6px;cursor:pointer}
+.enf-panel-hdr:hover{color:var(--amber)}
+.enf-row{display:flex;gap:10px;margin-bottom:8px;align-items:center}
+.enf-label{font-size:.72rem;font-weight:600;color:var(--warm-mid);width:120px;flex-shrink:0}
+.enf-val{font-size:.8rem;color:var(--warm-dk);flex:1}
+.enf-toggle{display:flex;gap:6px}
+.enf-toggle-btn{font-size:.72rem;font-weight:600;padding:3px 10px;border-radius:999px;border:1.5px solid var(--cream-3);background:#fff;color:var(--warm-mid);cursor:pointer;transition:all .15s}
+.enf-toggle-btn.active{background:var(--amber);color:#fff;border-color:var(--amber)}
+.cost-banner{background:linear-gradient(135deg,#fff8e8,#fdf3da);border:1.5px solid #d4a035;border-radius:8px;padding:10px 14px;margin-top:10px}
+.cost-banner-val{font-family:var(--font-display);font-size:1.4rem;font-weight:700;color:#7a5010}
+.cost-banner-lbl{font-size:.7rem;color:#9a7030;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+/* Internal status pills */
+.int-status{display:inline-block;font-size:.65rem;font-weight:800;padding:3px 9px;border-radius:999px;text-transform:uppercase;letter-spacing:.06em;margin-left:6px}
+.int-status.hold{background:#fff0e0;color:#c07000}
+.int-status.court{background:#e0eaff;color:#2050a0}
+.int-status.cite{background:#fde8e0;color:var(--lost-r)}
+.int-status.paid{background:#e8f4e9;color:#2d6a35}
+.int-status.open{background:var(--cream-2);color:var(--warm-mid)}
+/* Reports view */
+#view-reports{background:var(--cream-2);flex-direction:column;overflow:hidden}
+#rpt-row{display:flex;flex:1;min-height:0;overflow:hidden}
+#rpt-left{width:340px;flex-shrink:0;display:flex;flex-direction:column;border-right:1px solid var(--cream-3);overflow:hidden;min-height:0}
+#rpt-right{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+#rpt-search-wrap{padding:12px 14px;border-bottom:1px solid var(--cream-3);background:var(--cream);flex-shrink:0}
+#rpt-search{width:100%;padding:9px 12px 9px 34px;font-family:var(--font-body);font-size:.86rem;color:var(--warm-dk);background:var(--cream-2);border:1.5px solid var(--cream-3);border-radius:9px;outline:none;transition:border-color .15s;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236b5540' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:10px center}
+#rpt-search:focus{border-color:var(--amber)}
+#rpt-search::placeholder{color:var(--warm-mid)}
+.rpt-chips{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
+.rpt-chip{font-family:var(--font-body);font-size:.72rem;font-weight:600;padding:10px 14px;min-height:44px;border-radius:999px;border:none;background:transparent;color:var(--warm-mid);cursor:pointer;transition:all .12s}
+.rpt-chip:hover{background:var(--cream-2);color:var(--warm-dk)}
+.rpt-chip.active{background:var(--forest);color:#fff;box-shadow:0 1px 4px rgba(42,74,42,.25)}
+.rpt-chip.active.lost{background:var(--lost-r)}
+.rpt-chip.active.found{background:var(--found-g)}
+.rpt-chip.active.reunited{background:#8a7a66}
+.rpt-chip.active.adopt{background:#2050a0}
+#rpt-count{font-size:.72rem;color:var(--warm-mid);margin-top:8px;font-weight:500}
+#rpt-list{flex:1;overflow-y:auto;padding:8px;min-height:0;-webkit-overflow-scrolling:touch}
+#rpt-list::-webkit-scrollbar{width:3px}
+#rpt-list::-webkit-scrollbar-thumb{background:var(--cream-3);border-radius:99px}
+.rpt-row{display:flex;gap:10px;align-items:flex-start;padding:10px 11px;border-radius:10px;border:1px solid var(--cream-3);background:#fff;margin-bottom:7px;cursor:pointer;transition:all .15s}
+.rpt-row:hover{border-color:var(--amber);box-shadow:0 2px 8px rgba(42,31,18,.08)}
+.rpt-row.selected{border-color:var(--forest);background:#f5faf5}
+.rpt-row.reunited{opacity:.55}
+.rpt-thumb{width:54px;height:54px;object-fit:cover;border-radius:7px;flex-shrink:0}
+.rpt-thumb-ph{width:54px;height:54px;border-radius:7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.5rem}
+.rpt-info{flex:1;min-width:0}
+.rpt-top{display:flex;align-items:center;gap:6px;margin-bottom:3px}
+.rpt-badge{font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;padding:2px 7px;border-radius:999px}
+.rpt-badge.lost{background:#fde8e0;color:var(--lost-r)}
+.rpt-badge.found{background:#e0f0e4;color:var(--found-g)}
+.rpt-badge.reunited{background:#ede9e0;color:#8a7a66}
+.rpt-badge.adopt{background:#e0eaff;color:#2050a0}
+.rpt-badge.shelter{background:#e0eaff;color:#2050a0}
+.rpt-badge.city{background:#fde8e0;color:var(--lost-r)}
+.rpt-badge.review{background:#fff8e8;color:#8a5010}
+.rpt-badge.resolved{background:#e0f0e4;color:var(--found-g)}
+.rpt-name{font-family:var(--font-display);font-size:.92rem;font-weight:600;color:var(--warm-dk);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rpt-sub{font-size:.74rem;color:var(--warm-mid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
+.rpt-loc{font-size:.7rem;color:var(--warm-mid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rpt-age{font-size:.66rem;color:#a0907a;margin-left:auto;flex-shrink:0;white-space:nowrap;padding-top:2px}
+.rpt-empty{padding:40px 20px;text-align:center;color:var(--warm-mid)}
+.rpt-empty-icon{font-size:2.5rem;margin-bottom:10px;opacity:.3}
+/* Detail panel */
+#rpt-detail-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--warm-mid);gap:8px;padding:24px;background:var(--cream)}
+#rpt-detail-panel{flex:1;min-height:0;overflow-y:auto;padding:22px;background:var(--cream);display:none}
+#rpt-detail-panel::-webkit-scrollbar{width:3px}
+#rpt-detail-panel::-webkit-scrollbar-thumb{background:var(--cream-3);border-radius:99px}
+@media(max-width:640px){#side-panel{position:fixed!important;bottom:0!important;top:auto!important;right:0!important;left:0!important;width:100%!important;max-width:100%!important;height:auto!important;max-height:78vh!important;border-radius:18px 18px 0 0!important;transform:translateY(100%);transition:transform .3s cubic-bezier(.34,1.2,.64,1)!important;overflow-y:auto;-webkit-overflow-scrolling:touch}#side-panel.open{transform:translateY(0)!important}}@media(max-width:640px){#pin-card{position:fixed!important;bottom:18px!important;left:0!important;right:0!important;top:auto!important;width:100%!important;max-width:100%!important;max-height:72vh!important;border-radius:18px 18px 0 0!important;z-index:1800!important}#pin-card .pc-img{height:220px!important}#pin-card-body{overflow-y:auto;-webkit-overflow-scrolling:touch;max-height:calc(72vh - 60px)}#rpt-left{width:100%;flex:1;min-height:0}#rpt-row{flex-direction:column}#rpt-right{display:none}#rpt-right.show{display:flex;flex-direction:column;position:fixed;inset:var(--nav-h) 0 0 0;z-index:900;background:var(--cream);overflow:hidden}.mobile-back-btn{display:block!important}.desktop-close-btn{display:none!important}}
+/* Adopt view */
+#view-adopt{background:var(--cream-2);flex-direction:column;overflow:hidden;max-width:100vw;box-sizing:border-box}
+#adopt-hdr{background:var(--cream);border-bottom:1px solid var(--cream-3);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+#adopt-hdr-title{font-family:var(--font-display);font-size:1.1rem;font-weight:600;color:var(--warm-dk)}
+#adopt-hdr-sub{font-size:.76rem;color:var(--warm-mid);margin-top:2px}
+#adopt-add-btn{font-family:var(--font-display);font-size:.82rem;font-weight:600;padding:8px 16px;background:#2050a0;color:#fff;border:none;border-radius:999px;cursor:pointer;transition:all .15s;flex-shrink:0}
+#adopt-add-btn:hover{filter:brightness(1.1)}
+#adopt-search-row{padding:10px 14px;border-bottom:1px solid var(--cream-3);background:var(--cream);flex-shrink:0;display:flex;gap:6px;align-items:center;flex-wrap:wrap;overflow:hidden;box-sizing:border-box;width:100%}
+#adopt-search{flex:1;min-width:0;padding:8px 10px 8px 30px;font-family:var(--font-body);font-size:.84rem;color:var(--warm-dk);background:var(--cream-2);border:1.5px solid var(--cream-3);border-radius:8px;outline:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236b5540' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:10px center}
+#adopt-search:focus{border-color:var(--amber)}
+#adopt-body{flex:1;overflow-y:auto;padding:16px 18px}
+#adopt-body::-webkit-scrollbar{width:4px}
+#adopt-body::-webkit-scrollbar-thumb{background:var(--cream-3);border-radius:99px}
+.adopt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.adopt-card{background:#fff;border:1px solid var(--cream-3);border-radius:14px;overflow:hidden;transition:all .18s;cursor:pointer;box-shadow:0 2px 8px rgba(42,31,18,.06)}
+.adopt-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(42,31,18,.12);border-color:#a0c0f0}
+.adopt-card-img{width:100%;max-height:240px;object-fit:contain;background:var(--cream-2);display:block}
+.adopt-card-no-img{width:100%;height:160px;display:flex;align-items:center;justify-content:center;font-size:3rem;background:var(--cream-2)}
+.adopt-card-body{padding:12px 14px 14px}
+.adopt-card-name{font-family:var(--font-display);font-size:1rem;font-weight:600;color:var(--warm-dk);margin-bottom:4px}
+.adopt-card-desc{font-size:.76rem;color:var(--warm-mid);margin-bottom:6px;line-height:1.4}
+.adopt-card-meta{display:flex;align-items:center;justify-content:space-between;font-size:.7rem;color:var(--warm-mid);margin-bottom:10px}
+.adopt-card-days{font-weight:700;color:#2050a0}
+.adopt-card-days.urgent{color:var(--lost-r)}
+.adopt-card-days.warn{color:var(--amber)}
+.adopt-card-days.good{color:var(--found-g)}
+.adopt-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+.adopt-tag{font-size:.65rem;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--cream-2);color:var(--warm-mid);border:1px solid var(--cream-3)}
+.adopt-about{font-size:.78rem;color:var(--warm-mid);font-style:italic;margin-bottom:8px;line-height:1.4}
+.adopt-tag-btn{font-size:.72rem;font-weight:600;padding:4px 11px;border-radius:999px;border:1.5px solid var(--cream-3);background:#fff;color:var(--warm-mid);cursor:pointer;transition:all .15s;font-family:var(--font-body)}
+.adopt-tag-btn.selected{background:var(--forest);border-color:var(--forest);color:#fff}
+.adopt-urgency-bar{height:3px;border-radius:999px;margin-bottom:0}
+/* Public status badge on pin card */
+.pc-public-status{font-size:.72rem;font-weight:600;padding:4px 10px;border-radius:6px;margin-bottom:8px;display:inline-block}
+.pc-public-status.review{background:#fff8e8;color:#8a5010;border:1px solid #e8c090}
+.pc-public-status.shelter{background:#e8f0ff;color:#2050a0;border:1px solid #a0baf0}
+.pc-public-status.city{background:#fde8e0;color:var(--lost-r);border:1px solid #f0c0a8}
+.pc-public-status.resolved{background:#e8f4e9;color:var(--found-g);border:1px solid #a0d0a8}
+.adopt-ask-btn{width:100%;padding:10px;font-family:var(--font-display);font-size:.84rem;font-weight:700;background:var(--forest);color:var(--cream);border:none;border-radius:9px;cursor:pointer;transition:all .15s;letter-spacing:.01em}
+.adopt-ask-btn:hover{filter:brightness(1.08)}
+.adopt-empty{padding:48px 24px;text-align:center;color:var(--warm-mid)}
+.adopt-empty-icon{font-size:3rem;margin-bottom:12px;opacity:.3}
+/* Add to adopt form panel */
+#adopt-form-panel{position:fixed;inset:var(--nav-h) 0 0 0;z-index:900;background:rgba(42,31,18,.5);display:none;align-items:flex-end;justify-content:center}
+#adopt-form-panel.open{display:flex}
+#adopt-form-inner{background:var(--cream);border-radius:18px 18px 0 0;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;padding:20px 22px 32px;animation:slide-up .28s cubic-bezier(.34,1.56,.64,1)}
+@keyframes slide-up{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}
+/* Adoption inquiry form */
+#adopt-inquiry-panel{position:fixed;inset:var(--nav-h) 0 0 0;z-index:4100;background:rgba(42,31,18,.55);display:none;align-items:flex-end;justify-content:center}
+#adopt-inquiry-panel.open{display:flex}
+#adopt-inquiry-inner{background:var(--cream);border-radius:18px 18px 0 0;width:100%;max-width:520px;max-height:85vh;overflow-y:auto;padding:22px 22px 32px;animation:slide-up .28s cubic-bezier(.34,1.56,.64,1)}
+
+/* ── SHELTER SPOTLIGHT ── */
+@media(max-width:640px){#shelter-spotlight{bottom:22px!important;right:8px!important;width:min(190px,44vw)!important}#spotlight-name{font-size:.78rem!important}#spotlight-bio{font-size:.6rem!important}#shelter-spotlight [style*="height:130px"]{height:100px!important}}
+
+/* ── NEW PIN PULSE — briefly animates pins added after initial load ── */
+@keyframes pinPulse {
+  0%   { filter: drop-shadow(0 0 0px rgba(255,255,255,0)); transform: scale(1); }
+  30%  { filter: drop-shadow(0 0 8px rgba(255,255,255,.9)); transform: scale(1.18); }
+  100% { filter: drop-shadow(0 0 0px rgba(255,255,255,0)); transform: scale(1); }
+}
+.pin-new-pulse {
+  animation: pinPulse 1.4s ease-out forwards;
+}
+
+/* ── SPOTLIGHT HOVER ── */
+#shelter-spotlight:hover { transform: translateY(-2px) scale(1.01); box-shadow: 0 16px 48px rgba(42,31,18,.4),0 6px 16px rgba(0,0,0,.2) !important; transition: transform .2s ease, box-shadow .2s ease, opacity .5s ease !important; }
+
+/* ── STAFF TUTORIAL ── */
+#staff-tutorial-overlay {
+  position:fixed;inset:0;z-index:9999;background:rgba(20,30,20,.72);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-body);
+}
+#staff-tutorial-card {
+  background:var(--cream);border-radius:20px;width:min(520px,92vw);
+  max-height:88vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.4);
+  position:relative;
+}
+@media(max-width:640px){
+  #staff-tutorial-card { border-radius:16px; width:94vw; max-height:85vh; }
+  .st-header { padding:14px 16px 12px; }
+  .st-steps { padding:12px 16px; }
+  .st-footer { padding:10px 16px 14px; }
+  .st-step { gap:10px; padding:10px 0; }
+  .st-icon { width:34px; height:34px; font-size:1.1rem; }
+}
+.st-header {
+  background:var(--forest);color:#fff;border-radius:20px 20px 0 0;
+  padding:18px 22px 16px;
+}
+.st-header h2 { margin:0;font-family:var(--font-display);font-size:1.15rem;font-weight:700; }
+.st-header p  { margin:4px 0 0;font-size:.78rem;opacity:.8; }
+.st-steps { padding:18px 22px; }
+.st-step {
+  display:flex;gap:14px;align-items:flex-start;
+  padding:12px 0;border-bottom:1px solid var(--cream-3);
+}
+.st-step:last-child { border-bottom:none; }
+.st-icon {
+  width:40px;height:40px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.3rem;background:var(--cream-2);
+}
+.st-step-body h3 { margin:0 0 3px;font-size:.85rem;color:var(--warm-dk);font-weight:700; }
+.st-step-body p  { margin:0;font-size:.75rem;color:var(--warm-mid);line-height:1.45; }
+.st-step-body .st-tip {
+  display:inline-block;margin-top:5px;font-size:.7rem;font-weight:700;
+  color:var(--forest);background:rgba(45,74,53,.1);
+  padding:2px 8px;border-radius:999px;
+}
+.st-footer {
+  padding:14px 22px 18px;display:flex;justify-content:space-between;align-items:center;
+  border-top:1px solid var(--cream-3);gap:10px;
+}
+.st-btn-primary {
+  background:var(--forest);color:#fff;border:none;border-radius:9px;
+  padding:10px 22px;font-size:.82rem;font-weight:700;cursor:pointer;
+  font-family:var(--font-body);letter-spacing:.02em;
+}
+.st-btn-skip {
+  background:none;border:none;color:var(--warm-mid);font-size:.75rem;
+  cursor:pointer;font-family:var(--font-body);text-decoration:underline;
+  text-underline-offset:3px;
+}
+.st-progress {
+  display:flex;gap:5px;align-items:center;
+}
+.st-dot {
+  width:7px;height:7px;border-radius:50%;background:var(--cream-3);
+  transition:background .2s;
+}
+.st-dot.active { background:var(--forest); }
+
+
+@media(max-width:640px){
+  #adopt-search-row{padding:8px 10px;gap:5px}
+  #adopt-search{font-size:.78rem;padding:7px 8px 7px 28px}
+  #adopt-sort{font-size:.72rem;padding:5px 6px;max-width:34vw}
+}
+</style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "PawPulse",
+  "url": "https://pawpulse.net",
+  "description": "Live lost and found pet map for Hastings, Nebraska and Adams County.",
+  "areaServed": {
+    "@type": "City",
+    "name": "Hastings",
+    "containedInPlace": {
+      "@type": "AdministrativeArea",
+      "name": "Adams County, Nebraska"
+    }
+  },
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://pawpulse.net",
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  "name": "PawPulse — Hastings Lost & Found Pet Map",
+  "url": "https://pawpulse.net",
+  "description": "Live community map for lost and found pets in Hastings, Nebraska and Adams County.",
+  "areaServed": "Hastings, Nebraska",
+  "serviceType": "Lost and Found Pet Reporting"
+}
+</script>
+</head>
+<body>
+
+<!-- App loading screen — covers map flash during auth/shelter picker -->
+<div id="app-loading" style="position:fixed;inset:0;z-index:9990;background:var(--cream);display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
+  <div style="font-size:2rem;margin-bottom:6px">🐾</div>
+  <div style="font-family:var(--font-display);font-size:1rem;font-weight:600;color:var(--warm-mid)">PawPulse</div>
+</div>
+
+<!-- Login overlay — shown when Firebase is configured and user not signed in -->
+<!-- Small staff sign-in panel — replaces full-screen login overlay -->
+<div id="login-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(42,31,18,.55);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:32px">
+  <div style="background:var(--cream);border-radius:16px;padding:28px 28px 20px;width:100%;max-width:320px;box-shadow:0 8px 40px rgba(0,0,0,.25)">
+    <div style="font-family:var(--font-display);font-size:1.1rem;font-weight:700;color:var(--warm-dk);margin-bottom:4px;text-align:center">🔐 Staff Sign In</div>
+    <div style="font-size:.74rem;color:var(--warm-mid);margin-bottom:18px;text-align:center">Heartland Pet Connection</div>
+    <div class="fg"><label>Email</label><input type="email" id="login-email" placeholder="staff@shelter.org" autocomplete="email" style="width:100%;padding:10px 12px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.9rem"></div>
+    <div class="fg"><label>Password</label><input type="password" id="login-pw" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()" style="width:100%;padding:10px 12px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.9rem"></div>
+    <div id="login-err" style="display:none;font-size:.76rem;color:var(--lost-r);margin-bottom:10px;text-align:center"></div>
+    <button id="login-btn" onclick="doLogin()" style="width:100%;padding:11px;font-family:var(--font-display);font-size:.88rem;font-weight:700;background:var(--forest);color:var(--cream);border:none;border-radius:10px;cursor:pointer;margin-top:4px">Sign In</button>
+    <div style="display:flex;justify-content:space-between;margin-top:8px">
+      <button onclick="closeStaffLogin()" style="padding:8px;font-family:var(--font-body);font-size:.78rem;background:none;border:none;cursor:pointer;color:var(--warm-mid);text-decoration:underline">Cancel</button>
+      <button onclick="sendPasswordReset()" style="padding:8px;font-family:var(--font-body);font-size:.78rem;background:none;border:none;cursor:pointer;color:var(--warm-mid);text-decoration:underline">Forgot password?</button>
+    </div>
+  </div>
+</div>
+
+<!-- Staff badge shown when signed in -->
+
+<!-- Change Password modal -->
+<div id="change-pw-overlay" style="display:none;position:fixed;inset:0;z-index:9997;background:rgba(42,31,18,.55);align-items:center;justify-content:center">
+  <div style="background:var(--cream);border-radius:16px;width:100%;max-width:340px;padding:24px;margin:16px" onclick="event.stopPropagation()">
+    <div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--warm-dk);margin-bottom:4px">🔑 Change Password</div>
+    <div style="font-size:.76rem;color:var(--warm-mid);margin-bottom:16px" id="cpw-sub">Enter a new password for your account.</div>
+    <div class="fg"><label>New Password</label><input type="password" id="cpw-new" placeholder="At least 6 characters" style="width:100%;padding:10px 12px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.9rem"></div>
+    <div class="fg"><label>Confirm Password</label><input type="password" id="cpw-confirm" placeholder="Repeat new password" style="width:100%;padding:10px 12px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.9rem"></div>
+    <div id="cpw-err" style="display:none;font-size:.76rem;color:var(--lost-r);margin-bottom:10px"></div>
+    <div id="cpw-ok" style="display:none;font-size:.76rem;color:var(--found-g);font-weight:600;margin-bottom:10px">✓ Password updated successfully.</div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button id="cpw-btn" onclick="doChangePw()" style="flex:1;padding:10px;font-family:var(--font-display);font-size:.88rem;font-weight:700;background:var(--forest);color:var(--cream);border:none;border-radius:9px;cursor:pointer">Update Password</button>
+      <button onclick="closeChangePw()" style="padding:10px 16px;font-family:var(--font-body);font-size:.82rem;border-radius:9px;border:1.5px solid var(--cream-3);background:#fff;cursor:pointer">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<nav id="nav">
+  <div class="nav-logo">
+    🐾
+    <div class="nav-logo-wrap">
+      PawPulse
+      <span class="nav-logo-sub">Hastings, NE &amp; Adams County</span>
+    </div>
+  </div>
+  <button class="nav-report-btn" id="nav-action-btn" onclick="navActionBtn()">+ Report</button>
+  <!-- Report type picker -->
+  <div id="report-picker" style="display:none;position:fixed;inset:0;z-index:1100;background:rgba(42,31,18,.5);align-items:center;justify-content:center" onclick="if(event.target===this)this.style.display='none'">
+    <div style="background:var(--cream);border-radius:16px;padding:24px;width:260px;box-shadow:0 16px 48px rgba(0,0,0,.28)">
+      <div style="font-family:var(--font-display);font-size:1rem;font-weight:600;color:var(--warm-dk);margin-bottom:16px;text-align:center">What are you reporting?</div>
+      <button onclick="closePicker();openPanel('lost')"  style="width:100%;padding:14px;margin-bottom:10px;font-family:var(--font-display);font-size:.95rem;font-weight:600;background:var(--lost-r);color:#fff;border:none;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">🔴 Lost Pet <span style="font-size:.78rem;opacity:.85;font-weight:400">I lost my pet</span></button>
+      <button onclick="closePicker();openPanel('found')" style="width:100%;padding:14px;font-family:var(--font-display);font-size:.95rem;font-weight:600;background:var(--found-g);color:#fff;border:none;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">🟢 Found Pet <span style="font-size:.78rem;opacity:.85;font-weight:400">I found a stray</span></button>
+    </div>
+  </div>
+  <div class="nav-spacer"></div>
+  <div id="nav-tabs">
+    <!-- PUBLIC MODE -->
+    <button class="tab-btn tab-public active" onclick="setView('map',this)" title="Public Map">🗺️ <span class="tab-lbl">Map</span></button>
+    <button class="tab-btn tab-public"        onclick="setView('adopt',this)" title="Adoption">🏠 <span class="tab-lbl">Adopt</span></button>
+    <!-- STAFF MODE -->
+    <div class="nav-mode-sep"></div>
+    <button class="tab-btn tab-ops" onclick="setView('incare',this)"   title="In Care">🏥 <span class="tab-lbl">At Shelter</span> <span id="nav-incare-count" style="display:none;background:var(--found-g);color:#fff;border-radius:999px;font-size:.6rem;padding:1px 5px;margin-left:2px"></span></button>
+    <!-- ADMIN MODE -->
+    <div class="nav-mode-sep"></div>
+    <button class="tab-btn tab-admin" onclick="setView('reports',this)" title="Reports & Admin">📊 <span class="tab-lbl">Reports</span></button>
+    <!-- Staff sign-in button — shown when not logged in -->
+    <button id="nav-staff-login-btn" onclick="openStaffLogin()" title="Staff Sign In" style="margin-left:6px;padding:5px 12px;font-size:.72rem;font-weight:700;border-radius:999px;border:1.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);cursor:pointer;font-family:var(--font-body);color:var(--cream);display:flex;align-items:center;gap:5px">🔐 <span class="tab-lbl">Staff Login</span></button>
+    <!-- Staff badge — shown when signed in, lives in nav -->
+    <div id="staff-badge" style="display:none;align-items:center;gap:5px;margin-left:6px">
+      <div id="staff-name-badge" style="color:var(--cream);font-size:.7rem;font-weight:700;white-space:nowrap;opacity:.85">🔐 Staff</div>
+      <div style="display:flex;gap:4px">
+        <button onclick="clearTestData()" title="Clear All Data" style="padding:5px 8px;font-size:.65rem;font-weight:600;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,77,77,.25);cursor:pointer;color:var(--cream);font-family:var(--font-body);display:none" id="btn-clear-data">🗑</button>
+        <button onclick="forceSyncPhotos()" title="Force Photo Sync to Cloud" style="padding:5px 8px;font-size:.65rem;font-weight:600;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);cursor:pointer;color:var(--cream);font-family:var(--font-body)">☁️</button>
+        <button onclick="loadDemoData()" title="Load Demo Animals" style="padding:5px 8px;font-size:.65rem;font-weight:600;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);cursor:pointer;color:var(--cream);font-family:var(--font-body);display:none" id="btn-load-demo">🐾</button>
+        <button onclick="openChangePw()" title="Change Password" style="padding:5px 8px;font-size:.65rem;font-weight:600;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);cursor:pointer;color:var(--cream);font-family:var(--font-body)">🔑</button>
+        <button onclick="doSignOut()" style="padding:5px 10px;font-size:.65rem;font-weight:700;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);cursor:pointer;color:var(--cream);font-family:var(--font-body)">Sign Out</button>
+      </div>
+    </div>
+  </div>
+</nav>
+<!-- Orientation strip -->
+<div id="orientation-strip" style="position:fixed;top:var(--nav-h);left:0;right:0;z-index:999;background:rgba(45,74,53,.92);color:rgba(255,255,255,.78);text-align:center;font-size:.8rem;font-family:var(--font-body);padding:6px 14px;letter-spacing:.01em;pointer-events:none"><div style="font-size:.82rem;font-weight:600;color:rgba(255,255,255,.95);margin-bottom:2px">See lost pets, found animals, and pets in care — all in real time.</div><div style="font-size:.72rem;color:rgba(255,255,255,.75)">Tap a pin to help, or tap <strong style="font-weight:700">+ Report</strong> to post one. <span style="opacity:.7;font-style:italic">You might reunite a pet today.</span></div></div>
+
+<!-- ADOPT VIEW -->
+<div id="view-adopt" class="view">
+  <div class="mode-banner public"><div class="mode-banner-dot" style="background:#c8841a"></div>Public View — Adoption</div>
+  <div id="adopt-hdr">
+    <div>
+      <div id="adopt-hdr-title">🌟 Animals Ready for Adoption</div>
+      <div id="adopt-hdr-sub">Hastings, NE area shelters · <span id="adopt-count">0</span> available</div>
+    </div>
+  </div>
+  <div style="font-size:.62rem;color:var(--warm-mid);text-align:center;padding:3px 16px 4px;line-height:1.5;border-bottom:1px solid var(--cream-3);background:var(--cream)">Information may change as cases are reviewed. For official records, contact the shelter directly.</div>
+  <div style="font-size:.72rem;color:var(--warm-mid);padding:5px 16px;background:var(--cream);border-bottom:1px solid var(--cream-3);display:flex;gap:14px;flex-wrap:wrap;align-items:center">
+    <span style="font-weight:600;color:var(--warm-dk)">Card border:</span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--found-g);margin-right:4px;vertical-align:middle"></span>Available — under 14 days</span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--amber);margin-right:4px;vertical-align:middle"></span>Waiting 14–29 days</span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--lost-r);margin-right:4px;vertical-align:middle"></span>Waiting 30+ days — needs a home urgently</span>
+  </div>
+  <div id="adopt-search-row">
+    <input id="adopt-search" type="text" placeholder="Search by species, breed, color, shelter…" oninput="renderAdoptView()" autocomplete="off">
+    <select id="adopt-sort" onchange="renderAdoptView()" style="padding:7px 8px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.75rem;background:#fff;flex-shrink:0;max-width:36vw;color:var(--warm-dk);flex-shrink:0">
+      <option value="longest">Longest Wait</option>
+      <option value="newest">Newest First</option>
+      <option value="alpha">A → Z</option>
+    </select>
+  </div>
+  <div style="padding:6px 16px;border-bottom:1px solid var(--cream-3);background:var(--cream);display:flex;gap:6px;flex-wrap:wrap">
+    <button class="rpt-chip active" id="af-all"  onclick="setAdoptFilter('all',this)">All</button>
+    <button class="rpt-chip"        id="af-dog"  onclick="setAdoptFilter('dog',this)">🐕 Dogs</button>
+    <button class="rpt-chip"        id="af-cat"  onclick="setAdoptFilter('cat',this)">🐈 Cats</button>
+    <button class="rpt-chip"        id="af-other" onclick="setAdoptFilter('other',this)">🐾 Other</button>
+  </div>
+  <div id="adopt-body">
+    <div class="adopt-grid" id="adopt-grid"></div>
+  </div>
+</div>
+
+<!-- IN CARE VIEW -->
+<div id="view-incare" class="view" style="background:var(--cream-2);flex-direction:column;overflow:hidden">
+  <div class="mode-banner ops"><div class="mode-banner-dot" style="background:#3a7d44"></div>Heartland Pet Connection — Staff</div>
+  <!-- Header with shelter name + intake button -->
+  <div style="padding:12px 16px;background:var(--cream);border-bottom:1px solid var(--cream-3);flex-shrink:0">
+    <div style="font-family:var(--font-display);font-size:.95rem;font-weight:700;color:var(--warm-dk)" id="incare-shelter-label">Animals at Shelter</div>
+    <div style="font-size:.7rem;color:var(--warm-mid);margin-top:1px">Tap an animal to manage · <span id="incare-count" style="font-weight:700;color:var(--forest)">0</span> in care</div>
+    <div id="incare-stats-bar" style="display:none;margin-top:6px;flex-wrap:wrap;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none"></div>
+  </div>
+  <!-- Search + Sort bar -->
+  <div style="padding:8px 14px;border-bottom:1px solid var(--cream-3);background:var(--cream);flex-shrink:0;display:flex;gap:6px;align-items:center">
+    <div style="position:relative;width:180px;flex-shrink:0">
+      <span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:.8rem;pointer-events:none">🔍</span>
+      <input type="text" id="incare-search" placeholder="Search…" oninput="renderIncareView()" style="width:100%;padding:7px 10px 7px 28px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.8rem;background:#fff;box-sizing:border-box">
+    </div>
+    <select id="incare-sort" onchange="renderIncareView()" style="padding:7px 8px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.75rem;background:#fff;flex-shrink:0;max-width:36vw;color:var(--warm-dk);width:auto;flex-shrink:0">
+      <option value="status">By Status</option>
+      <option value="alpha">A → Z</option>
+      <option value="newest">Newest First</option>
+      <option value="longest">Longest Stay</option>
+    </select>
+  </div>
+  <!-- Filter chips -->
+  <div style="padding:9px 14px;border-bottom:1px solid var(--cream-3);background:var(--cream);flex-shrink:0;display:flex;gap:5px;flex-wrap:wrap;align-items:center">
+    <span style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--warm-mid);margin-right:2px">Species:</span>
+    <button class="rpt-chip active" id="ic-chip-all"       onclick="setIncareFilter('all',this)">All</button>
+    <button class="rpt-chip"        id="ic-chip-dog"       onclick="setIncareFilter('dog',this)">🐕 Dogs</button>
+    <button class="rpt-chip"        id="ic-chip-cat"       onclick="setIncareFilter('cat',this)">🐈 Cats</button>
+    <span style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--warm-mid);margin-left:6px;margin-right:2px">Status:</span>
+    <button class="rpt-chip"        id="ic-chip-hold"      onclick="setIncareFilter('hold',this)">⚠️ On Hold</button>
+    <button class="rpt-chip"        id="ic-chip-adopt"     onclick="setIncareFilter('adopt',this)">🌟 Adoption Ready</button>
+    <button class="rpt-chip"        id="ic-chip-long"      onclick="setIncareFilter('long',this)">🔴 30+ Days</button>
+    <button class="rpt-chip"        id="ic-chip-inq"       onclick="setIncareFilter('inq',this)">💬 Has Inquiries</button>
+  </div>
+  <div id="incare-list" style="flex:1;overflow-y:auto;padding:12px;min-height:0;-webkit-overflow-scrolling:touch;padding-bottom:96px"></div>
+  <!-- Floating intake FAB — fixed bottom-right, thumb-friendly -->
+  <button onclick="openIntakeModal()"
+    style="position:fixed;bottom:40px;right:18px;z-index:800;
+           width:56px;height:56px;border-radius:50%;
+           background:var(--forest);color:#fff;border:none;
+           font-size:1.5rem;line-height:1;cursor:pointer;
+           box-shadow:0 6px 20px rgba(42,31,18,.35);
+           display:none;align-items:center;justify-content:center;
+           transition:transform .15s ease,box-shadow .15s ease"
+    id="intake-fab"
+    title="Log New Intake"
+    onmousedown="this.style.transform='scale(.93)'"
+    onmouseup="this.style.transform=''"
+    ontouchstart="this.style.transform='scale(.93)'"
+    ontouchend="this.style.transform=''">＋</button>
+</div>
+
+<!-- Intake modal overlay -->
+<div id="intake-modal-overlay" style="display:none;position:fixed;inset:0;z-index:910;background:rgba(42,31,18,.55);align-items:flex-end;justify-content:center">
+  <div id="intake-modal-inner" style="background:var(--cream);border-radius:18px 18px 0 0;width:100%;max-width:600px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden" onclick="event.stopPropagation()">
+    <div style="padding:14px 20px 10px;border-bottom:1px solid var(--cream-3);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+      <div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--warm-dk)">New Animal Intake</div>
+      <button onclick="closeIntakeModal()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--warm-mid)">✕</button>
+    </div>
+    <div id="intake-modal-body" style="flex:1;overflow-y:auto;padding:16px 20px 32px;-webkit-overflow-scrolling:touch"></div>
+  </div>
+</div>
+
+<!-- Animal edit modal -->
+<div id="animal-edit-overlay" style="display:none;position:fixed;inset:0;z-index:920;background:rgba(42,31,18,.55);align-items:flex-end;justify-content:center">
+  <div style="background:var(--cream);border-radius:18px 18px 0 0;width:100%;max-width:600px;max-height:94vh;display:flex;flex-direction:column;overflow:hidden" onclick="event.stopPropagation()">
+    <div style="padding:14px 20px 10px;border-bottom:1px solid var(--cream-3);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+      <div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--warm-dk)" id="animal-edit-title">Edit Animal Record</div>
+      <button onclick="closeAnimalEdit()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--warm-mid)">✕</button>
+    </div>
+    <div id="animal-edit-body" style="flex:1;overflow-y:auto;padding:16px 20px 32px;-webkit-overflow-scrolling:touch;padding-bottom:max(32px,env(safe-area-inset-bottom,32px))"></div>
+  </div>
+</div>
+
+
+<div id="view-reports" class="view">
+  <div class="mode-banner admin"><div class="mode-banner-dot" style="background:#c8841a"></div>Reports &amp; Admin</div>
+  <div id="rpt-row">
+
+  <!-- Left: 3-step report builder -->
+  <div id="rpt-left" style="display:flex;flex-direction:column;overflow-y:auto">
+
+    <!-- Step 1: Define Dataset -->
+    <div style="padding:14px 14px 10px;border-bottom:1px solid var(--cream-3)">
+      <div style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--amber);margin-bottom:10px">Step 1 — Define Dataset</div>
+      <div style="font-size:.78rem;font-weight:600;color:var(--warm-dk);padding:4px 0 10px" id="rpt-shelter-label">—</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div>
+          <div style="font-size:.68rem;font-weight:600;color:var(--warm-mid);margin-bottom:3px">Species</div>
+          <select id="rpt-filter-species" style="width:100%;font-size:.8rem;padding:6px 10px;border-radius:7px;border:1px solid var(--cream-3);font-family:var(--font-body);background:#fff">
+            <option value="">All Species</option>
+            <option>Dog</option><option>Cat</option><option>Bird</option><option>Rabbit</option><option>Other</option>
+          </select>
+        </div>
+        <div>
+          <div style="font-size:.68rem;font-weight:600;color:var(--warm-mid);margin-bottom:3px">Date Range</div>
+          <select id="rpt-filter-days" style="width:100%;font-size:.8rem;padding:6px 10px;border-radius:7px;border:1px solid var(--cream-3);font-family:var(--font-body);background:#fff">
+            <option value="">All Time</option>
+            <option value="30">Last 30 days</option>
+            <option value="60">Last 60 days</option>
+            <option value="90">Last 90 days</option>
+            <option value="365">This Year</option>
+          </select>
+        </div>
+        <div>
+          <div style="font-size:.68rem;font-weight:600;color:var(--warm-mid);margin-bottom:3px">Status Filter</div>
+          <select id="rpt-filter-status" style="width:100%;font-size:.8rem;padding:6px 10px;border-radius:7px;border:1px solid var(--cream-3);font-family:var(--font-body);background:#fff">
+            <option value="">All Statuses</option>
+            <option value="hold">On Hold</option>
+            <option value="stray">In Care (Stray)</option>
+            <option value="adopt">Adoption Ready</option>
+            <option value="reunited">Reunited</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Choose Report -->
+    <div style="padding:14px 14px 10px;border-bottom:1px solid var(--cream-3);flex-shrink:0">
+      <div style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--amber);margin-bottom:10px">Step 2 — Choose Report</div>
+      <div id="report-type-list" style="display:flex;flex-direction:column;gap:3px"></div>
+    </div>
+
+    <!-- Step 3: Generate -->
+    <div style="padding:14px;padding-bottom:14px;flex-shrink:0">
+      <div style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--amber);margin-bottom:10px">Step 3 — Generate</div>
+      <button id="rpt-run-btn" onclick="runSelectedReport()" style="width:100%;padding:12px;font-family:var(--font-display);font-size:.9rem;font-weight:700;background:var(--forest);color:#fff;border:none;border-radius:10px;cursor:pointer;opacity:.4;pointer-events:none" disabled>
+        ▶ Generate Report
+      </button>
+      <div id="rpt-selected-label" style="font-size:.72rem;color:var(--warm-mid);text-align:center;margin-top:6px">Select a report type above</div>
+
+    </div>
+
+    <div id="rpt-list" style="flex:1;overflow-y:auto;min-height:80px;padding-bottom:8px"></div>
+  </div>
+
+  <!-- Right: report output -->
+  <div id="rpt-right">
+    <div id="rpt-detail-empty" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--warm-mid);gap:10px;padding:32px;text-align:center">
+      <div style="font-size:3rem;opacity:.15">📊</div>
+      <div style="font-size:.95rem;font-weight:700;color:var(--warm-dk)">No report generated yet</div>
+      <div style="font-size:.78rem;line-height:1.6">
+        Use the panel on the left:<br>
+        <strong>1.</strong> Set your dataset filters<br>
+        <strong>2.</strong> Choose a report type<br>
+        <strong>3.</strong> Tap <em>Generate Report</em>
+      </div>
+    </div>
+    <!-- Report output panel -->
+    <div id="rpt-report-panel" style="display:none;flex-direction:column;height:100%">
+      <!-- Report panel header — flex-column on mobile -->
+      <div style="padding:10px 14px;border-bottom:1px solid var(--cream-3);flex-shrink:0;background:var(--cream)">
+        <!-- Title row with back btn and close -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <button onclick="closeReportPanel()" style="display:none;padding:6px 12px;font-size:.82rem;font-weight:700;border:none;border-radius:7px;background:var(--forest);color:#fff;cursor:pointer;flex-shrink:0;margin-right:8px" class="mobile-back-btn">← Back</button>
+          <div style="min-width:0;flex:1">
+            <div style="font-family:var(--font-display);font-size:.95rem;font-weight:700;color:var(--warm-dk);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="rpt-panel-title">Report</div>
+            <div style="font-size:.68rem;color:var(--warm-mid)" id="rpt-panel-sub"></div>
+          </div>
+          <button onclick="closeReportPanel()" style="padding:6px 9px;font-size:.8rem;border-radius:7px;border:none;background:var(--cream-2);cursor:pointer;flex-shrink:0;margin-left:8px" class="desktop-close-btn">✕</button>
+        </div>
+        <!-- Action buttons — horizontal scroll on mobile -->
+        <div style="display:flex;gap:5px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px">
+          <button onclick="printActiveReport()" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body);white-space:nowrap;flex-shrink:0">🖨️ Print</button>
+          <button onclick="openContentGen('press')" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid #e0a090;background:#fff;cursor:pointer;font-family:var(--font-body);color:#c0392b;white-space:nowrap;flex-shrink:0">📣 Shareable Summary</button>
+          <button onclick="openContentGen('fund')" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid #e0c090;background:#fff;cursor:pointer;font-family:var(--font-body);color:#b06010;white-space:nowrap;flex-shrink:0">💛 Donor Message</button>
+          <button onclick="copyActiveReport()" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid var(--forest);background:var(--forest);color:#fff;cursor:pointer;font-family:var(--font-body);white-space:nowrap;flex-shrink:0">📋 Copy</button>
+        </div>
+      </div>
+      <!-- Hidden filters row (kept for JS compatibility, not shown) -->
+      <div id="rpt-filters-row" style="display:none">
+        <select id="rpt-filter-shelter" style="display:none"></select>
+      </div>
+      <div id="rpt-report-body" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px;font-family:Georgia,serif;font-size:.86rem;line-height:1.7;color:var(--warm-dk)"></div>
+    </div>
+    <div id="rpt-detail-panel"></div>
+  </div>
+
+  </div><!-- end rpt-row -->
+</div>
+
+<div id="view-map" class="view active">
+  <div id="map-container">
+
+    <!-- ── SHELTER SPOTLIGHT — floating card, bottom-right of map ──────
+         Doctrine-safe presentation layer only. No pins. No map state.
+         Pulls from existing shelter/adoption records only. No new writes.
+    ─────────────────────────────────────────────────────────────────── -->
+    <div id="shelter-spotlight" style="display:none;position:absolute;bottom:124px;right:14px;z-index:700;width:200px;border-radius:20px;overflow:hidden;box-shadow:0 12px 40px rgba(42,31,18,.35),0 4px 12px rgba(0,0,0,.15);transition:opacity .6s ease,transform .15s ease;opacity:0;pointer-events:auto;cursor:pointer;border:1.5px solid rgba(255,255,255,.8);background:var(--cream);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)" onclick="this.style.transform='scale(1.04)';setTimeout(function(){setView('adopt',null);},150)">
+      <!-- Shelter companion card — NOT a map feature. No pins. No doctrine impact. -->
+      <div style="background:var(--forest);padding:6px 8px 6px 10px;display:flex;align-items:center;gap:6px;width:100%">
+        <span style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.85)" id="spotlight-header-label">🏠 From the Shelter</span><button onclick="event.stopPropagation();dismissSpotlight()" style="background:none;border:none;color:rgba(255,255,255,.6);font-size:.85rem;line-height:1;cursor:pointer;padding:0 2px;margin-left:auto;flex-shrink:0" title="Dismiss">✕</button>
+      </div>
+      <div style="position:relative;height:120px;background:var(--cream-2);overflow:hidden">
+        <img id="spotlight-img" src="" alt="" style="width:100%;height:100%;object-fit:contain;object-position:center center;background:var(--cream-2);display:none">
+        <div id="spotlight-emoji" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:3rem;background:var(--cream-2)">🐾</div>
+        <div id="spotlight-label" style="position:absolute;bottom:6px;left:6px;background:rgba(255,255,255,.9);color:var(--forest);font-size:.56rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:2px 7px;border-radius:999px;box-shadow:0 1px 4px rgba(0,0,0,.12)">Adoptable</div>
+      </div>
+      <div style="padding:8px 10px 10px;background:var(--cream);min-height:120px">
+        <div id="spotlight-ai-bio" style="font-size:.7rem;color:var(--warm-dk);line-height:1.35;font-style:italic;margin-bottom:5px;overflow:hidden;min-height:47px;transition:opacity .3s ease;opacity:0"></div>
+        <div id="spotlight-name" style="font-family:var(--font-display);font-size:.88rem;color:var(--warm-dk);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px"></div>
+        <div id="spotlight-bio" style="font-size:.68rem;color:var(--warm-mid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:8px"></div>
+        <div style="background:var(--forest);color:#fff;font-size:.68rem;font-weight:700;text-align:center;padding:6px 8px;border-radius:8px;letter-spacing:.02em" id="spotlight-cta">View Adoptable Pets →</div>
+      </div>
+    </div>
+
+    <div id="map-loading" style="position:absolute;inset:0;z-index:500;background:rgba(244,241,235,.7);display:flex;align-items:center;justify-content:center;pointer-events:none;transition:opacity .4s ease">
+      <div style="font-size:.85rem;color:var(--warm-mid);font-weight:600;font-family:var(--font-body)">🗺️ Loading map…</div>
+    </div>
+    <!-- Map zoom controls -->
+    <div id="map"></div>
+
+    <!-- Live banner -->
+    <div id="pp-banner">
+      <div class="banner-dot" id="banner-dot"></div>
+      <div id="banner-txt">🐾 PawPulse is live in Hastings</div>
+    </div>
+
+    <!-- Floating filter pills -->
+    <!-- Map legend — bottom left -->
+
+<div id="map-legend" style="display:flex;flex-direction:column;gap:5px">
+      <div class="legend-item"><div class="stat-dot lost"></div><span id="cnt-lost" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span>Lost</span></div>
+      <div class="legend-item"><div class="stat-dot found"></div><span id="cnt-found" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span>Found</span></div>
+      <div class="legend-item"><div class="legend-pin" style="background:#d06020"></div><span id="cnt-at-shelter" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span>Bringing to Shelter</span></div>
+      <div class="legend-item"><div class="legend-pin" style="background:#1a3f8a"></div><span id="cnt-shelter" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span id="legend-shelter-label">At Heartland Shelter</span></div>
+      <div class="legend-item" style="padding-left:18px"><div class="legend-pin" style="background:#c8841a"></div><span id="cnt-adopt" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span>↳ Adoptable</span></div>
+      <div style="font-size:.55rem;color:var(--warm-mid);line-height:1.4;margin-top:2px;max-width:160px">Info may change. Contact shelter for official status.</div>
+    </div>
+
+    <div id="drop-hint">
+      📍 Tap the map to place pin
+      <button id="drop-cancel" onclick="cancelPlace(); document.getElementById('side-panel').classList.add('open');" style="padding:8px 14px;min-height:44px;font-size:.85rem;font-weight:700;border:none;border-radius:8px;background:rgba(255,255,255,.2);color:#fff;cursor:pointer">✕ Back</button>
+    </div>
+    <!-- Shown after pin placed on mobile — big tap target to return to form -->
+    <div id="pin-set-btn" style="display:none;position:absolute;bottom:80px;left:50%;transform:translateX(-50%);z-index:900;background:var(--forest);color:var(--cream);border:none;border-radius:999px;padding:14px 28px;font-size:.9rem;font-weight:700;font-family:var(--font-display);box-shadow:0 4px 20px rgba(0,0,0,.35);cursor:pointer;white-space:nowrap;animation:hpulse 1.4s ease-in-out infinite" onclick="document.getElementById('pin-set-btn').style.display='none'; document.getElementById('side-panel').classList.add('open'); setTimeout(function(){map.invalidateSize();},340);">
+      ✅ Pin placed — tap to continue →
+    </div>
+
+    <div id="pin-card">
+      <button class="pc-close" onclick="closeCard()">✕</button>
+      <div id="pin-card-body" style="overflow-y:auto;max-height:calc(80vh - 40px);-webkit-overflow-scrolling:touch"></div>
+    </div>
+
+    <div id="empty-hint">🐾 No reports yet — tap <strong>+ Report</strong> to post the first one.</div>
+
+    <div id="side-panel">
+      <div class="panel-hdr">
+        <div>
+          <div class="panel-title" id="panel-title">Report a Lost Pet</div>
+          <div class="panel-sub"  id="panel-sub">Help your community find them 🐶</div>
+        </div>
+        <button class="panel-close" onclick="closePanel()">✕</button>
+      </div>
+      <div class="panel-body">
+
+        <!-- LOST FORM -->
+        <div id="form-lost">
+          <div class="sl">📋 Pet Information</div>
+          <div class="fr">
+            <div class="fg" style="margin:0"><label>Pet Name</label><input type="text" id="l-name" placeholder="e.g. Biscuit"></div>
+            <div class="fg" style="margin:0"><label>Species</label><select id="l-species" onchange="updateBreedField('l-species','l-breed-wrap')"><option value="">Select…</option><option>Dog</option><option>Cat</option><option>Bird</option><option>Rabbit</option><option>Other</option></select></div>
+          </div>
+          <div class="fr">
+            <div class="fg" style="margin:0"><label>Breed</label><div id="l-breed-wrap"><input type="text" id="l-breed" placeholder="Select species first"></div></div>
+            <div class="fg" style="margin:0"><label>Color</label><input type="text" id="l-color" placeholder="e.g. Golden, white"></div>
+          </div>
+          <hr class="div">
+          <div class="sl">📍 Last Seen Location</div>
+          <div class="loc-prompt on" id="l-prompt">
+            <button onclick="startPlace('lost')" style="width:100%;padding:12px;border:2px dashed #c94f2a;border-radius:9px;background:#fff8f6;color:#c94f2a;font-size:.82rem;font-weight:700;cursor:pointer;font-family:var(--font-body);display:flex;align-items:center;justify-content:center;gap:8px">
+              📍 Tap to Set Location on Map
+            </button>
+            <div style="font-size:.66rem;color:var(--warm-mid);text-align:center;margin-top:4px">The map will open — tap where your pet was last seen</div>
+          </div>
+          <div class="loc-set"       id="l-locset">✅ <span id="l-loctxt">Location set</span> — <button onclick="startPlace('lost')" style="background:none;border:none;color:var(--forest);font-size:.72rem;font-weight:600;cursor:pointer;padding:0;font-family:var(--font-body);text-decoration:underline">Move pin</button></div>
+          <div class="fg"><label>Landmark / Address (optional)</label><input type="text" id="l-address" placeholder="e.g. Near Brickyard Park"></div>
+          <hr class="div">
+          <div class="sl">🖼️ Photo</div>
+          <div class="photo-drop">
+            <input type="file" id="l-photo" accept="image/*" onchange="previewPhoto(this,'l-prev','l-dicon','l-dtxt');showAIBtn('l')">
+            <div class="photo-drop-icon" id="l-dicon">📷</div>
+            <div class="photo-drop-txt"  id="l-dtxt">Tap to upload a photo</div>
+            <img id="l-prev" class="photo-prev" alt="preview">
+          </div>
+          <div id="l-ai-wrap" style="display:none;margin-top:8px">
+            <button class="ai-id-btn" id="l-ai-btn" onclick="applyAIIdentify('l')">✨ Identify breed &amp; color with AI</button>
+            <div class="ai-id-result" id="l-ai-result"></div>
+          </div>
+          <hr class="div">
+          <div class="sl">👤 Owner Contact</div>
+          <div class="fg"><label>Your Name</label><input type="text" id="l-owner" placeholder="Full name"></div>
+          <div class="fr">
+            <div class="fg" style="margin:0"><label>Phone</label><input type="tel" id="l-phone" placeholder="555-0100"></div>
+            <div class="fg" style="margin:0"><label>Email</label><input type="email" id="l-email" placeholder="you@email.com"></div>
+          </div>
+          <div class="fg"><label>Microchip # (optional)</label><input type="text" id="l-chip" placeholder="15-digit number"></div>
+          <div class="fg"><label>Additional Details</label><textarea id="l-notes" placeholder="Collar, markings, behavior…"></textarea></div>
+          <!-- Honeypot: hidden from real users, bots fill it in -->
+          <div style="position:absolute;left:-9999px;top:-9999px;opacity:0;pointer-events:none" aria-hidden="true"><input type="text" id="l-confirm-email" name="confirm_email" tabindex="-1" autocomplete="off"></div>
+          <button class="submit-btn lost" onclick="submitLost()">🔴 Submit Lost Pet Report</button>
+        </div>
+
+        <!-- FOUND FORM -->
+        <div id="form-found" style="display:none">
+          <div class="sl">📋 Pet Description</div>
+          <div class="fr">
+            <div class="fg" style="margin:0"><label>Species</label><select id="f-species"><option value="">Select…</option><option>Dog</option><option>Cat</option><option>Bird</option><option>Rabbit</option><option>Other</option></select></div>
+            <div class="fg" style="margin:0"><label>Color / Markings</label><input type="text" id="f-color" placeholder="e.g. Black &amp; tan"></div>
+          </div>
+          <div class="fg"><label>Description</label><textarea id="f-desc" placeholder="Size, age, collar, behavior…"></textarea></div>
+          <hr class="div">
+          <div class="sl">📍 Where Found</div>
+          <div class="loc-prompt on" id="f-prompt">
+            <button onclick="startPlace('found')" style="width:100%;padding:12px;border:2px dashed #3a7d44;border-radius:9px;background:#f6fff7;color:#3a7d44;font-size:.82rem;font-weight:700;cursor:pointer;font-family:var(--font-body);display:flex;align-items:center;justify-content:center;gap:8px">📍 Tap to Set Location on Map</button>
+            <div style="font-size:.66rem;color:var(--warm-mid);text-align:center;margin-top:4px">The map will open — tap where you found the pet</div>
+          </div>
+          <div class="loc-set" id="f-locset">✅ <span id="f-loctxt">Location set</span> — <button onclick="startPlace('found')" style="background:none;border:none;color:var(--forest);font-size:.72rem;font-weight:600;cursor:pointer;padding:0;font-family:var(--font-body);text-decoration:underline">Move pin</button></div>
+          <div class="fg"><label>Landmark / Address (optional)</label><input type="text" id="f-address" placeholder="e.g. Near the fairgrounds"></div>
+          <hr class="div">
+          <div class="sl">🖼️ Photo</div>
+          <div class="photo-drop">
+            <input type="file" id="f-photo" accept="image/*" onchange="previewPhoto(this,'f-prev','f-dicon','f-dtxt')">
+            <div class="photo-drop-icon" id="f-dicon">📷</div>
+            <div class="photo-drop-txt"  id="f-dtxt">Tap to upload a photo</div>
+            <img id="f-prev" class="photo-prev" alt="preview">
+          </div>
+          <hr class="div">
+          <div class="sl">📞 Your Contact</div>
+          <div class="fr">
+            <div class="fg" style="margin:0"><label>Your Name</label><input type="text" id="f-finder" placeholder="Your name"></div>
+            <div class="fg" style="margin:0"><label>Phone</label><input type="tel" id="f-phone" placeholder="555-0100"></div>
+          </div>
+          <div class="chk-row">
+            <input type="checkbox" id="f-shelter" onchange="document.getElementById('f-sgrp').style.display=this.checked?'':'none'">
+            <label for="f-shelter">🏠 I have brought or am bringing this pet to a shelter or vet</label>
+          </div>
+          <div id="f-sgrp" style="display:none" class="fg">
+            <label>Which shelter or vet?</label>
+            <input type="text" id="f-sname" placeholder="e.g. Heartland Pet Connection">
+          </div>
+          <!-- Honeypot: hidden from real users, bots fill it in -->
+          <div style="position:absolute;left:-9999px;top:-9999px;opacity:0;pointer-events:none" aria-hidden="true"><input type="text" id="f-confirm-email" name="confirm_email" tabindex="-1" autocomplete="off"></div>
+          <button class="submit-btn found" onclick="submitFound()">🟢 Submit Found Pet Report</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast">🔔 <span id="toast-msg"></span></div>
+
+<script>
+/* Global error handler — catches and surfaces errors on iOS Safari */
+window.onerror = function(msg, src, line, col, err) {
+  console.error('PawPulse error:', msg, src ? '@ ' + src.split('/').pop() + ':' + line : '');
+  return false; /* don't suppress */
+};
+window.addEventListener('unhandledrejection', function(e) {
+  console.error('PawPulse unhandled promise:', e.reason);
+});
+
+var HASTINGS = [40.5888, -98.3910];
+var MAP_ZOOM = window.innerWidth < 700 ? 10 : 11;
+
+/* Map init — synchronous. Script tag is at bottom of body so #map div exists. */
+var map;
+try {
+  map = L.map('map', { center: HASTINGS, zoom: MAP_ZOOM, zoomControl: false,
+    maxBounds: [[40.28, -98.70], [40.76, -97.95]],
+    maxBoundsViscosity: 1.0,
+    minZoom: 9,
+    tap: false,          /* prevent Leaflet double-tap quirks on iOS */
+    tapTolerance: 15     /* larger tap area for pin accuracy near edges */
+  });
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 19
+  }).addTo(map);
+} catch(e) {
+  console.error('Leaflet init failed:', e.message);
+  map = { addLayer:function(){}, invalidateSize:function(){}, removeLayer:function(){}, hasLayer:function(){return false;}, fitBounds:function(){}, setView:function(){}, on:function(){}, off:function(){} };
+}
+
+var reports  = JSON.parse(localStorage.getItem('pawpulse-v2') || '[]');
+var lMarkers = [];
+var curFilter = 'all';
+var placing   = null;
+var pLat = {}, pLng = {};
+var _submissionCount = 0;  /* resets on page reload */
+var SUBMIT_COOLDOWN_MS = 30 * 60 * 1000;  /* 30 min between submissions */
+var SUBMIT_SESSION_MAX = 3;  /* max per session */
+var tmpMarker = null;
+var _fbReady  = false; /* true once Firestore listener is live */
+var _isStaff  = false;
+
+/* ── SAVE / LOAD ──────────────────────────────────────────────────────── */
+function save() {
+  /* Always write to localStorage as offline cache */
+  localStorage.setItem('pawpulse-v2', JSON.stringify(reports));
+  /* If Firebase is live, sync changed records to Firestore */
+  if (USE_FIREBASE && _fbReady && _isStaff) {
+    /* Debounced — avoid hammering Firestore on rapid edits */
+    clearTimeout(save._t);
+    save._t = setTimeout(function() { syncReportsToFirestore(); }, 600);
+  }
+}
+
+function syncReportsToFirestore() {
+  if (!USE_FIREBASE || !_isStaff || !db) return;
+  /* Use individual set() calls — batch writes fail Firestore security rules */
+  reports.forEach(function(r) {
+    db.collection('reports').doc(String(r.id)).set(r)
+      .catch(function(e){ console.warn('Firestore sync error:', e.message); });
+  });
+}
+
+function deleteFromFirestore(id) {
+  if (!USE_FIREBASE || !_isStaff) return;
+  db.collection('reports').doc(String(id)).delete()
+    .catch(function(e){ console.warn('Firestore delete error:', e); });
+}
+
+function openStaffLogin() {
+  var overlay = document.getElementById('login-overlay');
+  overlay.style.display = 'flex';
+  setTimeout(function(){ 
+    var em = document.getElementById('login-email');
+    if (em) em.focus();
+  }, 100);
+}
+
+function closeStaffLogin() {
+  document.getElementById('login-overlay').style.display = 'none';
+}
+
+function hideStaffLoginBtn() {
+  var btn = document.getElementById('nav-staff-login-btn');
+  if (btn) btn.style.display = 'none';
+}
+
+function showStaffLoginBtn() {
+  var btn = document.getElementById('nav-staff-login-btn');
+  if (btn) btn.style.display = 'flex';
+}
+
+function initFirebase() {
+  /* Boot straight to map — no login gate for public users */
+  doGuestView();
+
+  if (!USE_FIREBASE) return;
+
+  /* If already signed in (returning staff), restore session silently */
+  if (auth) {
+    auth.onAuthStateChanged(function(user) {
+      if (user) {
+        /* Confirmed signed in — ensure state is set */
+        _isStaff = true;
+        localStorage.setItem('pawpulse-staff', user.email);
+        setTimeout(maybeShowTutorial, 800);
+        document.getElementById('staff-badge').classList.add('staff-active');
+        document.querySelectorAll('.tab-ops,.tab-admin').forEach(function(el){ el.style.display = ''; });
+        hideStaffLoginBtn();
+        if (_fbReady !== true) {
+          if (db) { startFirestoreListener(); } else { showShelterPicker(); }
+        }
+        /* Re-sync any records with photos that may have failed to write
+           when auth was not yet restored (common on mobile Safari) */
+        if (db && reports.length > 0) {
+          setTimeout(function(){
+            reports.forEach(function(r){
+              if (r.photo) {
+                db.collection('reports').doc(String(r.id)).set(r)
+                  .catch(function(){});
+              }
+            });
+          }, 1500);
+        }
+        setTimeout(function(){ renderAdoptView(); }, 800);
+      } else {
+        /* null — only clear if localStorage flag also gone (real sign-out, not just slow restore) */
+        if (!localStorage.getItem('pawpulse-staff')) {
+          _isStaff = false;
+          document.getElementById('staff-badge').classList.remove('staff-active');
+          document.querySelectorAll('.tab-ops,.tab-admin').forEach(function(el){ el.style.display = 'none'; });
+          showStaffLoginBtn();
+        }
+        if (_fbReady !== true) {
+          if (db) { startFirestoreListener(); } else { bootApp(); }
+        }
+      }
+    });
+  }
+}
+
+
+function startFirestoreListener() {
+  if (!db) {
+    console.warn('Firestore unavailable — using localStorage');
+    _fbReady = true;
+    showShelterPicker();
+    return;
+  }
+  try {
+    db.collection('reports').onSnapshot(function(snapshot) {
+      if (window._pauseFirestoreSync) {
+        /* Demo load or major write in progress — skip listener */
+        if (!_fbReady) { _fbReady = true; showShelterPicker(); }
+        return;
+      }
+
+      if (!_fbReady) {
+        /* Initial load — take everything from Firestore if it has data,
+           otherwise keep localStorage data */
+        if (!snapshot.empty) {
+          var localSnapshot = reports.slice(); /* save local state (has photos) */
+          reports = [];
+          snapshot.forEach(function(doc) {
+            var data = doc.data();
+            /* Preserve local photo if Firestore version lacks it
+               (happens when photo write failed due to slow auth on mobile) */
+            var local = localSnapshot.find(function(r){ return String(r.id) === String(data.id); });
+            /* Preserve local photo only if Firestore lacks it (failed upload case) */
+            if (local && local.photo && !data.photo) { data.photo = local.photo; }
+            reports.push(data);
+          });
+          localStorage.setItem('pawpulse-v2', JSON.stringify(reports));
+        }
+        /* If Firestore empty, reports already loaded from localStorage in bootApp — keep them */
+        _fbReady = true;
+        installBypassDetection();
+        setTimeout(function(){ assertNoInvalidStates(reports); }, 800);
+        /* Mark data as loaded — gates empty-hint and dismisses loading overlay */
+        window._firebaseLoaded = true;
+        var _ml = document.getElementById('map-loading');
+        if (_ml) { _ml.style.opacity = '0'; setTimeout(function(){ _ml.style.display='none'; }, 450); }
+        initSpotlight();
+        showShelterPicker();
+        setTimeout(rotateBanner, 200); /* Rotate banner as soon as data loads */
+        return;
+      }
+
+      /* Real-time updates — use docChanges() to avoid full wipe */
+      var changed = false;
+      snapshot.docChanges().forEach(function(change) {
+        var data = change.doc.data();
+        /* Use document path ID as primary key — data.id may be absent on old records */
+        var docPathId = change.doc.id;
+        var dataId = (data.id !== undefined && data.id !== null) ? String(data.id) : docPathId;
+        var idx = -1;
+        for (var i = 0; i < reports.length; i++) {
+          var rid = String(reports[i].id);
+          if (rid === dataId || rid === docPathId) { idx = i; break; }
+        }
+        if (change.type === 'added' || change.type === 'modified') {
+          if (idx > -1) {
+            /* Preserve local photo if Firestore lacks it (failed upload) */
+            if (!data.photo && reports[idx].photo) {
+              data.photo = reports[idx].photo;
+            }
+            reports[idx] = data;
+          } else {
+            reports.push(data);
+          }
+          changed = true;
+        } else if (change.type === 'removed') {
+          if (idx > -1) { reports.splice(idx, 1); changed = true; }
+        }
+      });
+
+      if (changed) {
+        localStorage.setItem('pawpulse-v2', JSON.stringify(reports));
+        renderMarkers();
+        renderIncareView();
+        updateNavCounts();
+        rotateBanner();
+      }
+    }, function(err) {
+      console.warn('Firestore listener error:', err);
+      _fbReady = true;
+      showShelterPicker();
+    });
+  } catch(e) {
+    console.warn('Firestore init error:', e.message);
+    _fbReady = true;
+    showShelterPicker();
+  }
+}
+
+function showShelterPicker() {
+  /* Single shelter — go straight in, no picker needed */
+  activeShelter = shelters[0].name;
+  sessionStorage.setItem('pp-shelter', activeShelter);
+  var el = document.getElementById('shelter-picker-overlay');
+  if (el) el.style.display = 'none';
+  var badge = document.getElementById('staff-badge');
+  if (badge) badge.classList.add('staff-active');
+  bootApp();
+}
+
+function selectShelterSession(name) {
+  activeShelter = name;
+  sessionStorage.setItem('pp-shelter', name);
+  var el = document.getElementById('shelter-picker-overlay');
+  if (el) el.style.display = 'none';
+  /* Update shelter selector if visible */
+  var sel = document.getElementById('sh-selector');
+  if (sel) sel.value = name;
+  var badge = document.getElementById('staff-badge');
+  if (badge) {
+    badge.classList.add('staff-active');
+    var nameBadge = document.getElementById('staff-name-badge');
+    if (nameBadge) nameBadge.textContent = '🔐 ' + name.split(' ')[0];
+  }
+  bootApp();
+}
+
+function sendPasswordReset() {
+  var email = ((document.getElementById('login-email')||{}).value||'').trim();
+  var errEl = document.getElementById('login-err');
+  if (!email) {
+    if (errEl) { errEl.textContent = 'Enter your email address first, then tap Forgot password?'; errEl.style.display = 'block'; }
+    return;
+  }
+  if (!auth) {
+    if (errEl) { errEl.textContent = 'Firebase not available.'; errEl.style.display = 'block'; }
+    return;
+  }
+  auth.sendPasswordResetEmail(email)
+    .then(function() {
+      if (errEl) { errEl.style.color = 'var(--found-g)'; errEl.textContent = '✓ Reset email sent to ' + email + '. Check your inbox.'; errEl.style.display = 'block'; }
+    })
+    .catch(function(e) {
+      if (errEl) { errEl.style.color = 'var(--lost-r)'; errEl.textContent = e.message; errEl.style.display = 'block'; }
+    });
+}
+
+function loadDemoData() {
+  /* Full wipe first — clears everything so demo starts clean */
+  if (!confirm('This will clear ALL existing animals and load 9 demo animals from Heartland. Continue?')) return;
+
+  /* Remove all records from Firestore — async batch, don't block UI */
+  var idsToDelete = reports.map(function(r){ return String(r.id); });
+  reports = [];
+  save();
+  window._pauseFirestoreSync = true; /* hold listener until demo animals are written */
+  if (USE_FIREBASE && _fbReady && db) {
+    /* Use individual deletes — batch writes fail Firestore security rules */
+    var deleteCount = 0;
+    idsToDelete.forEach(function(id){
+      db.collection('reports').doc(id).delete()
+        .catch(function(){});
+    });
+    /* Don't wait for deletes — demo animals write immediately after */
+  }
+  var now = Date.now();
+  var day = 86400000;
+  var shelter = 'Heartland Pet Connection';
+
+  /* Deduplicate — remove any existing demo animals before adding fresh ones */
+  var demoIds = [];
+  reports = reports.filter(function(r){ return !r._isDemoData; });
+
+  var demo = [
+    /* ── ADOPTION READY ─────────────────────────────────────────────── */
+    { id:now+1, shelter:true, shelterName:shelter, masterStatus:'available',
+      adoptionStatus:'available', intakeSource:'stray', intakeType:'stray',
+      name:'Omni', species:'Dog', breed:'Labrador Retriever Mix', color:'Black', sex:'Female',
+      age:'2 years', adoptionFee:125, tags:'Good with kids, House-trained',
+      date:new Date(now-18*day).toISOString(), dateAvailable:new Date(now-12*day).toISOString(),
+      lat:40.5932, lng:-98.3875, address:'Near Brickyard Park',
+      about:'Found wandering near the park. Sweet, calm, good on leash.',
+      _isDemoData:true },
+
+    { id:now+2, shelter:true, shelterName:shelter, masterStatus:'available',
+      adoptionStatus:'available', intakeSource:'surrender', intakeType:'stray',
+      name:'Romeo', species:'Cat', breed:'Siamese Mix', color:'Cream & brown', sex:'Male',
+      age:'4 years', adoptionFee:75, tags:'Indoor cat, Quiet home',
+      date:new Date(now-22*day).toISOString(), dateAvailable:new Date(now-15*day).toISOString(),
+      lat:40.5870, lng:-98.3960, address:'Owner surrender — W 3rd St',
+      about:'Owner moved out of state. Loves sunny spots and gentle handling.',
+      _isDemoData:true },
+
+    { id:now+3, shelter:true, shelterName:shelter, masterStatus:'available',
+      adoptionStatus:'available', intakeSource:'stray', intakeType:'stray',
+      name:'Bailey', species:'Cat', breed:'Domestic Longhair', color:'Orange tabby', sex:'Female',
+      age:'5 months', adoptionFee:75, tags:'Playful, Good with cats',
+      date:new Date(now-14*day).toISOString(), dateAvailable:new Date(now-7*day).toISOString(),
+      lat:40.5910, lng:-98.3820, address:'Near Hastings College campus',
+      _isDemoData:true },
+
+    { id:now+4, shelter:true, shelterName:shelter, masterStatus:'available',
+      adoptionStatus:'available', intakeSource:'stray', intakeType:'stray',
+      name:'Parker', species:'Dog', breed:'Husky Mix', color:'Gray & white', sex:'Male',
+      age:'3 months', adoptionFee:150, tags:'Puppy, Active home needed',
+      date:new Date(now-10*day).toISOString(), dateAvailable:new Date(now-3*day).toISOString(),
+      lat:40.5845, lng:-98.4010, address:'Found near W 12th Ave',
+      _isDemoData:true },
+
+    /* ── IN CARE — STRAY HOLD ────────────────────────────────────────── */
+    { id:now+5, shelter:true, shelterName:shelter, masterStatus:'intake',
+      adoptionStatus:'', intakeSource:'stray', intakeType:'stray',
+      name:'Fuzz', species:'Cat', breed:'Domestic Shorthair', color:'Gray & white', sex:'Female',
+      age:'1 year', shelterHoldStart:new Date(now-3*day).toISOString(),
+      date:new Date(now-3*day).toISOString(), lat:40.5920, lng:-98.3990,
+      address:'Picked up near Denver Ave & 5th St',
+      desc:'Friendly, no collar. Microchip scan negative.',
+      _isDemoData:true },
+
+    { id:now+6, shelter:true, shelterName:shelter, masterStatus:'intake',
+      adoptionStatus:'', intakeSource:'ac', intakeType:'stray',
+      name:'Toad', species:'Cat', breed:'Domestic Shorthair', color:'Black & white', sex:'Male',
+      age:'2 months', shelterHoldStart:new Date(now-1*day).toISOString(),
+      date:new Date(now-1*day).toISOString(), lat:40.5888, lng:-98.3910,
+      address:'Brought in by AC — Burlington Ave',
+      desc:'Very young, likely separated from litter.',
+      _isDemoData:true },
+
+    /* ── IN CARE — BITE HOLD ─────────────────────────────────────────── */
+    { id:now+7, shelter:true, shelterName:shelter, masterStatus:'intake',
+      adoptionStatus:'', intakeSource:'ac', intakeType:'hold', holdType:'bite',
+      name:'Duke', species:'Dog', breed:'Pit Bull Mix', color:'Brindle', sex:'Male',
+      age:'3 years', shelterHoldStart:new Date(now-6*day).toISOString(),
+      date:new Date(now-6*day).toISOString(), lat:40.5850, lng:-98.3850,
+      address:'Incident at Hastings City Park — W 3rd',
+      desc:'Bite incident — child. Under mandatory 10-day quarantine.',
+      medical: { healthStatus:'Monitoring', spayNeuter:'Unknown' },
+      enforcement: { dailyCost:35, acInvolved:true },
+      _isDemoData:true },
+
+    /* ── PUBLIC LOST PET ──────────────────────────────────────────────── */
+    { id:now+8, type:'lost', shelter:false, reunited:false,
+      name:'Biscuit', species:'Dog', breed:'Golden Retriever Mix', color:'Golden',
+      date:new Date(now-2*day).toISOString(), lat:40.5975, lng:-98.3840,
+      address:'Near Brickyard Park — Hastings',
+      owner:'Sarah M.', phone:'402-555-0142',
+      notes:'Friendly. Red collar. Responds to his name.',
+      _isDemoData:true },
+
+    /* ── PUBLIC FOUND PET ────────────────────────────────────────────── */
+    { id:now+9, type:'found', shelter:false, reunited:false,
+      species:'Cat', color:'Orange tabby, white paws',
+      date:new Date(now-1*day).toISOString(), lat:40.5910, lng:-98.3980,
+      address:'3rd & Hastings Ave',
+      finder:'Tom B.', fphone:'402-555-0133',
+      desc:'Friendly young cat found on my porch this morning. No collar.',
+      _isDemoData:true }
+  ];
+
+  demo.forEach(function(r){ reports.push(r); });
+  save(); renderMarkers(); renderIncareView(); renderAdoptView(); updateNavCounts();
+
+  /* Sync demo animals to Firestore — use individual writes (batch fails security rules) */
+  if (USE_FIREBASE && _fbReady && db) {
+    window._pauseFirestoreSync = true;
+    var written = 0;
+    demo.forEach(function(r){
+      db.collection('reports').doc(String(r.id)).set(r)
+        .then(function(){
+          written++;
+          if (written === demo.length) {
+            setTimeout(function(){ window._pauseFirestoreSync = false; }, 1000);
+          }
+        })
+        .catch(function(e){ console.warn('Demo seed error:', e.message); written++; });
+    });
+    /* Failsafe timeout */
+    setTimeout(function(){ window._pauseFirestoreSync = false; }, 15000);
+  }
+
+  /* Auto-generate bios for adoption-ready demo animals */
+  if (_isStaff) {
+    var adoptIds = demo.filter(function(r){ return r.adoptionStatus==='available'; }).map(function(r){ return r.id; });
+    adoptIds.forEach(function(id, i){
+      setTimeout(function(){ updateAdoptProfile(id); }, 2000 + (i * 4000));
+    });
+  }
+  alert('✅ ' + demo.length + ' demo animals loaded — 4 adoption-ready, 2 stray holds, 1 bite hold, 1 lost pet, 1 found pet.');
+}
+
+function forceSyncPhotos() {
+  if (!USE_FIREBASE || !_fbReady || !db) { alert('Not connected to cloud.'); return; }
+  var withPhotos = reports.filter(function(r){ return r.photo; });
+  if (!withPhotos.length) { alert('No photos to sync.'); return; }
+  var synced = 0, failed = 0;
+  var btn = document.querySelector('[onclick="forceSyncPhotos()"]');
+  if (btn) { btn.textContent = '🔄'; btn.disabled = true; }
+  withPhotos.forEach(function(r){
+    db.collection('reports').doc(String(r.id)).set(r)
+      .then(function(){ synced++; checkDone(); })
+      .catch(function(e){ failed++; console.warn('Sync failed:', e.message); checkDone(); });
+  });
+  function checkDone(){
+    if (synced + failed < withPhotos.length) return;
+    if (btn) { btn.textContent = failed ? '⚠️' : '✅'; btn.disabled = false; setTimeout(function(){ btn.textContent = '☁️'; }, 3000); }
+    if (failed) alert(failed + ' photo(s) failed to sync. Check internet connection.');
+    else alert('✅ ' + synced + ' photo(s) synced to cloud.');
+  }
+}
+
+
+function doLogin() {
+  var email = (document.getElementById('login-email').value || '').trim().toLowerCase();
+  var pw    = document.getElementById('login-pw').value;
+  var btn   = document.getElementById('login-btn');
+  var errEl = document.getElementById('login-err');
+  if (!email || !pw) {
+    errEl.textContent = 'Please enter your email and password.';
+    errEl.style.display = 'block'; return;
+  }
+  errEl.style.display = 'none';
+  errEl.style.color = 'var(--lost-r)'; /* reset from any green reset-email message */
+  btn.textContent = 'Signing in…'; btn.disabled = true;
+
+  var STAFF_CREDS = [
+    { email: 'spauleylaw@gmail.com',             pw: 'Heartland2026!' },
+    { email: 'heartlandpetconnection@gmail.com', pw: 'Heartland2026!' }
+  ];
+
+  function onSuccess() {
+    btn.textContent = 'Sign In'; btn.disabled = false;
+    _isStaff = true;
+    /* Store auth flag in localStorage — backup for mobile browsers where Firebase
+       IndexedDB session restore is unreliable */
+    localStorage.setItem('pawpulse-staff', email);
+    document.getElementById('login-overlay').style.display = 'none';
+    document.getElementById('staff-badge').classList.add('staff-active');
+    /* Show staff-only tabs */
+    document.querySelectorAll('.tab-ops,.tab-admin').forEach(function(el){ el.style.display = ''; });
+    hideStaffLoginBtn();
+    var nb = document.getElementById('staff-name-badge');
+    if (nb) nb.textContent = '🔐 Staff';
+    if (db) { startFirestoreListener(); } else { showShelterPicker(); }
+    /* Re-render adopt view so Generate Bio button appears now that _isStaff is true */
+    setTimeout(function(){ renderAdoptView(); }, 800);
+  }
+
+  function onFail() {
+    btn.textContent = 'Sign In'; btn.disabled = false;
+    errEl.textContent = 'Incorrect email or password.';
+    errEl.style.display = 'block';
+  }
+
+  /* Try Firebase auth first if available */
+  if (auth) {
+    auth.signInWithEmailAndPassword(email, pw)
+      .then(function() { onSuccess(); })
+      .catch(function() {
+        /* Firebase rejected — try local credentials as fallback */
+        var match = STAFF_CREDS.find(function(c){ return c.email === email && c.pw === pw; });
+        if (match) { onSuccess(); } else { onFail(); }
+      });
+    return;
+  }
+
+  /* Firebase auth unavailable — local credentials only */
+  var match = STAFF_CREDS.find(function(c){ return c.email === email && c.pw === pw; });
+  if (match) { onSuccess(); } else { onFail(); }
+}
+
+function doGuestView() {
+  /* If localStorage flag exists, skip staff UI reset — bootApp will restore it */
+  if (!localStorage.getItem('pawpulse-staff')) {
+    _isStaff = false;
+    document.querySelectorAll('.tab-ops,.tab-admin').forEach(function(el){ el.style.display='none'; });
+  }
+  document.getElementById('login-overlay').style.display = 'none';
+  var loading = document.getElementById('app-loading');
+  if (loading && loading.parentNode) loading.parentNode.removeChild(loading);
+  if (USE_FIREBASE) { startFirestoreListener(); } else { bootApp(); }
+}
+
+function doSignOut() {
+  localStorage.removeItem('pawpulse-staff');
+  sessionStorage.removeItem('pp-shelter');
+  _isStaff = false;
+  document.getElementById('staff-badge').classList.remove('staff-active');
+  var navBtn = document.getElementById('nav-staff-login-btn');
+  if (navBtn) navBtn.style.display = 'flex';
+  /* Hide staff-only tabs */
+  document.querySelectorAll('.tab-ops,.tab-admin').forEach(function(el){ el.style.display='none'; });
+  if (!USE_FIREBASE || !auth) return;
+  auth.signOut();
+}
+
+function clearTestData() {
+  if (!_isStaff) return;
+  var total = reports.length;
+  if (total === 0) {
+    var badge = document.getElementById('staff-name-badge');
+    if (badge) { var o = badge.textContent; badge.textContent = '✓ Already empty'; setTimeout(function(){ badge.textContent = o; }, 2000); }
+    return;
+  }
+  var confirmed = window.confirm('⚠️ DANGER: Remove all ' + total + ' records permanently from the map and system? This cannot be undone.');
+  if (!confirmed) return;
+
+  /* Delete all from Firestore in batches */
+  var idsToDelete = reports.map(function(r){ return String(r.id); });
+  window._pauseFirestoreSync = true;
+  if (USE_FIREBASE && _fbReady && db) {
+    /* Use individual deletes — batch writes fail Firestore security rules */
+    var deleteCount = 0;
+    idsToDelete.forEach(function(id){
+      db.collection('reports').doc(id).delete()
+        .then(function(){ deleteCount++; if (deleteCount === idsToDelete.length) setTimeout(function(){ window._pauseFirestoreSync = false; }, 1000); })
+        .catch(function(){ deleteCount++; });
+    });
+    if (!idsToDelete.length) setTimeout(function(){ window._pauseFirestoreSync = false; }, 500);
+  } else {
+    window._pauseFirestoreSync = false;
+  }
+
+  reports = [];
+  save();
+  renderMarkers();
+  renderIncareView();
+  renderAdoptView();
+  updateNavCounts();
+
+  var badge = document.getElementById('staff-name-badge');
+  if (badge) { var orig = badge.textContent; badge.textContent = '✓ Cleared ' + total + ' records'; setTimeout(function(){ badge.textContent = orig; }, 3000); }
+}
+
+function openChangePw() {
+  document.getElementById('cpw-new').value = '';
+  document.getElementById('cpw-confirm').value = '';
+  document.getElementById('cpw-err').style.display = 'none';
+  document.getElementById('cpw-ok').style.display = 'none';
+  document.getElementById('cpw-btn').textContent = 'Update Password';
+  document.getElementById('cpw-btn').disabled = false;
+  document.getElementById('change-pw-overlay').style.display = 'flex';
+  setTimeout(function(){ document.getElementById('cpw-new').focus(); }, 100);
+}
+
+function closeChangePw() {
+  document.getElementById('change-pw-overlay').style.display = 'none';
+}
+
+function doChangePw() {
+  var newPw  = document.getElementById('cpw-new').value;
+  var confPw = document.getElementById('cpw-confirm').value;
+  var errEl  = document.getElementById('cpw-err');
+  var okEl   = document.getElementById('cpw-ok');
+  var btn    = document.getElementById('cpw-btn');
+  errEl.style.display = 'none';
+  okEl.style.display  = 'none';
+  if (!newPw || newPw.length < 6) {
+    errEl.textContent = 'Password must be at least 6 characters.';
+    errEl.style.display = 'block'; return;
+  }
+  if (newPw !== confPw) {
+    errEl.textContent = 'Passwords do not match.';
+    errEl.style.display = 'block'; return;
+  }
+  if (!USE_FIREBASE || !auth || !auth.currentUser) {
+    errEl.textContent = 'Not signed in.';
+    errEl.style.display = 'block'; return;
+  }
+  btn.textContent = 'Updating…'; btn.disabled = true;
+  auth.currentUser.updatePassword(newPw)
+    .then(function() {
+      btn.textContent = 'Update Password'; btn.disabled = false;
+      okEl.style.display = 'block';
+      document.getElementById('cpw-new').value = '';
+      document.getElementById('cpw-confirm').value = '';
+      setTimeout(closeChangePw, 2000);
+    })
+    .catch(function(e) {
+      btn.textContent = 'Update Password'; btn.disabled = false;
+      /* If session is stale Firebase requires re-auth */
+      if (e.code === 'auth/requires-recent-login') {
+        errEl.textContent = 'Session expired. Please sign out and sign back in, then change your password.';
+      } else {
+        errEl.textContent = e.message || 'Failed to update password.';
+      }
+      errEl.style.display = 'block';
+    });
+}
+
+
+function bootApp() {
+  /* Restore staff UI immediately from localStorage — before Firebase auth resolves.
+     Firebase IndexedDB session restore is unreliable on mobile Safari. */
+  var storedStaff = localStorage.getItem('pawpulse-staff');
+  if (storedStaff) {
+    _isStaff = true;
+    document.getElementById('staff-badge').classList.add('staff-active');
+    document.querySelectorAll('.tab-ops,.tab-admin').forEach(function(el){ el.style.display = ''; });
+    hideStaffLoginBtn();
+  } else {
+    var badge = document.getElementById('staff-badge');
+    if (badge) badge.classList.remove('staff-active');
+  }
+  /* Dismiss the loading screen */
+  var loading = document.getElementById('app-loading');
+  if (loading) {
+    loading.style.opacity = '0';
+    loading.style.transition = 'opacity .25s ease';
+    setTimeout(function(){ if (loading.parentNode) loading.parentNode.removeChild(loading); }, 280);
+  }
+  /* Force map to recalculate size now that loading screen is gone */
+  setTimeout(function(){ try { map.invalidateSize(); } catch(e){} }, 300);
+  /* Dismiss map loading overlay — Firebase will dismiss it after first snapshot; this covers non-Firebase path */
+  if (!USE_FIREBASE) {
+    window._firebaseLoaded = true;
+    var _ml = document.getElementById('map-loading');
+    if (_ml) { _ml.style.opacity = '0'; setTimeout(function(){ _ml.style.display='none'; }, 450); }
+  }
+  /* Update incare shelter label */
+  var lbl = document.getElementById('incare-shelter-label');
+  if (lbl) lbl.textContent = activeShelter + ' — Animals In Care';
+  /* Restore last view after refresh — apply IMMEDIATELY to prevent map flash */
+  var _restoredView = 'map';
+  try {
+    var lastView = sessionStorage.getItem('pp-view');
+    if (lastView) {
+      _restoredView = lastView;
+      /* Apply the correct view class right now — before any render */
+      document.querySelectorAll('.view').forEach(function(x){ x.classList.remove('active'); });
+  var fab = document.getElementById('intake-fab');
+  if (fab) fab.style.display = 'none';
+      var _el = document.getElementById('view-' + lastView);
+      if (_el) _el.classList.add('active');
+      document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+      var _tb = document.querySelector('[onclick*="setView(\''+lastView+'\')"]');
+      if (_tb) _tb.classList.add('active');
+      _curView = lastView;
+    }
+  } catch(e) {}
+  /* Full setView wires side effects (incare render, map resize etc) — 80ms is imperceptible */
+  if (_restoredView !== 'map') {
+    setTimeout(function(){ setView(_restoredView, document.querySelector('[onclick*="setView(\''+_restoredView+'\')"]')); }, 80);
+  }
+  /* Pre-set shelter filter */
+  var sel = document.getElementById('rpt-filter-shelter');
+  if (sel && activeShelter) sel.value = activeShelter;
+  renderMarkers();
+  renderIncareView();
+  renderReportTypeList();
+  updateNavCounts();
+}
+
+/* ── INTAKE MODAL (replaces separate Intake tab) ─────────────────────── */
+function checkFoundPinMatch() {
+  /* When staff selects species during intake, check for matching found pins */
+  var species = (document.getElementById('si-species')||{}).value || '';
+  if (!species) return;
+  /* If intake modal not yet rendered, try again shortly */
+  if (!document.getElementById('si-species')) {
+    setTimeout(checkFoundPinMatch, 300); return;
+  }
+
+  /* Find unresolved found pins matching this species */
+  var matches = reports.filter(function(r){
+    return r.type === 'found' && !r.shelter && !r.reunited &&
+      (!r.species || r.species.toLowerCase() === species.toLowerCase());
+  });
+
+  var container = document.getElementById('found-pin-matches');
+  if (!container) {
+    /* Inject container right after the species select row */
+    var speciesEl = document.getElementById('si-species');
+    if (!speciesEl) return;
+    /* Walk up to the row wrapper */
+    var speciesRow = speciesEl.parentElement;
+    while (speciesRow && speciesRow.parentElement && speciesRow.parentElement.id !== 'intake-modal-body') {
+      speciesRow = speciesRow.parentElement;
+    }
+    if (!speciesRow) return;
+    container = document.createElement('div');
+    container.id = 'found-pin-matches';
+    container.style.cssText = 'margin-top:8px';
+    speciesRow.parentNode.insertBefore(container, speciesRow.nextSibling);
+  }
+
+  if (!matches.length) { container.innerHTML = ''; return; }
+
+  container.innerHTML = '<div style="background:#e8f4e9;border:1.5px solid var(--found-g);border-radius:8px;padding:10px 14px;margin-bottom:6px">'
+    + '<div style="font-size:.78rem;font-weight:700;color:#1a5c28;margin-bottom:6px">📍 ' + matches.length + ' found ' + species.toLowerCase() + ' pin' + (matches.length>1?'s':'') + ' on the map — is this one of them?</div>'
+    + matches.map(function(r){
+        var daysAgo = Math.floor(daysSince(r.date));
+        var when = daysAgo === 0 ? 'today' : daysAgo === 1 ? 'yesterday' : daysAgo + ' days ago';
+        return '<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-top:1px solid #b0d8b8">'
+          + '<div style="font-size:.76rem;color:#2a5a30;line-height:1.4">'
+          + '<strong>' + esc(r.species||'Unknown') + '</strong> · ' + esc(r.color||'unknown color')
+          + '<br>' + esc(r.address || 'Location unknown') + ' · found ' + when
+          + (r.finder ? '<br>Found by: ' + esc(r.finder) : '')
+          + '</div>'
+          + '<button onclick="confirmFoundPinMatch(' + r.id + ')" style="margin-left:8px;padding:5px 10px;font-size:.72rem;font-weight:700;border:none;border-radius:6px;background:var(--forest);color:#fff;cursor:pointer;white-space:nowrap">✓ Yes, this one</button>'
+          + '</div>';
+      }).join('')
+    + '</div>';
+}
+
+function confirmFoundPinMatch(foundId) {
+  /* Link this intake to the found pin — will remove it when intake is saved */
+  window._migrateFromId = foundId;
+  var r = reports.find(function(x){ return x.id == foundId; });
+  var container = document.getElementById('found-pin-matches');
+  if (container && r) {
+    container.innerHTML = '<div style="background:#e8f4e9;border:1px solid var(--found-g);border-radius:8px;padding:8px 12px;font-size:.76rem;color:#1a5c28;margin-bottom:6px">'
+      + '✅ Linked to found pin near ' + esc(r.address||'map') + '. Pin will disappear when you complete intake.'
+      + '</div>';
+  }
+}
+
+function openIntakeModal() {
+  var overlay = document.getElementById('intake-modal-overlay');
+  var body    = document.getElementById('intake-modal-body');
+  if (!overlay || !body) return;
+  overlay.style.display = 'flex';
+  /* Render source picker into modal */
+  body.innerHTML =
+    '<div style="font-size:.82rem;color:var(--warm-mid);margin-bottom:14px">Select the intake source — this determines what we collect.</div>'
+    + srcBtn('ac',        '🚔', 'Brought by Animal Control', 'Animal dropped off by AC officer. Hold tracking starts immediately.','#fff8f0','var(--amber)','#8a5010')
+    + srcBtn('surrender', '👤', 'Owner Surrender', 'Owner is relinquishing the animal.','#f8f0ff','#9060c0','#5a2070')
+    + srcBtn('citizen',   '🐾', 'Found by Citizen / Stray', 'Stray brought in or from a public found report.','#f5faf6','var(--found-g)','#2a6030')
+    + srcBtn('other',     '🏛️', 'Transfer / Other Agency', 'Transfer from another shelter, rescue, or organization.','#f0f4fa','#3060a0','#1a3060');
+  /* Redirect srcBtn onclick to modal version */
+  body.querySelectorAll('button[onclick]').forEach(function(btn) {
+    var src = btn.getAttribute('onclick').match(/'(\w+)'/);
+    if (src) {
+      btn.setAttribute('onclick', 'openIntakeForm(\'' + src[1] + '\')');
+    }
+  });
+  setTimeout(function(){ injectMicButtons(body); }, 50);
+}
+
+function closeIntakeModal() {
+  var overlay = document.getElementById('intake-modal-overlay');
+  if (overlay) overlay.style.display = 'none';
+}
+
+function openIntakeForm(intakeSource) {
+  var body = document.getElementById('intake-modal-body');
+  if (!body) return;
+  var isHold = intakeSource === 'ac';
+  var today  = new Date().toISOString().slice(0,10);
+  var srcMeta = {
+    ac:        { label:'🚔 Animal Control',   color:'var(--amber)',   bg:'#fff8f0', txt:'#8a5010' },
+    surrender: { label:'👤 Owner Surrender',  color:'#9060c0',       bg:'#f8f0ff', txt:'#5a2070' },
+    citizen:   { label:'🐾 Found by Citizen', color:'var(--found-g)',bg:'#f5faf6', txt:'#2a6030' },
+    other:     { label:'🏛️ Transfer / Other', color:'#3060a0',       bg:'#f0f4fa', txt:'#1a3060' }
+  };
+  var sm = srcMeta[intakeSource] || srcMeta.citizen;
+
+  body.innerHTML =
+    '<input type="hidden" id="si-intake-type" value="' + (isHold?'hold':'stray') + '">'
+    + '<input type="hidden" id="si-intake-source" value="' + intakeSource + '">'
+    + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">'
+    + '<div style="padding:5px 12px;border-radius:999px;font-size:.75rem;font-weight:700;border:1.5px solid ' + sm.color + ';background:' + sm.bg + ';color:' + sm.txt + '">' + sm.label + '</div>'
+    + '<button onclick="openIntakeModal()" style="font-size:.72rem;color:var(--warm-mid);background:none;border:none;cursor:pointer;text-decoration:underline">Change</button></div>'
+
+    + '<div style="background:var(--cream-2);border:1.5px solid var(--cream-3);border-radius:9px;padding:10px 12px;margin-bottom:12px;display:flex;align-items:center;gap:10px">'
+    + '<div style="font-size:1.1rem">🏷️</div>'
+    + '<div style="flex:1"><label style="margin-bottom:3px">Shelter Animal ID / Tag #</label>'
+    + '<input type="text" id="si-animal-id" placeholder="e.g. A-2024-001 or 1042" style="width:100%;padding:7px 10px;font-size:.88rem;border:1.5px solid var(--cream-3);border-radius:7px;font-family:var(--font-body);font-weight:600;letter-spacing:.03em"></div></div>'
+
+    + '<div class="inv-photo-drop" onclick="triggerSIPhoto()" style="margin-bottom:8px">'
+    + '<input type="file" id="si-photo-in" accept="image/*" onchange="previewSIPhoto(this);showAIBtn(\'si\')">'
+    + '<div id="si-photo-icon" style="font-size:1.5rem;margin-bottom:3px">📷</div>'
+    + '<div id="si-photo-txt" style="font-size:.74rem;color:var(--warm-mid)">Tap to upload photo (optional)</div>'
+    + '<img id="si-prev" class="inv-preview" alt=""></div>'
+    + '<div id="si-ai-wrap" style="display:none;margin-bottom:10px">'
+    + '<button class="ai-id-btn" id="si-ai-btn" onclick="applyAIIdentify(\'si\')">✨ Identify breed &amp; color with AI</button>'
+    + '<div class="ai-id-result" id="si-ai-result"></div></div>'
+
+    + '<div class="fr"><div class="fg" style="margin:0"><label>Species</label>'
+    + '<select id="si-species" onchange="updateBreedField(\'si-species\',\'si-breed-wrap\');checkFoundPinMatch()"><option value="">Select…</option><option>Dog</option><option>Cat</option><option>Bird</option><option>Rabbit</option><option>Other</option></select></div>'
+    + '<div class="fg" style="margin:0"><label>Sex</label><select id="si-sex"><option value="">Unknown</option><option>Male</option><option>Female</option></select></div></div>'
+    + '<div class="fr" style="margin-top:10px"><div class="fg" style="margin:0"><label>Breed</label><div id="si-breed-wrap"><input type="text" id="si-breed" placeholder="Select species first"></div></div>'
+    + '<div class="fg" style="margin:0"><label>Color / Markings</label><input type="text" id="si-color" placeholder="e.g. Black &amp; tan"></div></div>'
+    + '<div class="fg" style="margin-top:10px"><label>Name (if known)</label><input type="text" id="si-name" placeholder="Leave blank if unknown"></div>'
+    + '<div class="fg"><label>Description / Condition</label>'
+    + '<textarea id="si-desc" placeholder="Age estimate, condition, behavior, collar, tags…" style="min-height:52px"></textarea></div>'
+    + '<div class="fg"><label>' + (isHold?'Where Did AC Pick Up This Animal?':intakeSource==='surrender'?'Owner Address (optional)':'Where Was Animal Found?') + '</label>'
+    + '<input type="text" id="si-address" placeholder="Street or landmark"></div>'
+
+    + (isHold
+      ? '<div style="background:#fff8f0;border:1.5px solid var(--amber);border-radius:10px;padding:12px 14px;margin-top:4px">'
+        + '<div style="font-size:.76rem;font-weight:700;color:#8a5010;margin-bottom:10px">🚔 Hold Details</div>'
+        + '<div class="fg" style="margin-bottom:10px"><label>Case Type (select all that apply)</label>'
+        + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'
+        + '<button type="button" id="ct-standard" onclick="toggleCaseType(\'standard\')" style="padding:9px 8px;border-radius:8px;border:1.5px solid var(--cream-3);background:#fff;font-family:var(--font-body);font-size:.78rem;font-weight:600;color:var(--warm-mid);cursor:pointer">🚔 Standard Hold</button>'
+        + '<button type="button" id="ct-stray-ac" onclick="toggleCaseType(\'stray-ac\')" style="padding:9px 8px;border-radius:8px;border:1.5px solid var(--cream-3);background:#fff;font-family:var(--font-body);font-size:.78rem;font-weight:600;color:var(--warm-mid);cursor:pointer">🐾 AC Stray</button>'
+        + '<button type="button" id="ct-bite" onclick="toggleCaseType(\'bite\')" style="padding:9px 8px;border-radius:8px;border:1.5px solid var(--cream-3);background:#fff;font-family:var(--font-body);font-size:.78rem;font-weight:600;color:var(--warm-mid);cursor:pointer">🦷 Bite Case</button>'
+        + '</div><input type="hidden" id="si-casetype" value=""></div>'
+        + '<div class="fr"><div class="fg" style="margin:0"><label>Hold Start Date</label><input type="date" id="si-holdstart" value="' + today + '" style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-3);border-radius:8px;font-family:var(--font-body);font-size:.86rem"></div>'
+        + '<div class="fg" style="margin:0"><label>Daily Rate ($)</label><input type="number" id="si-dailyrate" value="' + DAILY_RATE + '" min="0" step="1" style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-3);border-radius:8px;font-family:var(--font-body);font-size:.86rem"></div></div>'
+        + '<div class="fg" style="margin-top:10px"><label>AC Officer / Citation # (optional)</label>'
+        + '<input type="text" id="si-officer" placeholder="Officer name or citation number"></div>'
+        + '</div>'
+      : intakeSource==='surrender'
+      ? '<div style="background:#f8f0ff;border:1.5px solid #9060c0;border-radius:10px;padding:12px 14px;margin-top:4px">'
+        + '<div style="font-size:.76rem;font-weight:700;color:#5a2070;margin-bottom:10px">👤 Surrender Details</div>'
+        + '<div class="fr"><div class="fg" style="margin:0"><label>Owner Name</label><input type="text" id="si-owner-name" placeholder="Full name"></div>'
+        + '<div class="fg" style="margin:0"><label>Owner Phone</label><input type="tel" id="si-owner-phone" placeholder="(402) 555-0100"></div></div>'
+        + '<div class="fg" style="margin-top:10px"><label>Reason for Surrender (optional)</label>'
+        + '<textarea id="si-surrender-reason" placeholder="Moving, allergies, behavioral, financial…" style="min-height:48px"></textarea></div>'
+        + '</div>'
+      : '')
+
+    + '<div style="display:flex;gap:8px;margin-top:16px">'
+    + '<button class="sh-btn primary" style="flex:1" onclick="submitIntakeFromModal()">✓ Log Intake</button>'
+    + '<button class="sh-btn" onclick="closeIntakeModal()">Cancel</button>'
+    + '</div>';
+
+  setTimeout(function(){ injectMicButtons(body); setTimeout(checkFoundPinMatch, 150); setupKeyboardScroll(body); }, 50);
+}
+
+/* ── FOUND PIN MATCH ON INTAKE ──────────────────────────────────────────
+   When staff logs a new intake, automatically check for public found-pin
+   reports that might be the same animal — including atShelter reports.
+   If a likely match is found, prompt staff to resolve/remove the pin.
+──────────────────────────────────────────────────────────────────────── */
+function checkFoundPinsOnIntake(intakeRecord) {
+  if (!intakeRecord || !intakeRecord.species) return;
+
+  /* Find unresolved public found pins matching species */
+  var candidates = reports.filter(function(r){
+    if (r.shelter || r.reunited || r.id === intakeRecord.id) return false;
+    if (r.type !== 'found') return false;
+    /* Species match (or species unknown on found pin) */
+    var speciesMatch = !r.species || !intakeRecord.species ||
+      r.species.toLowerCase() === intakeRecord.species.toLowerCase();
+    if (!speciesMatch) return false;
+    /* Within 14 days */
+    var daysDiff = Math.abs(daysSince(r.date) - daysSince(intakeRecord.date));
+    if (daysDiff > 14) return false;
+    return true;
+  });
+
+  if (!candidates.length) return;
+
+  /* Score by additional fields */
+  candidates = candidates.map(function(r) {
+    var score = 1;
+    /* Color match */
+    if (r.color && intakeRecord.color) {
+      var rWords = r.color.toLowerCase().split(/\s+|,/);
+      var iWords = intakeRecord.color.toLowerCase().split(/\s+|,/);
+      var shared = rWords.filter(function(w){ return w.length > 2 && iWords.indexOf(w) !== -1; });
+      if (shared.length > 0) score += 2;
+    }
+    /* atShelter — finder said they dropped it off — very high signal */
+    if (r.atShelter && r.shelterName && r.shelterName.toLowerCase().indexOf('heartland') !== -1) {
+      score += 5;
+    }
+    /* Recent (within 3 days) */
+    if (daysSince(r.date) <= 3) score += 1;
+    return { r: r, score: score };
+  }).sort(function(a, b){ return b.score - a.score; });
+
+  /* Only show if top match has meaningful score */
+  var top = candidates[0];
+  if (top.score < 2) return;
+
+  /* Build match notification panel */
+  var existing = document.getElementById('intake-found-match-panel');
+  if (existing) existing.remove();
+
+  var panel = document.createElement('div');
+  panel.id = 'intake-found-match-panel';
+  panel.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:4000;background:#fff;border-radius:18px 18px 0 0;box-shadow:0 -8px 40px rgba(0,0,0,.25);padding:20px;max-height:70vh;overflow-y:auto;-webkit-overflow-scrolling:touch';
+
+  var r = top.r;
+  var dateStr = r.date ? new Date(r.date).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
+  var atShelterNote = r.atShelter ? '<div style="background:#fff8e8;border:1px solid #d4a035;border-radius:6px;padding:6px 10px;font-size:.74rem;color:#7a5010;margin-top:6px">🏠 Finder says they dropped this animal at ' + esc(r.shelterName||'a shelter') + '</div>' : '';
+
+  panel.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">'
+    + '<div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--warm-dk)">🔍 Possible Match on Map</div>'
+    + '<button onclick="var p=document.getElementById(\'intake-found-match-panel\');if(p)p.remove();" style="background:var(--cream-2);border:none;border-radius:50%;width:32px;height:32px;font-size:1rem;cursor:pointer">✕</button>'
+    + '</div>'
+    + '<div style="font-size:.84rem;color:var(--warm-mid);margin-bottom:14px;line-height:1.5">A found pet report on the map may match this intake. Resolving it removes the pin and prevents duplicates.</div>'
+    + '<div style="background:var(--cream-2);border-radius:10px;padding:12px;margin-bottom:14px">'
+    + '<div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--warm-mid);margin-bottom:6px">Found Pin Report</div>'
+    + '<div style="font-size:.86rem;font-weight:600;color:var(--warm-dk)">' + esc(r.species||'Unknown') + (r.color ? ' · ' + esc(r.color) : '') + '</div>'
+    + (r.address ? '<div style="font-size:.76rem;color:var(--warm-mid);margin-top:2px">📍 ' + esc(r.address) + '</div>' : '')
+    + (r.finder ? '<div style="font-size:.76rem;color:var(--warm-mid)">Found by: ' + esc(r.finder) + (r.fphone?' · '+esc(r.fphone):'') + '</div>' : '')
+    + '<div style="font-size:.72rem;color:var(--warm-mid)">Reported ' + dateStr + '</div>'
+    + atShelterNote
+    + '</div>'
+    + '<div style="display:flex;gap:10px">'
+    + '<button onclick="resolveFoundPinFromIntake(' + r.id + ')" style="flex:1;padding:12px;border:none;border-radius:10px;background:var(--forest);color:#fff;font-family:var(--font-display);font-size:.9rem;font-weight:700;cursor:pointer">✅ Yes — Same Animal</button>'
+    + '<button onclick="var p=document.getElementById(\'intake-found-match-panel\');if(p)p.remove();" style="flex:1;padding:12px;border:1.5px solid var(--cream-3);border-radius:10px;background:#fff;font-family:var(--font-display);font-size:.9rem;font-weight:700;cursor:pointer;color:var(--warm-dk)">No — Different Animal</button>'
+    + '</div>';
+
+  /* Backdrop */
+  var bd = document.createElement('div');
+  bd.style.cssText = 'position:fixed;inset:0;z-index:3999;background:rgba(0,0,0,.45)';
+  bd.onclick = function(){ panel.remove(); bd.remove(); };
+  document.body.appendChild(bd);
+
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){
+      panel.style.transform = 'translateY(0)';
+    });
+  });
+}
+
+function resolveFoundPinFromIntake(foundId) {
+  var panel = document.getElementById('intake-found-match-panel');
+  if (panel) panel.remove();
+  /* Remove backdrop */
+  document.querySelectorAll('[style*="z-index:3999"]').forEach(function(el){ el.remove(); });
+
+  var r = reports.find(function(x){ return x.id == foundId; });
+  if (!r) return;
+  r.reunited = true;
+  r.reunitedDate = new Date().toISOString();
+  r.resolvedByIntake = true;
+  save();
+  writeAnimalRecord(r, 'staff');
+  renderMarkers();
+  updateNavCounts();
+  pushBannerEvent('📍 Found pin removed — matched to shelter intake', 'var(--found-g)');
+}
+
+
+function submitIntakeFromModal() {
+  /* Reads from modal form and submits */
+  var typeEl      = document.getElementById('si-intake-type');
+  var sourceEl    = document.getElementById('si-intake-source');
+  var intakeType  = typeEl   ? typeEl.value   : 'stray';
+  var intakeSource= sourceEl ? sourceEl.value : 'citizen';
+  var isHold      = intakeType === 'hold';
+  var shelter     = shelters.find(function(s){ return s.name===activeShelter; });
+
+  var holdStart   = isHold ? (document.getElementById('si-holdstart')||{}).value : null;
+  var dailyRate   = isHold ? parseFloat((document.getElementById('si-dailyrate')||{}).value) || DAILY_RATE : null;
+  var officer     = isHold ? ((document.getElementById('si-officer')||{}).value||'').trim() : '';
+  var caseType    = isHold ? ((document.getElementById('si-casetype')||{}).value || 'standard') : '';
+  var animalId    = ((document.getElementById('si-animal-id')||{}).value||'').trim();
+  var ownerName   = intakeSource==='surrender' ? ((document.getElementById('si-owner-name')||{}).value||'').trim() : '';
+  var ownerPhone  = intakeSource==='surrender' ? ((document.getElementById('si-owner-phone')||{}).value||'').trim() : '';
+  var surReason   = intakeSource==='surrender' ? ((document.getElementById('si-surrender-reason')||{}).value||'').trim() : '';
+  var srcLabels   = { ac:'Brought by Animal Control', surrender:'Owner Surrender', citizen:'Found by Citizen', other:'Transfer / Other Agency' };
+  var srcLabel    = srcLabels[intakeSource] || 'Unknown';
+  var holdType    = 'none';
+  if (isHold) {
+    if (caseType.indexOf('bite')>-1) holdType='bite';
+    else if (caseType.indexOf('dangerous')>-1) holdType='dangerous';
+    else holdType='standard';
+  }
+
+  var r = {
+    id: Date.now(), type: 'found', date: new Date().toISOString(),
+    lat: shelter ? shelter.lat + (Math.random()-.5)*.005 : HASTINGS[0] + (Math.random()-.5)*.01,
+    lng: shelter ? shelter.lng + (Math.random()-.5)*.005 : HASTINGS[1] + (Math.random()-.5)*.01,
+    name:        ((document.getElementById('si-name')||{}).value||'').trim(),
+    species:     (document.getElementById('si-species')||{}).value,
+    color:       ((document.getElementById('si-color')||{}).value||'').trim(),
+    breed:       getBreedValue('si-breed-wrap'),
+    sex:         (document.getElementById('si-sex')||{}).value,
+    desc:        ((document.getElementById('si-desc')||{}).value||'').trim(),
+    address:     ((document.getElementById('si-address')||{}).value||'').trim() || (shelter?shelter.address:''),
+    finder:      activeShelter, fphone: shelter?shelter.phone:'',
+    animalId:    animalId, intakeSource: intakeSource, intakeSourceLabel: srcLabel,
+    owner:       ownerName||undefined, phone: ownerPhone||undefined,
+    surrenderReason: surReason||undefined,
+    shelter:     true, shelterName: activeShelter, intakeType: intakeType, holdType: holdType,
+    /* Explicit state fields — never implicit */
+    masterStatus:    isHold ? 'hold' : 'intake',
+    adoptionStatus:  '',
+    reunited:        false,
+    euthanized:      false,
+    shelterHoldStart: isHold ? (holdStart?holdStart+'T00:00:00':new Date().toISOString()) : null,
+    enforcement: isHold ? { internalStatus:(holdType==='bite'||holdType==='dangerous')?'AC Review':'Shelter Hold Active', acInvolved:intakeSource==='ac', dailyCost:dailyRate, courtDateStatus:'none', caseType:caseType } : null,
+    caseType:    caseType,
+    shelterLog:  [{ body: srcLabel + (officer?' — Officer: '+officer:'') + ' · Logged at ' + activeShelter, time: 'Just now' }],
+    photo:       null
+  };
+  var photoEl = document.getElementById('si-prev');
+  if (photoEl && photoEl.src && photoEl.src.startsWith('data:')) r.photo = photoEl.src;
+
+  /* If this intake was migrated from a public found report, close the original
+     so the green pin disappears and no duplicate/ghost remains on the map */
+  if (window._migrateFromId) {
+    var orig = reports.find(function(x){ return String(x.id)===String(window._migrateFromId); });
+    if (orig) {
+      orig.shelter     = true;           /* moves off public map */
+      orig.shelterName = activeShelter;  /* associates with shelter */
+      orig.migratedTo  = r.id;          /* audit trail */
+      orig.reunited    = true;           /* hides from all active views */
+    }
+    window._migrateFromId = null;
+  }
+
+  reports.push(r); save();
+  /* Write through doctrine pipeline */
+  if (USE_FIREBASE && _fbReady && db && _isStaff) {
+    window._pauseFirestoreSync = true;
+    writeAnimalRecord(r, 'staff');
+    setTimeout(function(){ window._pauseFirestoreSync = false; }, 5000);
+  }
+  renderMarkers(); renderIncareView(); updateNavCounts();
+  closeIntakeModal();
+  pushBannerEvent((isHold?'⚠️ Animal on hold logged at ':'🐾 New animal received at ') + activeShelter, isHold?'#d4843a':'var(--found-g)');
+  /* Auto-match: search lost reports for possible owner immediately after intake */
+  if (!isHold) setTimeout(function(){ autoMatchOnIntake(r); }, 800);
+  /* Check for public found pins that may match this intake — prompt staff to resolve */
+  setTimeout(function(){ checkFoundPinsOnIntake(r); }, 1200);
+}
+
+/* ── ANIMAL EDIT MODAL ───────────────────────────────────────────────── */
+/* Render adoption inquiries into the animal edit modal — called after body.innerHTML is set */
+/* ── INQUIRY POPUP ─────────────────────────────────────────────────────
+   Lightweight popup showing adoption inquiries — no full edit modal.
+──────────────────────────────────────────────────────────────────────── */
+function showInquiryPopup(id) {
+  var r = reports.find(function(x){ return x.id===id; });
+  if (!r || !r.inquiries || !r.inquiries.length) return;
+
+  var existing = document.getElementById('inq-popup');
+  if (existing) existing.remove();
+  var existingBd = document.getElementById('inq-popup-bd');
+  if (existingBd) existingBd.remove();
+
+  var bd = document.createElement('div');
+  bd.id = 'inq-popup-bd';
+  bd.style.cssText = 'position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,.45)';
+
+  var pop = document.createElement('div');
+  pop.id = 'inq-popup';
+  var isMobile = window.innerWidth <= 640;
+  pop.style.cssText = isMobile
+    ? 'position:fixed;bottom:0;left:0;right:0;z-index:5001;background:var(--cream);border-radius:18px 18px 0 0;padding:20px 20px 32px;max-height:70vh;overflow-y:auto;-webkit-overflow-scrolling:touch;box-shadow:0 -8px 40px rgba(0,0,0,.25)'
+    : 'position:fixed;bottom:40px;left:50%;transform:translateX(-50%);width:420px;z-index:5001;background:var(--cream);border-radius:14px;padding:20px 20px 24px;max-height:70vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.3)';
+
+  var name = esc(r.name || r.species || 'Animal');
+  var html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">'
+    + '<div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--warm-dk)">💬 Inquiries for ' + name + '</div>'
+    + '<button onclick="(function(){var p=document.getElementById(\'inq-popup\');var b=document.getElementById(\'inq-popup-bd\');if(p)p.remove();if(b)b.remove();})()" style="background:var(--cream-2);border:none;border-radius:50%;width:32px;height:32px;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>'
+    + '</div>';
+
+  r.inquiries.slice().reverse().forEach(function(inq) {
+    var t = inq.time ? new Date(inq.time).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) : '';
+    html += '<div style="background:#fff8e8;border:1.5px solid #f0c040;border-radius:10px;padding:12px 14px;margin-bottom:10px">'
+      + '<div style="font-weight:700;font-size:.9rem;color:var(--warm-dk);margin-bottom:4px">' + esc(inq.name||'Unknown') + '</div>'
+      + (inq.phone ? '<a href="tel:' + inq.phone.replace(/[^0-9+]/g,'') + '" style="display:block;color:var(--forest);font-weight:600;font-size:.86rem;margin-bottom:2px">📞 ' + esc(inq.phone) + '</a>' : '')
+      + (inq.email ? '<div style="font-size:.8rem;color:var(--warm-mid);margin-bottom:2px">✉️ ' + esc(inq.email) + '</div>' : '')
+      + (inq.msg   ? '<div style="font-size:.82rem;font-style:italic;margin-top:6px;color:var(--warm-dk)">"' + esc(inq.msg) + '"</div>' : '')
+      + (t         ? '<div style="font-size:.7rem;color:var(--warm-mid);margin-top:6px">' + t + '</div>' : '')
+      + '</div>';
+  });
+
+  pop.innerHTML = html;
+  bd.onclick = function(){ pop.remove(); bd.remove(); };
+  document.body.appendChild(bd);
+  document.body.appendChild(pop);
+}
+
+
+function renderInquiries(r, container) {
+  if (!r || !r.inquiries || !r.inquiries.length) return;
+  var div = document.createElement('div');
+  div.style.cssText = 'border-top:1.5px solid #f0c040;margin:12px 0;padding-top:12px';
+  var html = '<div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#7a5010;margin-bottom:8px">💬 Adoption Inquiries (' + r.inquiries.length + ')</div>';
+  r.inquiries.slice().reverse().forEach(function(inq) {
+    var t = inq.time ? new Date(inq.time).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
+    html += '<div style="background:#fff8e8;border:1px solid #f0c040;border-radius:8px;padding:8px 10px;font-size:.78rem;margin-bottom:6px">'
+      + '<div style="font-weight:700;margin-bottom:2px">' + esc(inq.name||'Unknown') + '</div>'
+      + (inq.phone ? '<div><a href="tel:' + inq.phone.replace(/[^0-9+]/g,'') + '" style="color:var(--forest);font-weight:600">📞 ' + esc(inq.phone) + '</a></div>' : '')
+      + (inq.email ? '<div style="color:var(--warm-mid)">✉️ ' + esc(inq.email) + '</div>' : '')
+      + (inq.msg   ? '<div style="margin-top:4px;font-style:italic">"' + esc(inq.msg) + '"</div>' : '')
+      + (t         ? '<div style="color:var(--warm-mid);font-size:.68rem;margin-top:3px">' + t + '</div>' : '')
+      + '</div>';
+  });
+  div.innerHTML = html;
+  /* Insert before the Save/Cancel button row (last child) */
+  var last = container.lastElementChild;
+  if (last) container.insertBefore(div, last);
+  else container.appendChild(div);
+}
+
+
+function openAnimalEdit(id) {
+  var r = reports.find(function(x){ return x.id===id; });
+  if (!r) return;
+  var overlay = document.getElementById('animal-edit-overlay');
+  var body    = document.getElementById('animal-edit-body');
+  var title   = document.getElementById('animal-edit-title');
+  if (!overlay || !body) return;
+  title.textContent = (r.name || r.species || 'Animal Record') + ' — Full Record';
+  overlay.style.display = 'flex';
+
+  var today = new Date().toISOString().slice(0,10);
+  var med   = getMed(r) || {};
+
+  /* Master status — drives everything */
+  var STATUS_OPTS = [
+    { val:'intake',   label:'🟡 Initial Intake',      color:'#8a6010' },
+    { val:'review',   label:'🔍 Under Review',         color:'#2050a0' },
+    { val:'hold',     label:'⚠️ On Hold',              color:'#c04010' },
+    { val:'available',label:'🌟 Adoption Ready',       color:'var(--found-g)' },
+    { val:'adopted',  label:'🎉 Adopted',              color:'var(--found-g)' },
+    { val:'reunited', label:'🏠 Reunited',             color:'var(--forest)' },
+    { val:'transfer', label:'🚐 Transferred',          color:'#6040c0' },
+    { val:'euth',     label:'⚫ Euthanized',           color:'#606060' },
+  ];
+
+  /* Determine current master status */
+  var curStatus = r.masterStatus || (
+    r.euthanized ? 'euth' :
+    r.reunited   ? 'reunited' :
+    r.adoptionStatus === 'adopted'   ? 'adopted' :
+    r.adoptionStatus === 'available' ? 'available' :
+    r.intakeType === 'hold'          ? 'hold' :
+    r.enforcement && r.enforcement.internalStatus === 'Under Review' ? 'review' :
+    'intake'
+  );
+
+  body.innerHTML =
+    /* ── Master Status ── */
+    '<div style="background:var(--cream-2);border-radius:10px;padding:12px 14px;margin-bottom:16px">'
+    + '<label style="font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--amber);display:block;margin-bottom:6px">Animal Status</label>'
+    + '<select id="ae-status" onchange="updateEditSections()" style="width:100%;font-size:.9rem;font-weight:700;padding:8px 10px;border-radius:8px;border:2px solid var(--cream-3);font-family:var(--font-body)">'
+    + STATUS_OPTS.map(function(o){ return '<option value="' + o.val + '"' + (curStatus===o.val?' selected':'') + '>' + o.label + '</option>'; }).join('')
+    + '</select></div>'
+
+    /* ── Section: Identity ── */
+    + editSection('identity', '🐾 Identity', true,
+        /* Photo — preview if exists, add button if not */
+        '<div style="margin-bottom:12px">'
+        + (r.photo
+          ? '<div style="position:relative;height:190px;border-radius:8px;overflow:hidden;margin-bottom:6px;background:var(--cream-2)"><img src="' + esc(r.photo) + '" style="width:100%;height:100%;object-fit:contain"><button onclick="document.getElementById(\'ae-photo-input\').click()" style="position:absolute;bottom:6px;right:6px;padding:4px 10px;font-size:.68rem;font-weight:600;border:none;border-radius:6px;background:rgba(0,0,0,.55);color:#fff;cursor:pointer">📷 Replace</button><button onclick="deleteAnimalPhoto(' + r.id + ')" style="position:absolute;bottom:6px;left:6px;padding:4px 10px;font-size:.68rem;font-weight:600;border:none;border-radius:6px;background:rgba(180,40,20,.75);color:#fff;cursor:pointer">🗑 Delete</button></div>'
           : '<button onclick="document.getElementById(\'ae-photo-input\').click()" style="width:100%;padding:10px;border:1.5px dashed var(--cream-3);border-radius:8px;background:var(--cream-2);font-family:var(--font-body);font-size:.78rem;color:var(--warm-mid);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px"><span style="font-size:1.2rem">📷</span> Add Photo</button>')
         + '<input type="file" id="ae-photo-input" accept="image/*" style="display:none" onchange="previewEditPhoto(this,' + r.id + ')">'
         + '</div>'
@@ -3864,7 +6147,7 @@ function openCard(r, cp) {
     var mw = mc.offsetWidth,   mh = mc.offsetHeight;
     var M = 14;
     var rightMargin  = M + 50;
-    var bottomMargin = M + 100;
+    var bottomMargin = M + 118;
     var left = Math.max(M, Math.min(cp.x - cw/2, mw - cw - rightMargin));
     var top  = cp.y - ch - 16;
     if (top < M) top = cp.y + 22;
@@ -4315,6 +6598,14 @@ function rotateBanner() {
   }
   /* Build pool: static events + live report messages */
   var pool = bannerEvents.concat(liveMsgs);
+  /* Community reunited milestone */
+  var communityReunited = reports.filter(function(r){
+    return (r.reunited === true) && (r.shelter !== true);
+  }).length;
+  var REUNITE_THRESHOLD = 5;
+  if (communityReunited >= REUNITE_THRESHOLD) {
+    pool.push({ text: '🎉 ' + communityReunited + ' pet' + (communityReunited!==1?'s':'') + ' reunited in Hastings — without ever entering a shelter', dot:'#f0b840' });
+  }
   /* Adoption messages */
   var adoptable = reports.filter(function(r){ return r.adoptionStatus==='available' && !r.reunited; });
   if (adoptable.length) {
@@ -7934,7 +10225,19 @@ async function updateAdoptProfile(id) {
     r.energy ? r.energy + ' energy' : null,
   ].filter(Boolean).join(', ');
 
-  var prompt = 'Write a short adoption bio for an animal at Heartland Pet Connection in Hastings, Nebraska.'
+  var prompt = (function(){
+    var angles = [
+      'Lead with their personality — what makes them one-of-a-kind.',
+      'Lead with how long they have been waiting and what they dream of.',
+      'Lead with a specific quirky habit or endearing trait.',
+      'Lead with the kind of home they are looking for.',
+      'Lead with what they love doing most.',
+      'Lead with their journey — how they got to the shelter and who they are now.',
+      'Lead with a funny or heartwarming moment a shelter worker might have noticed.',
+    ];
+    var angle = angles[Math.floor(Math.random() * angles.length)];
+    return 'Write a short adoption bio for an animal at Heartland Pet Connection in Hastings, Nebraska. ' + angle;
+  })()
     + '\n\nAnimal: ' + name
     + '\nSpecies: ' + (r.species || 'animal')
     + (r.breed ? '\nBreed: ' + r.breed : '')
@@ -8176,7 +10479,7 @@ function renderIncareView() {
     /* Photo — only show if one exists */
     var photoHTML = r.photo
       ? '<div style="height:160px;overflow:hidden;background:var(--cream-2);position:relative">'
-        + '<img src="' + r.photo + '" style="width:100%;height:100%;object-fit:cover;object-position:center top" alt="' + esc(r.name||r.species||'animal') + '">'
+        + '<img src="' + r.photo + '" style="width:100%;height:100%;object-fit:contain;background:var(--cream-2)" alt="' + esc(r.name||r.species||'animal') + '">'
         + (_isStaff ? '<button onclick="event.stopPropagation();triggerPhotoUpload(' + r.id + ')" style="position:absolute;bottom:4px;right:4px;padding:3px 7px;font-size:.6rem;border-radius:6px;border:none;background:rgba(0,0,0,.5);color:#fff;cursor:pointer">📷 Replace</button>' : '')
         + '</div>'
       : '';
@@ -8541,8 +10844,8 @@ async function runBatchLostMatch() {
       var lp = lostPins.find(function(x){ return String(x.id)===String(m.lostId); });
       if (!sa || !lp) return;
 
-      var saImg = sa.photo ? '<img src="' + sa.photo + '" style="width:56px;height:56px;object-fit:cover;border-radius:8px;flex-shrink:0">' : '<div style="width:56px;height:56px;border-radius:8px;background:var(--cream-2);display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0">' + (sa.species==='Dog'?'🐕':sa.species==='Cat'?'🐈':'🐾') + '</div>';
-      var lpImg = lp.photo ? '<img src="' + lp.photo + '" style="width:56px;height:56px;object-fit:cover;border-radius:8px;flex-shrink:0">' : '<div style="width:56px;height:56px;border-radius:8px;background:#fff0ee;display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0">' + (lp.species==='Dog'?'🐕':lp.species==='Cat'?'🐈':'🐾') + '</div>';
+      var saImg = sa.photo ? '<img src="' + sa.photo + '" style="width:56px;height:56px;object-fit:contain;background:var(--cream-2);border-radius:8px;flex-shrink:0">' : '<div style="width:56px;height:56px;border-radius:8px;background:var(--cream-2);display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0">' + (sa.species==='Dog'?'🐕':sa.species==='Cat'?'🐈':'🐾') + '</div>';
+      var lpImg = lp.photo ? '<img src="' + lp.photo + '" style="width:56px;height:56px;object-fit:contain;background:var(--cream-2);border-radius:8px;flex-shrink:0">' : '<div style="width:56px;height:56px;border-radius:8px;background:#fff0ee;display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0">' + (lp.species==='Dog'?'🐕':lp.species==='Cat'?'🐈':'🐾') + '</div>';
 
       html += '<div style="background:' + (confBg[m.confidence]||'#f8f8f8') + ';border:1.5px solid ' + (confColor[m.confidence]||'#ddd') + ';border-radius:10px;padding:12px;margin-bottom:10px">'
         + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'
@@ -8963,7 +11266,7 @@ function maybeShowTutorial() {
 
 
 <!-- SEO footer — local signals, minimal UI footprint -->
-<footer id="seo-footer" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:1;background:rgba(42,31,18,.92);padding:6px 16px;font-size:.65rem;color:rgba(255,255,255,.5);display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap">
+<footer id="seo-footer" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:1;background:rgba(42,31,18,.88);padding:2px 10px;font-size:.58rem;color:rgba(255,255,255,.45);display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:nowrap;white-space:nowrap;overflow:hidden">
   <a href="/lost-pets-hastings-ne" style="color:rgba(255,255,255,.5);text-decoration:none">Lost pets in Hastings</a>
   <span>·</span>
   <a href="/found-pets-hastings-ne" style="color:rgba(255,255,255,.5);text-decoration:none">Found pets in Hastings</a>
