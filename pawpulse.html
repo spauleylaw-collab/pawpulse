@@ -1355,18 +1355,8 @@ function initFirebase() {
         if (_fbReady !== true) {
           if (db) { startFirestoreListener(); } else { showShelterPicker(); }
         }
-        /* Re-sync any records with photos that may have failed to write
-           when auth was not yet restored (common on mobile Safari) */
-        if (db && reports.length > 0) {
-          setTimeout(function(){
-            reports.forEach(function(r){
-              if (r.photo) {
-                db.collection('reports').doc(String(r.id)).set(r)
-                  .catch(function(){});
-              }
-            });
-          }, 1500);
-        }
+        /* Photo re-sync removed — photos are kept in localStorage only (pawpulse-photos key).
+           Writing photos to Firestore caused quota exhaustion. */
         setTimeout(function(){ renderAdoptView(); }, 800);
       } else {
         /* null — only clear if localStorage flag also gone (real sign-out, not just slow restore) */
@@ -1901,12 +1891,11 @@ function bootApp() {
   }
   /* Force map to recalculate size now that loading screen is gone */
   setTimeout(function(){ try { map.invalidateSize(); } catch(e){} }, 300);
-  /* Dismiss map loading overlay — Firebase will dismiss it after first snapshot; this covers non-Firebase path */
-  if (!USE_FIREBASE) {
-    window._firebaseLoaded = true;
-    var _ml = document.getElementById('map-loading');
-    if (_ml) { _ml.style.opacity = '0'; setTimeout(function(){ _ml.style.display='none'; }, 450); }
-  }
+  /* Dismiss map-loading overlay — always dismiss after bootApp, 
+     regardless of Firebase state. onSnapshot may be slow on phone. */
+  window._firebaseLoaded = true;
+  var _ml = document.getElementById('map-loading');
+  if (_ml) { _ml.style.opacity = '0'; setTimeout(function(){ if (_ml) _ml.style.display='none'; }, 450); }
   /* Update incare shelter label */
   var lbl = document.getElementById('incare-shelter-label');
   if (lbl) lbl.textContent = activeShelter + ' — Animals In Care';
