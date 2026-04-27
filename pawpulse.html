@@ -2210,16 +2210,16 @@ function checkFoundPinsOnIntake(intakeRecord) {
     + atShelterNote
     + '</div>'
     + '<div style="display:flex;gap:10px">'
-    + '<button onclick="resolveFoundPinFromIntake(' + r.id + ')" style="flex:1;padding:12px;border:none;border-radius:10px;background:var(--forest);color:#fff;font-family:var(--font-display);font-size:.9rem;font-weight:700;cursor:pointer">✅ Yes — Same Animal</button>'
+    + '<button onclick="resolveFoundPinFromIntake(' + r.id + ', null)" style="flex:1;padding:12px;border:none;border-radius:10px;background:var(--forest);color:#fff;font-family:var(--font-display);font-size:.9rem;font-weight:700;cursor:pointer;touch-action:manipulation">✅ Yes — Same Animal</button>'
     + '<button onclick="var p=document.getElementById(\'intake-found-match-panel\');if(p)p.remove();" style="flex:1;padding:12px;border:1.5px solid var(--cream-3);border-radius:10px;background:#fff;font-family:var(--font-display);font-size:.9rem;font-weight:700;cursor:pointer;color:var(--warm-dk)">No — Different Animal</button>'
     + '</div>';
 
   /* Backdrop */
   var bd = document.createElement('div');
+  bd.id = 'intake-match-backdrop';
   bd.style.cssText = 'position:fixed;inset:0;z-index:3999;background:rgba(0,0,0,.45)';
   bd.onclick = function(){ panel.remove(); bd.remove(); };
   document.body.appendChild(bd);
-  /* Panel was missing its appendChild — this was the phone freeze bug */
   panel.style.transform = 'translateY(100%)';
   panel.style.transition = 'transform .3s cubic-bezier(.34,1.2,.64,1)';
   document.body.appendChild(panel);
@@ -2230,11 +2230,12 @@ function checkFoundPinsOnIntake(intakeRecord) {
   });
 }
 
-function resolveFoundPinFromIntake(foundId) {
-  /* Close panel and backdrop immediately */
+function resolveFoundPinFromIntake(foundId, lostOwnerId) {
+  /* Remove panel and backdrop immediately by ID — no DOM scan */
   var panel = document.getElementById('intake-found-match-panel');
+  var bd    = document.getElementById('intake-match-backdrop');
   if (panel) panel.remove();
-  document.querySelectorAll('[style*="z-index:3999"]').forEach(function(el){ el.remove(); });
+  if (bd)    bd.remove();
 
   var r = reports.find(function(x){ return x.id == foundId; });
   if (!r) return;
@@ -2242,14 +2243,59 @@ function resolveFoundPinFromIntake(foundId) {
   r.reunitedDate = new Date().toISOString();
   r.resolvedByIntake = true;
 
-  /* Defer heavy ops so UI stays responsive */
+  /* Defer heavy ops to keep UI responsive */
   setTimeout(function() {
     save();
     writeAnimalRecord(r, 'staff');
     renderMarkers();
     updateNavCounts();
-    pushBannerEvent('📍 Found pin removed — matched to shelter intake', 'var(--found-g)');
+    pushBannerEvent('📍 Found pin matched — owner notification needed', '#2050a0');
   }, 80);
+
+  /* Show call prompt with finder/owner contact info from the resolved found report */
+  setTimeout(function() { showOwnerCallPrompt(r, null); }, 200);
+}
+
+function showOwnerCallPrompt(report, _unused) {
+  var isFinder    = report.type === 'found';
+  var ownerPhone  = report.phone || report.fphone || '';
+  var petName     = report.name || (report.species || 'Pet');
+  var petDesc     = [report.species, report.breed, report.color].filter(Boolean).join(' - ');
+  var contactName = isFinder ? (report.finder || 'Finder') : (report.owner || 'Owner');
+
+  var prompt = document.createElement('div');
+  prompt.id = 'owner-call-prompt';
+  prompt.style.cssText = 'position:fixed;inset:0;z-index:5000;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.5)';
+
+  var inner = document.createElement('div');
+  inner.style.cssText = 'background:var(--cream);border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:24px 20px 32px;box-shadow:0 -8px 40px rgba(0,0,0,.3)';
+
+  var phoneRow = '';
+  if (ownerPhone) {
+    phoneRow = '<a href="tel:' + esc(ownerPhone) + '" style="display:flex;align-items:center;justify-content:center;gap:8px;background:var(--forest);color:#fff;border-radius:10px;padding:13px;font-family:var(--font-display);font-size:.95rem;font-weight:700;text-decoration:none;margin-bottom:8px">Call ' + esc(ownerPhone) + '</a>'
+             + '<a href="sms:' + esc(ownerPhone) + '" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#1a56db;color:#fff;border-radius:10px;padding:13px;font-family:var(--font-display);font-size:.95rem;font-weight:700;text-decoration:none">Text ' + esc(ownerPhone) + '</a>';
+  } else {
+    phoneRow = '<div style="color:var(--warm-mid);font-size:.8rem;text-align:center">No phone on file. Check the report for contact details.</div>';
+  }
+
+  inner.innerHTML = '<div style="text-align:center;font-size:2rem;margin-bottom:8px">&#128222;</div>'
+    + '<div style="font-family:var(--font-display);font-size:1.05rem;font-weight:700;color:var(--warm-dk);text-align:center;margin-bottom:4px">Contact ' + esc(contactName) + ' now</div>'
+    + '<div style="font-size:.8rem;color:var(--warm-mid);text-align:center;margin-bottom:16px;line-height:1.5">'
+    + (isFinder ? 'Confirm details and coordinate next steps with the finder.' : 'The owner has been waiting. Contact them immediately.')
+    + '</div>'
+    + '<div style="background:var(--cream-2);border-radius:12px;padding:14px 16px;margin-bottom:16px">'
+    + '<div style="font-weight:700;font-size:.9rem;color:var(--warm-dk);margin-bottom:2px">' + esc(petName) + '</div>'
+    + '<div style="font-size:.76rem;color:var(--warm-mid);margin-bottom:10px">' + esc(petDesc) + '</div>'
+    + phoneRow
+    + '</div>';
+
+  var doneBtn = document.createElement('button');
+  doneBtn.textContent = 'Done - Contacted';
+  doneBtn.style.cssText = 'width:100%;padding:13px;border:1.5px solid var(--cream-3);border-radius:10px;background:#fff;font-family:var(--font-display);font-size:.9rem;font-weight:700;color:var(--warm-dk);cursor:pointer;touch-action:manipulation';
+  doneBtn.onclick = function() { prompt.remove(); };
+  inner.appendChild(doneBtn);
+  prompt.appendChild(inner);
+  document.body.appendChild(prompt);
 }
 
 
@@ -4436,6 +4482,7 @@ function migrateToIntake(id) {
 
   /* Populate fields after form renders */
   setTimeout(function() {
+    /* Use getIntakeEl() to scope to modal body, not toggleIntakeForm's identical si-* IDs */
     var populate = {
       'si-species': r.species || '',
       'si-color':   r.color   || '',
@@ -4445,18 +4492,19 @@ function migrateToIntake(id) {
       'si-name':    r.name    || ''
     };
     Object.keys(populate).forEach(function(fid) {
-      var el = document.getElementById(fid);
+      var el = getIntakeEl(fid);
       if (el && populate[fid]) el.value = populate[fid];
     });
 
     /* Select the correct species option */
-    var speciesEl = document.getElementById('si-species');
+    var speciesEl = getIntakeEl('si-species');
     if (speciesEl && r.species) {
       Array.from(speciesEl.options).forEach(function(opt) {
         if (opt.value === r.species || opt.text === r.species) opt.selected = true;
       });
-      /* Trigger breed field update */
-      if (typeof updateBreedField === 'function') updateBreedField('si-species', 'si-breed-wrap');
+      /* Trigger breed field update scoped to modal body */
+      var modalBody = document.getElementById('intake-modal-body');
+      if (typeof updateBreedField === 'function') updateBreedField('si-species', 'si-breed-wrap', modalBody);
     }
 
     /* Mark source report for linking on save */
