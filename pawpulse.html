@@ -1097,7 +1097,7 @@ textarea{min-height:64px}
 
     <div id="drop-hint">
       📍 Tap the map to place pin
-      <button id="drop-cancel" onclick="cancelPlace(); document.getElementById('side-panel').classList.add('open');" style="padding:8px 14px;min-height:44px;font-size:.85rem;font-weight:700;border:none;border-radius:8px;background:rgba(255,255,255,.2);color:#fff;cursor:pointer">✕ Back</button>
+      <button id="drop-cancel" onclick="cancelPlace(); closeCard(); closePanel(); updateOrientationStrip('map');" style="padding:8px 14px;min-height:44px;font-size:.85rem;font-weight:700;border:none;border-radius:8px;background:rgba(255,255,255,.2);color:#fff;cursor:pointer">✕ Back</button>
     </div>
     <!-- Shown after pin placed on mobile — big tap target to return to form -->
     <div id="pin-set-btn" style="display:none;position:absolute;bottom:80px;left:50%;transform:translateX(-50%);z-index:900;background:var(--forest);color:var(--cream);border:none;border-radius:999px;padding:14px 28px;font-size:.9rem;font-weight:700;font-family:var(--font-display);box-shadow:0 4px 20px rgba(0,0,0,.35);cursor:pointer;white-space:nowrap;animation:hpulse 1.4s ease-in-out infinite" onclick="document.getElementById('pin-set-btn').style.display='none'; var _s=document.getElementById('orientation-strip'); if(_s) _s.style.display='none'; document.getElementById('side-panel').classList.add('open'); setTimeout(function(){map.invalidateSize();},300);">
@@ -1258,7 +1258,15 @@ try {
   map = { addLayer:function(){}, invalidateSize:function(){}, removeLayer:function(){}, hasLayer:function(){return false;}, fitBounds:function(){}, setView:function(){}, on:function(){}, off:function(){} };
 }
 
-var reports  = JSON.parse(localStorage.getItem('pawpulse-v2') || '[]');
+var reports  = (function() {
+  var rpts = JSON.parse(localStorage.getItem('pawpulse-v2') || '[]');
+  /* Restore photos from separate storage key (survives main array overflow) */
+  try {
+    var ph = JSON.parse(localStorage.getItem('pawpulse-photos') || '{}');
+    rpts.forEach(function(r) { if (!r.photo && ph[String(r.id)]) r.photo = ph[String(r.id)]; });
+  } catch(e) {}
+  return rpts;
+})();
 var lMarkers = [];
 var curFilter = 'all';
 var placing   = null;
@@ -1272,12 +1280,16 @@ var _isStaff  = false;
 
 /* ── SAVE / LOAD ──────────────────────────────────────────────────────── */
 function save() {
-  /* Always write to localStorage as offline cache */
+  /* Save photos separately so they survive even if main array is stripped */
+  var photos = {};
+  reports.forEach(function(r) { if (r.photo) photos[String(r.id)] = r.photo; });
+  try { localStorage.setItem('pawpulse-photos', JSON.stringify(photos)); } catch(e) {}
+  /* Write main report array */
   try {
     localStorage.setItem('pawpulse-v2', JSON.stringify(reports));
   } catch(e) {
-    /* localStorage full (photos) — try stripping photos from cache */
-    console.warn('localStorage full, writing without photos:', e.message);
+    /* localStorage full — write without photos (they're saved separately above) */
+    console.warn('localStorage full, stripping photos from main cache:', e.message);
     try {
       var stripped = reports.map(function(r) {
         var s = Object.assign({}, r); delete s.photo; return s;
@@ -1403,6 +1415,13 @@ function startFirestoreListener() {
             if (local && local.photo && !data.photo) { data.photo = local.photo; }
             reports.push(data);
           });
+          /* Restore any photos saved separately (survive localStorage overflow) */
+          try {
+            var savedPhotos = JSON.parse(localStorage.getItem('pawpulse-photos') || '{}');
+            reports.forEach(function(r) {
+              if (!r.photo && savedPhotos[String(r.id)]) r.photo = savedPhotos[String(r.id)];
+            });
+          } catch(pe) {}
           localStorage.setItem('pawpulse-v2', JSON.stringify(reports));
         }
         /* If Firestore empty, reports already loaded from localStorage in bootApp — keep them */
@@ -4438,9 +4457,12 @@ function migrateToIntake(id) {
         siPrev.style.display = 'block';
         if (siIcon) siIcon.style.display = 'none';
         if (siTxt)  siTxt.style.display  = 'none';
-        /* Show AI button if present */
-        var aiWrap = document.getElementById('intake-modal-body') ?
-          document.getElementById('intake-modal-body').querySelector('#si-ai-wrap') : null;
+        /* Hide the file input itself so "No file selected" doesn't show */
+        var siPhotoIn = getIntakeEl('si-photo-in');
+        if (siPhotoIn) siPhotoIn.style.display = 'none';
+        /* Show AI button */
+        var modalBody = document.getElementById('intake-modal-body');
+        var aiWrap = modalBody ? modalBody.querySelector('#si-ai-wrap') : null;
         if (aiWrap) aiWrap.style.display = 'block';
       }
     }
@@ -5134,19 +5156,20 @@ map.on('click', function(e) {
 });
 
 function compressPhoto(file, callback) {
-  /* Compress to max 1200px wide, 0.82 quality JPEG — keeps under ~200KB */
+  /* Compress to max 800px, 0.72 quality JPEG — keeps ~60-80KB per photo,
+     allowing 35+ photos to fit within localStorage limits */
   var img = new Image();
   var url = URL.createObjectURL(file);
   img.onload = function() {
     URL.revokeObjectURL(url);
-    var MAX = 1200;
+    var MAX = 800;
     var w = img.width, h = img.height;
     if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
     if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
     var canvas = document.createElement('canvas');
     canvas.width = w; canvas.height = h;
     canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-    callback(canvas.toDataURL('image/jpeg', 0.82));
+    callback(canvas.toDataURL('image/jpeg', 0.72));
   };
   img.onerror = function() {
     /* Fallback: read raw if canvas fails */
