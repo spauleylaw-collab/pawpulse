@@ -89,7 +89,7 @@ body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);h
 .tab-admin{border-color:rgba(212,132,58,.45)}
 .tab-admin.active{background:#fde8c8;color:#7a3a00;border-color:#fde8c8}
 .nav-mode-sep{width:1px;height:22px;background:rgba(255,255,255,.2);flex-shrink:0;align-self:center;margin:0 2px}
-@media(max-width:700px){input,select,textarea{font-size:16px!important}.tab-btn .tab-lbl{display:none}.nav-logo-sub{display:none}.nav-report-btn .btn-lbl{display:none}}
+@media(max-width:700px){input,select,textarea{font-size:16px!important}.nav-logo-sub{display:none}.nav-report-btn .btn-lbl{display:none}}
 /* Staff badge hidden by default — only shown via JS after auth confirms */
 #staff-badge { display: none !important; }
 #staff-badge.staff-active { display: inline-flex !important; }
@@ -134,7 +134,7 @@ body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);h
 .view.active{display:flex}
 
 /* MAP CONTAINER — same as PublicPulse */
-#map-container{flex:1;position:relative;overflow:hidden;margin-top:22px}
+#map-container{flex:1;position:relative;overflow:hidden}
 #map{width:100%;height:100%;touch-action:pan-x pan-y;-webkit-tap-highlight-color:transparent}
 .leaflet-tile{filter:saturate(.82) brightness(1.02) sepia(.06)}
 .leaflet-container{background:#d4c9b0}
@@ -189,7 +189,7 @@ textarea{min-height:64px}
 
 /* MAP OVERLAYS */
 #stats-bar{display:none}
-#map-filters{display:none}
+#map-filters{display:flex}
 .stat-pill{background:rgba(255,255,255,.92);backdrop-filter:blur(8px);padding:5px 12px;border-radius:999px;font-size:.73rem;font-weight:600;box-shadow:0 2px 10px rgba(0,0,0,.12);display:flex;align-items:center;gap:5px;border:1px solid var(--cream-3)}
 .stat-dot{width:8px;height:8px;border-radius:50%}
 .stat-dot.lost{background:var(--lost-r)}
@@ -1111,7 +1111,7 @@ textarea{min-height:64px}
 
     <div id="drop-hint">
       <div id="drop-hint-pill">📍 Tap the map to place pin</div>
-      <button id="drop-cancel" onclick="cancelPlace(); document.getElementById('side-panel').classList.add('open');">✕ Cancel</button>
+      <button id="drop-cancel" onclick="event.stopPropagation();cancelPlace();">✕ Cancel</button>
     </div>
     <!-- Shown after pin placed on mobile — big tap target to return to form -->
     <div id="pin-set-btn" style="display:none;position:absolute;bottom:80px;left:50%;transform:translateX(-50%);z-index:900;background:var(--forest);color:var(--cream);border:none;border-radius:999px;padding:14px 28px;font-size:.9rem;font-weight:700;font-family:var(--font-display);box-shadow:0 4px 20px rgba(0,0,0,.35);cursor:pointer;white-space:nowrap;animation:hpulse 1.4s ease-in-out infinite" onclick="document.getElementById('pin-set-btn').style.display='none'; var _s=document.getElementById('orientation-strip'); if(_s) _s.style.display='none'; document.getElementById('side-panel').classList.add('open'); setTimeout(function(){map.invalidateSize();},300);">
@@ -1366,18 +1366,7 @@ function initFirebase() {
         if (_fbReady !== true) {
           if (db) { startFirestoreListener(); } else { showShelterPicker(); }
         }
-        /* Re-sync any records with photos that may have failed to write
-           when auth was not yet restored (common on mobile Safari) */
-        if (db && reports.length > 0) {
-          setTimeout(function(){
-            reports.forEach(function(r){
-              if (r.photo) {
-                db.collection('reports').doc(String(r.id)).set(r)
-                  .catch(function(){});
-              }
-            });
-          }, 1500);
-        }
+        /* Photo re-sync loop removed — bypassed doctrine + caused Firestore quota exhaustion */
         setTimeout(function(){ renderAdoptView(); }, 800);
       } else {
         /* null — only clear if localStorage flag also gone (real sign-out, not just slow restore) */
@@ -4752,7 +4741,7 @@ function printCageCard(id) {
   var intakeDate = r.date ? new Date(r.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '---';
   var rabiesStatus = med.rabiesStatus==='given' ? 'Given - Tag #' + (med.rabiesTag||'---') : med.rabiesStatus==='prior' ? 'Prior on file' : med.rabiesStatus==='exempt' ? 'Exempt (age)' : 'NOT GIVEN';
   var rabiesOk = med.rabiesStatus === 'given' || med.rabiesStatus === 'prior';
-  var css = '*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;font-size:12px;padding:16px;max-width:4in}.header{text-align:center;border-bottom:2px solid #333;padding-bottom:8px;margin-bottom:10px}.shelter{font-size:9px;color:#666}.name{font-size:22px;font-weight:bold}.species{font-size:12px;color:#555;margin-top:2px}.photo{width:100%;height:150px;object-fit:cover;border-radius:6px;margin:8px 0}.no-photo{width:100%;height:60px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:28px;margin:8px 0;border-radius:6px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;margin-bottom:8px}.field label{font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:#888;display:block}.field span{font-size:12px;font-weight:bold;color:#333}.section{border:1px solid #ddd;border-radius:4px;padding:6px 8px;margin-bottom:6px}.stitle{font-size:9px;text-transform:uppercase;color:#888;margin-bottom:4px;font-weight:bold}.rabies{border-radius:4px;padding:5px 8px;margin-bottom:8px;font-size:11px}.ryes{background:#f0fff4;border:1px solid #48bb78}.rno{background:#fff5f5;border:1px solid #fc8181;color:#c53030}.banner{background:#fff8f0;border:1.5px solid #e8a040;border-radius:4px;padding:5px 8px;text-align:center;margin-bottom:6px;font-weight:bold;color:#8a5010;font-size:11px}.footer{border-top:1px solid #ddd;padding-top:5px;margin-top:6px;font-size:9px;color:#888;display:flex;justify-content:space-between}@media print{body{padding:4px}}';
+  var css = '*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;font-size:12px;padding:16px;max-width:4in}.header{text-align:center;border-bottom:2px solid #333;padding-bottom:8px;margin-bottom:10px}.shelter{font-size:9px;color:#666}.name{font-size:22px;font-weight:bold}.species{font-size:12px;color:#555;margin-top:2px}.photo{width:100%;height:280px;object-fit:contain;border-radius:6px;margin:8px 0;background:#f8f4ed}.no-photo{width:100%;height:60px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:28px;margin:8px 0;border-radius:6px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;margin-bottom:8px}.field label{font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:#888;display:block}.field span{font-size:12px;font-weight:bold;color:#333}.section{border:1px solid #ddd;border-radius:4px;padding:6px 8px;margin-bottom:6px}.stitle{font-size:9px;text-transform:uppercase;color:#888;margin-bottom:4px;font-weight:bold}.rabies{border-radius:4px;padding:5px 8px;margin-bottom:8px;font-size:11px}.ryes{background:#f0fff4;border:1px solid #48bb78}.rno{background:#fff5f5;border:1px solid #fc8181;color:#c53030}.banner{background:#fff8f0;border:1.5px solid #e8a040;border-radius:4px;padding:5px 8px;text-align:center;margin-bottom:6px;font-weight:bold;color:#8a5010;font-size:11px}.footer{border-top:1px solid #ddd;padding-top:5px;margin-top:6px;font-size:9px;color:#888;display:flex;justify-content:space-between}@media print{body{padding:4px}}';
   var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Cage Card</title><style>' + css + '</style></head><body>'
     + '<div class="header"><div class="shelter">Heartland Pet Connection &middot; 1807 W J St, Hastings NE</div>'
     + '<div class="name">' + esc(r.name||'Unknown') + '</div>'
@@ -5259,14 +5248,14 @@ function compressPhoto(file, callback) {
   var url = URL.createObjectURL(file);
   img.onload = function() {
     URL.revokeObjectURL(url);
-    var MAX = 1200;
+    var MAX = 900;
     var w = img.width, h = img.height;
     if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
     if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
     var canvas = document.createElement('canvas');
     canvas.width = w; canvas.height = h;
     canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-    callback(canvas.toDataURL('image/jpeg', 0.82));
+    callback(canvas.toDataURL('image/jpeg', 0.75));
   };
   img.onerror = function() {
     /* Fallback: read raw if canvas fails */
@@ -5889,7 +5878,7 @@ function showToast(type) {
 
 
 var shelters = [
-  { name:'Heartland Pet Connection', address:'1807 W J St, Hastings, NE 68901', phone:'(402) 462-7387', website:'heartlandpetconnection.com', lat:40.5698, lng:-98.4150, type:'shelter' }
+  { name:'Heartland Pet Connection', address:'1807 W J St, Hastings, NE 68901', phone:'(402) 462-7387', website:'heartlandpetconnection.com', lat:40.5854, lng:-98.4076, type:'shelter' }
 ];
 
 var activeShelter = shelters[0].name;
