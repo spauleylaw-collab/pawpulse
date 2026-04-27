@@ -1252,6 +1252,9 @@ window.addEventListener('unhandledrejection', function(e) {
 var HASTINGS = [40.5888, -98.3910];
 var MAP_ZOOM = window.innerWidth < 700 ? 10 : 11;
 
+/* Show orientation strip immediately — doesn't depend on Firestore loading */
+(function(){ var s=document.getElementById('orientation-strip'); if(s) s.style.display='block'; })();
+
 /* Map init — synchronous. Script tag is at bottom of body so #map div exists. */
 var map;
 try {
@@ -1772,6 +1775,16 @@ function doGuestView() {
   var loading = document.getElementById('app-loading');
   if (loading && loading.parentNode) loading.parentNode.removeChild(loading);
   if (USE_FIREBASE) { startFirestoreListener(); } else { bootApp(); }
+  /* Safety net: if Firestore never fires within 10s, force boot so map always loads */
+  setTimeout(function() {
+    if (!window._firebaseLoaded) {
+      console.warn('PawPulse: Firestore timeout — forcing boot');
+      window._firebaseLoaded = true;
+      var _ml = document.getElementById('map-loading');
+      if (_ml) { _ml.style.opacity='0'; setTimeout(function(){ _ml.style.display='none'; },450); }
+      if (!_bootAppDone) bootApp();
+    }
+  }, 10000);
 }
 
 function doSignOut() {
