@@ -1031,7 +1031,7 @@ textarea{min-height:64px}
           <button onclick="emailActiveReport()" title="Email" style="padding:5px 8px;font-size:.68rem;border-radius:6px;border:1px solid #059669;background:var(--cream);cursor:pointer;touch-action:manipulation;color:#059669">✉️</button>
           <button onclick="openContentGen('press')" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid #e0a090;background:#fff;cursor:pointer;font-family:var(--font-body);color:#c0392b;white-space:nowrap;flex-shrink:0">📣 Shareable Summary</button>
           <button onclick="openContentGen('fund')" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid #e0c090;background:#fff;cursor:pointer;font-family:var(--font-body);color:#b06010;white-space:nowrap;flex-shrink:0">💛 Donor Message</button>
-          <button onclick="copyActiveReport()" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid var(--forest);background:var(--forest);color:#fff;cursor:pointer;font-family:var(--font-body);white-space:nowrap;flex-shrink:0">📋 Copy</button>
+          
         </div>
       </div>
       <!-- Hidden filters row (kept for JS compatibility, not shown) -->
@@ -2817,7 +2817,7 @@ function closeAnimalEdit() {
 /* ── REPORTS WORKSPACE ───────────────────────────────────────────────── */
 var REPORT_TYPES = [
   { id:'incare',    icon:'🏥', label:'Animals In Care' },
-  { id:'intake30',  icon:'📅', label:'Intake — Last 30 Days' },
+  { id:'intake30',  icon:'📅', label:'Intake' },
   { id:'holds',     icon:'⚠️', label:'Active Holds' },
   { id:'costs',     icon:'💰', label:'Cost Breakdown' },
   { id:'adopt',     icon:'🌟', label:'Adoption Pipeline' },
@@ -4187,6 +4187,7 @@ function openCard(r, cp) {
   card.classList.remove('closing');
   document.getElementById('pin-card-body').innerHTML = cardHTML(r);
   card.style.visibility = 'hidden';
+  card.scrollTop = 0;  /* Always start at top of card */
   card.className = 'open';
   /* Lock map scroll on mobile */
   document.getElementById('map-container').style.overflow = 'hidden';
@@ -5605,9 +5606,12 @@ function submitLost() {
   var slb2 = document.getElementById('panel-submit-lost');
   if (slb2) slb2.style.opacity = '';
   /* Defer heavy JSON.stringify + render to avoid main-thread freeze */
+  r._isNewPin = true;
   reports.push(r);
   setTimeout(function() {
     save();
+    /* Switch to map view so user sees the pin they just placed */
+    if (_curView !== 'map') setView('map', null);
     renderMarkers();
     renderIncareView();
     writeAnimalRecord(r, 'public');
@@ -5662,9 +5666,12 @@ function submitFound() {
   pLat.found = null; pLng.found = null;
   if (sfb) sfb.style.opacity = '';
   /* Defer heavy JSON.stringify + render to avoid main-thread freeze */
+  r._isNewPin = true;
   reports.push(r);
   setTimeout(function() {
     save();
+    /* Switch to map view so user sees the pin they just placed */
+    if (_curView !== 'map') setView('map', null);
     renderMarkers();
     renderIncareView();
     writeAnimalRecord(r, 'public');
@@ -8658,12 +8665,16 @@ function renderIncareView() {
       + (function() {
           /* Status pill — most important field for shelter ops */
           var statusMap = {
-            'intake':   ['Intake', '#6b7280', '#f3f4f6'],
-            'hold':     ['Hold Active', '#92400e', '#fef3c7'],
-            'adopt':    ['Adoption Ready', '#1d4ed8', '#eff6ff'],
-            'medical':  ['Medical', '#7c3aed', '#f5f3ff'],
-            'foster':   ['In Foster', '#9333ea', '#fdf4ff'],
-            'pending':  ['Review Pending', '#b45309', '#fffbeb'],
+            'intake':    ['Initial Intake', '#6b7280', '#f3f4f6'],
+            'review':    ['Under Review',   '#2050a0', '#eff6ff'],
+            'hold':      ['On Hold',        '#92400e', '#fef3c7'],
+            'available': ['Adoption Ready', '#1d4ed8', '#e0f2fe'],
+            'adopted':   ['Adopted',        '#166534', '#dcfce7'],
+            'reunited':  ['Reunited',       '#166534', '#dcfce7'],
+            'transfer':  ['Transfer',       '#7c3aed', '#f5f3ff'],
+            'foster':    ['In Foster',      '#9333ea', '#fdf4ff'],
+            'medical':   ['Medical',        '#b45309', '#fffbeb'],
+            'euthanized':['Euthanized',     '#991b1b', '#fee2e2'],
           };
           var sKey = r.masterStatus || 'intake';
           var sInfo = statusMap[sKey] || ['In Care', '#6b7280', '#f3f4f6'];
