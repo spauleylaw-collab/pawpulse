@@ -2736,6 +2736,12 @@ function saveAnimalEdit(id) {
     r.enforcement.dailyCost  = parseFloat((document.getElementById('ae-dailyrate')||{}).value) || DAILY_RATE;
     r.enforcement.legalNotes = ((document.getElementById('ae-legal-notes')||{}).value||'').trim();
     r.enforcement.internalStatus = 'Shelter Hold Active';
+  } else if (r.intakeType === 'hold' && masterStatus !== 'hold') {
+    /* Releasing hold — clear hold-specific state so animal moves to normal care */
+    r.intakeType = 'citizen';  /* revert to standard intake type */
+    if (r.enforcement) r.enforcement.internalStatus = 'Released from Hold';
+    r.holdType = null;
+    r.shelterHoldStart = null;
   }
 
   r.courtDate      = (document.getElementById('ae-courtdate')||{}).value || '';
@@ -3021,18 +3027,30 @@ function runActiveReport() {
       }),
       ['<b>TOTAL: ' + recs.length + ' animals</b>', '', incare_dogs+' dogs / '+incare_cats+' cats', '', '', 'Avg stay: '+incare_avg_days+'d', '']);
 
-  } else if (id === 'intake30' || id === 'intake60') {
-    var days2 = id==='intake30' ? 30 : 60;
+  } else if (id === 'intake30' || id === 'intake60' || id === 'intake') {
+    /* Read the date filter from the UI — always use what user selected */
+    var filterDaysEl = document.getElementById('rpt-filter-days');
+    var days2 = filterDaysEl ? parseInt(filterDaysEl.value) || 30 : 30;
     var recs2 = getShelterData({ includeHolds:true, includeAdopt:true, includeResolved:true, cutoffDays:days2 }).filter(function(r){
       return !fSpecies || (r.species||'').toLowerCase()===fSpecies.toLowerCase();
     });
-    html = reportTable('Intake — Last ' + days2 + ' Days — ' + activeShelter + ' (' + recs2.length + ')',
+    /* Species subtotals */
+    var dogs2 = recs2.filter(function(r){ return (r.species||'').toLowerCase()==='dog'; }).length;
+    var cats2 = recs2.filter(function(r){ return (r.species||'').toLowerCase()==='cat'; }).length;
+    var other2 = recs2.length - dogs2 - cats2;
+    /* Source subtotals */
+    var stray2 = recs2.filter(function(r){ return !r.intakeSource || r.intakeSource==='citizen'; }).length;
+    var surr2 = recs2.filter(function(r){ return r.intakeSource==='surrender'; }).length;
+    var ac2 = recs2.filter(function(r){ return r.intakeSource==='ac'; }).length;
+    var dateLabel = days2 >= 365 ? 'This Year' : 'Last ' + days2 + ' Days';
+    html = reportTable('Intake — ' + dateLabel + ' — ' + activeShelter,
       ['Animal','Species','Color','Intake Source','Intake Date','Status'],
       recs2.map(function(r){
         return [esc(r.name||r.species||'Unknown'), esc(r.species||'—'), esc(r.color||'—'),
           esc(r.intakeSourceLabel||'—'), r.date?new Date(r.date).toLocaleDateString():'—',
-          esc(r.reunited?'Reunited':r.adoptionStatus==='adopted'?'Adopted':r.adoptionStatus==='available'?'Adoption Ready':(r.enforcement&&r.enforcement.internalStatus)||'In Care')];
-      }));
+          esc(r.reunited?'Reunited':r.adoptionStatus==='adopted'?'Adopted':r.adoptionStatus==='available'?'Adoption Ready':(r.masterStatus||'In Care'))];
+      }),
+      ['<b>TOTAL: ' + recs2.length + '</b>', dogs2+'d / '+cats2+'c / '+other2+'o', '', 'Stray:'+stray2+' Surr:'+surr2+' AC:'+ac2, '', '']);
 
   } else if (id === 'holds') {
     var holds = getShelterData({ includeHolds:true }).filter(function(r){
@@ -4410,12 +4428,33 @@ function migrateToIntake(id) {
     /* Mark source report for linking on save */
     window._migrateFromId = id;
 
+    /* Copy photo from found report to intake form */
+    if (r.photo) {
+      var siPrev = getIntakeEl('si-prev');
+      var siIcon = getIntakeEl('si-photo-icon');
+      var siTxt  = getIntakeEl('si-photo-txt');
+      if (siPrev) {
+        siPrev.src = r.photo;
+        siPrev.style.display = 'block';
+        if (siIcon) siIcon.style.display = 'none';
+        if (siTxt)  siTxt.style.display  = 'none';
+        /* Show AI button if present */
+        var aiWrap = document.getElementById('intake-modal-body') ?
+          document.getElementById('intake-modal-body').querySelector('#si-ai-wrap') : null;
+        if (aiWrap) aiWrap.style.display = 'block';
+      }
+    }
+
+    /* Hide orientation strip so it doesn't clip the modal top */
+    var strip = document.getElementById('orientation-strip');
+    if (strip) strip.style.display = 'none';
+
     /* Show pre-fill notice at top of form */
     var body = document.getElementById('intake-modal-body');
     if (body) {
       var notice = document.createElement('div');
       notice.style.cssText = 'background:#e8f4e9;border:1px solid #8bc898;border-radius:8px;padding:9px 13px;font-size:.75rem;color:#2a6030;margin-bottom:12px;line-height:1.5';
-      notice.innerHTML = '✓ <strong>Pre-filled from found report.</strong> Review all fields, add a photo, and save to create the intake record.';
+      notice.innerHTML = '✓ <strong>Pre-filled from found report.</strong> Review and confirm fields, then tap Log Intake.';
       body.insertBefore(notice, body.firstChild);
     }
   }, 350);
@@ -5619,22 +5658,13 @@ function submitLost() {
   /* Defer heavy JSON.stringify + render to avoid main-thread freeze */
   r._isNewPin = true;
   reports.push(r);
-  /* Immediate marker add — don't wait for full renderMarkers */
-  if (r.lat && r.lng && typeof map !== 'undefined') {
-    try {
-      var newM = L.marker([r.lat, r.lng], {icon: pinIcon(r.type, false, false, false, false, false, r)}).addTo(map);
-      newM.on('click', function(e){ L.DomEvent.stopPropagation(e); openCard(r, map.latLngToContainerPoint([r.lat,r.lng])); });
-      lMarkers.push(newM);
-    } catch(e) { console.warn('immediate pin add failed:', e.message); }
-  }
-  setTimeout(function() {
-    save();
-    renderMarkers();
-    renderIncareView();
-    writeAnimalRecord(r, 'public');
-    recordSubmission('lost');
-    showToast('lost');
-  }, 200);
+  /* Render immediately — synchronous, no flicker */
+  save();
+  renderMarkers();
+  renderIncareView();
+  writeAnimalRecord(r, 'public');
+  recordSubmission('lost');
+  showToast('lost');
 }
 
 function submitFound() {
@@ -5685,22 +5715,13 @@ function submitFound() {
   /* Defer heavy JSON.stringify + render to avoid main-thread freeze */
   r._isNewPin = true;
   reports.push(r);
-  /* Immediate marker add — don't wait for full renderMarkers */
-  if (r.lat && r.lng && typeof map !== 'undefined') {
-    try {
-      var newM = L.marker([r.lat, r.lng], {icon: pinIcon(r.type, false, false, false, r.atShelter, false, r)}).addTo(map);
-      newM.on('click', function(e){ L.DomEvent.stopPropagation(e); openCard(r, map.latLngToContainerPoint([r.lat,r.lng])); });
-      lMarkers.push(newM);
-    } catch(e) { console.warn('immediate pin add failed:', e.message); }
-  }
-  setTimeout(function() {
-    save();
-    renderMarkers();
-    renderIncareView();
-    writeAnimalRecord(r, 'public');
-    recordSubmission('found');
-    showToast('found');
-  }, 200);
+  /* Render immediately — synchronous, no flicker */
+  save();
+  renderMarkers();
+  renderIncareView();
+  writeAnimalRecord(r, 'public');
+  recordSubmission('found');
+  showToast('found');
 }
 
 function resetForm(type) {
