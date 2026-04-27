@@ -4190,26 +4190,51 @@ function openCard(r, cp) {
   card.className = 'open';
   /* Lock map scroll on mobile */
   document.getElementById('map-container').style.overflow = 'hidden';
-  requestAnimationFrame(function() {
+  /* Set maxHeight BEFORE rAF so async content updates (What Happens Next API)
+     can never grow the card past the safe zone after positioning */
+  (function() {
     var mc = document.getElementById('map-container');
-    var cw = card.offsetWidth, ch = card.offsetHeight;
-    var mw = mc.offsetWidth,   mh = mc.offsetHeight;
-    var M = 14;
-    var rightMargin  = M + 50;
-    /* bottomMargin accounts for SEO footer (16px) + safe gap */
     var _seo = document.getElementById('seo-footer');
-    var _seoH = (_seo && _seo.style.display !== 'none') ? (_seo.offsetHeight || 16) : 0;
-    var bottomMargin = M + 60 + _seoH;  /* 60px breathing room above SEO bar */
-    /* Cap card height so it never overflows available space */
+    var _seoH = (_seo && _seo.offsetHeight) || 16;
+    var M = 14, mh = mc.offsetHeight;
+    var bottomMargin = M + 60 + _seoH;
     var maxAvail = mh - M - bottomMargin;
-    if (ch > maxAvail) {
-      card.style.maxHeight = maxAvail + 'px';
-      ch = maxAvail;
+    if (maxAvail > 100) card.style.maxHeight = maxAvail + 'px';
+  })();
+  requestAnimationFrame(function() {
+    var mc   = document.getElementById('map-container');
+    var cw   = card.offsetWidth, ch = card.offsetHeight;
+    var mw   = mc.offsetWidth,   mh = mc.offsetHeight;
+    var M    = 14;
+    var seoH = (document.getElementById('seo-footer') || {}).offsetHeight || 16;
+    var clearBottom = seoH + 24;        /* clear SEO bar + breathing room */
+    var available   = mh - M - clearBottom;   /* max usable height */
+
+    /* If card is already taller than available, hard-cap it */
+    if (ch > available) { ch = available; }
+
+    /* Horizontal centering on pin */
+    var left = Math.max(M, Math.min(cp.x - cw/2, mw - cw - (M + 50)));
+
+    /* Vertical: prefer above pin, then below, then clamp upward */
+    var topAbove = cp.y - ch - 16;
+    var topBelow = cp.y + 22;
+    var top;
+    if (topAbove >= M) {
+      top = topAbove;                                /* fits above pin */
+    } else if (topBelow + ch <= mh - clearBottom) {
+      top = topBelow;                                /* fits below pin */
+    } else {
+      top = Math.max(M, mh - ch - clearBottom);     /* clamp: shift up */
     }
-    var left = Math.max(M, Math.min(cp.x - cw/2, mw - cw - rightMargin));
-    var top  = cp.y - ch - 16;
-    if (top < M) top = cp.y + 22;
-    top = Math.max(M, Math.min(top, mh - ch - bottomMargin));
+
+    /* ALWAYS set maxHeight to the actual available space from top to SEO bar.
+       This prevents async content (What Happens Next AI) from growing the
+       card past the screen edge after positioning is done. */
+    var maxH = mh - clearBottom - top;
+    card.style.maxHeight = maxH + 'px';
+    card.style.overflowY = 'auto';
+
     card.style.left = left + 'px';
     card.style.top  = top  + 'px';
     card.style.visibility = '';
