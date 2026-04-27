@@ -1191,6 +1191,10 @@ textarea{min-height:64px}
             <div class="photo-drop-txt"  id="f-dtxt">Tap to upload a photo</div>
             <img id="f-prev" class="photo-prev" alt="preview">
           </div>
+          <div id="f-ai-wrap" style="display:none;margin-top:8px">
+            <button class="ai-id-btn" id="f-ai-btn" onclick="applyAIIdentify('f')">✨ Identify breed &amp; color with AI</button>
+            <div class="ai-id-result" id="f-ai-result"></div>
+          </div>
           <hr class="div">
           <div class="sl">📞 Your Contact</div>
           <div class="fr">
@@ -1269,22 +1273,25 @@ var _isStaff  = false;
 /* ── SAVE / LOAD ──────────────────────────────────────────────────────── */
 function save() {
   /* Always write to localStorage as offline cache */
-  localStorage.setItem('pawpulse-v2', JSON.stringify(reports));
-  /* If Firebase is live, sync changed records to Firestore */
-  if (USE_FIREBASE && _fbReady && _isStaff) {
-    /* Debounced — avoid hammering Firestore on rapid edits */
-    clearTimeout(save._t);
-    save._t = setTimeout(function() { syncReportsToFirestore(); }, 600);
+  try {
+    localStorage.setItem('pawpulse-v2', JSON.stringify(reports));
+  } catch(e) {
+    /* localStorage full (photos) — try stripping photos from cache */
+    console.warn('localStorage full, writing without photos:', e.message);
+    try {
+      var stripped = reports.map(function(r) {
+        var s = Object.assign({}, r); delete s.photo; return s;
+      });
+      localStorage.setItem('pawpulse-v2', JSON.stringify(stripped));
+    } catch(e2) { console.error('localStorage write failed:', e2.message); }
   }
 }
 
 function syncReportsToFirestore() {
-  if (!USE_FIREBASE || !_isStaff || !db) return;
-  /* Use individual set() calls — batch writes fail Firestore security rules */
-  reports.forEach(function(r) {
-    db.collection('reports').doc(String(r.id)).set(r)
-      .catch(function(e){ console.warn('Firestore sync error:', e.message); });
-  });
+  /* Intentionally disabled — causes quota exhaustion by writing ALL docs on every save().
+     All Firestore writes now go through writeAnimalRecord() which strips photos,
+     validates through doctrine, and uses {merge:true} for efficiency. */
+  return;
 }
 
 function deleteFromFirestore(id) {
@@ -5118,6 +5125,10 @@ function previewPhoto(input, imgId, iconId, txtId) {
     img.src = dataUrl; img.style.display = 'block';
     document.getElementById(iconId).style.display = 'none';
     document.getElementById(txtId).style.display  = 'none';
+    /* Show AI identify button — prefix is imgId minus '-prev' */
+    var prefix = imgId.replace('-prev','');
+    var wrap = document.getElementById(prefix + '-ai-wrap');
+    if (wrap) wrap.style.display = 'block';
   });
 }
 
@@ -5608,16 +5619,22 @@ function submitLost() {
   /* Defer heavy JSON.stringify + render to avoid main-thread freeze */
   r._isNewPin = true;
   reports.push(r);
+  /* Immediate marker add — don't wait for full renderMarkers */
+  if (r.lat && r.lng && typeof map !== 'undefined') {
+    try {
+      var newM = L.marker([r.lat, r.lng], {icon: pinIcon(r.type, false, false, false, false, false, r)}).addTo(map);
+      newM.on('click', function(e){ L.DomEvent.stopPropagation(e); openCard(r, map.latLngToContainerPoint([r.lat,r.lng])); });
+      lMarkers.push(newM);
+    } catch(e) { console.warn('immediate pin add failed:', e.message); }
+  }
   setTimeout(function() {
     save();
-    /* Switch to map view so user sees the pin they just placed */
-    if (_curView !== 'map') setView('map', null);
     renderMarkers();
     renderIncareView();
     writeAnimalRecord(r, 'public');
     recordSubmission('lost');
     showToast('lost');
-  }, 50);
+  }, 200);
 }
 
 function submitFound() {
@@ -5668,16 +5685,22 @@ function submitFound() {
   /* Defer heavy JSON.stringify + render to avoid main-thread freeze */
   r._isNewPin = true;
   reports.push(r);
+  /* Immediate marker add — don't wait for full renderMarkers */
+  if (r.lat && r.lng && typeof map !== 'undefined') {
+    try {
+      var newM = L.marker([r.lat, r.lng], {icon: pinIcon(r.type, false, false, false, r.atShelter, false, r)}).addTo(map);
+      newM.on('click', function(e){ L.DomEvent.stopPropagation(e); openCard(r, map.latLngToContainerPoint([r.lat,r.lng])); });
+      lMarkers.push(newM);
+    } catch(e) { console.warn('immediate pin add failed:', e.message); }
+  }
   setTimeout(function() {
     save();
-    /* Switch to map view so user sees the pin they just placed */
-    if (_curView !== 'map') setView('map', null);
     renderMarkers();
     renderIncareView();
     writeAnimalRecord(r, 'public');
     recordSubmission('found');
     showToast('found');
-  }, 50);
+  }, 200);
 }
 
 function resetForm(type) {
