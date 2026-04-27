@@ -2,21 +2,21 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>PawPulse \u2014 Lost &amp; Found Pets \u00b7 Hastings, NE</title>
-<meta name="description" content="PawPulse is the live lost and found pet map for Hastings, NE. See lost pets, found animals, and shelter intake in real time.">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>PawPulse — Lost &amp; Found Pet Map | Hastings, Nebraska</title>
+<meta name="description" content="Live lost and found pet map for Hastings, Nebraska and Adams County. Report a lost pet, help reunite animals, and see pets in care at Heartland Pet Connection.">
 <meta name="theme-color" content="#2d4a35">
 <link rel="canonical" href="https://pawpulse.net">
 <!-- Open Graph -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://pawpulse.net">
-<meta property="og:title" content="PawPulse \u2014 Lost &amp; Found Pets \u00b7 Hastings, NE">
+<meta property="og:title" content="PawPulse — Lost &amp; Found Pets · Hastings, NE">
 <meta property="og:description" content="Live lost pet map for Hastings, NE. See lost pets, found animals, and shelter intake in real time.">
 <meta property="og:site_name" content="PawPulse">
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="PawPulse \u2014 Lost &amp; Found Pets">
-<meta name="twitter:description" content="Live lost and found pet map for Hastings, NE.">
+<meta name="twitter:title" content="PawPulse — Lost &amp; Found Pet Map | Hastings, Nebraska">
+<meta name="twitter:description" content="Live lost and found pet map for Hastings, Nebraska and Adams County. Report lost pets, find strays, see shelter animals.">
 <link rel="preconnect" href="https://tile.openstreetmap.org">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -77,7 +77,7 @@ body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);h
 .nav-logo-wrap{display:flex;flex-direction:column}
 .nav-logo-sub{font-family:var(--font-body);font-size:.56rem;font-weight:600;color:var(--moss);letter-spacing:.09em;text-transform:uppercase}
 .nav-spacer{flex-shrink:0;width:4px}
-.nav-report-btn{font-family:var(--font-body);font-size:.72rem;font-weight:700;padding:6px 10px;border-radius:6px;border:none;cursor:pointer;transition:all .15s;flex-shrink:0;background:var(--amber);color:#fff;letter-spacing:.01em;white-space:nowrap}
+.nav-report-btn{font-family:var(--font-body);font-size:.72rem;font-weight:700;padding:6px 10px;border-radius:6px;border:none;cursor:pointer;transition:all .15s;flex-shrink:0;background:var(--amber);color:#fff;letter-spacing:.01em;white-space:nowrap;touch-action:manipulation}
 .nav-report-btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
 #nav-tabs{display:flex;gap:2px;flex:1;min-width:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 #nav-tabs::-webkit-scrollbar{display:none}
@@ -90,19 +90,20 @@ body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);h
 .tab-admin.active{background:#fde8c8;color:#7a3a00;border-color:#fde8c8}
 .nav-mode-sep{width:1px;height:22px;background:rgba(255,255,255,.2);flex-shrink:0;align-self:center;margin:0 2px}
 @media(max-width:700px){input,select,textarea{font-size:16px!important}.tab-btn .tab-lbl{display:none}.nav-logo-sub{display:none}.nav-report-btn .btn-lbl{display:none}}
-/* Staff badge hidden by default \u2014 only shown via JS after auth confirms */
+/* Staff badge hidden by default — only shown via JS after auth confirms */
 #staff-badge { display: none !important; }
 #staff-badge.staff-active { display: inline-flex !important; }
-#pp-banner{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:600;background:rgba(45,74,53,.93);backdrop-filter:blur(12px);border:1px solid rgba(122,172,130,.3);border-radius:999px;padding:9px 18px;display:flex;align-items:center;gap:10px;min-width:280px;max-width:460px;box-shadow:0 4px 20px rgba(0,0,0,.28);pointer-events:none;transition:opacity .3s}@media(max-width:640px){#pp-banner{top:72px!important}}
+#pp-banner{position:absolute;top:28px;left:50%;transform:translateX(-50%);z-index:600;background:rgba(45,74,53,.93);backdrop-filter:blur(12px);border:1px solid rgba(122,172,130,.3);border-radius:999px;padding:9px 18px;display:flex;align-items:center;gap:10px;min-width:280px;max-width:460px;box-shadow:0 4px 20px rgba(0,0,0,.28);pointer-events:none;transition:opacity .3s}@media(max-width:640px){#map-container{margin-top:60px!important}}
+@media(max-width:640px){#pp-banner{top:42px!important}}
 .banner-dot{width:7px;height:7px;border-radius:50%;background:var(--moss);box-shadow:0 0 7px var(--moss);flex-shrink:0;animation:bdot 2s ease-in-out infinite}
 @keyframes bdot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.75)}}
 #banner-txt{font-size:.76rem;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .35s}
 #banner-txt.fade{opacity:0}
 #banner-dot-reunion{background:#f0b840;box-shadow:0 0 8px #f0b840}
-/* Floating filter pills on map \u2014 horizontal row at bottom center */
+/* Floating filter pills on map — horizontal row at bottom center */
 #map-filters{position:absolute;bottom:54px;left:50%;transform:translateX(-50%);z-index:600;display:flex;flex-direction:row;gap:6px;pointer-events:none;white-space:nowrap}
 #map-filters .filter-btn{pointer-events:auto}
-.filter-btn{font-family:var(--font-body);font-size:.72rem;font-weight:600;padding:6px 13px;border-radius:999px;cursor:pointer;transition:all .15s;border:1.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.88);backdrop-filter:blur(8px);color:var(--warm-mid);box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.filter-btn{font-family:var(--font-body);font-size:.72rem;font-weight:600;padding:6px 13px;border-radius:999px;cursor:pointer;transition:all .15s;border:1.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.88);backdrop-filter:blur(8px);color:var(--warm-mid);box-shadow:0 2px 8px rgba(0,0,0,.12);touch-action:manipulation}
 .filter-btn.active.all{background:var(--amber);color:#fff;border-color:var(--amber)}
 .filter-btn.active.lost{background:var(--lost-r);color:#fff;border-color:var(--lost-r)}
 .filter-btn.active.found{background:var(--found-g);color:#fff;border-color:var(--found-g)}
@@ -121,18 +122,18 @@ body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);h
 .mode-banner-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 
 /* Map legend */
-@media(max-width:640px){#map-legend{bottom:10px!important;left:8px!important;right:auto!important;flex-direction:row!important;flex-wrap:wrap!important;gap:4px 10px!important;padding:5px 8px!important;max-width:calc(100vw - 230px)}}
-#map-legend{position:absolute;bottom:12px;left:12px;z-index:600;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-radius:8px;padding:6px 10px;display:flex;flex-direction:column;gap:5px;box-shadow:0 2px 10px rgba(0,0,0,.1);border:1px solid var(--cream-3)}
+@media(max-width:640px){#map-legend{bottom:32px!important;left:8px!important;right:auto!important;flex-direction:row!important;flex-wrap:wrap!important;gap:4px 10px!important;padding:5px 8px!important;max-width:calc(100vw - 230px)}}
+#map-legend{position:absolute;bottom:24px;left:12px;z-index:600;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-radius:8px;padding:6px 10px;display:flex;flex-direction:column;gap:5px;box-shadow:0 2px 10px rgba(0,0,0,.1);border:1px solid var(--cream-3)}
 .legend-item{display:flex;align-items:center;gap:7px;font-size:.7rem;font-weight:500;color:var(--warm-mid);white-space:nowrap}
 .legend-pin{width:10px;height:10px;border-radius:50%;flex-shrink:0}
 .print-btn{font-family:var(--font-body);font-size:.74rem;font-weight:600;padding:7px 13px;border-radius:8px;border:1.5px solid var(--cream-3);background:var(--cream-2);color:var(--warm-mid);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px;width:100%;justify-content:center;margin-top:6px}
 .print-btn:hover{border-color:var(--amber);color:var(--amber)}
 
-/* VIEW \u2014 position:fixed + inset, same as PublicPulse */
+/* VIEW — position:fixed + inset, same as PublicPulse */
 .view{position:fixed;inset:var(--nav-h) 0 0 0;display:none}
 .view.active{display:flex}
 
-/* MAP CONTAINER \u2014 same as PublicPulse */
+/* MAP CONTAINER — same as PublicPulse */
 #map-container{flex:1;position:relative;overflow:hidden;margin-top:22px}
 #map{width:100%;height:100%;touch-action:pan-x pan-y;-webkit-tap-highlight-color:transparent}
 .leaflet-tile{filter:saturate(.82) brightness(1.02) sepia(.06)}
@@ -141,7 +142,7 @@ body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);h
 .leaflet-bar a{width:32px !important;height:32px !important;line-height:32px !important;font-size:18px !important}
 
 /* SIDE PANEL */
-#side-panel{position:absolute;top:0;right:0;bottom:0;width:var(--panel-w);max-width:100%;background:var(--cream);border-left:1px solid var(--cream-3);z-index:800;display:flex;flex-direction:column;overflow-y:auto;transform:translateX(100%);transition:transform .32s cubic-bezier(.4,0,.2,1);box-shadow:-4px 0 24px rgba(42,31,18,.12)}
+#side-panel{position:absolute;top:0;right:0;bottom:0;width:var(--panel-w);max-width:100%;background:var(--cream);border-left:1px solid var(--cream-3);z-index:800;display:flex;flex-direction:column;overflow:hidden;transform:translateX(100%);transition:transform .32s cubic-bezier(.4,0,.2,1);box-shadow:-4px 0 24px rgba(42,31,18,.12)}
 #side-panel.open{transform:translateX(0)}
 #side-panel::-webkit-scrollbar{width:4px}
 #side-panel::-webkit-scrollbar-thumb{background:var(--cream-3);border-radius:99px}
@@ -150,11 +151,12 @@ body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);h
 .panel-sub{font-size:.76rem;color:var(--warm-mid);margin-top:4px}
 .panel-close{background:none;border:none;cursor:pointer;font-size:1.25rem;color:var(--warm-mid);line-height:1;padding:2px 5px;border-radius:6px}
 .panel-close:hover{color:var(--warm-dk)}
-.panel-body{padding:18px 20px;flex:1}
+.panel-body{padding:18px 20px;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0}
 
 /* FORM */
 .fg{margin-bottom:14px}
 .fr{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+@media(max-width:400px){.fr{grid-template-columns:1fr}}
 label{display:block;font-size:.7rem;font-weight:600;color:var(--warm-mid);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
 input[type=text],input[type=email],input[type=tel],select,textarea{width:100%;padding:8px 11px;font-family:var(--font-body);font-size:.86rem;color:var(--warm-dk);background:#fff;border:1.5px solid var(--cream-3);border-radius:8px;outline:none;resize:vertical;transition:border-color .15s,box-shadow .15s}
 input:focus,select:focus,textarea:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(212,132,58,.14)}
@@ -176,8 +178,10 @@ textarea{min-height:64px}
 .chk-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;cursor:pointer}
 .chk-row input{width:16px;height:16px;accent-color:var(--found-g);flex-shrink:0}
 .chk-row label{font-size:.82rem;font-weight:500;color:var(--warm-dk);text-transform:none;letter-spacing:0;margin:0;cursor:pointer}
-.submit-btn{width:100%;padding:12px;font-family:var(--font-display);font-size:.98rem;font-weight:600;border:none;border-radius:10px;cursor:pointer;transition:all .2s;margin-top:6px}@media(max-width:640px){
-  .submit-btn { position:sticky; bottom:0; left:0; right:0; margin-top:8px; z-index:10; box-shadow:0 -4px 12px rgba(0,0,0,.1); }
+.submit-btn{width:100%;padding:12px;font-family:var(--font-display);font-size:.98rem;font-weight:600;border:none;border-radius:10px;cursor:pointer;transition:all .2s;margin-top:6px;touch-action:manipulation;-webkit-tap-highlight-color:rgba(0,0,0,.08)}@media(max-width:640px){
+  /* Ensure panel-body is scroll container, footer never scrolls away */
+  .panel-body{overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;flex:1!important;min-height:0!important}
+  #panel-footer{flex-shrink:0!important;padding-bottom:max(16px,env(safe-area-inset-bottom,16px))!important;padding-top:10px!important}
 }
 .submit-btn.lost{background:var(--lost-r);color:#fff}
 .submit-btn.found{background:var(--found-g);color:#fff}
@@ -190,12 +194,12 @@ textarea{min-height:64px}
 .stat-dot{width:8px;height:8px;border-radius:50%}
 .stat-dot.lost{background:var(--lost-r)}
 .stat-dot.found{background:var(--found-g)}
-#drop-hint{display:none;position:absolute;inset:0;z-index:700;align-items:center;justify-content:center;pointer-events:none;cursor:crosshair;background:transparent}
-#drop-hint.on{display:flex}
+#drop-hint{display:none;position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:700;background:var(--forest);color:var(--cream);border-radius:999px;padding:9px 16px 9px 14px;font-size:.8rem;font-weight:600;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(0,0,0,.3);white-space:nowrap;animation:hpulse 1.6s ease-in-out infinite}
+#drop-hint.on{display:flex}@media(max-width:640px){#drop-hint{left:0!important;right:0!important;top:0!important;transform:none!important;border-radius:0!important;width:100%!important;justify-content:center;padding:14px 16px!important;font-size:.9rem!important;white-space:normal!important}}
 @keyframes hpulse{0%,100%{opacity:.88}50%{opacity:1}}
 #drop-cancel{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);color:rgba(255,255,255,.75);border-radius:999px;padding:3px 10px;font-size:.72rem;font-weight:600;cursor:pointer;font-family:var(--font-body)}
 #drop-cancel:hover{color:#fff}
-#pin-card{display:none;position:absolute;z-index:850;width:280px;background:var(--cream);border:1.5px solid rgba(42,31,18,.18);border-radius:14px;overflow:hidden;box-shadow:0 16px 50px rgba(0,0,0,.32);transition:opacity .55s ease,transform .55s ease;max-height:80vh;flex-direction:column}
+#pin-card{display:none;position:absolute;z-index:850;width:280px;background:var(--cream);border:1.5px solid rgba(42,31,18,.18);border-radius:14px;overflow:hidden;box-shadow:0 16px 50px rgba(0,0,0,.32);transition:opacity .55s ease,transform .55s ease;max-height:80vh;flex-direction:column;overflow-y:auto}
 /* Keep Leaflet controls below pin card */
 .leaflet-pane{z-index:400 !important}
 .leaflet-top,.leaflet-bottom{z-index:500 !important}
@@ -203,8 +207,8 @@ textarea{min-height:64px}
 #pin-card.open{display:flex;flex-direction:column;animation:cpop .2s cubic-bezier(.34,1.56,.64,1)}
 #pin-card.fading{opacity:0;transform:translateY(-10px) scale(.97);pointer-events:none}
 @keyframes cpop{from{opacity:0;transform:scale(.9) translateY(6px)}to{opacity:1;transform:scale(1) translateY(0)}}
-.pc-close{position:absolute;top:6px;right:6px;background:rgba(42,31,18,.55);color:#fff;border:none;cursor:pointer;width:44px;height:44px;border-radius:50%;font-size:.95rem;line-height:44px;text-align:center;z-index:1;display:flex;align-items:center;justify-content:center}
-.pc-img{width:100%;height:190px;object-fit:cover;object-position:center top;display:block}
+.pc-close{position:absolute;top:6px;right:6px;background:rgba(42,31,18,.55);color:#fff;border:none;cursor:pointer;width:44px;height:44px;border-radius:50%;font-size:.95rem;line-height:44px;text-align:center;z-index:1;display:flex;align-items:center;justify-content:center;touch-action:manipulation}
+.pc-img{width:100%;height:190px;object-fit:contain;object-position:center center;display:block;background:var(--cream-2)}
 .pc-no-img{width:100%;height:62px;display:flex;align-items:center;justify-content:center;font-size:2rem}
 .pc-body{padding:11px 13px 13px}
 .pc-badge{display:inline-flex;align-items:center;gap:4px;font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:2px 8px;border-radius:999px;margin-bottom:6px}
@@ -215,12 +219,12 @@ textarea{min-height:64px}
 .pc-row strong{color:var(--warm-dk);font-weight:600}
 .pc-contact{margin-top:8px;padding-top:8px;border-top:1px solid var(--cream-3);font-size:.72rem;color:var(--warm-mid)}
 .pc-date{font-size:.65rem;color:#a0907a;margin-top:6px}
-#empty-hint{position:absolute;bottom:98px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.9);backdrop-filter:blur(8px);opacity:0;padding:9px 18px;border-radius:999px;font-size:.8rem;color:var(--warm-mid);box-shadow:0 2px 10px rgba(0,0,0,.1);z-index:600;pointer-events:none;border:1px solid var(--cream-3);transition:opacity .3s}
+#empty-hint{position:absolute;top:72px;left:50%;transform:translateX(-50%);background:rgba(42,31,18,.82);backdrop-filter:blur(8px);opacity:0;padding:9px 18px;border-radius:999px;font-size:.8rem;color:rgba(255,255,255,.9);box-shadow:0 4px 16px rgba(0,0,0,.18);z-index:600;pointer-events:none;white-space:nowrap;transition:opacity .3s}
 #toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(120px);z-index:9999;background:var(--forest);color:var(--cream);padding:11px 20px;border-radius:16px;font-size:.84rem;font-weight:600;box-shadow:0 8px 36px rgba(0,0,0,.25);display:flex;align-items:center;gap:8px;transition:transform .38s cubic-bezier(.34,1.56,.64,1);white-space:normal;max-width:calc(100vw - 32px);text-align:center;justify-content:center}
 #toast.show{transform:translateX(-50%) translateY(0)}
 #map.placing{cursor:crosshair !important}
 .pc-badge.reunited{background:#ede9e0;color:#8a7a66}
-.reunite-btn{width:100%;margin-top:10px;padding:9px;font-family:var(--font-display);font-size:.88rem;font-weight:600;border:1.5px solid var(--cream-3);border-radius:8px;cursor:pointer;background:var(--cream-2);color:var(--warm-mid);transition:all .18s;display:flex;align-items:center;justify-content:center;gap:6px}
+.reunite-btn{width:100%;margin-top:10px;padding:9px;font-family:var(--font-display);font-size:.88rem;font-weight:600;border:1.5px solid var(--cream-3);border-radius:8px;cursor:pointer;background:var(--cream-2);color:var(--warm-mid);transition:all .18s;display:flex;align-items:center;justify-content:center;gap:6px;touch-action:manipulation;min-height:44px}
 .reunite-btn:hover{background:#e8f4e9;border-color:var(--found-g);color:var(--found-g)}
 .reunite-btn.done{background:#e8f4e9;border-color:var(--found-g);color:var(--found-g);cursor:default;pointer-events:none}
 /* Match / comment styles */
@@ -270,15 +274,15 @@ textarea{min-height:64px}
 .sh-col:last-child{border-right:none}
 .sh-col-left{width:280px;flex-shrink:0}
 .sh-col-right{flex:1;min-width:0;display:flex;flex-direction:column;min-height:0}
-.sh-col-hdr{padding:14px 16px;border-bottom:1px solid var(--cream-3);background:var(--cream);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.sh-col-hdr{padding:9px 14px;border-bottom:1px solid var(--cream-3);background:var(--cream);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .sh-col-title{font-family:var(--font-display);font-size:.82rem;font-weight:700;color:var(--warm-mid);text-transform:uppercase;letter-spacing:.06em}
-.sh-col-body{flex:1;overflow-y:auto;padding:10px;min-height:0;-webkit-overflow-scrolling:touch}
+.sh-col-body{flex:1;overflow-y:auto;padding:8px;min-height:0;-webkit-overflow-scrolling:touch}
 .sh-col-body::-webkit-scrollbar{width:3px}
 .sh-col-body::-webkit-scrollbar-thumb{background:var(--cream-3);border-radius:99px}
 .sh-select{width:100%;padding:9px 12px;font-family:var(--font-body);font-size:.84rem;font-weight:600;color:var(--warm-dk);background:var(--cream);border:1.5px solid var(--cream-3);border-radius:8px;outline:none;cursor:pointer;margin-bottom:0;appearance:none}
 .sh-select:focus{border-color:var(--amber)}
-.sh-selector-wrap{padding:10px;border-bottom:1px solid var(--cream-3);flex-shrink:0;background:var(--cream)}
-.sh-queue-item{background:#fff;border:1px solid var(--cream-3);border-radius:10px;padding:11px 13px;margin-bottom:8px;cursor:pointer;transition:all .15s}
+.sh-selector-wrap{padding:7px 10px;border-bottom:1px solid var(--cream-3);flex-shrink:0;background:var(--cream)}
+.sh-queue-item{background:#fff;border:1px solid var(--cream-3);border-radius:10px;padding:8px 11px;margin-bottom:8px;cursor:pointer;transition:all .15s}
 .sh-queue-item:hover{border-color:var(--amber);box-shadow:0 2px 8px rgba(42,31,18,.08)}
 .sh-queue-item.selected{border-color:var(--found-g);background:#f5faf6}
 .sh-queue-item.reunited{opacity:.5}
@@ -289,31 +293,31 @@ textarea{min-height:64px}
 .sh-qi-badge.adopt{background:#e0eaff;color:#3060c0}
 /* Adoption card section */
 .pc-adopt{background:linear-gradient(135deg,#e8f0ff,#dce8ff);border:1.5px solid #a0c0f0;border-radius:8px;padding:8px 11px;margin-top:8px;font-size:.78rem;color:#2050a0;font-weight:600;display:flex;align-items:center;gap:6px}
-.adopt-btn{width:100%;margin-top:8px;padding:9px;font-family:var(--font-display);font-size:.88rem;font-weight:600;background:#2050a0;color:#fff;border:none;border-radius:8px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px}
+.adopt-btn{width:100%;margin-top:8px;padding:9px;font-family:var(--font-display);font-size:.88rem;font-weight:600;background:#2050a0;color:#fff;border:none;border-radius:8px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px;touch-action:manipulation;min-height:44px}
 .adopt-btn:hover{filter:brightness(1.1)}
 .sh-qi-time{font-size:.68rem;color:var(--warm-mid)}
-.sh-qi-name{font-family:var(--font-display);font-size:.95rem;font-weight:600;color:var(--warm-dk);margin-bottom:2px}
+.sh-qi-name{font-family:var(--font-display);font-size:.9rem;font-weight:600;color:var(--warm-dk);margin-bottom:1px}
 .sh-qi-desc{font-size:.75rem;color:var(--warm-mid)}
 .sh-empty{padding:32px 16px;text-align:center;color:var(--warm-mid);font-size:.82rem}
 .sh-empty-icon{font-size:2rem;margin-bottom:8px;opacity:.4}
 /* Action panel */
 .sh-action-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--warm-mid);gap:8px;padding:24px;background:var(--cream)}
 .sh-action-empty-icon{font-size:2.2rem;opacity:.25}
-.sh-action-panel{padding:18px 20px 48px;flex:1;overflow-y:auto;min-height:0;-webkit-overflow-scrolling:touch}
+.sh-action-panel{padding:12px 16px 24px;flex:1;overflow-y:auto;min-height:0;-webkit-overflow-scrolling:touch}
 .sh-action-panel::-webkit-scrollbar{width:3px}
 .sh-action-panel::-webkit-scrollbar-thumb{background:var(--cream-3);border-radius:99px}
 .sh-panel-id{font-size:.7rem;color:var(--warm-mid);margin-bottom:3px}
-.sh-panel-name{font-family:var(--font-display);font-size:1.2rem;font-weight:600;color:var(--warm-dk);margin-bottom:6px}
-.sh-panel-desc{font-size:.82rem;color:var(--warm-mid);line-height:1.55;margin-bottom:12px}
-.sh-sec{font-family:var(--font-display);font-size:.8rem;font-weight:600;color:var(--warm-mid);text-transform:uppercase;letter-spacing:.06em;margin:16px 0 8px}
+.sh-panel-name{font-family:var(--font-display);font-size:1.05rem;font-weight:600;color:var(--warm-dk);margin-bottom:4px}
+.sh-panel-desc{font-size:.8rem;color:var(--warm-mid);line-height:1.45;margin-bottom:8px}
+.sh-sec{font-family:var(--font-display);font-size:.76rem;font-weight:600;color:var(--warm-mid);text-transform:uppercase;letter-spacing:.06em;margin:10px 0 6px}
 .sh-log{background:var(--cream-2);border:1px solid var(--cream-3);border-radius:8px;padding:10px 12px}
 .sh-log-entry{display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--cream-3);font-size:.76rem}
 .sh-log-entry:last-child{border-bottom:none}
 .sh-log-dot{width:6px;height:6px;border-radius:50%;background:var(--found-g);flex-shrink:0;margin-top:4px}
 .sh-log-body{flex:1;color:var(--warm-mid);line-height:1.4}
 .sh-log-time{font-size:.65rem;color:var(--warm-mid);flex-shrink:0}
-.sh-action-btns{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
-.sh-btn{padding:7px 13px;border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;border:1.5px solid var(--cream-3);background:var(--cream);color:var(--warm-dk);font-family:var(--font-body);transition:all .15s}
+.sh-action-btns{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
+.sh-btn{padding:5px 11px;border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;border:1.5px solid var(--cream-3);background:var(--cream);color:var(--warm-dk);font-family:var(--font-body);transition:all .15s;touch-action:manipulation;-webkit-tap-highlight-color:rgba(0,0,0,.08)}
 .sh-btn:hover{border-color:var(--amber);color:var(--amber)}
 .sh-btn.primary{background:var(--found-g);border-color:var(--found-g);color:#fff}
 .sh-btn.primary:hover{filter:brightness(1.08);border-color:var(--found-g);color:#fff}
@@ -328,7 +332,7 @@ textarea{min-height:64px}
 .sh-intake-btn:hover{filter:brightness(1.1)}
 /* Shelter left col tabs */
 .sh-tab-row{display:flex;border-bottom:1px solid var(--cream-3);flex-shrink:0}
-.sh-tab{flex:1;padding:8px 4px;font-size:.75rem;font-weight:600;color:var(--warm-mid);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:var(--font-body);transition:all .15s}
+.sh-tab{flex:1;padding:6px 4px;font-size:.75rem;font-weight:600;color:var(--warm-mid);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:var(--font-body);transition:all .15s}
 .sh-tab:hover{color:var(--warm-dk)}
 .sh-tab.active{color:var(--forest);border-bottom-color:var(--forest)}
 /* Footer action bar */
@@ -338,7 +342,7 @@ textarea{min-height:64px}
 /* Inventory */
 .inv-card.selected{border-color:var(--forest);background:#f5faf5}
 .inv-add-form{background:#fff;border:1px solid var(--cream-3);border-radius:10px;padding:14px;margin-bottom:10px}
-.inv-preview{width:100%;max-height:120px;object-fit:cover;border-radius:6px;display:none;margin-top:6px}
+.inv-preview{width:100%;max-height:200px;object-fit:contain;background:var(--cream-2);border-radius:6px;display:none;margin-top:6px}
 /* Inventory detail panel */
 .inv-status-badge{display:inline-flex;align-items:center;gap:4px;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:3px 9px;border-radius:999px;margin-bottom:8px}
 .inv-status-badge.available{background:#e0f0e4;color:var(--found-g)}
@@ -416,7 +420,7 @@ textarea{min-height:64px}
 #rpt-search:focus{border-color:var(--amber)}
 #rpt-search::placeholder{color:var(--warm-mid)}
 .rpt-chips{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
-.rpt-chip{font-family:var(--font-body);font-size:.72rem;font-weight:600;padding:10px 14px;min-height:44px;border-radius:999px;border:none;background:transparent;color:var(--warm-mid);cursor:pointer;transition:all .12s}
+.rpt-chip{font-family:var(--font-body);font-size:.72rem;font-weight:600;padding:10px 14px;min-height:44px;border-radius:999px;border:none;background:transparent;color:var(--warm-mid);cursor:pointer;transition:all .12s;touch-action:manipulation}
 .rpt-chip:hover{background:var(--cream-2);color:var(--warm-dk)}
 .rpt-chip.active{background:var(--forest);color:#fff;box-shadow:0 1px 4px rgba(42,74,42,.25)}
 .rpt-chip.active.lost{background:var(--lost-r)}
@@ -455,16 +459,16 @@ textarea{min-height:64px}
 #rpt-detail-panel{flex:1;min-height:0;overflow-y:auto;padding:22px;background:var(--cream);display:none}
 #rpt-detail-panel::-webkit-scrollbar{width:3px}
 #rpt-detail-panel::-webkit-scrollbar-thumb{background:var(--cream-3);border-radius:99px}
-@media(max-width:640px){#side-panel{position:fixed!important;bottom:0!important;top:auto!important;right:0!important;left:0!important;width:100%!important;max-width:100%!important;height:auto!important;max-height:78vh!important;border-radius:18px 18px 0 0!important;transform:translateY(100%);transition:transform .3s cubic-bezier(.34,1.2,.64,1)!important;overflow-y:auto;-webkit-overflow-scrolling:touch}#side-panel.open{transform:translateY(0)!important}}@media(max-width:640px){#pin-card{position:fixed!important;bottom:0!important;left:0!important;right:0!important;top:auto!important;width:100%!important;max-width:100%!important;max-height:72vh!important;border-radius:18px 18px 0 0!important;z-index:1800!important}#pin-card .pc-img{height:240px!important}#pin-card-body{overflow-y:auto;-webkit-overflow-scrolling:touch;max-height:calc(72vh - 60px)}#rpt-left{width:100%;flex:1;min-height:0}#rpt-row{flex-direction:column}#rpt-right{display:none}#rpt-right.show{display:flex;flex-direction:column;position:fixed;inset:var(--nav-h) 0 0 0;z-index:900;background:var(--cream);overflow:hidden}.mobile-back-btn{display:block!important}.desktop-close-btn{display:none!important}}
+@media(max-width:640px){#side-panel{position:fixed!important;bottom:16px!important;top:auto!important;right:0!important;left:0!important;width:100%!important;max-width:100%!important;height:auto!important;max-height:80vh!important;border-radius:18px 18px 0 0!important;transform:translateY(calc(100% + 16px))!important;transition:transform .3s cubic-bezier(.34,1.2,.64,1)!important;overflow:hidden!important;display:flex!important;flex-direction:column!important}#side-panel.open{transform:translateY(0)!important}}@media(max-width:640px){#pin-card{position:fixed!important;bottom:18px!important;left:0!important;right:0!important;top:auto!important;width:100%!important;max-width:100%!important;max-height:72vh!important;border-radius:18px 18px 0 0!important;z-index:1800!important}#pin-card .pc-img{height:220px!important}#pin-card-body{overflow-y:auto;-webkit-overflow-scrolling:touch;max-height:calc(72vh - 60px)}#rpt-left{width:100%;flex:1;min-height:0}#rpt-row{flex-direction:column}#rpt-right{display:none}#rpt-right.show{display:flex;flex-direction:column;position:fixed;inset:var(--nav-h) 0 0 0;z-index:900;background:var(--cream);overflow:hidden}.mobile-back-btn{display:block!important}.desktop-close-btn{display:none!important}}
 /* Adopt view */
-#view-adopt{background:var(--cream-2);flex-direction:column;overflow:hidden}
+#view-adopt{background:var(--cream-2);flex-direction:column;overflow:hidden;max-width:100vw;box-sizing:border-box}
 #adopt-hdr{background:var(--cream);border-bottom:1px solid var(--cream-3);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 #adopt-hdr-title{font-family:var(--font-display);font-size:1.1rem;font-weight:600;color:var(--warm-dk)}
 #adopt-hdr-sub{font-size:.76rem;color:var(--warm-mid);margin-top:2px}
 #adopt-add-btn{font-family:var(--font-display);font-size:.82rem;font-weight:600;padding:8px 16px;background:#2050a0;color:#fff;border:none;border-radius:999px;cursor:pointer;transition:all .15s;flex-shrink:0}
 #adopt-add-btn:hover{filter:brightness(1.1)}
-#adopt-search-row{padding:10px 16px;border-bottom:1px solid var(--cream-3);background:var(--cream);flex-shrink:0;display:flex;gap:8px;align-items:center}
-#adopt-search{flex:1;padding:8px 12px 8px 32px;font-family:var(--font-body);font-size:.84rem;color:var(--warm-dk);background:var(--cream-2);border:1.5px solid var(--cream-3);border-radius:8px;outline:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236b5540' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:10px center}
+#adopt-search-row{padding:10px 14px;border-bottom:1px solid var(--cream-3);background:var(--cream);flex-shrink:0;display:flex;gap:6px;align-items:center;flex-wrap:wrap;overflow:hidden;box-sizing:border-box;width:100%}
+#adopt-search{flex:1;min-width:0;padding:8px 10px 8px 30px;font-family:var(--font-body);font-size:.84rem;color:var(--warm-dk);background:var(--cream-2);border:1.5px solid var(--cream-3);border-radius:8px;outline:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236b5540' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:10px center}
 #adopt-search:focus{border-color:var(--amber)}
 #adopt-body{flex:1;overflow-y:auto;padding:16px 18px}
 #adopt-body::-webkit-scrollbar{width:4px}
@@ -504,14 +508,14 @@ textarea{min-height:64px}
 #adopt-form-inner{background:var(--cream);border-radius:18px 18px 0 0;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;padding:20px 22px 32px;animation:slide-up .28s cubic-bezier(.34,1.56,.64,1)}
 @keyframes slide-up{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}
 /* Adoption inquiry form */
-#adopt-inquiry-panel{position:fixed;inset:var(--nav-h) 0 0 0;z-index:4100;background:rgba(42,31,18,.55);display:none;align-items:flex-end;justify-content:center}
+#adopt-inquiry-panel{position:fixed;inset:0;z-index:4100;background:rgba(42,31,18,.55);display:none;align-items:flex-end;justify-content:center}
 #adopt-inquiry-panel.open{display:flex}
 #adopt-inquiry-inner{background:var(--cream);border-radius:18px 18px 0 0;width:100%;max-width:520px;max-height:85vh;overflow-y:auto;padding:22px 22px 32px;animation:slide-up .28s cubic-bezier(.34,1.56,.64,1)}
 
-/* \u2500\u2500 SHELTER SPOTLIGHT \u2500\u2500 */
-@media(max-width:640px){#shelter-spotlight{bottom:8px!important;right:8px!important;width:min(190px,44vw)!important}#spotlight-name{font-size:.78rem!important}#spotlight-bio{font-size:.6rem!important}#shelter-spotlight [style*="height:130px"]{height:100px!important}}
+/* ── SHELTER SPOTLIGHT ── */
+@media(max-width:640px){#shelter-spotlight{bottom:22px!important;right:8px!important;width:min(190px,44vw)!important}#spotlight-name{font-size:.78rem!important}#spotlight-bio{font-size:.6rem!important}#shelter-spotlight [style*="height:130px"]{height:100px!important}}
 
-/* \u2500\u2500 NEW PIN PULSE \u2014 briefly animates pins added after initial load \u2500\u2500 */
+/* ── NEW PIN PULSE — briefly animates pins added after initial load ── */
 @keyframes pinPulse {
   0%   { filter: drop-shadow(0 0 0px rgba(255,255,255,0)); transform: scale(1); }
   30%  { filter: drop-shadow(0 0 8px rgba(255,255,255,.9)); transform: scale(1.18); }
@@ -521,10 +525,10 @@ textarea{min-height:64px}
   animation: pinPulse 1.4s ease-out forwards;
 }
 
-/* \u2500\u2500 SPOTLIGHT HOVER \u2500\u2500 */
+/* ── SPOTLIGHT HOVER ── */
 #shelter-spotlight:hover { transform: translateY(-2px) scale(1.01); box-shadow: 0 16px 48px rgba(42,31,18,.4),0 6px 16px rgba(0,0,0,.2) !important; transition: transform .2s ease, box-shadow .2s ease, opacity .5s ease !important; }
 
-/* \u2500\u2500 STAFF TUTORIAL \u2500\u2500 */
+/* ── STAFF TUTORIAL ── */
 #staff-tutorial-overlay {
   position:fixed;inset:0;z-index:9999;background:rgba(20,30,20,.72);
   display:flex;align-items:center;justify-content:center;
@@ -590,24 +594,146 @@ textarea{min-height:64px}
 }
 .st-dot.active { background:var(--forest); }
 
+
+@media(max-width:640px){
+  #adopt-search-row{padding:8px 10px;gap:5px}
+  #adopt-search{font-size:.78rem;padding:7px 8px 7px 28px}
+  #adopt-sort{font-size:.72rem;padding:5px 6px;max-width:34vw}
+}
+/* ── MOBILE FILTER COMPRESSION ────────────────────────────────────────── */
+@media(max-width:640px){
+  /* In Care: filter chips → single horizontal scroll row */
+  #incare-filter-row{
+    flex-wrap:nowrap!important;
+    overflow-x:auto!important;
+    -webkit-overflow-scrolling:touch!important;
+    padding:5px 10px!important;
+    gap:4px!important;
+    scrollbar-width:none!important;
+  }
+  #incare-filter-row::-webkit-scrollbar{display:none}
+  #incare-filter-row .rpt-chip{
+    padding:6px 10px!important;
+    min-height:34px!important;
+    font-size:.68rem!important;
+    flex-shrink:0!important;
+    white-space:nowrap!important;
+  }
+  #incare-filter-row .ic-label{display:none!important}
+
+  /* Adopt: hide legend, compress disclaimer, chips single row */
+  #adopt-legend{display:none!important}
+  #adopt-disclaimer{padding:2px 10px!important;font-size:.58rem!important}
+  #adopt-chips-row{
+    flex-wrap:nowrap!important;
+    overflow-x:auto!important;
+    -webkit-overflow-scrolling:touch!important;
+    padding:4px 10px!important;
+    gap:4px!important;
+    scrollbar-width:none!important;
+  }
+  #adopt-chips-row::-webkit-scrollbar{display:none}
+  #adopt-chips-row .rpt-chip{
+    padding:6px 10px!important;
+    min-height:34px!important;
+    font-size:.68rem!important;
+    flex-shrink:0!important;
+    white-space:nowrap!important;
+  }
+  /* In Care: search bar full width on mobile */
+  #incare-search{font-size:16px}
+}
+
+/* ── SAFE AREA (iPhone home indicator) ─────────────────────────────── */
+@media(max-width:640px){
+  /* Submit buttons: raise above home indicator */
+  .submit-btn{
+    bottom:env(safe-area-inset-bottom,0px)!important;
+    padding-bottom:max(12px,calc(8px + env(safe-area-inset-bottom,0px)))!important;
+    margin-bottom:0!important;
+  }
+  /* Side panel: pad so sticky button clears home indicator */
+  #side-panel{
+    padding-bottom:env(safe-area-inset-bottom,0px)!important;
+  }
+  /* Inquiry inner panel: pad bottom */
+  #adopt-inquiry-inner{
+    padding-bottom:max(32px,calc(16px + env(safe-area-inset-bottom,0px)))!important;
+  }
+  /* Intake modal: same */
+  #intake-modal-inner{
+    padding-bottom:max(32px,calc(16px + env(safe-area-inset-bottom,0px)))!important;
+  }
+  /* Animal edit modal */
+  #animal-edit-body{
+    padding-bottom:max(48px,calc(32px + env(safe-area-inset-bottom,0px)))!important;
+  }
+  /* Toast: keep above home indicator */
+  #toast{bottom:calc(26px + env(safe-area-inset-bottom,0px))!important}
+  /* FAB: clear home indicator */
+  #intake-fab{bottom:calc(40px + env(safe-area-inset-bottom,0px))!important}
+}
+
+@media(max-width:640px){
+  #intake-modal-footer,#animal-edit-footer{
+    padding-bottom:max(18px,calc(env(safe-area-inset-bottom,0px) + 18px))!important;
+  }
+  /* Ensure intake/edit modal inner doesn't overflow home indicator */
+  #intake-modal-inner,#animal-edit-inner{
+    padding-bottom:0!important;
+  }
+}
 </style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "PawPulse",
+  "url": "https://pawpulse.net",
+  "description": "Live lost and found pet map for Hastings, Nebraska and Adams County.",
+  "areaServed": {
+    "@type": "City",
+    "name": "Hastings",
+    "containedInPlace": {
+      "@type": "AdministrativeArea",
+      "name": "Adams County, Nebraska"
+    }
+  },
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://pawpulse.net",
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  "name": "PawPulse — Hastings Lost & Found Pet Map",
+  "url": "https://pawpulse.net",
+  "description": "Live community map for lost and found pets in Hastings, Nebraska and Adams County.",
+  "areaServed": "Hastings, Nebraska",
+  "serviceType": "Lost and Found Pet Reporting"
+}
+</script>
 </head>
 <body>
 
-<!-- App loading screen \u2014 covers map flash during auth/shelter picker -->
+<!-- App loading screen — covers map flash during auth/shelter picker -->
 <div id="app-loading" style="position:fixed;inset:0;z-index:9990;background:var(--cream);display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
-  <div style="font-size:2rem;margin-bottom:6px">\ud83d\udc3e</div>
+  <div style="font-size:2rem;margin-bottom:6px">🐾</div>
   <div style="font-family:var(--font-display);font-size:1rem;font-weight:600;color:var(--warm-mid)">PawPulse</div>
 </div>
 
-<!-- Login overlay \u2014 shown when Firebase is configured and user not signed in -->
-<!-- Small staff sign-in panel \u2014 replaces full-screen login overlay -->
+<!-- Login overlay — shown when Firebase is configured and user not signed in -->
+<!-- Small staff sign-in panel — replaces full-screen login overlay -->
 <div id="login-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(42,31,18,.55);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:32px">
   <div style="background:var(--cream);border-radius:16px;padding:28px 28px 20px;width:100%;max-width:320px;box-shadow:0 8px 40px rgba(0,0,0,.25)">
-    <div style="font-family:var(--font-display);font-size:1.1rem;font-weight:700;color:var(--warm-dk);margin-bottom:4px;text-align:center">\ud83d\udd10 Staff Sign In</div>
+    <div style="font-family:var(--font-display);font-size:1.1rem;font-weight:700;color:var(--warm-dk);margin-bottom:4px;text-align:center">🔐 Staff Sign In</div>
     <div style="font-size:.74rem;color:var(--warm-mid);margin-bottom:18px;text-align:center">Heartland Pet Connection</div>
     <div class="fg"><label>Email</label><input type="email" id="login-email" placeholder="staff@shelter.org" autocomplete="email" style="width:100%;padding:10px 12px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.9rem"></div>
-    <div class="fg"><label>Password</label><input type="password" id="login-pw" placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()" style="width:100%;padding:10px 12px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.9rem"></div>
+    <div class="fg"><label>Password</label><input type="password" id="login-pw" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()" style="width:100%;padding:10px 12px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.9rem"></div>
     <div id="login-err" style="display:none;font-size:.76rem;color:var(--lost-r);margin-bottom:10px;text-align:center"></div>
     <button id="login-btn" onclick="doLogin()" style="width:100%;padding:11px;font-family:var(--font-display);font-size:.88rem;font-weight:700;background:var(--forest);color:var(--cream);border:none;border-radius:10px;cursor:pointer;margin-top:4px">Sign In</button>
     <div style="display:flex;justify-content:space-between;margin-top:8px">
@@ -622,12 +748,12 @@ textarea{min-height:64px}
 <!-- Change Password modal -->
 <div id="change-pw-overlay" style="display:none;position:fixed;inset:0;z-index:9997;background:rgba(42,31,18,.55);align-items:center;justify-content:center">
   <div style="background:var(--cream);border-radius:16px;width:100%;max-width:340px;padding:24px;margin:16px" onclick="event.stopPropagation()">
-    <div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--warm-dk);margin-bottom:4px">\ud83d\udd11 Change Password</div>
+    <div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--warm-dk);margin-bottom:4px">🔑 Change Password</div>
     <div style="font-size:.76rem;color:var(--warm-mid);margin-bottom:16px" id="cpw-sub">Enter a new password for your account.</div>
     <div class="fg"><label>New Password</label><input type="password" id="cpw-new" placeholder="At least 6 characters" style="width:100%;padding:10px 12px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.9rem"></div>
     <div class="fg"><label>Confirm Password</label><input type="password" id="cpw-confirm" placeholder="Repeat new password" style="width:100%;padding:10px 12px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.9rem"></div>
     <div id="cpw-err" style="display:none;font-size:.76rem;color:var(--lost-r);margin-bottom:10px"></div>
-    <div id="cpw-ok" style="display:none;font-size:.76rem;color:var(--found-g);font-weight:600;margin-bottom:10px">\u2713 Password updated successfully.</div>
+    <div id="cpw-ok" style="display:none;font-size:.76rem;color:var(--found-g);font-weight:600;margin-bottom:10px">✓ Password updated successfully.</div>
     <div style="display:flex;gap:8px;margin-top:4px">
       <button id="cpw-btn" onclick="doChangePw()" style="flex:1;padding:10px;font-family:var(--font-display);font-size:.88rem;font-weight:700;background:var(--forest);color:var(--cream);border:none;border-radius:9px;cursor:pointer">Update Password</button>
       <button onclick="closeChangePw()" style="padding:10px 16px;font-family:var(--font-body);font-size:.82rem;border-radius:9px;border:1.5px solid var(--cream-3);background:#fff;cursor:pointer">Cancel</button>
@@ -637,10 +763,10 @@ textarea{min-height:64px}
 
 <nav id="nav">
   <div class="nav-logo">
-    \ud83d\udc3e
+    🐾
     <div class="nav-logo-wrap">
       PawPulse
-      <span class="nav-logo-sub">Hastings, NE</span>
+      <span class="nav-logo-sub">Hastings, NE &amp; Adams County</span>
     </div>
   </div>
   <button class="nav-report-btn" id="nav-action-btn" onclick="navActionBtn()">+ Report</button>
@@ -648,75 +774,68 @@ textarea{min-height:64px}
   <div id="report-picker" style="display:none;position:fixed;inset:0;z-index:1100;background:rgba(42,31,18,.5);align-items:center;justify-content:center" onclick="if(event.target===this)this.style.display='none'">
     <div style="background:var(--cream);border-radius:16px;padding:24px;width:260px;box-shadow:0 16px 48px rgba(0,0,0,.28)">
       <div style="font-family:var(--font-display);font-size:1rem;font-weight:600;color:var(--warm-dk);margin-bottom:16px;text-align:center">What are you reporting?</div>
-      <button onclick="closePicker();openPanel('lost')"  style="width:100%;padding:14px;margin-bottom:10px;font-family:var(--font-display);font-size:.95rem;font-weight:600;background:var(--lost-r);color:#fff;border:none;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">\ud83d\udd34 Lost Pet <span style="font-size:.78rem;opacity:.85;font-weight:400">I lost my pet</span></button>
-      <button onclick="closePicker();openPanel('found')" style="width:100%;padding:14px;font-family:var(--font-display);font-size:.95rem;font-weight:600;background:var(--found-g);color:#fff;border:none;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">\ud83d\udfe2 Found Pet <span style="font-size:.78rem;opacity:.85;font-weight:400">I found a stray</span></button>
+      <button onclick="closePicker();openPanel('lost')"  style="width:100%;padding:14px;margin-bottom:10px;font-family:var(--font-display);font-size:.95rem;font-weight:600;background:var(--lost-r);color:#fff;border:none;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">🔴 Lost Pet <span style="font-size:.78rem;opacity:.85;font-weight:400">I lost my pet</span></button>
+      <button onclick="closePicker();openPanel('found')" style="width:100%;padding:14px;font-family:var(--font-display);font-size:.95rem;font-weight:600;background:var(--found-g);color:#fff;border:none;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">🟢 Found Pet <span style="font-size:.78rem;opacity:.85;font-weight:400">I found a stray</span></button>
     </div>
   </div>
   <div class="nav-spacer"></div>
   <div id="nav-tabs">
     <!-- PUBLIC MODE -->
-    <button class="tab-btn tab-public active" onclick="setView('map',this)" title="Public Map">\ud83d\uddfa\ufe0f <span class="tab-lbl">Map</span></button>
-    <button class="tab-btn tab-public"        onclick="setView('adopt',this)" title="Adoption">\ud83c\udfe0 <span class="tab-lbl">Adopt</span></button>
+    <button class="tab-btn tab-public active" onclick="setView('map',this)" title="Public Map">🗺️ <span class="tab-lbl">Map</span></button>
+    <button class="tab-btn tab-public"        onclick="setView('adopt',this)" title="Adoption">🏠 <span class="tab-lbl">Adopt</span></button>
     <!-- STAFF MODE -->
     <div class="nav-mode-sep"></div>
-    <button class="tab-btn tab-ops" onclick="setView('incare',this)"   title="In Care">\ud83c\udfe5 <span class="tab-lbl">At Shelter</span> <span id="nav-incare-count" style="display:none;background:var(--found-g);color:#fff;border-radius:999px;font-size:.6rem;padding:1px 5px;margin-left:2px"></span></button>
+    <button class="tab-btn tab-ops" onclick="setView('incare',this)"   title="In Care">🏥 <span class="tab-lbl">At Shelter</span> <span id="nav-incare-count" style="display:none;background:var(--found-g);color:#fff;border-radius:999px;font-size:.6rem;padding:1px 5px;margin-left:2px"></span></button>
     <!-- ADMIN MODE -->
     <div class="nav-mode-sep"></div>
-    <button class="tab-btn tab-admin" onclick="setView('reports',this)" title="Reports & Admin">\ud83d\udcca <span class="tab-lbl">Reports</span></button>
-    <!-- Staff sign-in button \u2014 shown when not logged in -->
-    <button id="nav-staff-login-btn" onclick="openStaffLogin()" title="Staff Sign In" style="margin-left:6px;padding:5px 12px;font-size:.72rem;font-weight:700;border-radius:999px;border:1.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);cursor:pointer;font-family:var(--font-body);color:var(--cream);display:flex;align-items:center;gap:5px">\ud83d\udd10 <span class="tab-lbl">Staff Login</span></button>
-    <!-- Staff badge \u2014 shown when signed in, lives in nav -->
+    <button class="tab-btn tab-admin" onclick="setView('reports',this)" title="Reports & Admin">📊 <span class="tab-lbl">Reports</span></button>
+    <!-- Staff sign-in button — shown when not logged in -->
+    <button id="nav-staff-login-btn" onclick="openStaffLogin()" title="Staff Sign In" style="margin-left:6px;padding:5px 12px;font-size:.72rem;font-weight:700;border-radius:999px;border:1.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);cursor:pointer;font-family:var(--font-body);color:var(--cream);display:flex;align-items:center;gap:5px">🔐 <span class="tab-lbl">Staff Login</span></button>
+    <!-- Staff badge — shown when signed in, lives in nav -->
     <div id="staff-badge" style="display:none;align-items:center;gap:5px;margin-left:6px">
-      <div id="staff-name-badge" style="color:var(--cream);font-size:.7rem;font-weight:700;white-space:nowrap;opacity:.85">\ud83d\udd10 Staff</div>
+      <div id="staff-name-badge" style="color:var(--cream);font-size:.7rem;font-weight:700;white-space:nowrap;opacity:.85">🔐 Staff</div>
       <div style="display:flex;gap:4px">
-        <button onclick="clearTestData()" title="Clear All Data" style="padding:5px 8px;font-size:.65rem;font-weight:600;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,77,77,.25);cursor:pointer;color:var(--cream);font-family:var(--font-body);display:none" id="btn-clear-data">\ud83d\uddd1</button>
-        <button onclick="forceSyncPhotos()" title="Force Photo Sync to Cloud" style="padding:5px 8px;font-size:.65rem;font-weight:600;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);cursor:pointer;color:var(--cream);font-family:var(--font-body)">\u2601\ufe0f</button>
-        <button onclick="loadDemoData()" title="Load Demo Animals" style="padding:5px 8px;font-size:.65rem;font-weight:600;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);cursor:pointer;color:var(--cream);font-family:var(--font-body);display:none" id="btn-load-demo">\ud83d\udc3e</button>
-        <button onclick="openChangePw()" title="Change Password" style="padding:5px 8px;font-size:.65rem;font-weight:600;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);cursor:pointer;color:var(--cream);font-family:var(--font-body)">\ud83d\udd11</button>
+        <button onclick="clearTestData()" title="Clear All Data" style="padding:5px 8px;font-size:.65rem;font-weight:600;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,77,77,.25);cursor:pointer;color:var(--cream);font-family:var(--font-body);display:none" id="btn-clear-data">🗑</button>
+        <button onclick="forceSyncPhotos()" title="Force Photo Sync to Cloud" style="padding:5px 8px;font-size:.65rem;font-weight:600;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);cursor:pointer;color:var(--cream);font-family:var(--font-body)">☁️</button>
+        <button onclick="loadDemoData()" title="Load Demo Animals" style="padding:5px 8px;font-size:.65rem;font-weight:600;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);cursor:pointer;color:var(--cream);font-family:var(--font-body);display:none" id="btn-load-demo">🐾</button>
+        <button onclick="openChangePw()" title="Change Password" style="padding:5px 8px;font-size:.65rem;font-weight:600;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);cursor:pointer;color:var(--cream);font-family:var(--font-body)">🔑</button>
         <button onclick="doSignOut()" style="padding:5px 10px;font-size:.65rem;font-weight:700;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);cursor:pointer;color:var(--cream);font-family:var(--font-body)">Sign Out</button>
       </div>
     </div>
   </div>
 </nav>
 <!-- Orientation strip -->
-<div id="orientation-strip" style="position:fixed;top:var(--nav-h);left:0;right:0;z-index:999;background:rgba(45,74,53,.92);color:rgba(255,255,255,.78);text-align:center;font-size:.8rem;font-family:var(--font-body);padding:6px 14px;letter-spacing:.01em;pointer-events:none">Lost or found a pet? Tap a pin to help \u2014 or tap <strong style="font-weight:700">+ Report</strong> to post one. <span style="opacity:.65;font-style:italic">You might reunite a pet today.</span></div>
+<div id="orientation-strip" style="display:none;position:fixed;top:var(--nav-h);left:0;right:0;z-index:999;background:rgba(45,74,53,.92);color:rgba(255,255,255,.78);text-align:center;font-size:.8rem;font-family:var(--font-body);padding:6px 14px;letter-spacing:.01em;pointer-events:none"><div style="font-size:.82rem;font-weight:600;color:rgba(255,255,255,.95);margin-bottom:2px">See lost pets, found animals, and pets in care — all in real time.</div><div style="font-size:.72rem;color:rgba(255,255,255,.75)">Tap a pin to help, or tap <strong style="font-weight:700">+ Report</strong> to post one. <span style="opacity:.7;font-style:italic">You might reunite a pet today.</span></div></div>
 
 <!-- ADOPT VIEW -->
 <div id="view-adopt" class="view">
-  <div class="mode-banner public"><div class="mode-banner-dot" style="background:#c8841a"></div>Public View \u2014 Adoption</div>
+  <div class="mode-banner public"><div class="mode-banner-dot" style="background:#c8841a"></div>Public View — Adoption</div>
   <div id="adopt-hdr">
     <div>
-      <div id="adopt-hdr-title">\ud83c\udf1f Animals Ready for Adoption</div>
-      <div id="adopt-hdr-sub">Hastings, NE area shelters \u00b7 <span id="adopt-count">0</span> available</div>
+      <div id="adopt-hdr-title">🌟 Adoptable Pets at Heartland Pet Connection</div>
+      <div id="adopt-hdr-sub"><span id="adopt-count">0</span> pets looking for their forever home</div>
     </div>
   </div>
-  <div style="font-size:.62rem;color:var(--warm-mid);text-align:center;padding:3px 16px 4px;line-height:1.5;border-bottom:1px solid var(--cream-3);background:var(--cream)">Information may change as cases are reviewed. For official records, contact the shelter directly.</div>
-  <div style="font-size:.72rem;color:var(--warm-mid);padding:5px 16px;background:var(--cream);border-bottom:1px solid var(--cream-3);display:flex;gap:14px;flex-wrap:wrap;align-items:center">
-    <span style="font-weight:600;color:var(--warm-dk)">Card border:</span>
-    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--found-g);margin-right:4px;vertical-align:middle"></span>Available \u2014 under 14 days</span>
-    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--amber);margin-right:4px;vertical-align:middle"></span>Waiting 14\u201329 days</span>
-    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--lost-r);margin-right:4px;vertical-align:middle"></span>Waiting 30+ days \u2014 needs a home urgently</span>
-  </div>
-  <div id="adopt-search-row">
-    <input id="adopt-search" type="text" placeholder="Search by species, breed, color, shelter\u2026" oninput="renderAdoptView()" autocomplete="off">
-    <select id="adopt-sort" onchange="renderAdoptView()" style="padding:7px 8px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.75rem;background:#fff;color:var(--warm-dk);flex-shrink:0">
-      <option value="longest">Longest Wait</option>
-      <option value="newest">Newest First</option>
-      <option value="alpha">A \u2192 Z</option>
-    </select>
-  </div>
-  <div style="padding:6px 16px;border-bottom:1px solid var(--cream-3);background:var(--cream);display:flex;gap:6px;flex-wrap:wrap">
-    <button class="rpt-chip active" id="af-all"  onclick="setAdoptFilter('all',this)">All</button>
-    <button class="rpt-chip"        id="af-dog"  onclick="setAdoptFilter('dog',this)">\ud83d\udc15 Dogs</button>
-    <button class="rpt-chip"        id="af-cat"  onclick="setAdoptFilter('cat',this)">\ud83d\udc08 Cats</button>
-    <button class="rpt-chip"        id="af-other" onclick="setAdoptFilter('other',this)">\ud83d\udc3e Other</button>
-  </div>
-  </div>
+  <div id="adopt-disclaimer" style="font-size:.62rem;color:var(--warm-mid);text-align:center;padding:3px 16px 4px;line-height:1.5;border-bottom:1px solid var(--cream-3);background:var(--cream)">Information may change as cases are reviewed. For official records, contact the shelter directly.</div>
   <div id="adopt-legend" style="font-size:.72rem;color:var(--warm-mid);padding:5px 16px;background:var(--cream);border-bottom:1px solid var(--cream-3);display:flex;gap:14px;flex-wrap:wrap;align-items:center">
     <span style="font-weight:600;color:var(--warm-dk)">Card border:</span>
-    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--found-g);margin-right:4px;vertical-align:middle"></span>Available - under 14 days</span>
-    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#d4843a;margin-right:4px;vertical-align:middle"></span>14-29 days</span>
-    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#c94f2a;margin-right:4px;vertical-align:middle"></span>30+ days - urgent</span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--found-g);margin-right:4px;vertical-align:middle"></span>Available — under 14 days</span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--amber);margin-right:4px;vertical-align:middle"></span>Waiting 14–29 days</span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--lost-r);margin-right:4px;vertical-align:middle"></span>Waiting 30+ days — needs a home urgently</span>
+  </div>
+  <div id="adopt-search-row">
+    <input id="adopt-search" type="text" placeholder="Search by species, breed, color, shelter…" oninput="renderAdoptView()" autocomplete="off">
+    <select id="adopt-sort" onchange="renderAdoptView()" style="padding:7px 8px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.75rem;background:#fff;flex-shrink:0;max-width:36vw;color:var(--warm-dk);flex-shrink:0">
+      <option value="longest">Longest Wait</option>
+      <option value="newest">Newest First</option>
+      <option value="alpha">A → Z</option>
+    </select>
+  </div>
+  <div id="adopt-chips-row" style="padding:6px 16px;border-bottom:1px solid var(--cream-3);background:var(--cream);display:flex;gap:6px;flex-wrap:wrap">
+    <button class="rpt-chip active" id="af-all"  onclick="setAdoptFilter('all',this)">All</button>
+    <button class="rpt-chip"        id="af-dog"  onclick="setAdoptFilter('dog',this)">🐕 Dogs</button>
+    <button class="rpt-chip"        id="af-cat"  onclick="setAdoptFilter('cat',this)">🐈 Cats</button>
+    <button class="rpt-chip"        id="af-other" onclick="setAdoptFilter('other',this)">🐾 Other</button>
   </div>
   <div id="adopt-body">
     <div class="adopt-grid" id="adopt-grid"></div>
@@ -725,46 +844,61 @@ textarea{min-height:64px}
 
 <!-- IN CARE VIEW -->
 <div id="view-incare" class="view" style="background:var(--cream-2);flex-direction:column;overflow:hidden">
-  <div class="mode-banner ops"><div class="mode-banner-dot" style="background:#3a7d44"></div>Heartland Pet Connection \u2014 Staff</div>
+  <div class="mode-banner ops" style="padding:2px 14px;font-size:.62rem"><div class="mode-banner-dot" style="background:#3a7d44"></div>Heartland Pet Connection — Staff</div>
   <!-- Header with shelter name + intake button -->
-  <div style="padding:12px 16px;background:var(--cream);border-bottom:1px solid var(--cream-3);flex-shrink:0">
-    <div style="font-family:var(--font-display);font-size:.95rem;font-weight:700;color:var(--warm-dk)" id="incare-shelter-label">Animals at Shelter</div>
-    <div style="font-size:.7rem;color:var(--warm-mid);margin-top:1px">Tap an animal to manage \u00b7 <span id="incare-count" style="font-weight:700;color:var(--forest)">0</span> in care</div>
-    <div id="incare-stats-bar" style="display:none;margin-top:6px;flex-wrap:wrap;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none"></div>
+  <div style="padding:6px 14px;background:var(--cream);border-bottom:1px solid var(--cream-3);flex-shrink:0">
+    <div style="font-family:var(--font-display);font-size:.82rem;font-weight:700;color:var(--warm-dk)" id="incare-shelter-label">Animals at Shelter</div>
+    <div style="font-size:.7rem;color:var(--warm-mid);margin-top:1px">Tap an animal to manage · <span id="incare-count" style="font-weight:700;color:var(--forest)">0</span> in care</div>
+    <div id="incare-stats-bar" style="display:none;margin-top:3px;flex-wrap:wrap;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none"></div>
   </div>
   <!-- Search + Sort bar -->
-  <div style="padding:8px 14px;border-bottom:1px solid var(--cream-3);background:var(--cream);flex-shrink:0;display:flex;gap:6px;align-items:center">
+  <div style="padding:5px 14px;border-bottom:1px solid var(--cream-3);background:var(--cream);flex-shrink:0;display:flex;gap:6px;align-items:center">
     <div style="position:relative;width:180px;flex-shrink:0">
-      <span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:.8rem;pointer-events:none">\ud83d\udd0d</span>
-      <input type="text" id="incare-search" placeholder="Search\u2026" oninput="renderIncareView()" style="width:100%;padding:7px 10px 7px 28px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.8rem;background:#fff;box-sizing:border-box">
+      <span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:.8rem;pointer-events:none">🔍</span>
+      <input type="text" id="incare-search" placeholder="Search…" oninput="renderIncareView()" style="width:100%;padding:7px 10px 7px 28px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.8rem;background:#fff;box-sizing:border-box">
     </div>
-    <select id="incare-sort" onchange="renderIncareView()" style="padding:7px 8px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.75rem;background:#fff;color:var(--warm-dk);width:auto;flex-shrink:0">
+    <select id="incare-sort" onchange="renderIncareView()" style="padding:7px 8px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.75rem;background:#fff;flex-shrink:0;max-width:36vw;color:var(--warm-dk);width:auto;flex-shrink:0">
       <option value="status">By Status</option>
-      <option value="alpha">A \u2192 Z</option>
+      <option value="alpha">A → Z</option>
       <option value="newest">Newest First</option>
       <option value="longest">Longest Stay</option>
     </select>
   </div>
   <!-- Filter chips -->
   <div id="incare-filter-row" style="padding:5px 14px;border-bottom:1px solid var(--cream-3);background:var(--cream);flex-shrink:0;display:flex;gap:4px;flex-wrap:wrap;align-items:center">
-    <span style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--warm-mid);margin-right:2px">Species:</span>
+    <span class="ic-label" style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--warm-mid);margin-right:2px">Species:</span>
     <button class="rpt-chip active" id="ic-chip-all"       onclick="setIncareFilter('all',this)">All</button>
-    <button class="rpt-chip"        id="ic-chip-dog"       onclick="setIncareFilter('dog',this)">\ud83d\udc15 Dogs</button>
-    <button class="rpt-chip"        id="ic-chip-cat"       onclick="setIncareFilter('cat',this)">\ud83d\udc08 Cats</button>
-    <span style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--warm-mid);margin-left:6px;margin-right:2px">Status:</span>
-    <button class="rpt-chip"        id="ic-chip-hold"      onclick="setIncareFilter('hold',this)">\u26a0\ufe0f On Hold</button>
-    <button class="rpt-chip"        id="ic-chip-adopt"     onclick="setIncareFilter('adopt',this)">\ud83c\udf1f Adoption Ready</button>
-    <button class="rpt-chip"        id="ic-chip-long"      onclick="setIncareFilter('long',this)">\ud83d\udd34 30+ Days</button>
-    <button class="rpt-chip"        id="ic-chip-inq"       onclick="setIncareFilter('inq',this)">\ud83d\udcac Has Inquiries</button>
+    <button class="rpt-chip"        id="ic-chip-dog"       onclick="setIncareFilter('dog',this)">🐕 Dogs</button>
+    <button class="rpt-chip"        id="ic-chip-cat"       onclick="setIncareFilter('cat',this)">🐈 Cats</button>
+    <span class="ic-label" style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--warm-mid);margin-left:6px;margin-right:2px">Status:</span>
+    <button class="rpt-chip"        id="ic-chip-hold"      onclick="setIncareFilter('hold',this)">⚠️ On Hold</button>
+    <button class="rpt-chip"        id="ic-chip-adopt"     onclick="setIncareFilter('adopt',this)">🌟 Adoption Ready</button>
+    <button class="rpt-chip"        id="ic-chip-long"      onclick="setIncareFilter('long',this)">🔴 30+ Days</button>
+    <button class="rpt-chip"        id="ic-chip-inq"       onclick="setIncareFilter('inq',this)">💬 Has Inquiries</button>
   </div>
-  <!-- Day count legend -->
+  <!-- Day count legend — same color system as Adopt page -->
   <div id="incare-legend" style="font-size:.72rem;color:var(--warm-mid);padding:5px 16px;background:var(--cream);border-bottom:1px solid var(--cream-3);display:flex;gap:14px;flex-wrap:wrap;align-items:center">
     <span style="font-weight:600;color:var(--warm-dk)">Card border:</span>
     <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#3a7d44;margin-right:4px;vertical-align:middle"></span>Under 14 days</span>
-    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#d4843a;margin-right:4px;vertical-align:middle"></span>14-29 days</span>
-    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#c94f2a;margin-right:4px;vertical-align:middle"></span>30+ days - urgent</span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#d4843a;margin-right:4px;vertical-align:middle"></span>14–29 days</span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#c94f2a;margin-right:4px;vertical-align:middle"></span>30+ days — urgent</span>
   </div>
-  <div id="incare-list" style="flex:1;overflow-y:auto;padding:12px;min-height:0;-webkit-overflow-scrolling:touch"></div>
+  <div id="incare-list" style="flex:1;overflow-y:auto;padding:12px;min-height:0;-webkit-overflow-scrolling:touch;padding-bottom:96px"></div>
+  <!-- Floating intake FAB — fixed bottom-right, thumb-friendly -->
+  <button onclick="openIntakeModal()"
+    style="position:fixed;bottom:40px;right:18px;z-index:800;
+           width:56px;height:56px;border-radius:50%;
+           background:var(--forest);color:#fff;border:none;
+           font-size:1.5rem;line-height:1;cursor:pointer;
+           box-shadow:0 6px 20px rgba(42,31,18,.35);
+           display:none;align-items:center;justify-content:center;
+           transition:transform .15s ease,box-shadow .15s ease"
+    id="intake-fab"
+    title="Log New Intake"
+    onmousedown="this.style.transform='scale(.93)'"
+    onmouseup="this.style.transform=''"
+    ontouchstart="this.style.transform='scale(.93)'"
+    ontouchend="this.style.transform=''">＋</button>
 </div>
 
 <!-- Intake modal overlay -->
@@ -772,13 +906,14 @@ textarea{min-height:64px}
   <div id="intake-modal-inner" style="background:var(--cream);border-radius:18px 18px 0 0;width:100%;max-width:600px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden" onclick="event.stopPropagation()">
     <div style="padding:14px 20px 10px;border-bottom:1px solid var(--cream-3);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
       <div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--warm-dk)">New Animal Intake</div>
-      <button onclick="closeIntakeModal()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--warm-mid)">\u2715</button>
+      <button onclick="closeIntakeModal()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--warm-mid)">✕</button>
     </div>
-    <div id="intake-modal-body" style="flex:1;overflow-y:auto;padding:16px 20px 32px;-webkit-overflow-scrolling:touch"></div>
+    <div id="intake-modal-body" style="flex:1;overflow-y:auto;padding:16px 20px;-webkit-overflow-scrolling:touch;min-height:0"></div>
+    <!-- Static footer: always visible, never scrolls -->
     <div id="intake-modal-footer" style="display:none;flex-shrink:0;padding:10px 20px;border-top:1px solid var(--cream-3);background:var(--cream)">
       <div style="display:flex;gap:8px">
-        <button class="sh-btn primary" id="intake-submit-btn" style="flex:1;padding:12px;font-size:.9rem;touch-action:manipulation" onclick="submitIntakeFromModal()">&#10003; Log Intake</button>
-        <button class="sh-btn" style="padding:12px;touch-action:manipulation" onclick="closeIntakeModal()">Cancel</button>
+        <button class="sh-btn primary" id="intake-submit-btn" style="flex:1;padding:12px;font-size:.9rem" onclick="submitIntakeFromModal()">✓ Log Intake</button>
+        <button class="sh-btn" style="padding:12px" onclick="closeIntakeModal()">Cancel</button>
       </div>
     </div>
   </div>
@@ -786,16 +921,17 @@ textarea{min-height:64px}
 
 <!-- Animal edit modal -->
 <div id="animal-edit-overlay" style="display:none;position:fixed;inset:0;z-index:920;background:rgba(42,31,18,.55);align-items:flex-end;justify-content:center">
-  <div style="background:var(--cream);border-radius:18px 18px 0 0;width:100%;max-width:600px;max-height:94vh;display:flex;flex-direction:column;overflow:hidden" onclick="event.stopPropagation()">
+  <div id="animal-edit-inner" style="background:var(--cream);border-radius:18px 18px 0 0;width:100%;max-width:600px;max-height:94vh;display:flex;flex-direction:column;overflow:hidden" onclick="event.stopPropagation()">
     <div style="padding:14px 20px 10px;border-bottom:1px solid var(--cream-3);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
       <div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--warm-dk)" id="animal-edit-title">Edit Animal Record</div>
-      <button onclick="closeAnimalEdit()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--warm-mid)">\u2715</button>
+      <button onclick="closeAnimalEdit()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--warm-mid)">✕</button>
     </div>
-    <div id="animal-edit-body" style="flex:1;overflow-y:auto;padding:16px 20px 32px;-webkit-overflow-scrolling:touch;padding-bottom:max(32px,env(safe-area-inset-bottom,32px))"></div>
+    <div id="animal-edit-body" style="flex:1;overflow-y:auto;padding:16px 20px;-webkit-overflow-scrolling:touch;min-height:0"></div>
+    <!-- Static footer: always visible, never scrolls -->
     <div id="animal-edit-footer" style="display:none;flex-shrink:0;padding:10px 20px;border-top:1px solid var(--cream-3);background:var(--cream)">
       <div style="display:flex;gap:8px">
-        <button class="sh-btn primary" id="ae-save-btn" style="flex:1;padding:12px;font-size:.9rem;touch-action:manipulation" onclick="saveAnimalEdit(window._aeEditId)">&#10003; Save Changes</button>
-        <button class="sh-btn" style="padding:12px;touch-action:manipulation" onclick="closeAnimalEdit()">Cancel</button>
+        <button class="sh-btn primary" id="ae-save-btn" style="flex:1;padding:12px;font-size:.9rem" onclick="saveAnimalEdit(window._aeEditId)">✓ Save Changes</button>
+        <button class="sh-btn" style="padding:12px" onclick="closeAnimalEdit()">Cancel</button>
       </div>
     </div>
   </div>
@@ -811,8 +947,8 @@ textarea{min-height:64px}
 
     <!-- Step 1: Define Dataset -->
     <div style="padding:14px 14px 10px;border-bottom:1px solid var(--cream-3)">
-      <div style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--amber);margin-bottom:10px">Step 1 \u2014 Define Dataset</div>
-      <div style="font-size:.78rem;font-weight:600;color:var(--warm-dk);padding:4px 0 10px" id="rpt-shelter-label">\u2014</div>
+      <div style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--amber);margin-bottom:10px">Step 1 — Define Dataset</div>
+      <div style="font-size:.78rem;font-weight:600;color:var(--warm-dk);padding:4px 0 10px" id="rpt-shelter-label">—</div>
       <div style="display:flex;flex-direction:column;gap:8px">
         <div>
           <div style="font-size:.68rem;font-weight:600;color:var(--warm-mid);margin-bottom:3px">Species</div>
@@ -846,15 +982,15 @@ textarea{min-height:64px}
 
     <!-- Step 2: Choose Report -->
     <div style="padding:14px 14px 10px;border-bottom:1px solid var(--cream-3);flex-shrink:0">
-      <div style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--amber);margin-bottom:10px">Step 2 \u2014 Choose Report</div>
+      <div style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--amber);margin-bottom:10px">Step 2 — Choose Report</div>
       <div id="report-type-list" style="display:flex;flex-direction:column;gap:3px"></div>
     </div>
 
     <!-- Step 3: Generate -->
     <div style="padding:14px;padding-bottom:14px;flex-shrink:0">
-      <div style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--amber);margin-bottom:10px">Step 3 \u2014 Generate</div>
+      <div style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--amber);margin-bottom:10px">Step 3 — Generate</div>
       <button id="rpt-run-btn" onclick="runSelectedReport()" style="width:100%;padding:12px;font-family:var(--font-display);font-size:.9rem;font-weight:700;background:var(--forest);color:#fff;border:none;border-radius:10px;cursor:pointer;opacity:.4;pointer-events:none" disabled>
-        \u25b6 Generate Report
+        ▶ Generate Report
       </button>
       <div id="rpt-selected-label" style="font-size:.72rem;color:var(--warm-mid);text-align:center;margin-top:6px">Select a report type above</div>
 
@@ -866,7 +1002,7 @@ textarea{min-height:64px}
   <!-- Right: report output -->
   <div id="rpt-right">
     <div id="rpt-detail-empty" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--warm-mid);gap:10px;padding:32px;text-align:center">
-      <div style="font-size:3rem;opacity:.15">\ud83d\udcca</div>
+      <div style="font-size:3rem;opacity:.15">📊</div>
       <div style="font-size:.95rem;font-weight:700;color:var(--warm-dk)">No report generated yet</div>
       <div style="font-size:.78rem;line-height:1.6">
         Use the panel on the left:<br>
@@ -877,23 +1013,25 @@ textarea{min-height:64px}
     </div>
     <!-- Report output panel -->
     <div id="rpt-report-panel" style="display:none;flex-direction:column;height:100%">
-      <!-- Report panel header \u2014 flex-column on mobile -->
+      <!-- Report panel header — flex-column on mobile -->
       <div style="padding:10px 14px;border-bottom:1px solid var(--cream-3);flex-shrink:0;background:var(--cream)">
         <!-- Title row with back btn and close -->
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-          <button onclick="closeReportPanel()" style="display:none;padding:6px 12px;font-size:.82rem;font-weight:700;border:none;border-radius:7px;background:var(--forest);color:#fff;cursor:pointer;flex-shrink:0;margin-right:8px" class="mobile-back-btn">\u2190 Back</button>
+          <button onclick="closeReportPanel()" style="display:none;padding:6px 12px;font-size:.82rem;font-weight:700;border:none;border-radius:7px;background:var(--forest);color:#fff;cursor:pointer;flex-shrink:0;margin-right:8px" class="mobile-back-btn">← Back</button>
           <div style="min-width:0;flex:1">
             <div style="font-family:var(--font-display);font-size:.95rem;font-weight:700;color:var(--warm-dk);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="rpt-panel-title">Report</div>
             <div style="font-size:.68rem;color:var(--warm-mid)" id="rpt-panel-sub"></div>
           </div>
-          <button onclick="closeReportPanel()" style="padding:6px 9px;font-size:.8rem;border-radius:7px;border:none;background:var(--cream-2);cursor:pointer;flex-shrink:0;margin-left:8px" class="desktop-close-btn">\u2715</button>
+          <button onclick="closeReportPanel()" style="padding:6px 9px;font-size:.8rem;border-radius:7px;border:none;background:var(--cream-2);cursor:pointer;flex-shrink:0;margin-left:8px" class="desktop-close-btn">✕</button>
         </div>
-        <!-- Action buttons \u2014 horizontal scroll on mobile -->
-        <div style="display:flex;gap:5px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px">
-          <button onclick="printActiveReport()" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body);white-space:nowrap;flex-shrink:0">\ud83d\udda8\ufe0f Print</button>
-          <button onclick="openContentGen('press')" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid #e0a090;background:#fff;cursor:pointer;font-family:var(--font-body);color:#c0392b;white-space:nowrap;flex-shrink:0">\ud83d\udce3 Shareable Summary</button>
-          <button onclick="openContentGen('fund')" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid #e0c090;background:#fff;cursor:pointer;font-family:var(--font-body);color:#b06010;white-space:nowrap;flex-shrink:0">\ud83d\udc9b Donor Message</button>
-          <button onclick="copyActiveReport()" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid var(--forest);background:var(--forest);color:#fff;cursor:pointer;font-family:var(--font-body);white-space:nowrap;flex-shrink:0">\ud83d\udccb Copy</button>
+        <!-- Action buttons — lean, right-aligned -->
+        <div style="display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;flex-shrink:0">
+          <button onclick="printActiveReport()" title="Print" style="padding:5px 8px;font-size:.68rem;border-radius:6px;border:1px solid var(--cream-3);background:var(--cream);cursor:pointer;touch-action:manipulation;color:var(--warm-dk)">🖨️</button>
+          <button onclick="exportReportWord()" title="Export Word" style="padding:5px 8px;font-size:.68rem;border-radius:6px;border:1px solid #2050a0;background:var(--cream);cursor:pointer;touch-action:manipulation;color:#2050a0">📄</button>
+          <button onclick="emailActiveReport()" title="Email" style="padding:5px 8px;font-size:.68rem;border-radius:6px;border:1px solid #059669;background:var(--cream);cursor:pointer;touch-action:manipulation;color:#059669">✉️</button>
+          <button onclick="openContentGen('press')" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid #e0a090;background:#fff;cursor:pointer;font-family:var(--font-body);color:#c0392b;white-space:nowrap;flex-shrink:0">📣 Shareable Summary</button>
+          <button onclick="openContentGen('fund')" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid #e0c090;background:#fff;cursor:pointer;font-family:var(--font-body);color:#b06010;white-space:nowrap;flex-shrink:0">💛 Donor Message</button>
+          
         </div>
       </div>
       <!-- Hidden filters row (kept for JS compatibility, not shown) -->
@@ -911,30 +1049,30 @@ textarea{min-height:64px}
 <div id="view-map" class="view active">
   <div id="map-container">
 
-    <!-- \u2500\u2500 SHELTER SPOTLIGHT \u2014 floating card, bottom-right of map \u2500\u2500\u2500\u2500\u2500\u2500
+    <!-- ── SHELTER SPOTLIGHT — floating card, bottom-right of map ──────
          Doctrine-safe presentation layer only. No pins. No map state.
          Pulls from existing shelter/adoption records only. No new writes.
-    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 -->
-    <div id="shelter-spotlight" style="display:none;position:absolute;bottom:110px;right:14px;z-index:700;width:200px;border-radius:20px;overflow:hidden;box-shadow:0 12px 40px rgba(42,31,18,.35),0 4px 12px rgba(0,0,0,.15);transition:opacity .6s ease,transform .15s ease;opacity:0;pointer-events:auto;cursor:pointer;border:1.5px solid rgba(255,255,255,.8);background:var(--cream);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)" onclick="this.style.transform='scale(1.04)';setTimeout(function(){setView('adopt',null);},150)">
-      <!-- Shelter companion card \u2014 NOT a map feature. No pins. No doctrine impact. -->
-      <div style="background:var(--forest);padding:6px 10px;display:flex;align-items:center;gap:6px">
-        <span style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.85)" id="spotlight-header-label">\ud83c\udfe0 From the Shelter</span>
+    ─────────────────────────────────────────────────────────────────── -->
+    <div id="shelter-spotlight" style="display:none;position:absolute;bottom:124px;right:14px;z-index:700;width:200px;border-radius:20px;overflow:hidden;box-shadow:0 12px 40px rgba(42,31,18,.35),0 4px 12px rgba(0,0,0,.15);transition:opacity .6s ease,transform .15s ease;opacity:0;pointer-events:auto;cursor:pointer;border:1.5px solid rgba(255,255,255,.8);background:var(--cream);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)" onclick="this.style.transform='scale(1.04)';setTimeout(function(){setView('adopt',null);},150)">
+      <!-- Shelter companion card — NOT a map feature. No pins. No doctrine impact. -->
+      <div style="background:var(--forest);padding:6px 8px 6px 10px;display:flex;align-items:center;gap:6px;width:100%">
+        <span style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.85)" id="spotlight-header-label">🏠 From the Shelter</span><button onclick="event.stopPropagation();dismissSpotlight()" style="background:none;border:none;color:rgba(255,255,255,.6);font-size:.85rem;line-height:1;cursor:pointer;padding:0 2px;margin-left:auto;flex-shrink:0" title="Dismiss">✕</button>
       </div>
       <div style="position:relative;height:120px;background:var(--cream-2);overflow:hidden">
         <img id="spotlight-img" src="" alt="" style="width:100%;height:100%;object-fit:contain;object-position:center center;background:var(--cream-2);display:none">
-        <div id="spotlight-emoji" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:3rem;background:var(--cream-2)">\ud83d\udc3e</div>
+        <div id="spotlight-emoji" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:3rem;background:var(--cream-2)">🐾</div>
         <div id="spotlight-label" style="position:absolute;bottom:6px;left:6px;background:rgba(255,255,255,.9);color:var(--forest);font-size:.56rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:2px 7px;border-radius:999px;box-shadow:0 1px 4px rgba(0,0,0,.12)">Adoptable</div>
       </div>
       <div style="padding:8px 10px 10px;background:var(--cream);min-height:120px">
         <div id="spotlight-ai-bio" style="font-size:.7rem;color:var(--warm-dk);line-height:1.35;font-style:italic;margin-bottom:5px;overflow:hidden;min-height:47px;transition:opacity .3s ease;opacity:0"></div>
         <div id="spotlight-name" style="font-family:var(--font-display);font-size:.88rem;color:var(--warm-dk);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px"></div>
         <div id="spotlight-bio" style="font-size:.68rem;color:var(--warm-mid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:8px"></div>
-        <div style="background:var(--forest);color:#fff;font-size:.68rem;font-weight:700;text-align:center;padding:6px 8px;border-radius:8px;letter-spacing:.02em" id="spotlight-cta">View Adoptable Pets \u2192</div>
+        <div style="background:var(--forest);color:#fff;font-size:.68rem;font-weight:700;text-align:center;padding:6px 8px;border-radius:8px;letter-spacing:.02em" id="spotlight-cta">View Adoptable Pets →</div>
       </div>
     </div>
 
     <div id="map-loading" style="position:absolute;inset:0;z-index:500;background:rgba(244,241,235,.7);display:flex;align-items:center;justify-content:center;pointer-events:none;transition:opacity .4s ease">
-      <div style="font-size:.85rem;color:var(--warm-mid);font-weight:600;font-family:var(--font-body)">\ud83d\uddfa\ufe0f Loading map\u2026</div>
+      <div style="font-size:.85rem;color:var(--warm-mid);font-weight:600;font-family:var(--font-body)">🗺️ Loading map…</div>
     </div>
     <!-- Map zoom controls -->
     <div id="map"></div>
@@ -942,151 +1080,151 @@ textarea{min-height:64px}
     <!-- Live banner -->
     <div id="pp-banner">
       <div class="banner-dot" id="banner-dot"></div>
-      <div id="banner-txt">\ud83d\udc3e PawPulse is live in Hastings</div>
+      <div id="banner-txt">🐾 PawPulse is live in Hastings</div>
     </div>
 
     <!-- Floating filter pills -->
-    <!-- Map legend \u2014 bottom left -->
+    <!-- Map legend — bottom left -->
 
 <div id="map-legend" style="display:flex;flex-direction:column;gap:5px">
       <div class="legend-item"><div class="stat-dot lost"></div><span id="cnt-lost" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span>Lost</span></div>
       <div class="legend-item"><div class="stat-dot found"></div><span id="cnt-found" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span>Found</span></div>
       <div class="legend-item"><div class="legend-pin" style="background:#d06020"></div><span id="cnt-at-shelter" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span>Bringing to Shelter</span></div>
       <div class="legend-item"><div class="legend-pin" style="background:#1a3f8a"></div><span id="cnt-shelter" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span id="legend-shelter-label">At Heartland Shelter</span></div>
-      <div class="legend-item" style="padding-left:18px"><div class="legend-pin" style="background:#c8841a"></div><span id="cnt-adopt" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span>\u21b3 Adoptable</span></div>
-      <div style="font-size:.55rem;color:var(--warm-mid);line-height:1.4;margin-top:2px;max-width:160px">Info may change. Contact shelter for official status.</div>
+      <div class="legend-item" style="padding-left:18px"><div class="legend-pin" style="background:#c8841a"></div><span id="cnt-adopt" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span>↳ Adoptable</span></div>
+      <div style="font-size:.55rem;color:var(--warm-mid);line-height:1.4;margin-top:2px;max-width:160px">Info may change. Contact Heartland for official status.</div>
     </div>
 
     <div id="drop-hint">
-      <div style="pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:12px">
-        <div style="background:rgba(0,0,0,.38);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);color:rgba(255,255,255,.92);border-radius:14px;padding:14px 24px;font-size:1.05rem;font-weight:600;font-family:var(--font-display);letter-spacing:.01em;box-shadow:0 4px 24px rgba(0,0,0,.18);animation:hpulse 2s ease-in-out infinite">
-          &#128205; Tap the map to place pin
-        </div>
-        <button id="drop-cancel" onclick="event.stopPropagation();cancelPlace();closeCard();closePanel();updateOrientationStrip('map');" style="pointer-events:all;padding:10px 22px;min-height:44px;font-size:.82rem;font-weight:700;border:none;border-radius:999px;background:rgba(255,255,255,.18);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);color:rgba(255,255,255,.9);cursor:pointer;font-family:var(--font-body)">&#10005; Cancel</button>
-      </div>
+      📍 Tap the map to place pin
+      <button id="drop-cancel" onclick="cancelPlace(); document.getElementById('side-panel').classList.add('open');" style="padding:8px 14px;min-height:44px;font-size:.85rem;font-weight:700;border:none;border-radius:8px;background:rgba(255,255,255,.2);color:#fff;cursor:pointer">✕ Back</button>
     </div>
-
-    <!-- Shown after pin placed on mobile \u2014 big tap target to return to form -->
-    <div id="pin-set-btn" style="display:none;position:absolute;bottom:80px;left:50%;transform:translateX(-50%);z-index:900;background:var(--forest);color:var(--cream);border:none;border-radius:999px;padding:14px 28px;font-size:.9rem;font-weight:700;font-family:var(--font-display);box-shadow:0 4px 20px rgba(0,0,0,.35);cursor:pointer;white-space:nowrap;animation:hpulse 1.4s ease-in-out infinite" onclick="document.getElementById('pin-set-btn').style.display='none'; document.getElementById('side-panel').classList.add('open'); setTimeout(function(){map.invalidateSize();},340);">
-      \u2705 Pin placed \u2014 tap to continue \u2192
+    <!-- Shown after pin placed on mobile — big tap target to return to form -->
+    <div id="pin-set-btn" style="display:none;position:absolute;bottom:80px;left:50%;transform:translateX(-50%);z-index:900;background:var(--forest);color:var(--cream);border:none;border-radius:999px;padding:14px 28px;font-size:.9rem;font-weight:700;font-family:var(--font-display);box-shadow:0 4px 20px rgba(0,0,0,.35);cursor:pointer;white-space:nowrap;animation:hpulse 1.4s ease-in-out infinite" onclick="document.getElementById('pin-set-btn').style.display='none'; var _s=document.getElementById('orientation-strip'); if(_s) _s.style.display='none'; document.getElementById('side-panel').classList.add('open'); setTimeout(function(){map.invalidateSize();},300);">
+      ✅ Pin placed — tap to continue →
     </div>
 
     <div id="pin-card">
-      <button class="pc-close" onclick="closeCard()">\u2715</button>
+      <button class="pc-close" onclick="closeCard()">✕</button>
       <div id="pin-card-body" style="overflow-y:auto;max-height:calc(80vh - 40px);-webkit-overflow-scrolling:touch"></div>
     </div>
 
-    <div id="empty-hint">\ud83d\udc3e No reports yet<br><span style="font-size:.76rem;opacity:.8">Tap Lost Pet or Found Pet to post on the map.</span></div>
+    <div id="empty-hint">🐾 No reports yet — tap <strong>+ Report</strong> to post the first one.</div>
 
     <div id="side-panel">
       <div class="panel-hdr">
         <div>
           <div class="panel-title" id="panel-title">Report a Lost Pet</div>
-          <div class="panel-sub"  id="panel-sub">Help your community find them \ud83d\udc36</div>
+          <div class="panel-sub"  id="panel-sub">Help your community find them 🐶</div>
         </div>
-        <button class="panel-close" onclick="closePanel()">\u2715</button>
+        <button class="panel-close" onclick="closePanel()">✕</button>
       </div>
       <div class="panel-body">
 
         <!-- LOST FORM -->
         <div id="form-lost">
-          <div class="sl">\ud83d\udccb Pet Information</div>
+          <div class="sl">📋 Pet Information</div>
           <div class="fr">
             <div class="fg" style="margin:0"><label>Pet Name</label><input type="text" id="l-name" placeholder="e.g. Biscuit"></div>
-            <div class="fg" style="margin:0"><label>Species</label><select id="l-species" onchange="updateBreedField('l-species','l-breed-wrap')"><option value="">Select\u2026</option><option>Dog</option><option>Cat</option><option>Bird</option><option>Rabbit</option><option>Other</option></select></div>
+            <div class="fg" style="margin:0"><label>Species</label><select id="l-species" onchange="updateBreedField('l-species','l-breed-wrap')"><option value="">Select…</option><option>Dog</option><option>Cat</option><option>Bird</option><option>Rabbit</option><option>Other</option></select></div>
           </div>
           <div class="fr">
             <div class="fg" style="margin:0"><label>Breed</label><div id="l-breed-wrap"><input type="text" id="l-breed" placeholder="Select species first"></div></div>
             <div class="fg" style="margin:0"><label>Color</label><input type="text" id="l-color" placeholder="e.g. Golden, white"></div>
           </div>
           <hr class="div">
-          <div class="sl">\ud83d\udccd Last Seen Location</div>
+          <div class="sl">📍 Last Seen Location</div>
           <div class="loc-prompt on" id="l-prompt">
             <button onclick="startPlace('lost')" style="width:100%;padding:12px;border:2px dashed #c94f2a;border-radius:9px;background:#fff8f6;color:#c94f2a;font-size:.82rem;font-weight:700;cursor:pointer;font-family:var(--font-body);display:flex;align-items:center;justify-content:center;gap:8px">
-              \ud83d\udccd Tap to Set Location on Map
+              📍 Tap to Set Location on Map
             </button>
-            <div style="font-size:.66rem;color:var(--warm-mid);text-align:center;margin-top:4px">The map will open \u2014 tap where your pet was last seen</div>
+            <div style="font-size:.66rem;color:var(--warm-mid);text-align:center;margin-top:4px">The map will open — tap where your pet was last seen</div>
           </div>
-          <div class="loc-set"       id="l-locset">\u2705 <span id="l-loctxt">Location set</span> \u2014 <button onclick="startPlace('lost')" style="background:none;border:none;color:var(--forest);font-size:.72rem;font-weight:600;cursor:pointer;padding:0;font-family:var(--font-body);text-decoration:underline">Move pin</button></div>
+          <div class="loc-set"       id="l-locset">✅ <span id="l-loctxt">Location set</span> — <button onclick="startPlace('lost')" style="background:none;border:none;color:var(--forest);font-size:.72rem;font-weight:600;cursor:pointer;padding:0;font-family:var(--font-body);text-decoration:underline">Move pin</button></div>
           <div class="fg"><label>Landmark / Address (optional)</label><input type="text" id="l-address" placeholder="e.g. Near Brickyard Park"></div>
           <hr class="div">
-          <div class="sl">\ud83d\uddbc\ufe0f Photo</div>
+          <div class="sl">🖼️ Photo</div>
           <div class="photo-drop">
             <input type="file" id="l-photo" accept="image/*" onchange="previewPhoto(this,'l-prev','l-dicon','l-dtxt');showAIBtn('l')">
-            <div class="photo-drop-icon" id="l-dicon">\ud83d\udcf7</div>
+            <div class="photo-drop-icon" id="l-dicon">📷</div>
             <div class="photo-drop-txt"  id="l-dtxt">Tap to upload a photo</div>
             <img id="l-prev" class="photo-prev" alt="preview">
           </div>
           <div id="l-ai-wrap" style="display:none;margin-top:8px">
-            <button class="ai-id-btn" id="l-ai-btn" onclick="applyAIIdentify('l')">\u2728 Identify breed &amp; color with AI</button>
+            <button class="ai-id-btn" id="l-ai-btn" onclick="applyAIIdentify('l')">✨ Identify breed &amp; color with AI</button>
             <div class="ai-id-result" id="l-ai-result"></div>
           </div>
           <hr class="div">
-          <div class="sl">\ud83d\udc64 Owner Contact</div>
+          <div class="sl">👤 Owner Contact</div>
           <div class="fg"><label>Your Name</label><input type="text" id="l-owner" placeholder="Full name"></div>
           <div class="fr">
             <div class="fg" style="margin:0"><label>Phone</label><input type="tel" id="l-phone" placeholder="555-0100"></div>
             <div class="fg" style="margin:0"><label>Email</label><input type="email" id="l-email" placeholder="you@email.com"></div>
           </div>
           <div class="fg"><label>Microchip # (optional)</label><input type="text" id="l-chip" placeholder="15-digit number"></div>
-          <div class="fg"><label>Additional Details</label><textarea id="l-notes" placeholder="Collar, markings, behavior\u2026"></textarea></div>
+          <div class="fg"><label>Additional Details</label><textarea id="l-notes" placeholder="Collar, markings, behavior…"></textarea></div>
           <!-- Honeypot: hidden from real users, bots fill it in -->
           <div style="position:absolute;left:-9999px;top:-9999px;opacity:0;pointer-events:none" aria-hidden="true"><input type="text" id="l-confirm-email" name="confirm_email" tabindex="-1" autocomplete="off"></div>
-          <button class="submit-btn lost" onclick="submitLost()">\ud83d\udd34 Submit Lost Pet Report</button>
         </div>
 
         <!-- FOUND FORM -->
         <div id="form-found" style="display:none">
-          <div class="sl">\ud83d\udccb Pet Description</div>
+          <div class="sl">📋 Pet Description</div>
           <div class="fr">
-            <div class="fg" style="margin:0"><label>Species</label><select id="f-species"><option value="">Select\u2026</option><option>Dog</option><option>Cat</option><option>Bird</option><option>Rabbit</option><option>Other</option></select></div>
+            <div class="fg" style="margin:0"><label>Species</label><select id="f-species"><option value="">Select…</option><option>Dog</option><option>Cat</option><option>Bird</option><option>Rabbit</option><option>Other</option></select></div>
             <div class="fg" style="margin:0"><label>Color / Markings</label><input type="text" id="f-color" placeholder="e.g. Black &amp; tan"></div>
           </div>
-          <div class="fg"><label>Description</label><textarea id="f-desc" placeholder="Size, age, collar, behavior\u2026"></textarea></div>
+          <div class="fg"><label>Description</label><textarea id="f-desc" placeholder="Size, age, collar, behavior…"></textarea></div>
           <hr class="div">
-          <div class="sl">\ud83d\udccd Where Found</div>
+          <div class="sl">📍 Where Found</div>
           <div class="loc-prompt on" id="f-prompt">
-            <button onclick="startPlace('found')" style="width:100%;padding:12px;border:2px dashed #3a7d44;border-radius:9px;background:#f6fff7;color:#3a7d44;font-size:.82rem;font-weight:700;cursor:pointer;font-family:var(--font-body);display:flex;align-items:center;justify-content:center;gap:8px">\ud83d\udccd Tap to Set Location on Map</button>
-            <div style="font-size:.66rem;color:var(--warm-mid);text-align:center;margin-top:4px">The map will open \u2014 tap where you found the pet</div>
+            <button onclick="startPlace('found')" style="width:100%;padding:12px;border:2px dashed #3a7d44;border-radius:9px;background:#f6fff7;color:#3a7d44;font-size:.82rem;font-weight:700;cursor:pointer;font-family:var(--font-body);display:flex;align-items:center;justify-content:center;gap:8px">📍 Tap to Set Location on Map</button>
+            <div style="font-size:.66rem;color:var(--warm-mid);text-align:center;margin-top:4px">The map will open — tap where you found the pet</div>
           </div>
-          <div class="loc-set" id="f-locset">\u2705 <span id="f-loctxt">Location set</span> \u2014 <button onclick="startPlace('found')" style="background:none;border:none;color:var(--forest);font-size:.72rem;font-weight:600;cursor:pointer;padding:0;font-family:var(--font-body);text-decoration:underline">Move pin</button></div>
+          <div class="loc-set" id="f-locset">✅ <span id="f-loctxt">Location set</span> — <button onclick="startPlace('found')" style="background:none;border:none;color:var(--forest);font-size:.72rem;font-weight:600;cursor:pointer;padding:0;font-family:var(--font-body);text-decoration:underline">Move pin</button></div>
           <div class="fg"><label>Landmark / Address (optional)</label><input type="text" id="f-address" placeholder="e.g. Near the fairgrounds"></div>
           <hr class="div">
-          <div class="sl">\ud83d\uddbc\ufe0f Photo</div>
+          <div class="sl">🖼️ Photo</div>
           <div class="photo-drop">
             <input type="file" id="f-photo" accept="image/*" onchange="previewPhoto(this,'f-prev','f-dicon','f-dtxt')">
-            <div class="photo-drop-icon" id="f-dicon">\ud83d\udcf7</div>
+            <div class="photo-drop-icon" id="f-dicon">📷</div>
             <div class="photo-drop-txt"  id="f-dtxt">Tap to upload a photo</div>
             <img id="f-prev" class="photo-prev" alt="preview">
           </div>
+          <div id="f-ai-wrap" style="display:none;margin-top:8px">
+            <button class="ai-id-btn" id="f-ai-btn" onclick="applyAIIdentify('f')">✨ Identify breed &amp; color with AI</button>
+            <div class="ai-id-result" id="f-ai-result"></div>
+          </div>
           <hr class="div">
-          <div class="sl">\ud83d\udcde Your Contact</div>
+          <div class="sl">📞 Your Contact</div>
           <div class="fr">
             <div class="fg" style="margin:0"><label>Your Name</label><input type="text" id="f-finder" placeholder="Your name"></div>
             <div class="fg" style="margin:0"><label>Phone</label><input type="tel" id="f-phone" placeholder="555-0100"></div>
           </div>
           <div class="chk-row">
             <input type="checkbox" id="f-shelter" onchange="document.getElementById('f-sgrp').style.display=this.checked?'':'none'">
-            <label for="f-shelter">\ud83c\udfe0 I have brought or am bringing this pet to a shelter or vet</label>
+            <label for="f-shelter">🏠 I have brought or am bringing this pet to a shelter or vet</label>
           </div>
           <div id="f-sgrp" style="display:none" class="fg">
             <label>Which shelter or vet?</label>
             <input type="text" id="f-sname" placeholder="e.g. Heartland Pet Connection">
           </div>
-          <!-- Honeypot: hidden from real users, bots fill it in -->
           <div style="position:absolute;left:-9999px;top:-9999px;opacity:0;pointer-events:none" aria-hidden="true"><input type="text" id="f-confirm-email" name="confirm_email" tabindex="-1" autocomplete="off"></div>
         </div>
-      <div id="panel-footer" style="flex-shrink:0;padding:10px 16px;border-top:1px solid var(--cream-3);background:var(--cream)">
-        <div id="l-form-err" style="display:none;color:#c94f2a;font-size:.75rem;padding:6px 0;font-weight:600"></div>
-        <div id="f-form-err" style="display:none;color:#c94f2a;font-size:.75rem;padding:6px 0;font-weight:600"></div>
-        <button id="panel-submit-lost" onclick="submitLost()" style="display:none;width:100%;padding:13px;font-size:.92rem;font-weight:700;border:none;border-radius:10px;background:var(--lost-r);color:#fff;font-family:var(--font-display);cursor:pointer;touch-action:manipulation">Submit Lost Pet Report</button>
-        <button id="panel-submit-found" onclick="submitFound()" style="display:none;width:100%;padding:13px;font-size:.92rem;font-weight:700;border:none;border-radius:10px;background:var(--found-g);color:#fff;font-family:var(--font-display);cursor:pointer;touch-action:manipulation">Submit Found Pet Report</button>
+
+      </div>
+      <!-- ═══ PANEL FOOTER — always visible, never scrolls ═══ -->
+      <div id="panel-footer" style="flex-shrink:0;padding:10px 20px 14px;background:var(--cream);border-top:1px solid var(--cream-3)">
+        <div id="l-form-err" style="display:none;background:#fff0ee;border:1.5px solid #c94f2a;border-radius:8px;padding:8px 12px;font-size:.78rem;color:#8a2010;margin-bottom:8px;line-height:1.4"></div>
+        <div id="f-form-err" style="display:none;background:#fff0ee;border:1.5px solid #c94f2a;border-radius:8px;padding:8px 12px;font-size:.78rem;color:#8a2010;margin-bottom:8px;line-height:1.4"></div>
+        <button class="submit-btn lost"  id="panel-submit-lost"  onclick="submitLost()"  style="display:none;margin-top:0">🔴 Submit Lost Pet Report</button>
+        <button class="submit-btn found" id="panel-submit-found" onclick="submitFound()" style="display:none;margin-top:0">🟢 Submit Found Pet Report</button>
       </div>
     </div>
   </div>
 </div>
 
-<div id="toast">\ud83d\udd14 <span id="toast-msg"></span></div>
+<div id="toast">🔔 <span id="toast-msg"></span></div>
 
 <script>
 /* Global error handler — catches and surfaces errors on iOS Safari */
@@ -1120,15 +1258,7 @@ try {
   map = { addLayer:function(){}, invalidateSize:function(){}, removeLayer:function(){}, hasLayer:function(){return false;}, fitBounds:function(){}, setView:function(){}, on:function(){}, off:function(){} };
 }
 
-var reports  = (function() {
-  var rpts = JSON.parse(localStorage.getItem('pawpulse-v2') || '[]');
-  /* Restore photos from separate storage key (survives main array overflow) */
-  try {
-    var ph = JSON.parse(localStorage.getItem('pawpulse-photos') || '{}');
-    rpts.forEach(function(r) { if (!r.photo && ph[String(r.id)]) r.photo = ph[String(r.id)]; });
-  } catch(e) {}
-  return rpts;
-})();
+var reports  = JSON.parse(localStorage.getItem('pawpulse-v2') || '[]');
 var lMarkers = [];
 var curFilter = 'all';
 var placing   = null;
@@ -1142,16 +1272,12 @@ var _isStaff  = false;
 
 /* ── SAVE / LOAD ──────────────────────────────────────────────────────── */
 function save() {
-  /* Save photos separately so they survive even if main array is stripped */
-  var photos = {};
-  reports.forEach(function(r) { if (r.photo) photos[String(r.id)] = r.photo; });
-  try { localStorage.setItem('pawpulse-photos', JSON.stringify(photos)); } catch(e) {}
-  /* Write main report array */
+  /* Always write to localStorage as offline cache */
   try {
     localStorage.setItem('pawpulse-v2', JSON.stringify(reports));
   } catch(e) {
-    /* localStorage full — write without photos (they're saved separately above) */
-    console.warn('localStorage full, stripping photos from main cache:', e.message);
+    /* localStorage full (photos) — try stripping photos from cache */
+    console.warn('localStorage full, writing without photos:', e.message);
     try {
       var stripped = reports.map(function(r) {
         var s = Object.assign({}, r); delete s.photo; return s;
@@ -1217,8 +1343,18 @@ function initFirebase() {
         if (_fbReady !== true) {
           if (db) { startFirestoreListener(); } else { showShelterPicker(); }
         }
-        /* Photo re-sync removed — photos are kept in localStorage only (pawpulse-photos key).
-           Writing photos to Firestore caused quota exhaustion. */
+        /* Re-sync any records with photos that may have failed to write
+           when auth was not yet restored (common on mobile Safari) */
+        if (db && reports.length > 0) {
+          setTimeout(function(){
+            reports.forEach(function(r){
+              if (r.photo) {
+                db.collection('reports').doc(String(r.id)).set(r)
+                  .catch(function(){});
+              }
+            });
+          }, 1500);
+        }
         setTimeout(function(){ renderAdoptView(); }, 800);
       } else {
         /* null — only clear if localStorage flag also gone (real sign-out, not just slow restore) */
@@ -1267,13 +1403,6 @@ function startFirestoreListener() {
             if (local && local.photo && !data.photo) { data.photo = local.photo; }
             reports.push(data);
           });
-          /* Restore any photos saved separately (survive localStorage overflow) */
-          try {
-            var savedPhotos = JSON.parse(localStorage.getItem('pawpulse-photos') || '{}');
-            reports.forEach(function(r) {
-              if (!r.photo && savedPhotos[String(r.id)]) r.photo = savedPhotos[String(r.id)];
-            });
-          } catch(pe) {}
           localStorage.setItem('pawpulse-v2', JSON.stringify(reports));
         }
         /* If Firestore empty, reports already loaded from localStorage in bootApp — keep them */
@@ -1310,13 +1439,6 @@ function startFirestoreListener() {
             }
             reports[idx] = data;
           } else {
-            /* New record not in local array — still restore photo from separate store */
-            try {
-              var _ph = JSON.parse(localStorage.getItem('pawpulse-photos') || '{}');
-              if (!data.photo && _ph[String(data.id || change.doc.id)]) {
-                data.photo = _ph[String(data.id || change.doc.id)];
-              }
-            } catch(e) {}
             reports.push(data);
           }
           changed = true;
@@ -1760,11 +1882,12 @@ function bootApp() {
   }
   /* Force map to recalculate size now that loading screen is gone */
   setTimeout(function(){ try { map.invalidateSize(); } catch(e){} }, 300);
-  /* Dismiss map-loading overlay — always dismiss after bootApp, 
-     regardless of Firebase state. onSnapshot may be slow on phone. */
-  window._firebaseLoaded = true;
-  var _ml = document.getElementById('map-loading');
-  if (_ml) { _ml.style.opacity = '0'; setTimeout(function(){ if (_ml) _ml.style.display='none'; }, 450); }
+  /* Dismiss map loading overlay — Firebase will dismiss it after first snapshot; this covers non-Firebase path */
+  if (!USE_FIREBASE) {
+    window._firebaseLoaded = true;
+    var _ml = document.getElementById('map-loading');
+    if (_ml) { _ml.style.opacity = '0'; setTimeout(function(){ _ml.style.display='none'; }, 450); }
+  }
   /* Update incare shelter label */
   var lbl = document.getElementById('incare-shelter-label');
   if (lbl) lbl.textContent = activeShelter + ' — Animals In Care';
@@ -1803,16 +1926,6 @@ function bootApp() {
   if (_restoredView === 'map' || !_restoredView) {
     setTimeout(function(){ try { map.invalidateSize(); } catch(e){} }, 400);
   }
-  /* Hard fallback: dismiss map-loading overlay after 6s regardless of Firestore state */
-  setTimeout(function() {
-    var _ml = document.getElementById('map-loading');
-    if (_ml && _ml.style.display !== 'none') {
-      _ml.style.opacity = '0';
-      setTimeout(function(){ if (_ml) _ml.style.display = 'none'; }, 450);
-    }
-    /* Also force map size recalculation in case tiles didn't render */
-    try { map.invalidateSize(); } catch(e) {}
-  }, 6000);
 }
 
 /* ── INTAKE MODAL (replaces separate Intake tab) ─────────────────────── */
@@ -2067,16 +2180,16 @@ function checkFoundPinsOnIntake(intakeRecord) {
     + atShelterNote
     + '</div>'
     + '<div style="display:flex;gap:10px">'
-    + '<button onclick="resolveFoundPinFromIntake(' + r.id + ', null)" style="flex:1;padding:12px;border:none;border-radius:10px;background:var(--forest);color:#fff;font-family:var(--font-display);font-size:.9rem;font-weight:700;cursor:pointer;touch-action:manipulation">✅ Yes — Same Animal</button>'
+    + '<button onclick="resolveFoundPinFromIntake(' + r.id + ')" style="flex:1;padding:12px;border:none;border-radius:10px;background:var(--forest);color:#fff;font-family:var(--font-display);font-size:.9rem;font-weight:700;cursor:pointer">✅ Yes — Same Animal</button>'
     + '<button onclick="var p=document.getElementById(\'intake-found-match-panel\');if(p)p.remove();" style="flex:1;padding:12px;border:1.5px solid var(--cream-3);border-radius:10px;background:#fff;font-family:var(--font-display);font-size:.9rem;font-weight:700;cursor:pointer;color:var(--warm-dk)">No — Different Animal</button>'
     + '</div>';
 
   /* Backdrop */
   var bd = document.createElement('div');
-  bd.id = 'intake-match-backdrop';
   bd.style.cssText = 'position:fixed;inset:0;z-index:3999;background:rgba(0,0,0,.45)';
   bd.onclick = function(){ panel.remove(); bd.remove(); };
   document.body.appendChild(bd);
+  /* Panel was missing its appendChild — this was the phone freeze bug */
   panel.style.transform = 'translateY(100%)';
   panel.style.transition = 'transform .3s cubic-bezier(.34,1.2,.64,1)';
   document.body.appendChild(panel);
@@ -2087,74 +2200,22 @@ function checkFoundPinsOnIntake(intakeRecord) {
   });
 }
 
-function resolveFoundPinFromIntake(foundId, lostOwnerId) {
-  /* Remove panel and backdrop immediately by ID — no DOM scan */
+function resolveFoundPinFromIntake(foundId) {
   var panel = document.getElementById('intake-found-match-panel');
-  var bd    = document.getElementById('intake-match-backdrop');
   if (panel) panel.remove();
-  if (bd)    bd.remove();
+  /* Remove backdrop */
+  document.querySelectorAll('[style*="z-index:3999"]').forEach(function(el){ el.remove(); });
 
   var r = reports.find(function(x){ return x.id == foundId; });
   if (!r) return;
   r.reunited = true;
   r.reunitedDate = new Date().toISOString();
   r.resolvedByIntake = true;
-
-  /* Restore orientation strip hidden by migrateToIntake */
-  updateOrientationStrip('map');
-  /* Defer heavy ops to keep UI responsive */
-  setTimeout(function() {
-    save();
-    writeAnimalRecord(r, 'staff');
-    renderMarkers();
-    updateNavCounts();
-    pushBannerEvent('Found pin matched - owner notified', '#2050a0');
-  }, 80);
-
-  /* Show call prompt with finder/owner contact info from the resolved found report */
-  setTimeout(function() { showOwnerCallPrompt(r, null); }, 200);
-}
-
-function showOwnerCallPrompt(report, _unused) {
-  var isFinder    = report.type === 'found';
-  var ownerPhone  = report.phone || report.fphone || '';
-  var petName     = report.name || (report.species || 'Pet');
-  var petDesc     = [report.species, report.breed, report.color].filter(Boolean).join(' - ');
-  var contactName = isFinder ? (report.finder || 'Finder') : (report.owner || 'Owner');
-
-  var prompt = document.createElement('div');
-  prompt.id = 'owner-call-prompt';
-  prompt.style.cssText = 'position:fixed;inset:0;z-index:5000;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.5)';
-
-  var inner = document.createElement('div');
-  inner.style.cssText = 'background:var(--cream);border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:24px 20px 32px;box-shadow:0 -8px 40px rgba(0,0,0,.3)';
-
-  var phoneRow = '';
-  if (ownerPhone) {
-    phoneRow = '<a href="tel:' + esc(ownerPhone) + '" style="display:flex;align-items:center;justify-content:center;gap:8px;background:var(--forest);color:#fff;border-radius:10px;padding:13px;font-family:var(--font-display);font-size:.95rem;font-weight:700;text-decoration:none;margin-bottom:8px">Call ' + esc(ownerPhone) + '</a>'
-             + '<a href="sms:' + esc(ownerPhone) + '" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#1a56db;color:#fff;border-radius:10px;padding:13px;font-family:var(--font-display);font-size:.95rem;font-weight:700;text-decoration:none">Text ' + esc(ownerPhone) + '</a>';
-  } else {
-    phoneRow = '<div style="color:var(--warm-mid);font-size:.8rem;text-align:center">No phone on file. Check the report for contact details.</div>';
-  }
-
-  inner.innerHTML = '<div style="text-align:center;font-size:2rem;margin-bottom:8px">&#128222;</div>'
-    + '<div style="font-family:var(--font-display);font-size:1.05rem;font-weight:700;color:var(--warm-dk);text-align:center;margin-bottom:4px">Contact ' + esc(contactName) + ' now</div>'
-    + '<div style="font-size:.8rem;color:var(--warm-mid);text-align:center;margin-bottom:16px;line-height:1.5">'
-    + (isFinder ? 'Confirm details and coordinate next steps with the finder.' : 'The owner has been waiting. Contact them immediately.')
-    + '</div>'
-    + '<div style="background:var(--cream-2);border-radius:12px;padding:14px 16px;margin-bottom:16px">'
-    + '<div style="font-weight:700;font-size:.9rem;color:var(--warm-dk);margin-bottom:2px">' + esc(petName) + '</div>'
-    + '<div style="font-size:.76rem;color:var(--warm-mid);margin-bottom:10px">' + esc(petDesc) + '</div>'
-    + phoneRow
-    + '</div>';
-
-  var doneBtn = document.createElement('button');
-  doneBtn.textContent = 'Done - Contacted';
-  doneBtn.style.cssText = 'width:100%;padding:13px;border:1.5px solid var(--cream-3);border-radius:10px;background:#fff;font-family:var(--font-display);font-size:.9rem;font-weight:700;color:var(--warm-dk);cursor:pointer;touch-action:manipulation';
-  doneBtn.onclick = function() { prompt.remove(); };
-  inner.appendChild(doneBtn);
-  prompt.appendChild(inner);
-  document.body.appendChild(prompt);
+  save();
+  writeAnimalRecord(r, 'staff');
+  renderMarkers();
+  updateNavCounts();
+  pushBannerEvent('📍 Found pin removed — matched to shelter intake', 'var(--found-g)');
 }
 
 
@@ -2675,12 +2736,6 @@ function saveAnimalEdit(id) {
     r.enforcement.dailyCost  = parseFloat((document.getElementById('ae-dailyrate')||{}).value) || DAILY_RATE;
     r.enforcement.legalNotes = ((document.getElementById('ae-legal-notes')||{}).value||'').trim();
     r.enforcement.internalStatus = 'Shelter Hold Active';
-  } else if (r.intakeType === 'hold' && masterStatus !== 'hold') {
-    /* Releasing hold — clear hold-specific state so animal moves to normal care */
-    r.intakeType = 'citizen';  /* revert to standard intake type */
-    if (r.enforcement) r.enforcement.internalStatus = 'Released from Hold';
-    r.holdType = null;
-    r.shelterHoldStart = null;
   }
 
   r.courtDate      = (document.getElementById('ae-courtdate')||{}).value || '';
@@ -2966,30 +3021,18 @@ function runActiveReport() {
       }),
       ['<b>TOTAL: ' + recs.length + ' animals</b>', '', incare_dogs+' dogs / '+incare_cats+' cats', '', '', 'Avg stay: '+incare_avg_days+'d', '']);
 
-  } else if (id === 'intake30' || id === 'intake60' || id === 'intake') {
-    /* Read the date filter from the UI — always use what user selected */
-    var filterDaysEl = document.getElementById('rpt-filter-days');
-    var days2 = filterDaysEl ? parseInt(filterDaysEl.value) || 30 : 30;
+  } else if (id === 'intake30' || id === 'intake60') {
+    var days2 = id==='intake30' ? 30 : 60;
     var recs2 = getShelterData({ includeHolds:true, includeAdopt:true, includeResolved:true, cutoffDays:days2 }).filter(function(r){
       return !fSpecies || (r.species||'').toLowerCase()===fSpecies.toLowerCase();
     });
-    /* Species subtotals */
-    var dogs2 = recs2.filter(function(r){ return (r.species||'').toLowerCase()==='dog'; }).length;
-    var cats2 = recs2.filter(function(r){ return (r.species||'').toLowerCase()==='cat'; }).length;
-    var other2 = recs2.length - dogs2 - cats2;
-    /* Source subtotals */
-    var stray2 = recs2.filter(function(r){ return !r.intakeSource || r.intakeSource==='citizen'; }).length;
-    var surr2 = recs2.filter(function(r){ return r.intakeSource==='surrender'; }).length;
-    var ac2 = recs2.filter(function(r){ return r.intakeSource==='ac'; }).length;
-    var dateLabel = days2 >= 365 ? 'This Year' : 'Last ' + days2 + ' Days';
-    html = reportTable('Intake — ' + dateLabel + ' — ' + activeShelter,
+    html = reportTable('Intake — Last ' + days2 + ' Days — ' + activeShelter + ' (' + recs2.length + ')',
       ['Animal','Species','Color','Intake Source','Intake Date','Status'],
       recs2.map(function(r){
         return [esc(r.name||r.species||'Unknown'), esc(r.species||'—'), esc(r.color||'—'),
           esc(r.intakeSourceLabel||'—'), r.date?new Date(r.date).toLocaleDateString():'—',
-          esc(r.reunited?'Reunited':r.adoptionStatus==='adopted'?'Adopted':r.adoptionStatus==='available'?'Adoption Ready':(r.masterStatus||'In Care'))];
-      }),
-      ['<b>TOTAL: ' + recs2.length + '</b>', dogs2+'d / '+cats2+'c / '+other2+'o', '', 'Stray:'+stray2+' Surr:'+surr2+' AC:'+ac2, '', '']);
+          esc(r.reunited?'Reunited':r.adoptionStatus==='adopted'?'Adopted':r.adoptionStatus==='available'?'Adoption Ready':(r.enforcement&&r.enforcement.internalStatus)||'In Care')];
+      }));
 
   } else if (id === 'holds') {
     var holds = getShelterData({ includeHolds:true }).filter(function(r){
@@ -4341,7 +4384,6 @@ function migrateToIntake(id) {
 
   /* Populate fields after form renders */
   setTimeout(function() {
-    /* Use getIntakeEl() to scope to modal body, not toggleIntakeForm's identical si-* IDs */
     var populate = {
       'si-species': r.species || '',
       'si-color':   r.color   || '',
@@ -4351,54 +4393,29 @@ function migrateToIntake(id) {
       'si-name':    r.name    || ''
     };
     Object.keys(populate).forEach(function(fid) {
-      var el = getIntakeEl(fid);
+      var el = document.getElementById(fid);
       if (el && populate[fid]) el.value = populate[fid];
     });
 
     /* Select the correct species option */
-    var speciesEl = getIntakeEl('si-species');
+    var speciesEl = document.getElementById('si-species');
     if (speciesEl && r.species) {
       Array.from(speciesEl.options).forEach(function(opt) {
         if (opt.value === r.species || opt.text === r.species) opt.selected = true;
       });
-      /* Trigger breed field update scoped to modal body */
-      var modalBody = document.getElementById('intake-modal-body');
-      if (typeof updateBreedField === 'function') updateBreedField('si-species', 'si-breed-wrap', modalBody);
+      /* Trigger breed field update */
+      if (typeof updateBreedField === 'function') updateBreedField('si-species', 'si-breed-wrap');
     }
 
     /* Mark source report for linking on save */
     window._migrateFromId = id;
-
-    /* Copy photo from found report to intake form */
-    if (r.photo) {
-      var siPrev = getIntakeEl('si-prev');
-      var siIcon = getIntakeEl('si-photo-icon');
-      var siTxt  = getIntakeEl('si-photo-txt');
-      if (siPrev) {
-        siPrev.src = r.photo;
-        siPrev.style.display = 'block';
-        if (siIcon) siIcon.style.display = 'none';
-        if (siTxt)  siTxt.style.display  = 'none';
-        /* Hide the file input itself so "No file selected" doesn't show */
-        var siPhotoIn = getIntakeEl('si-photo-in');
-        if (siPhotoIn) siPhotoIn.style.display = 'none';
-        /* Show AI button */
-        var modalBody = document.getElementById('intake-modal-body');
-        var aiWrap = modalBody ? modalBody.querySelector('#si-ai-wrap') : null;
-        if (aiWrap) aiWrap.style.display = 'block';
-      }
-    }
-
-    /* Hide orientation strip so it doesn't clip the modal top */
-    var strip = document.getElementById('orientation-strip');
-    if (strip) strip.style.display = 'none';
 
     /* Show pre-fill notice at top of form */
     var body = document.getElementById('intake-modal-body');
     if (body) {
       var notice = document.createElement('div');
       notice.style.cssText = 'background:#e8f4e9;border:1px solid #8bc898;border-radius:8px;padding:9px 13px;font-size:.75rem;color:#2a6030;margin-bottom:12px;line-height:1.5';
-      notice.innerHTML = '✓ <strong>Pre-filled from found report.</strong> Review and confirm fields, then tap Log Intake.';
+      notice.innerHTML = '✓ <strong>Pre-filled from found report.</strong> Review all fields, add a photo, and save to create the intake record.';
       body.insertBefore(notice, body.firstChild);
     }
   }, 350);
@@ -4986,12 +5003,7 @@ function showOOBMessage() {
   var el = document.getElementById('oob-overlay');
   if (!el) return;
   el.style.display = 'flex';
-  setTimeout(function(){
-    el.style.display = 'none';
-    /* Return to placing mode with the overlay visible again */
-    var dh = document.getElementById('drop-hint');
-    if (dh && placing) dh.classList.add('on');
-  }, 2000);
+  setTimeout(function(){ el.style.display = 'none'; }, 2200);
 }
 
 function cancelPlace() {
@@ -5083,20 +5095,19 @@ map.on('click', function(e) {
 });
 
 function compressPhoto(file, callback) {
-  /* Compress to max 800px, 0.72 quality JPEG — keeps ~60-80KB per photo,
-     allowing 35+ photos to fit within localStorage limits */
+  /* Compress to max 1200px wide, 0.82 quality JPEG — keeps under ~200KB */
   var img = new Image();
   var url = URL.createObjectURL(file);
   img.onload = function() {
     URL.revokeObjectURL(url);
-    var MAX = 800;
+    var MAX = 1200;
     var w = img.width, h = img.height;
     if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
     if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
     var canvas = document.createElement('canvas');
     canvas.width = w; canvas.height = h;
     canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-    callback(canvas.toDataURL('image/jpeg', 0.72));
+    callback(canvas.toDataURL('image/jpeg', 0.82));
   };
   img.onerror = function() {
     /* Fallback: read raw if canvas fails */
@@ -5600,23 +5611,30 @@ function submitLost() {
     r.shelter = false;
   }
   r.source = 'public'; r.createdAt = r.createdAt || r.date;
-  /* Capture photo BEFORE resetForm clears the img src */
-  var _savedPhotoL = r.photo || getPhoto('l-prev');
+  /* Close panel immediately — keeps UI responsive even with large photo */
   closePanel(); resetForm('lost');
-  r.photo = _savedPhotoL;
   pLat.lost = null; pLng.lost = null;
   var slb2 = document.getElementById('panel-submit-lost');
   if (slb2) slb2.style.opacity = '';
   /* Defer heavy JSON.stringify + render to avoid main-thread freeze */
   r._isNewPin = true;
   reports.push(r);
-  /* Render immediately — synchronous, no flicker */
-  save();
-  renderMarkers();
-  renderIncareView();
-  writeAnimalRecord(r, 'public');
-  recordSubmission('lost');
-  showToast('lost');
+  /* Immediate marker add — don't wait for full renderMarkers */
+  if (r.lat && r.lng && typeof map !== 'undefined') {
+    try {
+      var newM = L.marker([r.lat, r.lng], {icon: pinIcon(r.type, false, false, false, false, false, r)}).addTo(map);
+      newM.on('click', function(e){ L.DomEvent.stopPropagation(e); openCard(r, map.latLngToContainerPoint([r.lat,r.lng])); });
+      lMarkers.push(newM);
+    } catch(e) { console.warn('immediate pin add failed:', e.message); }
+  }
+  setTimeout(function() {
+    save();
+    renderMarkers();
+    renderIncareView();
+    writeAnimalRecord(r, 'public');
+    recordSubmission('lost');
+    showToast('lost');
+  }, 200);
 }
 
 function submitFound() {
@@ -5660,22 +5678,29 @@ function submitFound() {
   }
   if (r.shelter === true) r.atShelter = false;
   r.source = 'public'; r.createdAt = r.createdAt || r.date;
-  /* Capture photo BEFORE resetForm clears the img src */
-  var _savedPhoto = r.photo || getPhoto('f-prev');
+  /* Close panel immediately — keeps UI responsive even with large photo */
   closePanel(); resetForm('found');
-  r.photo = _savedPhoto;
   pLat.found = null; pLng.found = null;
   if (sfb) sfb.style.opacity = '';
   /* Defer heavy JSON.stringify + render to avoid main-thread freeze */
   r._isNewPin = true;
   reports.push(r);
-  /* Render immediately — synchronous, no flicker */
-  save();
-  renderMarkers();
-  renderIncareView();
-  writeAnimalRecord(r, 'public');
-  recordSubmission('found');
-  showToast('found');
+  /* Immediate marker add — don't wait for full renderMarkers */
+  if (r.lat && r.lng && typeof map !== 'undefined') {
+    try {
+      var newM = L.marker([r.lat, r.lng], {icon: pinIcon(r.type, false, false, false, r.atShelter, false, r)}).addTo(map);
+      newM.on('click', function(e){ L.DomEvent.stopPropagation(e); openCard(r, map.latLngToContainerPoint([r.lat,r.lng])); });
+      lMarkers.push(newM);
+    } catch(e) { console.warn('immediate pin add failed:', e.message); }
+  }
+  setTimeout(function() {
+    save();
+    renderMarkers();
+    renderIncareView();
+    writeAnimalRecord(r, 'public');
+    recordSubmission('found');
+    showToast('found');
+  }, 200);
 }
 
 function resetForm(type) {
@@ -9300,12 +9325,6 @@ function setView(v, btn) {
     if (fab && _isStaff) fab.style.display = 'flex';
   }
   if (v === 'map') {
-    /* Dismiss map-loading overlay if still visible (e.g. after network stall) */
-    var _mlsv = document.getElementById('map-loading');
-    if (_mlsv && _mlsv.style.display !== 'none') {
-      _mlsv.style.opacity = '0';
-      setTimeout(function(){ if (_mlsv) _mlsv.style.display = 'none'; }, 450);
-    }
     /* Call immediately for instant tile layout, and again after CSS transitions */
     try { map.invalidateSize(); } catch(e) {}
     setTimeout(function(){ try { map.invalidateSize(); } catch(e){} }, 50);
@@ -9429,9 +9448,65 @@ function maybeShowTutorial() {
     setTimeout(showTutorial, 800);
   }
 }
+/* ═══════════════════════════════════════════════════════════════════════ */
+
 </script>
 
-<!-- Out-of-bounds overlay -->
-<div id="oob-overlay" style="display:none;position:fixed;inset:0;z-index:2000;pointer-events:none;align-items:center;justify-content:center"><div style="pointer-events:auto;background:rgba(42,31,18,.92);color:#fff;border-radius:14px;padding:18px 28px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.35);max-width:280px;backdrop-filter:blur(8px)"><div style="font-size:1.4rem;margin-bottom:6px">&#128205;</div><div style="font-weight:700;font-size:.92rem;margin-bottom:3px">Outside service area</div><div style="font-size:.78rem;opacity:.82;line-height:1.5">Please tap within Adams County, NE</div></div></div>
+<!-- Adoption inquiry slide-up -->
+<div id="adopt-inquiry-panel" onclick="closeInquiryPanel(event)">
+  <div id="adopt-inquiry-inner">
+    <div style="font-family:var(--font-display);font-size:1.1rem;font-weight:600;color:var(--warm-dk);margin-bottom:4px">💬 Express Adoption Interest</div>
+    <div style="font-size:.76rem;color:var(--warm-mid);margin-bottom:16px" id="inq-animal-desc">We'll pass your details to the shelter to arrange a meeting.</div>
+    <div class="fg"><label>Your Name</label><input type="text" id="inq-name" placeholder="Full name"></div>
+    <div class="fr">
+      <div class="fg" style="margin:0"><label>Phone</label><input type="tel" id="inq-phone" placeholder="(402) 555-0100"></div>
+      <div class="fg" style="margin:0"><label>Email</label><input type="email" id="inq-email" placeholder="you@email.com"></div>
+    </div>
+    <div class="fg"><label>Message (optional)</label><textarea id="inq-msg" placeholder="Tell them about yourself, your home, other pets…" style="min-height:72px"></textarea></div>
+    <div id="inq-success" style="display:none;background:#e8f4e9;border:1px solid var(--found-g);border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:.84rem;color:#2d6a35;font-weight:600">✓ Interest sent! Heartland will be in touch soon.</div>
+    <div style="display:flex;gap:8px" id="inq-btns">
+      <button class="adopt-ask-btn" style="flex:1;padding:12px 11px;font-size:.9rem;min-height:48px;-webkit-tap-highlight-color:rgba(0,0,0,.1);touch-action:manipulation" onclick="submitInquiry()">📬 Send Interest</button>
+      <button class="sh-btn" onclick="closeInquiryPanel(null)" style="padding:11px 16px">Cancel</button>
+    </div>
+  </div>
+</div>
+
+
+
+
+<!-- SEO footer — local signals, minimal UI footprint -->
+<footer id="seo-footer" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:1;background:rgba(42,31,18,.88);padding:2px 10px;font-size:.58rem;color:rgba(255,255,255,.45);display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;white-space:normal;overflow:visible;row-gap:0">
+  <a href="/lost-pets-hastings-ne" style="color:rgba(255,255,255,.5);text-decoration:none">Lost pets in Hastings</a>
+  <span>·</span>
+  <a href="/found-pets-hastings-ne" style="color:rgba(255,255,255,.5);text-decoration:none">Found pets in Hastings</a>
+  <span>·</span>
+  <a href="/pets-in-care-hastings-ne" style="color:rgba(255,255,255,.5);text-decoration:none">Pets in care at Heartland</a>
+  <span>·</span>
+  <span>Hastings, NE &amp; Adams County</span>
+</footer>
+
+<!-- Out-of-bounds overlay — centered on map -->
+<div id="oob-overlay" style="display:none;position:fixed;inset:0;z-index:2000;pointer-events:none;align-items:center;justify-content:center">
+  <div id="oob-msg" style="pointer-events:auto;background:rgba(42,31,18,.92);color:#fff;border-radius:14px;padding:18px 28px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.35);max-width:280px;backdrop-filter:blur(8px)">
+    <div style="font-size:1.6rem;margin-bottom:8px">📍</div>
+    <div style="font-weight:700;font-size:.95rem;margin-bottom:4px">Outside Adams County</div>
+    <div style="font-size:.8rem;opacity:.8;line-height:1.5">Please place the pin within Adams County, NE</div>
+  </div>
+</div>
+<!-- STAFF TUTORIAL OVERLAY -->
+<div id="staff-tutorial-overlay" style="display:none">
+  <div id="staff-tutorial-card">
+    <div class="st-header">
+      <h2>Welcome to PawPulse Staff</h2>
+      <p>Your quick walkthrough — 6 steps, 60 seconds</p>
+    </div>
+    <div class="st-steps" id="st-steps-container"></div>
+    <div class="st-footer">
+      <button class="st-btn-skip" onclick="closeTutorial(true)">Skip for now</button>
+      <div class="st-progress" id="st-progress"></div>
+      <button class="st-btn-primary" id="st-next-btn" onclick="tutorialNext()">Next →</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
