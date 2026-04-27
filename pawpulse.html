@@ -1945,6 +1945,16 @@ function bootApp() {
   if (_restoredView === 'map' || !_restoredView) {
     setTimeout(function(){ try { map.invalidateSize(); } catch(e){} }, 400);
   }
+  /* Hard fallback: dismiss map-loading overlay after 6s regardless of Firestore state */
+  setTimeout(function() {
+    var _ml = document.getElementById('map-loading');
+    if (_ml && _ml.style.display !== 'none') {
+      _ml.style.opacity = '0';
+      setTimeout(function(){ if (_ml) _ml.style.display = 'none'; }, 450);
+    }
+    /* Also force map size recalculation in case tiles didn't render */
+    try { map.invalidateSize(); } catch(e) {}
+  }, 6000);
 }
 
 /* ── INTAKE MODAL (replaces separate Intake tab) ─────────────────────── */
@@ -2220,9 +2230,9 @@ function checkFoundPinsOnIntake(intakeRecord) {
 }
 
 function resolveFoundPinFromIntake(foundId) {
+  /* Close panel and backdrop immediately */
   var panel = document.getElementById('intake-found-match-panel');
   if (panel) panel.remove();
-  /* Remove backdrop */
   document.querySelectorAll('[style*="z-index:3999"]').forEach(function(el){ el.remove(); });
 
   var r = reports.find(function(x){ return x.id == foundId; });
@@ -2230,11 +2240,15 @@ function resolveFoundPinFromIntake(foundId) {
   r.reunited = true;
   r.reunitedDate = new Date().toISOString();
   r.resolvedByIntake = true;
-  save();
-  writeAnimalRecord(r, 'staff');
-  renderMarkers();
-  updateNavCounts();
-  pushBannerEvent('📍 Found pin removed — matched to shelter intake', 'var(--found-g)');
+
+  /* Defer heavy ops so UI stays responsive */
+  setTimeout(function() {
+    save();
+    writeAnimalRecord(r, 'staff');
+    renderMarkers();
+    updateNavCounts();
+    pushBannerEvent('📍 Found pin removed — matched to shelter intake', 'var(--found-g)');
+  }, 80);
 }
 
 
@@ -9369,6 +9383,12 @@ function setView(v, btn) {
     if (fab && _isStaff) fab.style.display = 'flex';
   }
   if (v === 'map') {
+    /* Dismiss map-loading overlay if still visible (e.g. after network stall) */
+    var _mlsv = document.getElementById('map-loading');
+    if (_mlsv && _mlsv.style.display !== 'none') {
+      _mlsv.style.opacity = '0';
+      setTimeout(function(){ if (_mlsv) _mlsv.style.display = 'none'; }, 450);
+    }
     /* Call immediately for instant tile layout, and again after CSS transitions */
     try { map.invalidateSize(); } catch(e) {}
     setTimeout(function(){ try { map.invalidateSize(); } catch(e){} }, 50);
