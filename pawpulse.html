@@ -812,8 +812,8 @@ textarea{min-height:64px}
   <div class="mode-banner public"><div class="mode-banner-dot" style="background:#c8841a"></div>Public View — Adoption</div>
   <div id="adopt-hdr">
     <div>
-      <div id="adopt-hdr-title">🌟 Animals Ready for Adoption</div>
-      <div id="adopt-hdr-sub">Hastings, NE area shelters · <span id="adopt-count">0</span> available</div>
+      <div id="adopt-hdr-title">🌟 Adoptable Pets at Heartland Pet Connection</div>
+      <div id="adopt-hdr-sub"><span id="adopt-count">0</span> pets looking for their forever home</div>
     </div>
   </div>
   <div id="adopt-disclaimer" style="font-size:.62rem;color:var(--warm-mid);text-align:center;padding:3px 16px 4px;line-height:1.5;border-bottom:1px solid var(--cream-3);background:var(--cream)">Information may change as cases are reviewed. For official records, contact the shelter directly.</div>
@@ -844,15 +844,15 @@ textarea{min-height:64px}
 
 <!-- IN CARE VIEW -->
 <div id="view-incare" class="view" style="background:var(--cream-2);flex-direction:column;overflow:hidden">
-  <div class="mode-banner ops"><div class="mode-banner-dot" style="background:#3a7d44"></div>Heartland Pet Connection — Staff</div>
+  <div class="mode-banner ops" style="padding:2px 14px;font-size:.62rem"><div class="mode-banner-dot" style="background:#3a7d44"></div>Heartland Pet Connection — Staff</div>
   <!-- Header with shelter name + intake button -->
-  <div style="padding:12px 16px;background:var(--cream);border-bottom:1px solid var(--cream-3);flex-shrink:0">
-    <div style="font-family:var(--font-display);font-size:.95rem;font-weight:700;color:var(--warm-dk)" id="incare-shelter-label">Animals at Shelter</div>
+  <div style="padding:6px 14px;background:var(--cream);border-bottom:1px solid var(--cream-3);flex-shrink:0">
+    <div style="font-family:var(--font-display);font-size:.82rem;font-weight:700;color:var(--warm-dk)" id="incare-shelter-label">Animals at Shelter</div>
     <div style="font-size:.7rem;color:var(--warm-mid);margin-top:1px">Tap an animal to manage · <span id="incare-count" style="font-weight:700;color:var(--forest)">0</span> in care</div>
-    <div id="incare-stats-bar" style="display:none;margin-top:6px;flex-wrap:wrap;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none"></div>
+    <div id="incare-stats-bar" style="display:none;margin-top:3px;flex-wrap:wrap;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none"></div>
   </div>
   <!-- Search + Sort bar -->
-  <div style="padding:8px 14px;border-bottom:1px solid var(--cream-3);background:var(--cream);flex-shrink:0;display:flex;gap:6px;align-items:center">
+  <div style="padding:5px 14px;border-bottom:1px solid var(--cream-3);background:var(--cream);flex-shrink:0;display:flex;gap:6px;align-items:center">
     <div style="position:relative;width:180px;flex-shrink:0">
       <span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:.8rem;pointer-events:none">🔍</span>
       <input type="text" id="incare-search" placeholder="Search…" oninput="renderIncareView()" style="width:100%;padding:7px 10px 7px 28px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.8rem;background:#fff;box-sizing:border-box">
@@ -865,7 +865,7 @@ textarea{min-height:64px}
     </select>
   </div>
   <!-- Filter chips -->
-  <div id="incare-filter-row" style="padding:9px 14px;border-bottom:1px solid var(--cream-3);background:var(--cream);flex-shrink:0;display:flex;gap:5px;flex-wrap:wrap;align-items:center">
+  <div id="incare-filter-row" style="padding:5px 14px;border-bottom:1px solid var(--cream-3);background:var(--cream);flex-shrink:0;display:flex;gap:4px;flex-wrap:wrap;align-items:center">
     <span class="ic-label" style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--warm-mid);margin-right:2px">Species:</span>
     <button class="rpt-chip active" id="ic-chip-all"       onclick="setIncareFilter('all',this)">All</button>
     <button class="rpt-chip"        id="ic-chip-dog"       onclick="setIncareFilter('dog',this)">🐕 Dogs</button>
@@ -1024,11 +1024,11 @@ textarea{min-height:64px}
           </div>
           <button onclick="closeReportPanel()" style="padding:6px 9px;font-size:.8rem;border-radius:7px;border:none;background:var(--cream-2);cursor:pointer;flex-shrink:0;margin-left:8px" class="desktop-close-btn">✕</button>
         </div>
-        <!-- Action buttons — horizontal scroll on mobile -->
-        <div style="display:flex;gap:5px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px">
-          <button onclick="printActiveReport()" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid var(--cream-3);background:#fff;cursor:pointer;font-family:var(--font-body);white-space:nowrap;flex-shrink:0;touch-action:manipulation">🖨️ Print</button>
-          <button onclick="exportReportWord()" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid #2050a0;background:#fff;cursor:pointer;font-family:var(--font-body);white-space:nowrap;flex-shrink:0;color:#2050a0;touch-action:manipulation">📄 Word</button>
-          <button onclick="emailActiveReport()" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid #059669;background:#fff;cursor:pointer;font-family:var(--font-body);white-space:nowrap;flex-shrink:0;color:#059669;touch-action:manipulation">✉️ Email</button>
+        <!-- Action buttons — lean, right-aligned -->
+        <div style="display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;flex-shrink:0">
+          <button onclick="printActiveReport()" title="Print" style="padding:5px 8px;font-size:.68rem;border-radius:6px;border:1px solid var(--cream-3);background:var(--cream);cursor:pointer;touch-action:manipulation;color:var(--warm-dk)">🖨️</button>
+          <button onclick="exportReportWord()" title="Export Word" style="padding:5px 8px;font-size:.68rem;border-radius:6px;border:1px solid #2050a0;background:var(--cream);cursor:pointer;touch-action:manipulation;color:#2050a0">📄</button>
+          <button onclick="emailActiveReport()" title="Email" style="padding:5px 8px;font-size:.68rem;border-radius:6px;border:1px solid #059669;background:var(--cream);cursor:pointer;touch-action:manipulation;color:#059669">✉️</button>
           <button onclick="openContentGen('press')" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid #e0a090;background:#fff;cursor:pointer;font-family:var(--font-body);color:#c0392b;white-space:nowrap;flex-shrink:0">📣 Shareable Summary</button>
           <button onclick="openContentGen('fund')" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid #e0c090;background:#fff;cursor:pointer;font-family:var(--font-body);color:#b06010;white-space:nowrap;flex-shrink:0">💛 Donor Message</button>
           <button onclick="copyActiveReport()" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid var(--forest);background:var(--forest);color:#fff;cursor:pointer;font-family:var(--font-body);white-space:nowrap;flex-shrink:0">📋 Copy</button>
@@ -1092,7 +1092,7 @@ textarea{min-height:64px}
       <div class="legend-item"><div class="legend-pin" style="background:#d06020"></div><span id="cnt-at-shelter" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span>Bringing to Shelter</span></div>
       <div class="legend-item"><div class="legend-pin" style="background:#1a3f8a"></div><span id="cnt-shelter" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span id="legend-shelter-label">At Heartland Shelter</span></div>
       <div class="legend-item" style="padding-left:18px"><div class="legend-pin" style="background:#c8841a"></div><span id="cnt-adopt" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span>↳ Adoptable</span></div>
-      <div style="font-size:.55rem;color:var(--warm-mid);line-height:1.4;margin-top:2px;max-width:160px">Info may change. Contact shelter for official status.</div>
+      <div style="font-size:.55rem;color:var(--warm-mid);line-height:1.4;margin-top:2px;max-width:160px">Info may change. Contact Heartland for official status.</div>
     </div>
 
     <div id="drop-hint">
@@ -3998,7 +3998,7 @@ function cardHTML(r) {
     if (publicDesc && r.intakeType !== 'hold') rows += '<div class="pc-row" style="margin-top:4px">' + esc(publicDesc) + '</div>';
     if (r.address && r.intakeType !== 'hold' && !r.shelter && !r.atShelter) rows += '<div class="pc-row"><strong>Found near:</strong> ' + esc(r.address) + '</div>';
     if (r.shelter || r.atShelter) {
-      rows += '<div class="pc-row"><strong>🏠 ' + (r.shelter ? 'In care at:' : r.atShelter ? 'Heading to shelter:' : 'Reported by:') + '</strong> ' + esc(r.shelterName||'Heartland Pet Connection') + '</div>';
+      rows += '<div class="pc-row"><strong>🏠 ' + (r.shelter ? 'In care at:' : r.atShelter ? 'Heading to Heartland:' : 'Reported by:') + '</strong> ' + esc(r.shelterName||'Heartland Pet Connection') + '</div>';
       if (r.atShelter && !r.shelter) rows += '<div class="pc-row" style="font-size:.72rem;color:var(--amber)">\u26a0\ufe0f Finder says they are bringing this pet in \u2014 not yet confirmed</div>';
       /* Show original found location for owners searching */
       if (r.address) rows += '<div class="pc-row" style="color:var(--warm-mid);font-size:.72rem">📍 Originally found near ' + esc(r.address) + '</div>';
@@ -4250,7 +4250,7 @@ async function generateWhatNext(r) {
   var name        = r.name ? r.name.split(' ')[0] : 'our friend';
   var species     = r.species || 'animal';
   var days        = Math.floor(daysSince(r.shelterHoldStart || r.date));
-  var shelter     = r.shelterName || r.finder || 'the local shelter';
+  var shelter     = r.shelterName || r.finder || 'Heartland Pet Connection';
   var lost        = r.type === 'lost';
   var found       = r.type === 'found' && !r.shelter; /* public found report — posted by citizen */
 
@@ -4281,7 +4281,7 @@ async function generateWhatNext(r) {
         : isHold ? 'AC hold — city services involved'
         : isSurrender ? 'Owner surrender — needs new home'
         : isAdopt ? 'Adoption ready — waiting ' + daysWaiting + ' days'
-        : 'In shelter care — stray, owner search ongoing')
+        : 'In care at Heartland — stray, owner search ongoing')
     + '\nDays in care: ' + days
     + '\nShelter: ' + shelter
     + (isHold ? '\nEstimated hold cost so far: $' + holdCost : '')
@@ -4439,7 +4439,7 @@ async function searchMatchesFromCard(lostId) {
   /* Search shelter intakes for potential matches */
   var shelterAnimals = getShelterData({ includeHolds: true });
   if (!shelterAnimals.length) {
-    existingEl.innerHTML = '<div style="color:var(--warm-mid);padding:6px 0">No animals currently in shelter care to compare.</div>';
+    existingEl.innerHTML = '<div style="color:var(--warm-mid);padding:6px 0">No animals currently in care at Heartland.</div>';
     if (btn) { btn.disabled = false; btn.textContent = '🔍 Search Again'; }
     return;
   }
@@ -5451,9 +5451,13 @@ function writeAnimalRecord(r, source) {
   if (r.shelter === true) r.atShelter = false;
   /* Stamp updatedAt */
   r.updatedAt = new Date().toISOString();
-  /* Persist to Firestore */
+  /* Persist to Firestore — strip photo (base64) before write to stay within
+     document size limits and reduce bandwidth. Photo is preserved in
+     localStorage and restored by the onSnapshot handler if Firestore lacks it. */
   if (USE_FIREBASE && _fbReady && db) {
-    db.collection('reports').doc(String(r.id)).set(r)
+    var firestoreDoc = Object.assign({}, r);
+    delete firestoreDoc.photo;  /* keep photo local only */
+    db.collection('reports').doc(String(r.id)).set(firestoreDoc, {merge: true})
       .catch(function(e){ console.warn('Firestore write error:', e.message); });
   }
 }
@@ -5589,22 +5593,27 @@ function submitLost() {
     name:v('l-name'), species:v('l-species'), breed:v('l-breed'), color:v('l-color'),
     address:v('l-address'), owner:v('l-owner'), phone:v('l-phone'),
     email:v('l-email'), chip:v('l-chip'), notes:v('l-notes'), photo:getPhoto('l-prev') };
-  reports.push(r); save(); renderMarkers(); renderIncareView();
-  /* Write directly to Firestore so ALL devices see it immediately — no staff login required */
   /* DOCTRINE GUARD: public writes cannot set shelter=true */
   if (r.shelter === true) {
     console.error('Doctrine violation: public write attempted shelter=true — blocked');
     r.shelter = false;
   }
   r.source = 'public'; r.createdAt = r.createdAt || r.date;
-  writeAnimalRecord(r, 'public');
+  /* Close panel immediately — keeps UI responsive even with large photo */
   closePanel(); resetForm('lost');
   pLat.lost = null; pLng.lost = null;
-  recordSubmission('lost');
-  /* Re-enable button (closePanel already hid it, this is safety) */
   var slb2 = document.getElementById('panel-submit-lost');
-  if (slb2) { slb2.style.opacity = ''; }
-  showToast('lost');
+  if (slb2) slb2.style.opacity = '';
+  /* Defer heavy JSON.stringify + render to avoid main-thread freeze */
+  reports.push(r);
+  setTimeout(function() {
+    save();
+    renderMarkers();
+    renderIncareView();
+    writeAnimalRecord(r, 'public');
+    recordSubmission('lost');
+    showToast('lost');
+  }, 50);
 }
 
 function submitFound() {
@@ -5641,22 +5650,27 @@ function submitFound() {
     species:v('f-species'), color:v('f-color'), desc:v('f-desc'),
     address:v('f-address'), finder:v('f-finder'), fphone:v('f-phone'),
     shelterName:atShelter?v('f-sname'):'', photo:getPhoto('f-prev') };
-  reports.push(r); save(); renderMarkers(); renderIncareView();
-  /* Write directly to Firestore so ALL devices see it immediately — no staff login required */
   /* DOCTRINE GUARD: public writes cannot set shelter=true */
   if (r.shelter === true) {
     console.error('Doctrine violation: public write attempted shelter=true — blocked');
     r.shelter = false;
   }
-  /* Normalize: shelter and atShelter are mutually exclusive */
   if (r.shelter === true) r.atShelter = false;
   r.source = 'public'; r.createdAt = r.createdAt || r.date;
-  writeAnimalRecord(r, 'public');
+  /* Close panel immediately — keeps UI responsive even with large photo */
   closePanel(); resetForm('found');
   pLat.found = null; pLng.found = null;
-  recordSubmission('found');
   if (sfb) sfb.style.opacity = '';
-  showToast('found');
+  /* Defer heavy JSON.stringify + render to avoid main-thread freeze */
+  reports.push(r);
+  setTimeout(function() {
+    save();
+    renderMarkers();
+    renderIncareView();
+    writeAnimalRecord(r, 'public');
+    recordSubmission('found');
+    showToast('found');
+  }, 50);
 }
 
 function resetForm(type) {
@@ -7610,7 +7624,7 @@ function renderAdminDashboard() {
   /* Holds table */
   var hb = document.getElementById('dash-holds-body');
   if (hb) hb.innerHTML = !activeHolds.length
-    ? '<tr><td colspan="6" style="text-align:center;color:var(--warm-mid);padding:16px">No active shelter holds</td></tr>'
+    ? '<tr><td colspan="6" style="text-align:center;color:var(--warm-mid);padding:16px">No active holds at Heartland</td></tr>'
     : activeHolds.slice().sort(function(a,b){ return daysSinceDate(b.shelterHoldStart||b.date)-daysSinceDate(a.shelterHoldStart||a.date); }).map(function(r){
         var days = daysSinceDate(r.shelterHoldStart||r.date);
         var rate = (r.enforcement && r.enforcement.dailyCost != null) ? r.enforcement.dailyCost : DAILY_RATE;
@@ -8152,7 +8166,7 @@ function generateReport(type) {
       + (inCare.length > 0
         ? '<div style="background:#f0fff4;border:2px solid var(--found-g);border-radius:10px;padding:16px 18px;margin-top:18px">'
           + '<div style="font-size:.95rem;font-weight:700;color:#2d6a35;margin-bottom:6px">🏠 ' + inCare.length + ' Animal' + (inCare.length!==1?'s':'') + ' Need' + (inCare.length===1?'s':'') + ' a Home</div>'
-          + '<p style="font-size:.85rem;color:#333;line-height:1.6;margin:0">Visit the shelter or check PawPulse to see animals currently available for adoption in Hastings.</p>'
+          + '<p style="font-size:.85rem;color:#333;line-height:1.6;margin:0">Visit Heartland Pet Connection or check PawPulse to see animals currently available for adoption in Hastings.</p>'
           + '</div>'
         : '');
   }
@@ -8613,9 +8627,10 @@ function renderIncareView() {
     var isAdopt = r.adoptionStatus === 'available';
     var days    = Math.floor(daysSince(isHold ? r.shelterHoldStart||r.date : r.date));
     var urgencyColor = days >= 30 ? 'var(--lost-r)' : days >= 14 ? 'var(--amber)' : 'var(--found-g)';
-    var daysLabel = days === 0 ? 'Just arrived'
-      : days <= 3  ? 'New · ' + days + 'd'
-      : days + ' days' + (days >= 30 ? ' 🔴' : days >= 14 ? ' 🟡' : '');
+    var daysDot = days >= 30 ? '🔴' : days >= 14 ? '🟠' : '🟢';
+    var daysLabel = days === 0 ? daysDot + ' Just arrived'
+      : days <= 3  ? daysDot + ' New · ' + days + 'd'
+      : daysDot + ' ' + days + ' days';
     var src = r.intakeSource||'citizen';
     var srcLabel = src==='ac'?'AC':src==='surrender'?'Surrender':src==='other'?'Transfer':'';
 
@@ -9414,7 +9429,7 @@ function maybeShowTutorial() {
       <div class="fg" style="margin:0"><label>Email</label><input type="email" id="inq-email" placeholder="you@email.com"></div>
     </div>
     <div class="fg"><label>Message (optional)</label><textarea id="inq-msg" placeholder="Tell them about yourself, your home, other pets…" style="min-height:72px"></textarea></div>
-    <div id="inq-success" style="display:none;background:#e8f4e9;border:1px solid var(--found-g);border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:.84rem;color:#2d6a35;font-weight:600">✓ Interest sent! The shelter will be in touch soon.</div>
+    <div id="inq-success" style="display:none;background:#e8f4e9;border:1px solid var(--found-g);border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:.84rem;color:#2d6a35;font-weight:600">✓ Interest sent! Heartland will be in touch soon.</div>
     <div style="display:flex;gap:8px" id="inq-btns">
       <button class="adopt-ask-btn" style="flex:1;padding:12px 11px;font-size:.9rem;min-height:48px;-webkit-tap-highlight-color:rgba(0,0,0,.1);touch-action:manipulation" onclick="submitInquiry()">📬 Send Interest</button>
       <button class="sh-btn" onclick="closeInquiryPanel(null)" style="padding:11px 16px">Cancel</button>
