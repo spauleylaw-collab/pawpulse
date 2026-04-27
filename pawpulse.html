@@ -2,51 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>PawPulse — Lost &amp; Found Pet Map | Hastings, Nebraska</title>
-<meta name="description" content="Live lost and found pet map for Hastings, Nebraska and Adams County. Report a lost pet, help reunite animals, and see pets in care at Heartland Pet Connection.">
-<meta name="theme-color" content="#2d4a35">
-<link rel="canonical" href="https://pawpulse.net">
-<!-- Open Graph -->
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://pawpulse.net">
-<meta property="og:title" content="PawPulse — Lost &amp; Found Pets · Hastings, NE">
-<meta property="og:description" content="Live lost pet map for Hastings, NE. See lost pets, found animals, and shelter intake in real time.">
-<meta property="og:site_name" content="PawPulse">
-<!-- Twitter Card -->
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="PawPulse — Lost &amp; Found Pet Map | Hastings, Nebraska">
-<meta name="twitter:description" content="Live lost and found pet map for Hastings, Nebraska and Adams County. Report lost pets, find strays, see shelter animals.">
-<link rel="preconnect" href="https://tile.openstreetmap.org">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>PawPulse — Lost & Found Pets · Hastings, NE</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script>
-var db = null; var auth = null;
-var USE_FIREBASE = (typeof firebase !== 'undefined') && "AIzaSyBVzQ84gSSnukH_JEmYN70ZjXqqmxsNVIw" !== "PASTE_YOUR_API_KEY";
-
-if (USE_FIREBASE) {
-  try {
-    /* Avoid duplicate-app error on hot reload */
-    var _fbApp = firebase.apps.length ? firebase.apps[0] : firebase.initializeApp({
-      apiKey:            "AIzaSyBVzQ84gSSnukH_JEmYN70ZjXqqmxsNVIw",
-      authDomain:        "pawpulse-24af8.firebaseapp.com",
-      projectId:         "pawpulse-24af8",
-      storageBucket:     "pawpulse-24af8.firebasestorage.app",
-      messagingSenderId: "471613221379",
-      appId:             "1:471613221379:web:461bb35bf7735f0dc33c36"
-    });
-    db   = firebase.firestore();
-    auth = firebase.auth();
-    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function(){});
-  } catch(e) {
-    console.warn('Firebase init error:', e.message);
-  }
-}
-</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -72,29 +31,20 @@ if (USE_FIREBASE) {
 body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);height:100vh;overflow:hidden;user-select:none}
 
 /* NAV */
-#nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;gap:6px;padding:0 10px;height:var(--nav-h);background:var(--forest);box-shadow:0 2px 16px rgba(0,0,0,.3)}
-.nav-logo{font-family:var(--font-display);font-size:1.05rem;font-weight:700;color:var(--cream);letter-spacing:-.02em;display:flex;align-items:center;gap:5px;flex-shrink:0}
+#nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;gap:8px;padding:0 12px;height:var(--nav-h);background:var(--forest);box-shadow:0 2px 16px rgba(0,0,0,.3)}
+.nav-logo{font-family:var(--font-display);font-size:1.15rem;font-weight:700;color:var(--cream);letter-spacing:-.02em;display:flex;align-items:center;gap:6px;flex-shrink:0}
 .nav-logo-wrap{display:flex;flex-direction:column}
-.nav-logo-sub{font-family:var(--font-body);font-size:.56rem;font-weight:600;color:var(--moss);letter-spacing:.09em;text-transform:uppercase}
-.nav-spacer{flex-shrink:0;width:4px}
-.nav-report-btn{font-family:var(--font-body);font-size:.72rem;font-weight:700;padding:6px 10px;border-radius:6px;border:none;cursor:pointer;transition:all .15s;flex-shrink:0;background:var(--amber);color:#fff;letter-spacing:.01em;white-space:nowrap;touch-action:manipulation}
+.nav-logo-sub{font-family:var(--font-body);font-size:.58rem;font-weight:600;color:var(--moss);letter-spacing:.09em;text-transform:uppercase}
+.nav-spacer{flex:1}
+.nav-report-btn{font-family:var(--font-body);font-size:.78rem;font-weight:700;padding:7px 14px;border-radius:6px;border:none;cursor:pointer;transition:all .15s;flex-shrink:0;background:var(--amber);color:#fff;letter-spacing:.01em}
 .nav-report-btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
-#nav-tabs{display:flex;gap:2px;flex:1;min-width:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-#nav-tabs::-webkit-scrollbar{display:none}
-.tab-btn{font-family:var(--font-body);font-size:.65rem;font-weight:600;padding:5px 8px;border-radius:999px;border:1.5px solid rgba(255,255,255,.22);background:rgba(255,255,255,.1);color:var(--cream);cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0}
+#nav-tabs{display:flex;gap:3px;flex-shrink:0}
+.tab-btn{font-family:var(--font-body);font-size:.68rem;font-weight:600;padding:5px 9px;border-radius:999px;border:1.5px solid rgba(255,255,255,.22);background:rgba(255,255,255,.1);color:var(--cream);cursor:pointer;transition:all .15s;white-space:nowrap}
 .tab-btn.active{background:var(--cream);color:var(--forest);border-color:var(--cream)}
 .tab-btn:hover:not(.active){background:rgba(255,255,255,.18)}
-.tab-ops{border-color:rgba(90,180,120,.35)}
-.tab-ops.active{background:#d8f0e0;color:#1a4a28;border-color:#d8f0e0}
-.tab-admin{border-color:rgba(212,132,58,.45)}
-.tab-admin.active{background:#fde8c8;color:#7a3a00;border-color:#fde8c8}
-.nav-mode-sep{width:1px;height:22px;background:rgba(255,255,255,.2);flex-shrink:0;align-self:center;margin:0 2px}
-@media(max-width:700px){input,select,textarea{font-size:16px!important}.tab-btn .tab-lbl{display:none}.nav-logo-sub{display:none}.nav-report-btn .btn-lbl{display:none}}
-/* Staff badge hidden by default — only shown via JS after auth confirms */
-#staff-badge { display: none !important; }
-#staff-badge.staff-active { display: inline-flex !important; }
-#pp-banner{position:absolute;top:28px;left:50%;transform:translateX(-50%);z-index:600;background:rgba(45,74,53,.93);backdrop-filter:blur(12px);border:1px solid rgba(122,172,130,.3);border-radius:999px;padding:9px 18px;display:flex;align-items:center;gap:10px;min-width:280px;max-width:460px;box-shadow:0 4px 20px rgba(0,0,0,.28);pointer-events:none;transition:opacity .3s}@media(max-width:640px){#map-container{margin-top:60px!important}}
-@media(max-width:640px){#pp-banner{top:42px!important}}
+@media(max-width:760px){.tab-btn .tab-lbl{display:none}.nav-logo-sub{display:none}.nav-report-btn .btn-lbl{display:none}}
+/* Live banner */
+#pp-banner{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:600;background:rgba(45,74,53,.93);backdrop-filter:blur(12px);border:1px solid rgba(122,172,130,.3);border-radius:999px;padding:9px 18px;display:flex;align-items:center;gap:10px;min-width:280px;max-width:460px;box-shadow:0 4px 20px rgba(0,0,0,.28);pointer-events:none;transition:opacity .3s}
 .banner-dot{width:7px;height:7px;border-radius:50%;background:var(--moss);box-shadow:0 0 7px var(--moss);flex-shrink:0;animation:bdot 2s ease-in-out infinite}
 @keyframes bdot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.75)}}
 #banner-txt{font-size:.76rem;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .35s}
@@ -103,7 +53,7 @@ body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);h
 /* Floating filter pills on map — horizontal row at bottom center */
 #map-filters{position:absolute;bottom:54px;left:50%;transform:translateX(-50%);z-index:600;display:flex;flex-direction:row;gap:6px;pointer-events:none;white-space:nowrap}
 #map-filters .filter-btn{pointer-events:auto}
-.filter-btn{font-family:var(--font-body);font-size:.72rem;font-weight:600;padding:6px 13px;border-radius:999px;cursor:pointer;transition:all .15s;border:1.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.88);backdrop-filter:blur(8px);color:var(--warm-mid);box-shadow:0 2px 8px rgba(0,0,0,.12);touch-action:manipulation}
+.filter-btn{font-family:var(--font-body);font-size:.72rem;font-weight:600;padding:6px 13px;border-radius:999px;cursor:pointer;transition:all .15s;border:1.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.88);backdrop-filter:blur(8px);color:var(--warm-mid);box-shadow:0 2px 8px rgba(0,0,0,.12)}
 .filter-btn.active.all{background:var(--amber);color:#fff;border-color:var(--amber)}
 .filter-btn.active.lost{background:var(--lost-r);color:#fff;border-color:var(--lost-r)}
 .filter-btn.active.found{background:var(--found-g);color:#fff;border-color:var(--found-g)}
@@ -114,18 +64,7 @@ body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);h
 @keyframes rburst2{0%{transform:scale(.3);opacity:.7}100%{transform:scale(6);opacity:0}}
 @keyframes rburst3{0%{transform:scale(.3);opacity:.5}100%{transform:scale(8);opacity:0}}
 .reunion-ring{position:absolute;border-radius:50%;pointer-events:none;transform-origin:center center;border:3px solid #f0b840}
-/* Mode banners */
-.mode-banner{padding:5px 14px;font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;flex-shrink:0;display:flex;align-items:center;gap:6px}
-.mode-banner.public{background:#f0ede6;color:#6b5540;border-bottom:1px solid var(--cream-3)}
-.mode-banner.ops{background:#e8f4ec;color:#2d5a35;border-bottom:1px solid #c0ddc4}
-.mode-banner.admin{background:#fdf0e0;color:#7a4a10;border-bottom:1px solid #e8c890}
-.mode-banner-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-
-/* Map legend */
-@media(max-width:640px){#map-legend{bottom:32px!important;left:8px!important;right:auto!important;flex-direction:row!important;flex-wrap:wrap!important;gap:4px 10px!important;padding:5px 8px!important;max-width:calc(100vw - 230px)}}
-#map-legend{position:absolute;bottom:24px;left:12px;z-index:600;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-radius:8px;padding:6px 10px;display:flex;flex-direction:column;gap:5px;box-shadow:0 2px 10px rgba(0,0,0,.1);border:1px solid var(--cream-3)}
-.legend-item{display:flex;align-items:center;gap:7px;font-size:.7rem;font-weight:500;color:var(--warm-mid);white-space:nowrap}
-.legend-pin{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+/* Print button */
 .print-btn{font-family:var(--font-body);font-size:.74rem;font-weight:600;padding:7px 13px;border-radius:8px;border:1.5px solid var(--cream-3);background:var(--cream-2);color:var(--warm-mid);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px;width:100%;justify-content:center;margin-top:6px}
 .print-btn:hover{border-color:var(--amber);color:var(--amber)}
 
@@ -134,15 +73,15 @@ body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);h
 .view.active{display:flex}
 
 /* MAP CONTAINER — same as PublicPulse */
-#map-container{flex:1;position:relative;overflow:hidden;margin-top:22px}
-#map{width:100%;height:100%;touch-action:pan-x pan-y;-webkit-tap-highlight-color:transparent}
+#map-container{flex:1;position:relative;overflow:hidden}
+#map{width:100%;height:100%}
 .leaflet-tile{filter:saturate(.82) brightness(1.02) sepia(.06)}
 .leaflet-container{background:#d4c9b0}
 .leaflet-bottom.leaflet-right{bottom:90px !important;right:12px !important}
 .leaflet-bar a{width:32px !important;height:32px !important;line-height:32px !important;font-size:18px !important}
 
 /* SIDE PANEL */
-#side-panel{position:absolute;top:0;right:0;bottom:0;width:var(--panel-w);max-width:100%;background:var(--cream);border-left:1px solid var(--cream-3);z-index:800;display:flex;flex-direction:column;overflow:hidden;transform:translateX(100%);transition:transform .32s cubic-bezier(.4,0,.2,1);box-shadow:-4px 0 24px rgba(42,31,18,.12)}
+#side-panel{position:absolute;top:0;right:0;bottom:0;width:var(--panel-w);max-width:100%;background:var(--cream);border-left:1px solid var(--cream-3);z-index:800;display:flex;flex-direction:column;overflow-y:auto;transform:translateX(100%);transition:transform .32s cubic-bezier(.4,0,.2,1);box-shadow:-4px 0 24px rgba(42,31,18,.12)}
 #side-panel.open{transform:translateX(0)}
 #side-panel::-webkit-scrollbar{width:4px}
 #side-panel::-webkit-scrollbar-thumb{background:var(--cream-3);border-radius:99px}
@@ -151,21 +90,20 @@ body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);h
 .panel-sub{font-size:.76rem;color:var(--warm-mid);margin-top:4px}
 .panel-close{background:none;border:none;cursor:pointer;font-size:1.25rem;color:var(--warm-mid);line-height:1;padding:2px 5px;border-radius:6px}
 .panel-close:hover{color:var(--warm-dk)}
-.panel-body{padding:18px 20px;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0}
+.panel-body{padding:18px 20px;flex:1}
 
 /* FORM */
 .fg{margin-bottom:14px}
 .fr{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
-@media(max-width:400px){.fr{grid-template-columns:1fr}}
 label{display:block;font-size:.7rem;font-weight:600;color:var(--warm-mid);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
 input[type=text],input[type=email],input[type=tel],select,textarea{width:100%;padding:8px 11px;font-family:var(--font-body);font-size:.86rem;color:var(--warm-dk);background:#fff;border:1.5px solid var(--cream-3);border-radius:8px;outline:none;resize:vertical;transition:border-color .15s,box-shadow .15s}
 input:focus,select:focus,textarea:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(212,132,58,.14)}
 textarea{min-height:64px}
 .sl{font-family:var(--font-display);font-size:.9rem;font-weight:600;color:var(--warm-dk);margin-bottom:11px}
 .div{border:none;border-top:1px solid var(--cream-3);margin:16px 0}
-.loc-prompt{font-size:.78rem;font-weight:600;margin-bottom:12px;display:none;flex-direction:column;gap:6px}
+.loc-prompt{background:var(--amber);color:#fff;font-size:.78rem;font-weight:600;padding:8px 12px;border-radius:8px;margin-bottom:12px;display:none;align-items:center;gap:7px}
 .loc-prompt.on{display:flex}
-.loc-set{font-size:.78rem;font-weight:600;padding:6px 0;margin-bottom:8px;display:none;align-items:center;gap:6px;color:var(--found-g)}
+.loc-set{background:var(--found-g);color:#fff;font-size:.78rem;font-weight:600;padding:8px 12px;border-radius:8px;margin-bottom:12px;display:none;align-items:center;gap:7px}
 .loc-set.on{display:flex}
 .reset-loc{background:var(--cream-2);color:var(--warm-mid);border:1.5px dashed var(--cream-3);font-size:.78rem;font-weight:600;padding:7px 12px;border-radius:8px;cursor:pointer;margin-bottom:12px;display:none;transition:all .15s;font-family:var(--font-body);width:100%}
 .reset-loc:hover{border-color:var(--amber);color:var(--amber)}
@@ -174,57 +112,47 @@ textarea{min-height:64px}
 .photo-drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
 .photo-drop-icon{font-size:1.5rem;margin-bottom:3px}
 .photo-drop-txt{font-size:.75rem;color:var(--warm-mid)}
-.photo-prev{width:100%;max-height:220px;object-fit:contain;border-radius:7px;margin-top:8px;display:none;background:var(--cream-2)}
+.photo-prev{width:100%;max-height:130px;object-fit:cover;border-radius:7px;margin-top:8px;display:none}
 .chk-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;cursor:pointer}
 .chk-row input{width:16px;height:16px;accent-color:var(--found-g);flex-shrink:0}
 .chk-row label{font-size:.82rem;font-weight:500;color:var(--warm-dk);text-transform:none;letter-spacing:0;margin:0;cursor:pointer}
-.submit-btn{width:100%;padding:12px;font-family:var(--font-display);font-size:.98rem;font-weight:600;border:none;border-radius:10px;cursor:pointer;transition:all .2s;margin-top:6px;touch-action:manipulation;-webkit-tap-highlight-color:rgba(0,0,0,.08)}@media(max-width:640px){
-  /* Ensure panel-body is scroll container, footer never scrolls away */
-  .panel-body{overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;flex:1!important;min-height:0!important}
-  #panel-footer{flex-shrink:0!important;padding-bottom:max(16px,env(safe-area-inset-bottom,16px))!important;padding-top:10px!important}
-}
+.submit-btn{width:100%;padding:12px;font-family:var(--font-display);font-size:.98rem;font-weight:600;border:none;border-radius:10px;cursor:pointer;transition:all .2s;margin-top:6px}
 .submit-btn.lost{background:var(--lost-r);color:#fff}
 .submit-btn.found{background:var(--found-g);color:#fff}
 .submit-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.22);filter:brightness(1.08)}
 
 /* MAP OVERLAYS */
-#stats-bar{display:none}
-#map-filters{display:none}
+#stats-bar{position:absolute;top:58px;left:12px;z-index:700;display:flex;gap:8px}
 .stat-pill{background:rgba(255,255,255,.92);backdrop-filter:blur(8px);padding:5px 12px;border-radius:999px;font-size:.73rem;font-weight:600;box-shadow:0 2px 10px rgba(0,0,0,.12);display:flex;align-items:center;gap:5px;border:1px solid var(--cream-3)}
 .stat-dot{width:8px;height:8px;border-radius:50%}
 .stat-dot.lost{background:var(--lost-r)}
 .stat-dot.found{background:var(--found-g)}
 #drop-hint{display:none;position:absolute;inset:0;z-index:700;align-items:center;justify-content:center;pointer-events:none;cursor:crosshair;background:transparent}
-#drop-hint.on{display:flex;animation:none}@media(max-width:640px){#drop-hint{left:0!important;right:0!important;top:0!important;transform:none!important;border-radius:0!important;width:100%!important;justify-content:center;padding:14px 16px!important;font-size:.9rem!important;white-space:normal!important}}
+#drop-hint.on{display:flex}
 @keyframes hpulse{0%,100%{opacity:.88}50%{opacity:1}}
 #drop-cancel{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);color:rgba(255,255,255,.75);border-radius:999px;padding:3px 10px;font-size:.72rem;font-weight:600;cursor:pointer;font-family:var(--font-body)}
 #drop-cancel:hover{color:#fff}
-#pin-card{display:none;position:absolute;z-index:850;width:280px;background:var(--cream);border:1.5px solid rgba(42,31,18,.18);border-radius:14px;overflow:hidden;box-shadow:0 16px 50px rgba(0,0,0,.32);transition:opacity .55s ease,transform .55s ease;max-height:80vh;flex-direction:column;overflow-y:auto}
-/* Keep Leaflet controls below pin card */
-.leaflet-pane{z-index:400 !important}
-.leaflet-top,.leaflet-bottom{z-index:500 !important}
-.leaflet-control{z-index:500 !important}
-#pin-card.open{display:flex;flex-direction:column;animation:cpop .2s cubic-bezier(.34,1.56,.64,1)}
-#pin-card.fading{opacity:0;transform:translateY(-10px) scale(.97);pointer-events:none}
+#pin-card{display:none;position:absolute;z-index:700;width:268px;background:var(--cream);border:1px solid var(--cream-3);border-radius:14px;overflow:hidden;box-shadow:0 16px 50px rgba(0,0,0,.2)}
+#pin-card.open{display:block;animation:cpop .2s cubic-bezier(.34,1.56,.64,1)}
 @keyframes cpop{from{opacity:0;transform:scale(.9) translateY(6px)}to{opacity:1;transform:scale(1) translateY(0)}}
-.pc-close{position:absolute;top:6px;right:6px;background:rgba(42,31,18,.55);color:#fff;border:none;cursor:pointer;width:44px;height:44px;border-radius:50%;font-size:.95rem;line-height:44px;text-align:center;z-index:1;display:flex;align-items:center;justify-content:center;touch-action:manipulation}
-.pc-img{width:100%;height:190px;object-fit:contain;object-position:center center;display:block;background:var(--cream-2)}
+.pc-close{position:absolute;top:7px;right:7px;background:rgba(42,31,18,.5);color:#fff;border:none;cursor:pointer;width:22px;height:22px;border-radius:50%;font-size:.75rem;line-height:22px;text-align:center;z-index:1}
+.pc-img{width:100%;height:120px;object-fit:cover;display:block}
 .pc-no-img{width:100%;height:62px;display:flex;align-items:center;justify-content:center;font-size:2rem}
 .pc-body{padding:11px 13px 13px}
 .pc-badge{display:inline-flex;align-items:center;gap:4px;font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:2px 8px;border-radius:999px;margin-bottom:6px}
 .pc-badge.lost{background:#fde8e0;color:var(--lost-r)}
 .pc-badge.found{background:#e0f0e4;color:var(--found-g)}
-.pc-name{font-family:var(--font-display);font-size:1.05rem;font-weight:600;color:#1a1208;margin-bottom:5px}
-.pc-row{font-size:.76rem;color:#4a3d2e;margin-bottom:2px;display:flex;gap:4px}
+.pc-name{font-family:var(--font-display);font-size:1.05rem;font-weight:600;color:var(--warm-dk);margin-bottom:5px}
+.pc-row{font-size:.76rem;color:var(--warm-mid);margin-bottom:2px;display:flex;gap:4px}
 .pc-row strong{color:var(--warm-dk);font-weight:600}
 .pc-contact{margin-top:8px;padding-top:8px;border-top:1px solid var(--cream-3);font-size:.72rem;color:var(--warm-mid)}
 .pc-date{font-size:.65rem;color:#a0907a;margin-top:6px}
-#empty-hint{position:absolute;top:72px;left:50%;transform:translateX(-50%);background:rgba(42,31,18,.82);backdrop-filter:blur(8px);opacity:0;padding:9px 18px;border-radius:999px;font-size:.8rem;color:rgba(255,255,255,.9);box-shadow:0 4px 16px rgba(0,0,0,.18);z-index:600;pointer-events:none;white-space:nowrap;transition:opacity .3s}
-#toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(120px);z-index:9999;background:var(--forest);color:var(--cream);padding:11px 20px;border-radius:16px;font-size:.84rem;font-weight:600;box-shadow:0 8px 36px rgba(0,0,0,.25);display:flex;align-items:center;gap:8px;transition:transform .38s cubic-bezier(.34,1.56,.64,1);white-space:normal;max-width:calc(100vw - 32px);text-align:center;justify-content:center}
+#empty-hint{position:absolute;bottom:98px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.9);backdrop-filter:blur(8px);padding:9px 18px;border-radius:999px;font-size:.8rem;color:var(--warm-mid);box-shadow:0 2px 10px rgba(0,0,0,.1);z-index:600;pointer-events:none;border:1px solid var(--cream-3);transition:opacity .3s}
+#toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(120px);z-index:9999;background:var(--forest);color:var(--cream);padding:11px 20px;border-radius:999px;font-size:.84rem;font-weight:600;box-shadow:0 8px 36px rgba(0,0,0,.25);display:flex;align-items:center;gap:8px;transition:transform .38s cubic-bezier(.34,1.56,.64,1);white-space:nowrap}
 #toast.show{transform:translateX(-50%) translateY(0)}
 #map.placing{cursor:crosshair !important}
 .pc-badge.reunited{background:#ede9e0;color:#8a7a66}
-.reunite-btn{width:100%;margin-top:10px;padding:9px;font-family:var(--font-display);font-size:.88rem;font-weight:600;border:1.5px solid var(--cream-3);border-radius:8px;cursor:pointer;background:var(--cream-2);color:var(--warm-mid);transition:all .18s;display:flex;align-items:center;justify-content:center;gap:6px;touch-action:manipulation;min-height:44px}
+.reunite-btn{width:100%;margin-top:10px;padding:9px;font-family:var(--font-display);font-size:.88rem;font-weight:600;border:1.5px solid var(--cream-3);border-radius:8px;cursor:pointer;background:var(--cream-2);color:var(--warm-mid);transition:all .18s;display:flex;align-items:center;justify-content:center;gap:6px}
 .reunite-btn:hover{background:#e8f4e9;border-color:var(--found-g);color:var(--found-g)}
 .reunite-btn.done{background:#e8f4e9;border-color:var(--found-g);color:var(--found-g);cursor:default;pointer-events:none}
 /* Match / comment styles */
@@ -268,21 +196,21 @@ textarea{min-height:64px}
 .ai-id-result.show{display:block}
 @media(max-width:600px){:root{--panel-w:100vw}#nav-filters{display:none}.btn-lbl{display:none}}
 /* Shelter operational view */
-#view-shelters{background:var(--cream-2);flex-direction:column;overflow:hidden}
-#sh-row{display:flex;flex:1;min-height:0;overflow:hidden}
+#view-shelters{background:var(--cream-2);flex-direction:row;overflow:hidden}
+#view-animalcontrol{background:#f0f4fa;flex-direction:row;overflow:hidden}
 .sh-col{display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--cream-3)}
 .sh-col:last-child{border-right:none}
 .sh-col-left{width:280px;flex-shrink:0}
 .sh-col-right{flex:1;min-width:0;display:flex;flex-direction:column;min-height:0}
-.sh-col-hdr{padding:9px 14px;border-bottom:1px solid var(--cream-3);background:var(--cream);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.sh-col-hdr{padding:14px 16px;border-bottom:1px solid var(--cream-3);background:var(--cream);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .sh-col-title{font-family:var(--font-display);font-size:.82rem;font-weight:700;color:var(--warm-mid);text-transform:uppercase;letter-spacing:.06em}
-.sh-col-body{flex:1;overflow-y:auto;padding:8px;min-height:0;-webkit-overflow-scrolling:touch}
+.sh-col-body{flex:1;overflow-y:auto;padding:10px}
 .sh-col-body::-webkit-scrollbar{width:3px}
 .sh-col-body::-webkit-scrollbar-thumb{background:var(--cream-3);border-radius:99px}
 .sh-select{width:100%;padding:9px 12px;font-family:var(--font-body);font-size:.84rem;font-weight:600;color:var(--warm-dk);background:var(--cream);border:1.5px solid var(--cream-3);border-radius:8px;outline:none;cursor:pointer;margin-bottom:0;appearance:none}
 .sh-select:focus{border-color:var(--amber)}
-.sh-selector-wrap{padding:7px 10px;border-bottom:1px solid var(--cream-3);flex-shrink:0;background:var(--cream)}
-.sh-queue-item{background:#fff;border:1px solid var(--cream-3);border-radius:10px;padding:8px 11px;margin-bottom:8px;cursor:pointer;transition:all .15s}
+.sh-selector-wrap{padding:10px;border-bottom:1px solid var(--cream-3);flex-shrink:0;background:var(--cream)}
+.sh-queue-item{background:#fff;border:1px solid var(--cream-3);border-radius:10px;padding:11px 13px;margin-bottom:8px;cursor:pointer;transition:all .15s}
 .sh-queue-item:hover{border-color:var(--amber);box-shadow:0 2px 8px rgba(42,31,18,.08)}
 .sh-queue-item.selected{border-color:var(--found-g);background:#f5faf6}
 .sh-queue-item.reunited{opacity:.5}
@@ -293,31 +221,31 @@ textarea{min-height:64px}
 .sh-qi-badge.adopt{background:#e0eaff;color:#3060c0}
 /* Adoption card section */
 .pc-adopt{background:linear-gradient(135deg,#e8f0ff,#dce8ff);border:1.5px solid #a0c0f0;border-radius:8px;padding:8px 11px;margin-top:8px;font-size:.78rem;color:#2050a0;font-weight:600;display:flex;align-items:center;gap:6px}
-.adopt-btn{width:100%;margin-top:8px;padding:9px;font-family:var(--font-display);font-size:.88rem;font-weight:600;background:#2050a0;color:#fff;border:none;border-radius:8px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px;touch-action:manipulation;min-height:44px}
+.adopt-btn{width:100%;margin-top:8px;padding:9px;font-family:var(--font-display);font-size:.88rem;font-weight:600;background:#2050a0;color:#fff;border:none;border-radius:8px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px}
 .adopt-btn:hover{filter:brightness(1.1)}
 .sh-qi-time{font-size:.68rem;color:var(--warm-mid)}
-.sh-qi-name{font-family:var(--font-display);font-size:.9rem;font-weight:600;color:var(--warm-dk);margin-bottom:1px}
+.sh-qi-name{font-family:var(--font-display);font-size:.95rem;font-weight:600;color:var(--warm-dk);margin-bottom:2px}
 .sh-qi-desc{font-size:.75rem;color:var(--warm-mid)}
 .sh-empty{padding:32px 16px;text-align:center;color:var(--warm-mid);font-size:.82rem}
 .sh-empty-icon{font-size:2rem;margin-bottom:8px;opacity:.4}
 /* Action panel */
 .sh-action-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--warm-mid);gap:8px;padding:24px;background:var(--cream)}
 .sh-action-empty-icon{font-size:2.2rem;opacity:.25}
-.sh-action-panel{padding:12px 16px 24px;flex:1;overflow-y:auto;min-height:0;-webkit-overflow-scrolling:touch}
+.sh-action-panel{padding:18px 20px;flex:1;overflow-y:auto;min-height:0}
 .sh-action-panel::-webkit-scrollbar{width:3px}
 .sh-action-panel::-webkit-scrollbar-thumb{background:var(--cream-3);border-radius:99px}
 .sh-panel-id{font-size:.7rem;color:var(--warm-mid);margin-bottom:3px}
-.sh-panel-name{font-family:var(--font-display);font-size:1.05rem;font-weight:600;color:var(--warm-dk);margin-bottom:4px}
-.sh-panel-desc{font-size:.8rem;color:var(--warm-mid);line-height:1.45;margin-bottom:8px}
-.sh-sec{font-family:var(--font-display);font-size:.76rem;font-weight:600;color:var(--warm-mid);text-transform:uppercase;letter-spacing:.06em;margin:10px 0 6px}
+.sh-panel-name{font-family:var(--font-display);font-size:1.2rem;font-weight:600;color:var(--warm-dk);margin-bottom:6px}
+.sh-panel-desc{font-size:.82rem;color:var(--warm-mid);line-height:1.55;margin-bottom:12px}
+.sh-sec{font-family:var(--font-display);font-size:.8rem;font-weight:600;color:var(--warm-mid);text-transform:uppercase;letter-spacing:.06em;margin:16px 0 8px}
 .sh-log{background:var(--cream-2);border:1px solid var(--cream-3);border-radius:8px;padding:10px 12px}
 .sh-log-entry{display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--cream-3);font-size:.76rem}
 .sh-log-entry:last-child{border-bottom:none}
 .sh-log-dot{width:6px;height:6px;border-radius:50%;background:var(--found-g);flex-shrink:0;margin-top:4px}
 .sh-log-body{flex:1;color:var(--warm-mid);line-height:1.4}
 .sh-log-time{font-size:.65rem;color:var(--warm-mid);flex-shrink:0}
-.sh-action-btns{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
-.sh-btn{padding:5px 11px;border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;border:1.5px solid var(--cream-3);background:var(--cream);color:var(--warm-dk);font-family:var(--font-body);transition:all .15s;touch-action:manipulation;-webkit-tap-highlight-color:rgba(0,0,0,.08)}
+.sh-action-btns{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.sh-btn{padding:7px 13px;border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;border:1.5px solid var(--cream-3);background:var(--cream);color:var(--warm-dk);font-family:var(--font-body);transition:all .15s}
 .sh-btn:hover{border-color:var(--amber);color:var(--amber)}
 .sh-btn.primary{background:var(--found-g);border-color:var(--found-g);color:#fff}
 .sh-btn.primary:hover{filter:brightness(1.08);border-color:var(--found-g);color:#fff}
@@ -332,7 +260,7 @@ textarea{min-height:64px}
 .sh-intake-btn:hover{filter:brightness(1.1)}
 /* Shelter left col tabs */
 .sh-tab-row{display:flex;border-bottom:1px solid var(--cream-3);flex-shrink:0}
-.sh-tab{flex:1;padding:6px 4px;font-size:.75rem;font-weight:600;color:var(--warm-mid);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:var(--font-body);transition:all .15s}
+.sh-tab{flex:1;padding:8px 4px;font-size:.75rem;font-weight:600;color:var(--warm-mid);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:var(--font-body);transition:all .15s}
 .sh-tab:hover{color:var(--warm-dk)}
 .sh-tab.active{color:var(--forest);border-bottom-color:var(--forest)}
 /* Footer action bar */
@@ -340,22 +268,38 @@ textarea{min-height:64px}
 .col-footer-btn{width:100%;padding:9px;font-family:var(--font-display);font-size:.82rem;font-weight:600;background:var(--forest);color:var(--cream);border:none;border-radius:8px;cursor:pointer;transition:all .15s}
 .col-footer-btn:hover{filter:brightness(1.1)}
 /* Inventory */
+.inv-card{background:#fff;border:1px solid var(--cream-3);border-radius:10px;overflow:hidden;margin-bottom:8px;cursor:pointer;transition:all .15s;display:flex;gap:0}
+.inv-card:hover{border-color:var(--amber);box-shadow:0 2px 8px rgba(42,31,18,.08)}
 .inv-card.selected{border-color:var(--forest);background:#f5faf5}
+.inv-card-photo{width:58px;height:58px;object-fit:cover;flex-shrink:0}
+.inv-card-no-photo{width:58px;height:58px;background:var(--cream-2);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+.inv-card-info{padding:8px 10px;flex:1;min-width:0}
+.inv-card-name{font-family:var(--font-display);font-size:.88rem;font-weight:600;color:var(--warm-dk);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.inv-card-desc{font-size:.72rem;color:var(--warm-mid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.inv-card-date{font-size:.65rem;color:var(--warm-mid);margin-top:2px}
 .inv-add-form{background:#fff;border:1px solid var(--cream-3);border-radius:10px;padding:14px;margin-bottom:10px}
-.inv-preview{width:100%;max-height:200px;object-fit:contain;background:var(--cream-2);border-radius:6px;display:none;margin-top:6px}
+.inv-photo-drop{border:2px dashed var(--cream-3);border-radius:8px;padding:12px;text-align:center;cursor:pointer;background:var(--cream-2);transition:border-color .15s;position:relative;overflow:hidden;margin-bottom:10px}
+.inv-photo-drop:hover{border-color:var(--amber)}
+.inv-photo-drop input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.inv-preview{width:100%;max-height:120px;object-fit:cover;border-radius:6px;display:none;margin-top:6px}
 /* Inventory detail panel */
+.inv-detail-photo{width:100%;max-height:180px;object-fit:cover;border-radius:10px;margin-bottom:12px;display:block}
 .inv-status-badge{display:inline-flex;align-items:center;gap:4px;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:3px 9px;border-radius:999px;margin-bottom:8px}
 .inv-status-badge.available{background:#e0f0e4;color:var(--found-g)}
 .inv-status-badge.returned{background:#fde8e0;color:var(--lost-r)}
 .inv-status-badge.adopted{background:#ede9e0;color:#8a7a66}
-@media(max-width:700px){
-  .sh-col-left{width:100%;flex:1;min-height:0}
-  #sh-row{flex-direction:column}
-  .sh-col-right{display:none}
-  .sh-col-right.mobile-show{display:flex;position:fixed;inset:var(--nav-h) 0 0 0;z-index:850;background:var(--cream);flex-direction:column}
-}
-@media(max-width:480px){#incare-list>div[style*="grid-template-columns"]{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))!important}}
+@media(max-width:700px){.sh-col-left{width:100%}#view-shelters{flex-direction:column}#view-animalcontrol{flex-direction:column}}
 /* Animal Control */
+.ac-log-btn{font-family:var(--font-display);font-size:.9rem;font-weight:600;padding:9px 20px;background:#1e4080;color:#fff;border:none;border-radius:9px;cursor:pointer;transition:all .15s}
+.ac-log-btn:hover{filter:brightness(1.1)}
+.ac-queue-item{background:#fff;border:1px solid #d0daea;border-radius:10px;padding:11px 13px;margin-bottom:8px;cursor:pointer;transition:all .15s}
+.ac-queue-item:hover{border-color:#1e4080;box-shadow:0 2px 8px rgba(30,64,128,.1)}
+.ac-queue-item.selected{border-color:#1e4080;background:#f0f4fa}
+.ac-queue-item.reunited{opacity:.5}
+.ac-badge{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:2px 8px;border-radius:999px;display:inline-block}
+.ac-badge.active{background:#e0eaff;color:#1e4080}
+.ac-badge.matched{background:#fdf0e0;color:var(--amber)}
+.ac-badge.reunited{background:#ede9e0;color:#8a7a66}
 .chip-field-wrap{background:#e8f0ff;border:2px solid #1e4080;border-radius:10px;padding:12px 14px;margin-bottom:14px}
 .chip-field-label{font-size:.7rem;font-weight:800;color:#1e4080;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;display:flex;align-items:center;gap:5px}
 .chip-field-input{width:100%;padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:600;color:#1e4080;background:#fff;border:1.5px solid #a0baf0;border-radius:8px;outline:none;letter-spacing:.06em;transition:border-color .15s}
@@ -364,71 +308,24 @@ textarea{min-height:64px}
 .ac-search-btn{width:100%;padding:11px;font-family:var(--font-display);font-size:.92rem;font-weight:600;background:#1e4080;color:#fff;border:none;border-radius:9px;cursor:pointer;transition:all .15s;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:7px}
 .ac-search-btn:hover{filter:brightness(1.1)}
 .ac-search-btn:disabled{opacity:.6;cursor:not-allowed}
-/* Admin / Dashboard view */
-#admin-body{flex:1;overflow-y:auto;padding:20px 22px}
-#admin-body::-webkit-scrollbar{width:4px}
-#admin-body::-webkit-scrollbar-thumb{background:var(--cream-3);border-radius:99px}
-.admin-hdr{font-family:var(--font-display);font-size:1.15rem;font-weight:700;color:var(--warm-dk);margin-bottom:4px}
-.admin-sub{font-size:.78rem;color:var(--warm-mid);margin-bottom:20px}
-.dash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:24px}
-.dash-card{background:#fff;border:1px solid var(--cream-3);border-radius:12px;padding:16px 18px;box-shadow:0 2px 8px rgba(42,31,18,.05)}
-.dash-card-val{font-family:var(--font-display);font-size:2rem;font-weight:700;color:var(--warm-dk);line-height:1}
-.dash-card-lbl{font-size:.72rem;color:var(--warm-mid);margin-top:4px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
-.dash-card.alert .dash-card-val{color:var(--lost-r)}
-.dash-card.warn  .dash-card-val{color:var(--amber)}
-.dash-card.good  .dash-card-val{color:var(--found-g)}
-.dash-card.blue  .dash-card-val{color:#2050a0}
-.admin-sec{font-family:var(--font-display);font-size:.85rem;font-weight:700;color:var(--warm-mid);text-transform:uppercase;letter-spacing:.07em;margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--cream-3)}
-.admin-table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;border:1px solid var(--cream-3);margin-bottom:20px;font-size:.8rem}
-.admin-table th{background:var(--cream-2);padding:9px 12px;text-align:left;font-weight:600;color:var(--warm-mid);font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--cream-3)}
-.admin-table td{padding:9px 12px;border-bottom:1px solid var(--cream-3);color:var(--warm-dk);vertical-align:middle}
-.admin-table tr:last-child td{border-bottom:none}
-.admin-table tr:hover td{background:var(--cream-2)}
-.admin-badge{font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:999px;text-transform:uppercase;letter-spacing:.05em;display:inline-block}
-.admin-badge.hold{background:#fff0e0;color:#c07000}
-.admin-badge.court{background:#e0eaff;color:#2050a0}
-.admin-badge.cite{background:#fde8e0;color:var(--lost-r)}
-.admin-badge.closed{background:#ede9e0;color:#8a7a66}
-.admin-badge.restitution{background:#e8f0ff;color:#1a4090;font-weight:800}
-/* Enforcement panel inside shelter/AC */
-.enf-panel{background:#fff8f0;border:1.5px solid #e8c090;border-radius:10px;padding:14px 16px;margin-top:14px}
-.enf-panel-hdr{font-family:var(--font-display);font-size:.82rem;font-weight:700;color:#8a5010;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;display:flex;align-items:center;gap:6px;cursor:pointer}
-.enf-panel-hdr:hover{color:var(--amber)}
-.enf-row{display:flex;gap:10px;margin-bottom:8px;align-items:center}
-.enf-label{font-size:.72rem;font-weight:600;color:var(--warm-mid);width:120px;flex-shrink:0}
-.enf-val{font-size:.8rem;color:var(--warm-dk);flex:1}
-.enf-toggle{display:flex;gap:6px}
-.enf-toggle-btn{font-size:.72rem;font-weight:600;padding:3px 10px;border-radius:999px;border:1.5px solid var(--cream-3);background:#fff;color:var(--warm-mid);cursor:pointer;transition:all .15s}
-.enf-toggle-btn.active{background:var(--amber);color:#fff;border-color:var(--amber)}
-.cost-banner{background:linear-gradient(135deg,#fff8e8,#fdf3da);border:1.5px solid #d4a035;border-radius:8px;padding:10px 14px;margin-top:10px}
-.cost-banner-val{font-family:var(--font-display);font-size:1.4rem;font-weight:700;color:#7a5010}
-.cost-banner-lbl{font-size:.7rem;color:#9a7030;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
-/* Internal status pills */
-.int-status{display:inline-block;font-size:.65rem;font-weight:800;padding:3px 9px;border-radius:999px;text-transform:uppercase;letter-spacing:.06em;margin-left:6px}
-.int-status.hold{background:#fff0e0;color:#c07000}
-.int-status.court{background:#e0eaff;color:#2050a0}
-.int-status.cite{background:#fde8e0;color:var(--lost-r)}
-.int-status.paid{background:#e8f4e9;color:#2d6a35}
-.int-status.open{background:var(--cream-2);color:var(--warm-mid)}
 /* Reports view */
-#view-reports{background:var(--cream-2);flex-direction:column;overflow:hidden}
-#rpt-row{display:flex;flex:1;min-height:0;overflow:hidden}
-#rpt-left{width:340px;flex-shrink:0;display:flex;flex-direction:column;border-right:1px solid var(--cream-3);overflow:hidden;min-height:0}
-#rpt-right{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+#view-reports{background:var(--cream-2);flex-direction:row;overflow:hidden}
+#rpt-left{width:340px;flex-shrink:0;display:flex;flex-direction:column;border-right:1px solid var(--cream-3);overflow:hidden}
+#rpt-right{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden}
 #rpt-search-wrap{padding:12px 14px;border-bottom:1px solid var(--cream-3);background:var(--cream);flex-shrink:0}
 #rpt-search{width:100%;padding:9px 12px 9px 34px;font-family:var(--font-body);font-size:.86rem;color:var(--warm-dk);background:var(--cream-2);border:1.5px solid var(--cream-3);border-radius:9px;outline:none;transition:border-color .15s;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236b5540' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:10px center}
 #rpt-search:focus{border-color:var(--amber)}
 #rpt-search::placeholder{color:var(--warm-mid)}
 .rpt-chips{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
-.rpt-chip{font-family:var(--font-body);font-size:.72rem;font-weight:600;padding:10px 14px;min-height:44px;border-radius:999px;border:none;background:transparent;color:var(--warm-mid);cursor:pointer;transition:all .12s;touch-action:manipulation}
-.rpt-chip:hover{background:var(--cream-2);color:var(--warm-dk)}
-.rpt-chip.active{background:var(--forest);color:#fff;box-shadow:0 1px 4px rgba(42,74,42,.25)}
-.rpt-chip.active.lost{background:var(--lost-r)}
-.rpt-chip.active.found{background:var(--found-g)}
-.rpt-chip.active.reunited{background:#8a7a66}
-.rpt-chip.active.adopt{background:#2050a0}
+.rpt-chip{font-family:var(--font-body);font-size:.72rem;font-weight:600;padding:4px 11px;border-radius:999px;border:1.5px solid var(--cream-3);background:#fff;color:var(--warm-mid);cursor:pointer;transition:all .15s}
+.rpt-chip:hover{border-color:var(--amber);color:var(--amber)}
+.rpt-chip.active{background:var(--forest);color:var(--cream);border-color:var(--forest)}
+.rpt-chip.active.lost{background:var(--lost-r);border-color:var(--lost-r)}
+.rpt-chip.active.found{background:var(--found-g);border-color:var(--found-g)}
+.rpt-chip.active.reunited{background:#8a7a66;border-color:#8a7a66}
+.rpt-chip.active.adopt{background:#2050a0;border-color:#2050a0;color:#fff}
 #rpt-count{font-size:.72rem;color:var(--warm-mid);margin-top:8px;font-weight:500}
-#rpt-list{flex:1;overflow-y:auto;padding:8px;min-height:0;-webkit-overflow-scrolling:touch}
+#rpt-list{flex:1;overflow-y:auto;padding:8px}
 #rpt-list::-webkit-scrollbar{width:3px}
 #rpt-list::-webkit-scrollbar-thumb{background:var(--cream-3);border-radius:99px}
 .rpt-row{display:flex;gap:10px;align-items:flex-start;padding:10px 11px;border-radius:10px;border:1px solid var(--cream-3);background:#fff;margin-bottom:7px;cursor:pointer;transition:all .15s}
@@ -444,10 +341,6 @@ textarea{min-height:64px}
 .rpt-badge.found{background:#e0f0e4;color:var(--found-g)}
 .rpt-badge.reunited{background:#ede9e0;color:#8a7a66}
 .rpt-badge.adopt{background:#e0eaff;color:#2050a0}
-.rpt-badge.shelter{background:#e0eaff;color:#2050a0}
-.rpt-badge.city{background:#fde8e0;color:var(--lost-r)}
-.rpt-badge.review{background:#fff8e8;color:#8a5010}
-.rpt-badge.resolved{background:#e0f0e4;color:var(--found-g)}
 .rpt-name{font-family:var(--font-display);font-size:.92rem;font-weight:600;color:var(--warm-dk);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rpt-sub{font-size:.74rem;color:var(--warm-mid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
 .rpt-loc{font-size:.7rem;color:var(--warm-mid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -459,16 +352,16 @@ textarea{min-height:64px}
 #rpt-detail-panel{flex:1;min-height:0;overflow-y:auto;padding:22px;background:var(--cream);display:none}
 #rpt-detail-panel::-webkit-scrollbar{width:3px}
 #rpt-detail-panel::-webkit-scrollbar-thumb{background:var(--cream-3);border-radius:99px}
-@media(max-width:640px){#side-panel{position:fixed!important;bottom:16px!important;top:auto!important;right:0!important;left:0!important;width:100%!important;max-width:100%!important;height:auto!important;max-height:80vh!important;border-radius:18px 18px 0 0!important;transform:translateY(calc(100% + 16px))!important;transition:transform .3s cubic-bezier(.34,1.2,.64,1)!important;overflow:hidden!important;display:flex!important;flex-direction:column!important}#side-panel.open{transform:translateY(0)!important}}@media(max-width:640px){#pin-card{position:fixed!important;bottom:18px!important;left:0!important;right:0!important;top:auto!important;width:100%!important;max-width:100%!important;max-height:72vh!important;border-radius:18px 18px 0 0!important;z-index:1800!important}#pin-card .pc-img{height:220px!important}#pin-card-body{overflow-y:auto;-webkit-overflow-scrolling:touch;max-height:calc(72vh - 60px)}#rpt-left{width:100%;flex:1;min-height:0}#rpt-row{flex-direction:column}#rpt-right{display:none}#rpt-right.show{display:flex;flex-direction:column;position:fixed;inset:var(--nav-h) 0 0 0;z-index:900;background:var(--cream);overflow:hidden}.mobile-back-btn{display:block!important}.desktop-close-btn{display:none!important}}
+@media(max-width:640px){#rpt-left{width:100%}#view-reports{flex-direction:column}#rpt-right{display:none}#rpt-right.show{display:flex;position:fixed;inset:var(--nav-h) 0 0 0;z-index:900;background:var(--cream)}}
 /* Adopt view */
-#view-adopt{background:var(--cream-2);flex-direction:column;overflow:hidden;max-width:100vw;box-sizing:border-box}
+#view-adopt{background:var(--cream-2);flex-direction:column;overflow:hidden}
 #adopt-hdr{background:var(--cream);border-bottom:1px solid var(--cream-3);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 #adopt-hdr-title{font-family:var(--font-display);font-size:1.1rem;font-weight:600;color:var(--warm-dk)}
 #adopt-hdr-sub{font-size:.76rem;color:var(--warm-mid);margin-top:2px}
 #adopt-add-btn{font-family:var(--font-display);font-size:.82rem;font-weight:600;padding:8px 16px;background:#2050a0;color:#fff;border:none;border-radius:999px;cursor:pointer;transition:all .15s;flex-shrink:0}
 #adopt-add-btn:hover{filter:brightness(1.1)}
-#adopt-search-row{padding:10px 14px;border-bottom:1px solid var(--cream-3);background:var(--cream);flex-shrink:0;display:flex;gap:6px;align-items:center;flex-wrap:wrap;overflow:hidden;box-sizing:border-box;width:100%}
-#adopt-search{flex:1;min-width:0;padding:8px 10px 8px 30px;font-family:var(--font-body);font-size:.84rem;color:var(--warm-dk);background:var(--cream-2);border:1.5px solid var(--cream-3);border-radius:8px;outline:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236b5540' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:10px center}
+#adopt-search-row{padding:10px 16px;border-bottom:1px solid var(--cream-3);background:var(--cream);flex-shrink:0;display:flex;gap:8px;align-items:center}
+#adopt-search{flex:1;padding:8px 12px 8px 32px;font-family:var(--font-body);font-size:.84rem;color:var(--warm-dk);background:var(--cream-2);border:1.5px solid var(--cream-3);border-radius:8px;outline:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236b5540' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:10px center}
 #adopt-search:focus{border-color:var(--amber)}
 #adopt-body{flex:1;overflow-y:auto;padding:16px 18px}
 #adopt-body::-webkit-scrollbar{width:4px}
@@ -476,30 +369,15 @@ textarea{min-height:64px}
 .adopt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
 .adopt-card{background:#fff;border:1px solid var(--cream-3);border-radius:14px;overflow:hidden;transition:all .18s;cursor:pointer;box-shadow:0 2px 8px rgba(42,31,18,.06)}
 .adopt-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(42,31,18,.12);border-color:#a0c0f0}
-.adopt-card-img{width:100%;max-height:240px;object-fit:contain;background:var(--cream-2);display:block}
+.adopt-card-img{width:100%;height:160px;object-fit:cover;display:block}
 .adopt-card-no-img{width:100%;height:160px;display:flex;align-items:center;justify-content:center;font-size:3rem;background:var(--cream-2)}
 .adopt-card-body{padding:12px 14px 14px}
 .adopt-card-name{font-family:var(--font-display);font-size:1rem;font-weight:600;color:var(--warm-dk);margin-bottom:4px}
 .adopt-card-desc{font-size:.76rem;color:var(--warm-mid);margin-bottom:6px;line-height:1.4}
 .adopt-card-meta{display:flex;align-items:center;justify-content:space-between;font-size:.7rem;color:var(--warm-mid);margin-bottom:10px}
 .adopt-card-days{font-weight:700;color:#2050a0}
-.adopt-card-days.urgent{color:var(--lost-r)}
-.adopt-card-days.warn{color:var(--amber)}
-.adopt-card-days.good{color:var(--found-g)}
-.adopt-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
-.adopt-tag{font-size:.65rem;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--cream-2);color:var(--warm-mid);border:1px solid var(--cream-3)}
-.adopt-about{font-size:.78rem;color:var(--warm-mid);font-style:italic;margin-bottom:8px;line-height:1.4}
-.adopt-tag-btn{font-size:.72rem;font-weight:600;padding:4px 11px;border-radius:999px;border:1.5px solid var(--cream-3);background:#fff;color:var(--warm-mid);cursor:pointer;transition:all .15s;font-family:var(--font-body)}
-.adopt-tag-btn.selected{background:var(--forest);border-color:var(--forest);color:#fff}
-.adopt-urgency-bar{height:3px;border-radius:999px;margin-bottom:0}
-/* Public status badge on pin card */
-.pc-public-status{font-size:.72rem;font-weight:600;padding:4px 10px;border-radius:6px;margin-bottom:8px;display:inline-block}
-.pc-public-status.review{background:#fff8e8;color:#8a5010;border:1px solid #e8c090}
-.pc-public-status.shelter{background:#e8f0ff;color:#2050a0;border:1px solid #a0baf0}
-.pc-public-status.city{background:#fde8e0;color:var(--lost-r);border:1px solid #f0c0a8}
-.pc-public-status.resolved{background:#e8f4e9;color:var(--found-g);border:1px solid #a0d0a8}
-.adopt-ask-btn{width:100%;padding:10px;font-family:var(--font-display);font-size:.84rem;font-weight:700;background:var(--forest);color:var(--cream);border:none;border-radius:9px;cursor:pointer;transition:all .15s;letter-spacing:.01em}
-.adopt-ask-btn:hover{filter:brightness(1.08)}
+.adopt-ask-btn{width:100%;padding:8px;font-family:var(--font-display);font-size:.82rem;font-weight:600;background:#2050a0;color:#fff;border:none;border-radius:8px;cursor:pointer;transition:all .15s}
+.adopt-ask-btn:hover{filter:brightness(1.1)}
 .adopt-empty{padding:48px 24px;text-align:center;color:var(--warm-mid)}
 .adopt-empty-icon{font-size:3rem;margin-bottom:12px;opacity:.3}
 /* Add to adopt form panel */
@@ -508,268 +386,22 @@ textarea{min-height:64px}
 #adopt-form-inner{background:var(--cream);border-radius:18px 18px 0 0;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;padding:20px 22px 32px;animation:slide-up .28s cubic-bezier(.34,1.56,.64,1)}
 @keyframes slide-up{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}
 /* Adoption inquiry form */
-#adopt-inquiry-panel{position:fixed;inset:0;z-index:4100;background:rgba(42,31,18,.55);display:none;align-items:flex-end;justify-content:center}
+#adopt-inquiry-panel{position:fixed;inset:var(--nav-h) 0 0 0;z-index:950;background:rgba(42,31,18,.55);display:none;align-items:flex-end;justify-content:center}
 #adopt-inquiry-panel.open{display:flex}
 #adopt-inquiry-inner{background:var(--cream);border-radius:18px 18px 0 0;width:100%;max-width:520px;max-height:85vh;overflow-y:auto;padding:22px 22px 32px;animation:slide-up .28s cubic-bezier(.34,1.56,.64,1)}
-
-/* ── SHELTER SPOTLIGHT ── */
-@media(max-width:640px){#shelter-spotlight{bottom:22px!important;right:8px!important;width:min(190px,44vw)!important}#spotlight-name{font-size:.78rem!important}#spotlight-bio{font-size:.6rem!important}#shelter-spotlight [style*="height:130px"]{height:100px!important}}
-
-/* ── NEW PIN PULSE — briefly animates pins added after initial load ── */
-@keyframes pinPulse {
-  0%   { filter: drop-shadow(0 0 0px rgba(255,255,255,0)); transform: scale(1); }
-  30%  { filter: drop-shadow(0 0 8px rgba(255,255,255,.9)); transform: scale(1.18); }
-  100% { filter: drop-shadow(0 0 0px rgba(255,255,255,0)); transform: scale(1); }
-}
-.pin-new-pulse {
-  animation: pinPulse 1.4s ease-out forwards;
-}
-
-/* ── SPOTLIGHT HOVER ── */
-#shelter-spotlight:hover { transform: translateY(-2px) scale(1.01); box-shadow: 0 16px 48px rgba(42,31,18,.4),0 6px 16px rgba(0,0,0,.2) !important; transition: transform .2s ease, box-shadow .2s ease, opacity .5s ease !important; }
-
-/* ── STAFF TUTORIAL ── */
-#staff-tutorial-overlay {
-  position:fixed;inset:0;z-index:9999;background:rgba(20,30,20,.72);
-  display:flex;align-items:center;justify-content:center;
-  font-family:var(--font-body);
-}
-#staff-tutorial-card {
-  background:var(--cream);border-radius:20px;width:min(520px,92vw);
-  max-height:88vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.4);
-  position:relative;
-}
-@media(max-width:640px){
-  #staff-tutorial-card { border-radius:16px; width:94vw; max-height:85vh; }
-  .st-header { padding:14px 16px 12px; }
-  .st-steps { padding:12px 16px; }
-  .st-footer { padding:10px 16px 14px; }
-  .st-step { gap:10px; padding:10px 0; }
-  .st-icon { width:34px; height:34px; font-size:1.1rem; }
-}
-.st-header {
-  background:var(--forest);color:#fff;border-radius:20px 20px 0 0;
-  padding:18px 22px 16px;
-}
-.st-header h2 { margin:0;font-family:var(--font-display);font-size:1.15rem;font-weight:700; }
-.st-header p  { margin:4px 0 0;font-size:.78rem;opacity:.8; }
-.st-steps { padding:18px 22px; }
-.st-step {
-  display:flex;gap:14px;align-items:flex-start;
-  padding:12px 0;border-bottom:1px solid var(--cream-3);
-}
-.st-step:last-child { border-bottom:none; }
-.st-icon {
-  width:40px;height:40px;border-radius:50%;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
-  font-size:1.3rem;background:var(--cream-2);
-}
-.st-step-body h3 { margin:0 0 3px;font-size:.85rem;color:var(--warm-dk);font-weight:700; }
-.st-step-body p  { margin:0;font-size:.75rem;color:var(--warm-mid);line-height:1.45; }
-.st-step-body .st-tip {
-  display:inline-block;margin-top:5px;font-size:.7rem;font-weight:700;
-  color:var(--forest);background:rgba(45,74,53,.1);
-  padding:2px 8px;border-radius:999px;
-}
-.st-footer {
-  padding:14px 22px 18px;display:flex;justify-content:space-between;align-items:center;
-  border-top:1px solid var(--cream-3);gap:10px;
-}
-.st-btn-primary {
-  background:var(--forest);color:#fff;border:none;border-radius:9px;
-  padding:10px 22px;font-size:.82rem;font-weight:700;cursor:pointer;
-  font-family:var(--font-body);letter-spacing:.02em;
-}
-.st-btn-skip {
-  background:none;border:none;color:var(--warm-mid);font-size:.75rem;
-  cursor:pointer;font-family:var(--font-body);text-decoration:underline;
-  text-underline-offset:3px;
-}
-.st-progress {
-  display:flex;gap:5px;align-items:center;
-}
-.st-dot {
-  width:7px;height:7px;border-radius:50%;background:var(--cream-3);
-  transition:background .2s;
-}
-.st-dot.active { background:var(--forest); }
-
-
-@media(max-width:640px){
-  #adopt-search-row{padding:8px 10px;gap:5px}
-  #adopt-search{font-size:.78rem;padding:7px 8px 7px 28px}
-  #adopt-sort{font-size:.72rem;padding:5px 6px;max-width:34vw}
-}
-/* ── MOBILE FILTER COMPRESSION ────────────────────────────────────────── */
-@media(max-width:640px){
-  /* In Care: filter chips → single horizontal scroll row */
-  #incare-filter-row{
-    flex-wrap:nowrap!important;
-    overflow-x:auto!important;
-    -webkit-overflow-scrolling:touch!important;
-    padding:5px 10px!important;
-    gap:4px!important;
-    scrollbar-width:none!important;
-  }
-  #incare-filter-row::-webkit-scrollbar{display:none}
-  #incare-filter-row .rpt-chip{
-    padding:6px 10px!important;
-    min-height:34px!important;
-    font-size:.68rem!important;
-    flex-shrink:0!important;
-    white-space:nowrap!important;
-  }
-  #incare-filter-row .ic-label{display:none!important}
-
-  /* Adopt: hide legend, compress disclaimer, chips single row */
-  #adopt-legend{display:none!important}
-  #adopt-disclaimer{padding:2px 10px!important;font-size:.58rem!important}
-  #adopt-chips-row{
-    flex-wrap:nowrap!important;
-    overflow-x:auto!important;
-    -webkit-overflow-scrolling:touch!important;
-    padding:4px 10px!important;
-    gap:4px!important;
-    scrollbar-width:none!important;
-  }
-  #adopt-chips-row::-webkit-scrollbar{display:none}
-  #adopt-chips-row .rpt-chip{
-    padding:6px 10px!important;
-    min-height:34px!important;
-    font-size:.68rem!important;
-    flex-shrink:0!important;
-    white-space:nowrap!important;
-  }
-  /* In Care: search bar full width on mobile */
-  #incare-search{font-size:16px}
-}
-
-/* ── SAFE AREA (iPhone home indicator) ─────────────────────────────── */
-@media(max-width:640px){
-  /* Submit buttons: raise above home indicator */
-  .submit-btn{
-    bottom:env(safe-area-inset-bottom,0px)!important;
-    padding-bottom:max(12px,calc(8px + env(safe-area-inset-bottom,0px)))!important;
-    margin-bottom:0!important;
-  }
-  /* Side panel: pad so sticky button clears home indicator */
-  #side-panel{
-    padding-bottom:env(safe-area-inset-bottom,0px)!important;
-  }
-  /* Inquiry inner panel: pad bottom */
-  #adopt-inquiry-inner{
-    padding-bottom:max(32px,calc(16px + env(safe-area-inset-bottom,0px)))!important;
-  }
-  /* Intake modal: same */
-  #intake-modal-inner{
-    padding-bottom:max(32px,calc(16px + env(safe-area-inset-bottom,0px)))!important;
-  }
-  /* Animal edit modal */
-  #animal-edit-body{
-    padding-bottom:max(48px,calc(32px + env(safe-area-inset-bottom,0px)))!important;
-  }
-  /* Toast: keep above home indicator */
-  #toast{bottom:calc(26px + env(safe-area-inset-bottom,0px))!important}
-  /* FAB: clear home indicator */
-  #intake-fab{bottom:calc(40px + env(safe-area-inset-bottom,0px))!important}
-}
-
-@media(max-width:640px){
-  #intake-modal-footer,#animal-edit-footer{
-    padding-bottom:max(18px,calc(env(safe-area-inset-bottom,0px) + 18px))!important;
-  }
-  /* Ensure intake/edit modal inner doesn't overflow home indicator */
-  #intake-modal-inner,#animal-edit-inner{
-    padding-bottom:0!important;
-  }
-}
 </style>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  "name": "PawPulse",
-  "url": "https://pawpulse.net",
-  "description": "Live lost and found pet map for Hastings, Nebraska and Adams County.",
-  "areaServed": {
-    "@type": "City",
-    "name": "Hastings",
-    "containedInPlace": {
-      "@type": "AdministrativeArea",
-      "name": "Adams County, Nebraska"
-    }
-  },
-  "potentialAction": {
-    "@type": "SearchAction",
-    "target": "https://pawpulse.net",
-    "query-input": "required name=search_term_string"
-  }
-}
-</script>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "LocalBusiness",
-  "name": "PawPulse — Hastings Lost & Found Pet Map",
-  "url": "https://pawpulse.net",
-  "description": "Live community map for lost and found pets in Hastings, Nebraska and Adams County.",
-  "areaServed": "Hastings, Nebraska",
-  "serviceType": "Lost and Found Pet Reporting"
-}
-</script>
 </head>
 <body>
-
-<!-- App loading screen — covers map flash during auth/shelter picker -->
-<div id="app-loading" style="position:fixed;inset:0;z-index:9990;background:var(--cream);display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
-  <div style="font-size:2rem;margin-bottom:6px">🐾</div>
-  <div style="font-family:var(--font-display);font-size:1rem;font-weight:600;color:var(--warm-mid)">PawPulse</div>
-</div>
-
-<!-- Login overlay — shown when Firebase is configured and user not signed in -->
-<!-- Small staff sign-in panel — replaces full-screen login overlay -->
-<div id="login-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(42,31,18,.55);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:32px">
-  <div style="background:var(--cream);border-radius:16px;padding:28px 28px 20px;width:100%;max-width:320px;box-shadow:0 8px 40px rgba(0,0,0,.25)">
-    <div style="font-family:var(--font-display);font-size:1.1rem;font-weight:700;color:var(--warm-dk);margin-bottom:4px;text-align:center">🔐 Staff Sign In</div>
-    <div style="font-size:.74rem;color:var(--warm-mid);margin-bottom:18px;text-align:center">Heartland Pet Connection</div>
-    <div class="fg"><label>Email</label><input type="email" id="login-email" placeholder="staff@shelter.org" autocomplete="email" style="width:100%;padding:10px 12px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.9rem"></div>
-    <div class="fg"><label>Password</label><input type="password" id="login-pw" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()" style="width:100%;padding:10px 12px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.9rem"></div>
-    <div id="login-err" style="display:none;font-size:.76rem;color:var(--lost-r);margin-bottom:10px;text-align:center"></div>
-    <button id="login-btn" onclick="doLogin()" style="width:100%;padding:11px;font-family:var(--font-display);font-size:.88rem;font-weight:700;background:var(--forest);color:var(--cream);border:none;border-radius:10px;cursor:pointer;margin-top:4px">Sign In</button>
-    <div style="display:flex;justify-content:space-between;margin-top:8px">
-      <button onclick="closeStaffLogin()" style="padding:8px;font-family:var(--font-body);font-size:.78rem;background:none;border:none;cursor:pointer;color:var(--warm-mid);text-decoration:underline">Cancel</button>
-      <button onclick="sendPasswordReset()" style="padding:8px;font-family:var(--font-body);font-size:.78rem;background:none;border:none;cursor:pointer;color:var(--warm-mid);text-decoration:underline">Forgot password?</button>
-    </div>
-  </div>
-</div>
-
-<!-- Staff badge shown when signed in -->
-
-<!-- Change Password modal -->
-<div id="change-pw-overlay" style="display:none;position:fixed;inset:0;z-index:9997;background:rgba(42,31,18,.55);align-items:center;justify-content:center">
-  <div style="background:var(--cream);border-radius:16px;width:100%;max-width:340px;padding:24px;margin:16px" onclick="event.stopPropagation()">
-    <div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--warm-dk);margin-bottom:4px">🔑 Change Password</div>
-    <div style="font-size:.76rem;color:var(--warm-mid);margin-bottom:16px" id="cpw-sub">Enter a new password for your account.</div>
-    <div class="fg"><label>New Password</label><input type="password" id="cpw-new" placeholder="At least 6 characters" style="width:100%;padding:10px 12px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.9rem"></div>
-    <div class="fg"><label>Confirm Password</label><input type="password" id="cpw-confirm" placeholder="Repeat new password" style="width:100%;padding:10px 12px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.9rem"></div>
-    <div id="cpw-err" style="display:none;font-size:.76rem;color:var(--lost-r);margin-bottom:10px"></div>
-    <div id="cpw-ok" style="display:none;font-size:.76rem;color:var(--found-g);font-weight:600;margin-bottom:10px">✓ Password updated successfully.</div>
-    <div style="display:flex;gap:8px;margin-top:4px">
-      <button id="cpw-btn" onclick="doChangePw()" style="flex:1;padding:10px;font-family:var(--font-display);font-size:.88rem;font-weight:700;background:var(--forest);color:var(--cream);border:none;border-radius:9px;cursor:pointer">Update Password</button>
-      <button onclick="closeChangePw()" style="padding:10px 16px;font-family:var(--font-body);font-size:.82rem;border-radius:9px;border:1.5px solid var(--cream-3);background:#fff;cursor:pointer">Cancel</button>
-    </div>
-  </div>
-</div>
 
 <nav id="nav">
   <div class="nav-logo">
     🐾
     <div class="nav-logo-wrap">
       PawPulse
-      <span class="nav-logo-sub">Hastings, NE &amp; Adams County</span>
+      <span class="nav-logo-sub">Hastings, NE</span>
     </div>
   </div>
-  <button class="nav-report-btn" id="nav-action-btn" onclick="navActionBtn()">+ Report</button>
+  <button class="nav-report-btn" onclick="openReportPicker()">+ Report</button>
   <!-- Report type picker -->
   <div id="report-picker" style="display:none;position:fixed;inset:0;z-index:1100;background:rgba(42,31,18,.5);align-items:center;justify-content:center" onclick="if(event.target===this)this.style.display='none'">
     <div style="background:var(--cream);border-radius:16px;padding:24px;width:260px;box-shadow:0 16px 48px rgba(0,0,0,.28)">
@@ -780,71 +412,146 @@ textarea{min-height:64px}
   </div>
   <div class="nav-spacer"></div>
   <div id="nav-tabs">
-    <!-- PUBLIC MODE -->
-    <button class="tab-btn tab-public active" onclick="setView('map',this)" title="Public Map">🗺️ <span class="tab-lbl">Map</span></button>
-    <button class="tab-btn tab-public"        onclick="setView('adopt',this)" title="Adoption">🏠 <span class="tab-lbl">Adopt</span></button>
-    <!-- STAFF MODE -->
-    <div class="nav-mode-sep"></div>
-    <button class="tab-btn tab-ops" onclick="setView('incare',this)"   title="In Care">🏥 <span class="tab-lbl">At Shelter</span> <span id="nav-incare-count" style="display:none;background:var(--found-g);color:#fff;border-radius:999px;font-size:.6rem;padding:1px 5px;margin-left:2px"></span></button>
-    <!-- ADMIN MODE -->
-    <div class="nav-mode-sep"></div>
-    <button class="tab-btn tab-admin" onclick="setView('reports',this)" title="Reports & Admin">📊 <span class="tab-lbl">Reports</span></button>
-    <!-- Staff sign-in button — shown when not logged in -->
-    <button id="nav-staff-login-btn" onclick="openStaffLogin()" title="Staff Sign In" style="margin-left:6px;padding:5px 12px;font-size:.72rem;font-weight:700;border-radius:999px;border:1.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);cursor:pointer;font-family:var(--font-body);color:var(--cream);display:flex;align-items:center;gap:5px">🔐 <span class="tab-lbl">Staff Login</span></button>
-    <!-- Staff badge — shown when signed in, lives in nav -->
-    <div id="staff-badge" style="display:none;align-items:center;gap:5px;margin-left:6px">
-      <div id="staff-name-badge" style="color:var(--cream);font-size:.7rem;font-weight:700;white-space:nowrap;opacity:.85">🔐 Staff</div>
-      <div style="display:flex;gap:4px">
-        <button onclick="clearTestData()" title="Clear All Data" style="padding:5px 8px;font-size:.65rem;font-weight:600;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,77,77,.25);cursor:pointer;color:var(--cream);font-family:var(--font-body);display:none" id="btn-clear-data">🗑</button>
-        <button onclick="forceSyncPhotos()" title="Force Photo Sync to Cloud" style="padding:5px 8px;font-size:.65rem;font-weight:600;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);cursor:pointer;color:var(--cream);font-family:var(--font-body)">☁️</button>
-        <button onclick="loadDemoData()" title="Load Demo Animals" style="padding:5px 8px;font-size:.65rem;font-weight:600;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);cursor:pointer;color:var(--cream);font-family:var(--font-body);display:none" id="btn-load-demo">🐾</button>
-        <button onclick="openChangePw()" title="Change Password" style="padding:5px 8px;font-size:.65rem;font-weight:600;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);cursor:pointer;color:var(--cream);font-family:var(--font-body)">🔑</button>
-        <button onclick="doSignOut()" style="padding:5px 10px;font-size:.65rem;font-weight:700;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);cursor:pointer;color:var(--cream);font-family:var(--font-body)">Sign Out</button>
-      </div>
-    </div>
+    <button class="tab-btn active" onclick="setView('map',this)">🗺️ <span class="tab-lbl">Map</span></button>
+    <button class="tab-btn"        onclick="setView('shelters',this)">🏠 <span class="tab-lbl">Shelters</span></button>
+    <button class="tab-btn"        onclick="setView('animalcontrol',this)">🚔 <span class="tab-lbl">AC</span></button>
+    <button class="tab-btn"        onclick="setView('reports',this)">📋 <span class="tab-lbl">Reports</span></button>
+    <button class="tab-btn"        onclick="setView('adopt',this)">🏠 <span class="tab-lbl">Adopt</span></button>
   </div>
 </nav>
 <!-- Orientation strip -->
-<div id="orientation-strip" style="display:none;position:fixed;top:var(--nav-h);left:0;right:0;z-index:999;background:rgba(45,74,53,.92);color:rgba(255,255,255,.78);text-align:center;font-size:.8rem;font-family:var(--font-body);padding:6px 14px;letter-spacing:.01em;pointer-events:none"><div style="font-size:.82rem;font-weight:600;color:rgba(255,255,255,.95);margin-bottom:2px">See lost pets, found animals, and pets in care — all in real time.</div><div style="font-size:.72rem;color:rgba(255,255,255,.75)">Tap a pin to help, or tap <strong style="font-weight:700">+ Report</strong> to post one. <span style="opacity:.7;font-style:italic">You might reunite a pet today.</span></div></div>
+<div id="orientation-strip" style="display:none;position:fixed;top:var(--nav-h);left:0;right:0;z-index:999;background:rgba(45,74,53,.92);color:rgba(255,255,255,.78);text-align:center;font-size:.8rem;font-family:var(--font-body);padding:6px 14px;letter-spacing:.01em;pointer-events:none"><div style="font-size:.82rem;font-weight:600;color:rgba(255,255,255,.95);margin-bottom:2px">See lost pets, found animals, and pets in care — all in real time.</div><div style="font-size:.72rem;color:rgba(255,255,255,.75)">Tap a pin to help, or tap <strong style="font-weight:700">+ Report</strong> to post one. <span style="font-style:italic">You might reunite a pet today.</span></div></div>
 
-<!-- ADOPT VIEW -->
-<div id="view-adopt" class="view">
-  <div class="mode-banner public"><div class="mode-banner-dot" style="background:#c8841a"></div>Public View — Adoption</div>
-  <div id="adopt-hdr">
-    <div>
-      <div id="adopt-hdr-title">🌟 Adoptable Pets at Heartland Pet Connection</div>
-      <div id="adopt-hdr-sub"><span id="adopt-count">0</span> pets looking for their forever home</div>
+<div id="view-shelters" class="view">
+  <!-- Left col -->
+  <div class="sh-col sh-col-left">
+    <div class="sh-col-hdr">
+      <div class="sh-col-title" id="sh-col-title">Intake Queue</div>
+      <div id="sh-queue-badge" style="font-size:.7rem;font-weight:700;background:var(--cream-2);color:var(--warm-mid);padding:2px 9px;border-radius:999px;border:1px solid var(--cream-3)">0 active</div>
+    </div>
+    <div class="sh-selector-wrap">
+      <select class="sh-select" id="sh-selector" onchange="setShelter(this.value)">
+        <option value="Adams County Humane Society">🏠 Adams County Humane Society</option>
+        <option value="Heartland Pet Connection">🐾 Heartland Pet Connection</option>
+        <option value="Start Over Rover">🐕 Start Over Rover</option>
+      </select>
+    </div>
+    <div class="sh-tab-row">
+      <button class="sh-tab active" id="sh-tab-queue" onclick="setShelterTab('queue',this)">📋 Queue</button>
+      <button class="sh-tab"        id="sh-tab-inv"   onclick="setShelterTab('inventory',this)">🐾 Inventory</button>
+    </div>
+    <div class="sh-col-body" id="sh-queue" style="display:flex;flex-direction:column">
+      <div class="sh-empty"><div class="sh-empty-icon">🐾</div>No intake yet</div>
+    </div>
+    <div class="sh-col-body" id="sh-inventory" style="display:none;flex-direction:column">
+      <div class="sh-empty"><div class="sh-empty-icon">📋</div>No inventory yet<br><span style="font-size:.72rem">Add animals below</span></div>
+    </div>
+    <div class="col-footer" id="sh-col-footer">
+      <button class="col-footer-btn" id="sh-footer-btn" onclick="handleShelterFooterBtn()">+ Log New Intake</button>
     </div>
   </div>
-  <div id="adopt-disclaimer" style="font-size:.62rem;color:var(--warm-mid);text-align:center;padding:3px 16px 4px;line-height:1.5;border-bottom:1px solid var(--cream-3);background:var(--cream)">Information may change as cases are reviewed. For official records, contact the shelter directly.</div>
-  <div id="adopt-legend" style="font-size:.72rem;color:var(--warm-mid);padding:5px 16px;background:var(--cream);border-bottom:1px solid var(--cream-3);display:flex;gap:14px;flex-wrap:wrap;align-items:center">
-    <span style="font-weight:600;color:var(--warm-dk)">Card border:</span>
-    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--found-g);margin-right:4px;vertical-align:middle"></span>Available — under 14 days</span>
-    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--amber);margin-right:4px;vertical-align:middle"></span>Waiting 14–29 days</span>
-    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--lost-r);margin-right:4px;vertical-align:middle"></span>Waiting 30+ days — needs a home urgently</span>
-  </div>
-  <div id="adopt-search-row">
-    <input id="adopt-search" type="text" placeholder="Search by species, breed, color, shelter…" oninput="renderAdoptView()" autocomplete="off">
-    <select id="adopt-sort" onchange="renderAdoptView()" style="padding:7px 8px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.75rem;background:#fff;flex-shrink:0;max-width:36vw;color:var(--warm-dk);flex-shrink:0">
-      <option value="longest">Longest Wait</option>
-      <option value="newest">Newest First</option>
-      <option value="alpha">A → Z</option>
-    </select>
-  </div>
-  <div id="adopt-chips-row" style="padding:6px 16px;border-bottom:1px solid var(--cream-3);background:var(--cream);display:flex;gap:6px;flex-wrap:wrap">
-    <button class="rpt-chip active" id="af-all"  onclick="setAdoptFilter('all',this)">All</button>
-    <button class="rpt-chip"        id="af-dog"  onclick="setAdoptFilter('dog',this)">🐕 Dogs</button>
-    <button class="rpt-chip"        id="af-cat"  onclick="setAdoptFilter('cat',this)">🐈 Cats</button>
-    <button class="rpt-chip"        id="af-other" onclick="setAdoptFilter('other',this)">🐾 Other</button>
-  </div>
-  <div id="adopt-body">
-    <div class="adopt-grid" id="adopt-grid"></div>
+  <!-- Right col -->
+  <div class="sh-col sh-col-right">
+    <div class="sh-col-hdr"><div class="sh-col-title" id="sh-panel-title">Action Panel</div></div>
+    <div id="sh-action-empty" class="sh-action-empty">
+      <div class="sh-action-empty-icon">🏠</div>
+      <div style="font-size:.85rem;color:var(--warm-mid);text-align:center">Select a record or use the buttons in the left column</div>
+    </div>
+    <div id="sh-action-panel" style="flex:1;min-height:0;display:none;flex-direction:column">
+      <div class="sh-action-panel" id="sh-action-panel-body"></div>
+    </div>
   </div>
 </div>
 
+<div id="view-animalcontrol" class="view">
+  <!-- Left col: pickup queue -->
+  <div class="sh-col sh-col-left" style="border-top:3px solid #1e4080">
+    <div class="sh-col-hdr" style="background:#1e4080">
+      <div class="sh-col-title" style="color:#c8d8f0">Active Pickups</div>
+      <div id="ac-queue-badge" style="font-size:.7rem;font-weight:700;background:rgba(255,255,255,.15);color:#c8d8f0;padding:2px 9px;border-radius:999px">0 active</div>
+    </div>
+    <div class="sh-col-body" id="ac-queue">
+      <div class="sh-empty"><div class="sh-empty-icon">🚔</div>No pickups logged<br><span style="font-size:.72rem">Log a pickup to search for owner</span></div>
+    </div>
+  </div>
+  <!-- Right col: action panel -->
+  <div class="sh-col sh-col-right">
+    <div class="sh-col-hdr" style="background:#f0f4fa;border-bottom:1px solid #d0daea">
+      <div class="sh-col-title" style="color:#1e4080">Hastings Animal Control</div>
+      <div style="font-size:.7rem;color:#5070a0;font-weight:600">317 S Burlington Ave · (402) 461-2380</div>
+    </div>
+    <div id="ac-action-empty" class="sh-action-empty" style="background:#f8fafc">
+      <div class="sh-action-empty-icon">🔍</div>
+      <div style="font-size:.85rem;color:#5070a0">Log a pickup to search for the owner</div>
+      <button class="ac-log-btn" style="margin-top:10px" onclick="toggleACForm()">+ Log New Pickup</button>
+    </div>
+    <div id="ac-action-panel" style="flex:1;min-height:0;display:none;flex-direction:column">
+      <div class="sh-action-panel" id="ac-action-panel-body"></div>
+    </div>
+  </div>
+</div>
+
+<div id="view-adopt" class="view">
+  <div id="adopt-hdr">
+    <div>
+      <div id="adopt-hdr-title">🏠 Animals Available for Adoption</div>
+      <div id="adopt-hdr-sub">Hastings, NE area shelters · <span id="adopt-count">0</span> available</div>
+    </div>
+    <button id="adopt-add-btn" onclick="openAdoptForm()">+ Add Animal</button>
+  </div>
+  <div id="adopt-search-row">
+    <input id="adopt-search" type="text" placeholder="Search by species, breed, color, shelter…" oninput="renderAdoptView()" autocomplete="off">
+  </div>
+  <div id="adopt-body">
+    <div id="adopt-legend" style="font-size:.72rem;color:var(--warm-mid);padding:5px 16px;background:var(--cream);border-bottom:1px solid var(--cream-3);display:flex;gap:14px;flex-wrap:wrap;align-items:center">
+    <span style="font-weight:600;color:var(--warm-dk)">Card border:</span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--found-g);margin-right:4px;vertical-align:middle"></span>Available — under 14 days</span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#d4843a;margin-right:4px;vertical-align:middle"></span>Waiting 14–29 days</span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#c94f2a;margin-right:4px;vertical-align:middle"></span>Waiting 30+ days — needs a home urgently</span>
+  </div>
+  <div class="adopt-grid" id="adopt-grid"></div>
+  </div>
+</div>
+
+<!-- Add to adopt slide-up form -->
+<div id="adopt-form-panel" onclick="closeAdoptForm(event)">
+  <div id="adopt-form-inner">
+    <div style="font-family:var(--font-display);font-size:1.1rem;font-weight:600;color:var(--warm-dk);margin-bottom:4px">🏠 Post Animal for Adoption</div>
+    <div style="font-size:.76rem;color:var(--warm-mid);margin-bottom:16px">This will create a Found report and mark it adoption-ready, visible on the map and in the Adopt tab.</div>
+    <div class="inv-photo-drop" onclick="document.getElementById('af-photo-in').click()" style="margin-bottom:12px">
+      <input type="file" id="af-photo-in" accept="image/*" onchange="previewAdoptPhoto(this)">
+      <div id="af-photo-icon" style="font-size:1.6rem;margin-bottom:3px">📷</div>
+      <div id="af-photo-txt" style="font-size:.74rem;color:var(--warm-mid)">Tap to upload photo (strongly recommended)</div>
+      <img id="af-prev" class="inv-preview" alt="">
+    </div>
+    <div id="af-ai-wrap" style="display:none;margin-bottom:12px">
+      <button class="ai-id-btn" id="af-ai-btn" onclick="applyAIIdentify('af')">✨ Identify breed &amp; color with AI</button>
+      <div class="ai-id-result" id="af-ai-result"></div>
+    </div>
+    <div class="fr">
+      <div class="fg" style="margin:0"><label>Species</label><select id="af-species" onchange="updateBreedField('af-species','af-breed-wrap')"><option value="">Select…</option><option>Dog</option><option>Cat</option><option>Bird</option><option>Rabbit</option><option>Other</option></select></div>
+      <div class="fg" style="margin:0"><label>Sex</label><select id="af-sex"><option value="">Unknown</option><option>Male</option><option>Female</option></select></div>
+    </div>
+    <div class="fr" style="margin-top:10px">
+      <div class="fg" style="margin:0"><label>Breed</label><div id="af-breed-wrap"><input type="text" id="af-breed" placeholder="Select species first"></div></div>
+      <div class="fg" style="margin:0"><label>Color</label><input type="text" id="af-color" placeholder="e.g. Golden, white"></div>
+    </div>
+    <div class="fg" style="margin-top:10px"><label>Name (if known)</label><input type="text" id="af-name" placeholder="Leave blank if unknown"></div>
+    <div class="fg"><label>Age Estimate</label><select id="af-age"><option value="">Unknown</option><option>Puppy/Kitten</option><option>Young (1-2yr)</option><option>Adult (3-7yr)</option><option>Senior (8yr+)</option></select></div>
+    <div class="fg"><label>Description</label><textarea id="af-desc" placeholder="Personality, behavior, good with kids/pets, any special needs…" style="min-height:64px"></textarea></div>
+    <div class="fg"><label>Shelter / Contact</label><input type="text" id="af-shelter" placeholder="e.g. Adams County Humane Society"></div>
+    <div class="fg"><label>Phone</label><input type="tel" id="af-phone" placeholder="(402) 462-7387"></div>
+    <div style="display:flex;gap:8px;margin-top:6px">
+      <button class="adopt-ask-btn" style="flex:1;padding:12px;font-size:.9rem" onclick="submitAdoptListing()">✓ Post for Adoption</button>
+      <button class="sh-btn" onclick="closeAdoptForm(null)" style="padding:12px 18px">Cancel</button>
+    </div>
+  </div>
+</div>
+
+
 <!-- IN CARE VIEW -->
 <div id="view-incare" class="view" style="background:var(--cream-2);flex-direction:column;overflow:hidden">
-  <div class="mode-banner ops" style="padding:2px 14px;font-size:.62rem"><div class="mode-banner-dot" style="background:#3a7d44"></div>Heartland Pet Connection — Staff</div>
+  <div class="mode-banner ops"><div class="mode-banner-dot" style="background:#3a7d44"></div>Heartland Pet Connection — Staff</div>
   <!-- Header with shelter name + intake button -->
   <div style="padding:6px 14px;background:var(--cream);border-bottom:1px solid var(--cream-3);flex-shrink:0">
     <div style="font-family:var(--font-display);font-size:.82rem;font-weight:700;color:var(--warm-dk)" id="incare-shelter-label">Animals at Shelter</div>
@@ -855,226 +562,64 @@ textarea{min-height:64px}
   <div style="padding:5px 14px;border-bottom:1px solid var(--cream-3);background:var(--cream);flex-shrink:0;display:flex;gap:6px;align-items:center">
     <div style="position:relative;width:180px;flex-shrink:0">
       <span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:.8rem;pointer-events:none">🔍</span>
-      <input type="text" id="incare-search" placeholder="Search…" oninput="renderIncareView()" style="width:100%;padding:7px 10px 7px 28px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.8rem;background:#fff;box-sizing:border-box">
+      <input type="text" id="incare-search" placeholder="Search…" oninput="renderIncareView()" style="width:100%;padding:7px 10px 7px 28px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.78rem;background:var(--cream)">
     </div>
-    <select id="incare-sort" onchange="renderIncareView()" style="padding:7px 8px;border:1.5px solid var(--cream-3);border-radius:9px;font-family:var(--font-body);font-size:.75rem;background:#fff;flex-shrink:0;max-width:36vw;color:var(--warm-dk);width:auto;flex-shrink:0">
-      <option value="status">By Status</option>
-      <option value="alpha">A → Z</option>
-      <option value="newest">Newest First</option>
-      <option value="longest">Longest Stay</option>
+    <select id="incare-sort" onchange="renderIncareView()" style="font-size:.75rem;padding:6px 8px;border:1.5px solid var(--cream-3);border-radius:8px;font-family:var(--font-body);background:var(--cream)">
+      <option value="days">By Status</option>
+      <option value="name">By Name</option>
+      <option value="species">By Species</option>
+      <option value="date">By Date</option>
     </select>
   </div>
   <!-- Filter chips -->
   <div id="incare-filter-row" style="padding:5px 14px;border-bottom:1px solid var(--cream-3);background:var(--cream);flex-shrink:0;display:flex;gap:4px;flex-wrap:wrap;align-items:center">
-    <span class="ic-label" style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--warm-mid);margin-right:2px">Species:</span>
-    <button class="rpt-chip active" id="ic-chip-all"       onclick="setIncareFilter('all',this)">All</button>
-    <button class="rpt-chip"        id="ic-chip-dog"       onclick="setIncareFilter('dog',this)">🐕 Dogs</button>
-    <button class="rpt-chip"        id="ic-chip-cat"       onclick="setIncareFilter('cat',this)">🐈 Cats</button>
-    <span class="ic-label" style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--warm-mid);margin-left:6px;margin-right:2px">Status:</span>
-    <button class="rpt-chip"        id="ic-chip-hold"      onclick="setIncareFilter('hold',this)">⚠️ On Hold</button>
-    <button class="rpt-chip"        id="ic-chip-adopt"     onclick="setIncareFilter('adopt',this)">🌟 Adoption Ready</button>
-    <button class="rpt-chip"        id="ic-chip-long"      onclick="setIncareFilter('long',this)">🔴 30+ Days</button>
-    <button class="rpt-chip"        id="ic-chip-inq"       onclick="setIncareFilter('inq',this)">💬 Has Inquiries</button>
+    <span class="ic-filter-btn active" onclick="setIncareFilter('all',this)">All</span>
+    <span class="ic-filter-btn" onclick="setIncareFilter('hold',this)">⚠️ On Hold</span>
+    <span class="ic-filter-btn" onclick="setIncareFilter('adopt',this)">🌟 Adoption Ready</span>
+    <span class="ic-filter-btn" onclick="setIncareFilter('days30',this)">🔴 30+ Days</span>
+    <span class="ic-filter-btn" onclick="setIncareFilter('inquiries',this)">💬 Has Inquiries</span>
   </div>
-  <!-- Day count legend — same color system as Adopt page -->
+  <!-- Day count legend -->
   <div id="incare-legend" style="font-size:.72rem;color:var(--warm-mid);padding:5px 16px;background:var(--cream);border-bottom:1px solid var(--cream-3);display:flex;gap:14px;flex-wrap:wrap;align-items:center">
     <span style="font-weight:600;color:var(--warm-dk)">Card border:</span>
     <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#3a7d44;margin-right:4px;vertical-align:middle"></span>Under 14 days</span>
     <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#d4843a;margin-right:4px;vertical-align:middle"></span>14–29 days</span>
     <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#c94f2a;margin-right:4px;vertical-align:middle"></span>30+ days — urgent</span>
   </div>
-  <div id="incare-list" style="flex:1;overflow-y:auto;padding:12px;min-height:0;-webkit-overflow-scrolling:touch;padding-bottom:96px"></div>
-  <!-- Floating intake FAB — fixed bottom-right, thumb-friendly -->
-  <button onclick="openIntakeModal()"
-    style="position:fixed;bottom:40px;right:18px;z-index:800;
-           width:56px;height:56px;border-radius:50%;
-           background:var(--forest);color:#fff;border:none;
-           font-size:1.5rem;line-height:1;cursor:pointer;
-           box-shadow:0 6px 20px rgba(42,31,18,.35);
-           display:none;align-items:center;justify-content:center;
-           transition:transform .15s ease,box-shadow .15s ease"
-    id="intake-fab"
-    title="Log New Intake"
-    onmousedown="this.style.transform='scale(.93)'"
-    onmouseup="this.style.transform=''"
-    ontouchstart="this.style.transform='scale(.93)'"
-    ontouchend="this.style.transform=''">＋</button>
+  <div id="incare-list" style="flex:1;overflow-y:auto;padding:12px;min-height:0;-webkit-overflow-scrolling:touch"></div>
+  <!-- Floating intake FAB -->
+  <button id="intake-fab" onclick="openIntakeModal()" style="position:absolute;bottom:20px;right:20px;width:52px;height:52px;border-radius:50%;border:none;background:var(--forest);color:#fff;font-size:1.5rem;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,.3);z-index:100;display:none;align-items:center;justify-content:center">+</button>
 </div>
 
-<!-- Intake modal overlay -->
-<div id="intake-modal-overlay" style="display:none;position:fixed;inset:0;z-index:910;background:rgba(42,31,18,.55);align-items:flex-end;justify-content:center">
-  <div id="intake-modal-inner" style="background:var(--cream);border-radius:18px 18px 0 0;width:100%;max-width:600px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden" onclick="event.stopPropagation()">
-    <div style="padding:14px 20px 10px;border-bottom:1px solid var(--cream-3);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
-      <div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--warm-dk)">New Animal Intake</div>
-      <button onclick="closeIntakeModal()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--warm-mid)">✕</button>
-    </div>
-    <div id="intake-modal-body" style="flex:1;overflow-y:auto;padding:16px 20px;-webkit-overflow-scrolling:touch;min-height:0"></div>
-    <!-- Static footer: always visible, never scrolls -->
-    <div id="intake-modal-footer" style="display:none;flex-shrink:0;padding:10px 20px;border-top:1px solid var(--cream-3);background:var(--cream)">
-      <div style="display:flex;gap:8px">
-        <button class="sh-btn primary" id="intake-submit-btn" style="flex:1;padding:12px;font-size:.9rem" onclick="submitIntakeFromModal()">✓ Log Intake</button>
-        <button class="sh-btn" style="padding:12px" onclick="closeIntakeModal()">Cancel</button>
+<!-- REPORTS VIEW -->
+<div id="view-reports"<div id="view-reports" class="view">
+  <!-- Left: search + list -->
+  <div id="rpt-left">
+    <div id="rpt-search-wrap">
+      <input id="rpt-search" type="text" placeholder="Search by name, breed, color, location…" oninput="renderReportsList()" autocomplete="off">
+      <div class="rpt-chips">
+        <button class="rpt-chip active"    id="rchip-all"     onclick="setRptFilter('all',this)">All</button>
+        <button class="rpt-chip lost"      id="rchip-lost"    onclick="setRptFilter('lost',this)">🔴 Lost</button>
+        <button class="rpt-chip found"     id="rchip-found"   onclick="setRptFilter('found',this)">🟢 Found</button>
+        <button class="rpt-chip reunited"  id="rchip-reunited" onclick="setRptFilter('reunited',this)">🎉 Reunited</button>
+        <button class="rpt-chip" id="rchip-adopt" onclick="setRptFilter('adopt',this)" style="color:#3060c0;border-color:#a0c0f0">🏠 Adopt</button>
       </div>
+      <div id="rpt-count"></div>
     </div>
+    <div id="rpt-list"></div>
   </div>
-</div>
-
-<!-- Animal edit modal -->
-<div id="animal-edit-overlay" style="display:none;position:fixed;inset:0;z-index:920;background:rgba(42,31,18,.55);align-items:flex-end;justify-content:center">
-  <div id="animal-edit-inner" style="background:var(--cream);border-radius:18px 18px 0 0;width:100%;max-width:600px;max-height:94vh;display:flex;flex-direction:column;overflow:hidden" onclick="event.stopPropagation()">
-    <div style="padding:14px 20px 10px;border-bottom:1px solid var(--cream-3);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
-      <div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--warm-dk)" id="animal-edit-title">Edit Animal Record</div>
-      <button onclick="closeAnimalEdit()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--warm-mid)">✕</button>
-    </div>
-    <div id="animal-edit-body" style="flex:1;overflow-y:auto;padding:16px 20px;-webkit-overflow-scrolling:touch;min-height:0"></div>
-    <!-- Static footer: always visible, never scrolls -->
-    <div id="animal-edit-footer" style="display:none;flex-shrink:0;padding:10px 20px;border-top:1px solid var(--cream-3);background:var(--cream)">
-      <div style="display:flex;gap:8px">
-        <button class="sh-btn primary" id="ae-save-btn" style="flex:1;padding:12px;font-size:.9rem" onclick="saveAnimalEdit(window._aeEditId)">✓ Save Changes</button>
-        <button class="sh-btn" style="padding:12px" onclick="closeAnimalEdit()">Cancel</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-<div id="view-reports" class="view">
-  <div class="mode-banner admin"><div class="mode-banner-dot" style="background:#c8841a"></div>Reports &amp; Admin</div>
-  <div id="rpt-row">
-
-  <!-- Left: 3-step report builder -->
-  <div id="rpt-left" style="display:flex;flex-direction:column;overflow-y:auto">
-
-    <!-- Step 1: Define Dataset -->
-    <div style="padding:14px 14px 10px;border-bottom:1px solid var(--cream-3)">
-      <div style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--amber);margin-bottom:10px">Step 1 — Define Dataset</div>
-      <div style="font-size:.78rem;font-weight:600;color:var(--warm-dk);padding:4px 0 10px" id="rpt-shelter-label">—</div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <div>
-          <div style="font-size:.68rem;font-weight:600;color:var(--warm-mid);margin-bottom:3px">Species</div>
-          <select id="rpt-filter-species" style="width:100%;font-size:.8rem;padding:6px 10px;border-radius:7px;border:1px solid var(--cream-3);font-family:var(--font-body);background:#fff">
-            <option value="">All Species</option>
-            <option>Dog</option><option>Cat</option><option>Bird</option><option>Rabbit</option><option>Other</option>
-          </select>
-        </div>
-        <div>
-          <div style="font-size:.68rem;font-weight:600;color:var(--warm-mid);margin-bottom:3px">Date Range</div>
-          <select id="rpt-filter-days" style="width:100%;font-size:.8rem;padding:6px 10px;border-radius:7px;border:1px solid var(--cream-3);font-family:var(--font-body);background:#fff">
-            <option value="">All Time</option>
-            <option value="30">Last 30 days</option>
-            <option value="60">Last 60 days</option>
-            <option value="90">Last 90 days</option>
-            <option value="365">This Year</option>
-          </select>
-        </div>
-        <div>
-          <div style="font-size:.68rem;font-weight:600;color:var(--warm-mid);margin-bottom:3px">Status Filter</div>
-          <select id="rpt-filter-status" style="width:100%;font-size:.8rem;padding:6px 10px;border-radius:7px;border:1px solid var(--cream-3);font-family:var(--font-body);background:#fff">
-            <option value="">All Statuses</option>
-            <option value="hold">On Hold</option>
-            <option value="stray">In Care (Stray)</option>
-            <option value="adopt">Adoption Ready</option>
-            <option value="reunited">Reunited</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    <!-- Step 2: Choose Report -->
-    <div style="padding:14px 14px 10px;border-bottom:1px solid var(--cream-3);flex-shrink:0">
-      <div style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--amber);margin-bottom:10px">Step 2 — Choose Report</div>
-      <div id="report-type-list" style="display:flex;flex-direction:column;gap:3px"></div>
-    </div>
-
-    <!-- Step 3: Generate -->
-    <div style="padding:14px;padding-bottom:14px;flex-shrink:0">
-      <div style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--amber);margin-bottom:10px">Step 3 — Generate</div>
-      <button id="rpt-run-btn" onclick="runSelectedReport()" style="width:100%;padding:12px;font-family:var(--font-display);font-size:.9rem;font-weight:700;background:var(--forest);color:#fff;border:none;border-radius:10px;cursor:pointer;opacity:.4;pointer-events:none" disabled>
-        ▶ Generate Report
-      </button>
-      <div id="rpt-selected-label" style="font-size:.72rem;color:var(--warm-mid);text-align:center;margin-top:6px">Select a report type above</div>
-
-    </div>
-
-    <div id="rpt-list" style="flex:1;overflow-y:auto;min-height:80px;padding-bottom:8px"></div>
-  </div>
-
-  <!-- Right: report output -->
+  <!-- Right: detail -->
   <div id="rpt-right">
-    <div id="rpt-detail-empty" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--warm-mid);gap:10px;padding:32px;text-align:center">
-      <div style="font-size:3rem;opacity:.15">📊</div>
-      <div style="font-size:.95rem;font-weight:700;color:var(--warm-dk)">No report generated yet</div>
-      <div style="font-size:.78rem;line-height:1.6">
-        Use the panel on the left:<br>
-        <strong>1.</strong> Set your dataset filters<br>
-        <strong>2.</strong> Choose a report type<br>
-        <strong>3.</strong> Tap <em>Generate Report</em>
-      </div>
-    </div>
-    <!-- Report output panel -->
-    <div id="rpt-report-panel" style="display:none;flex-direction:column;height:100%">
-      <!-- Report panel header — flex-column on mobile -->
-      <div style="padding:10px 14px;border-bottom:1px solid var(--cream-3);flex-shrink:0;background:var(--cream)">
-        <!-- Title row with back btn and close -->
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-          <button onclick="closeReportPanel()" style="display:none;padding:6px 12px;font-size:.82rem;font-weight:700;border:none;border-radius:7px;background:var(--forest);color:#fff;cursor:pointer;flex-shrink:0;margin-right:8px" class="mobile-back-btn">← Back</button>
-          <div style="min-width:0;flex:1">
-            <div style="font-family:var(--font-display);font-size:.95rem;font-weight:700;color:var(--warm-dk);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="rpt-panel-title">Report</div>
-            <div style="font-size:.68rem;color:var(--warm-mid)" id="rpt-panel-sub"></div>
-          </div>
-          <button onclick="closeReportPanel()" style="padding:6px 9px;font-size:.8rem;border-radius:7px;border:none;background:var(--cream-2);cursor:pointer;flex-shrink:0;margin-left:8px" class="desktop-close-btn">✕</button>
-        </div>
-        <!-- Action buttons — lean, right-aligned -->
-        <div style="display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;flex-shrink:0">
-          <button onclick="printActiveReport()" title="Print" style="padding:5px 8px;font-size:.68rem;border-radius:6px;border:1px solid var(--cream-3);background:var(--cream);cursor:pointer;touch-action:manipulation;color:var(--warm-dk)">🖨️</button>
-          <button onclick="exportReportWord()" title="Export Word" style="padding:5px 8px;font-size:.68rem;border-radius:6px;border:1px solid #2050a0;background:var(--cream);cursor:pointer;touch-action:manipulation;color:#2050a0">📄</button>
-          <button onclick="emailActiveReport()" title="Email" style="padding:5px 8px;font-size:.68rem;border-radius:6px;border:1px solid #059669;background:var(--cream);cursor:pointer;touch-action:manipulation;color:#059669">✉️</button>
-          <button onclick="openContentGen('press')" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid #e0a090;background:#fff;cursor:pointer;font-family:var(--font-body);color:#c0392b;white-space:nowrap;flex-shrink:0">📣 Shareable Summary</button>
-          <button onclick="openContentGen('fund')" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid #e0c090;background:#fff;cursor:pointer;font-family:var(--font-body);color:#b06010;white-space:nowrap;flex-shrink:0">💛 Donor Message</button>
-          
-        </div>
-      </div>
-      <!-- Hidden filters row (kept for JS compatibility, not shown) -->
-      <div id="rpt-filters-row" style="display:none">
-        <select id="rpt-filter-shelter" style="display:none"></select>
-      </div>
-      <div id="rpt-report-body" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px;font-family:Georgia,serif;font-size:.86rem;line-height:1.7;color:var(--warm-dk)"></div>
+    <div id="rpt-detail-empty">
+      <div style="font-size:2.5rem;opacity:.2">📋</div>
+      <div style="font-size:.88rem">Select a report to see details</div>
     </div>
     <div id="rpt-detail-panel"></div>
   </div>
-
-  </div><!-- end rpt-row -->
 </div>
 
 <div id="view-map" class="view active">
   <div id="map-container">
-
-    <!-- ── SHELTER SPOTLIGHT — floating card, bottom-right of map ──────
-         Doctrine-safe presentation layer only. No pins. No map state.
-         Pulls from existing shelter/adoption records only. No new writes.
-    ─────────────────────────────────────────────────────────────────── -->
-    <div id="shelter-spotlight" style="display:none;position:absolute;bottom:124px;right:14px;z-index:700;width:200px;border-radius:20px;overflow:hidden;box-shadow:0 12px 40px rgba(42,31,18,.35),0 4px 12px rgba(0,0,0,.15);transition:opacity .6s ease,transform .15s ease;opacity:0;pointer-events:auto;cursor:pointer;border:1.5px solid rgba(255,255,255,.8);background:var(--cream);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)" onclick="this.style.transform='scale(1.04)';setTimeout(function(){setView('adopt',null);},150)">
-      <!-- Shelter companion card — NOT a map feature. No pins. No doctrine impact. -->
-      <div style="background:var(--forest);padding:6px 8px 6px 10px;display:flex;align-items:center;gap:6px;width:100%">
-        <span style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.85)" id="spotlight-header-label">🏠 From the Shelter</span><button onclick="event.stopPropagation();dismissSpotlight()" style="background:none;border:none;color:rgba(255,255,255,.6);font-size:.85rem;line-height:1;cursor:pointer;padding:0 2px;margin-left:auto;flex-shrink:0" title="Dismiss">✕</button>
-      </div>
-      <div style="position:relative;height:120px;background:var(--cream-2);overflow:hidden">
-        <img id="spotlight-img" src="" alt="" style="width:100%;height:100%;object-fit:contain;object-position:center center;background:var(--cream-2);display:none">
-        <div id="spotlight-emoji" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:3rem;background:var(--cream-2)">🐾</div>
-        <div id="spotlight-label" style="position:absolute;bottom:6px;left:6px;background:rgba(255,255,255,.9);color:var(--forest);font-size:.56rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:2px 7px;border-radius:999px;box-shadow:0 1px 4px rgba(0,0,0,.12)">Adoptable</div>
-      </div>
-      <div style="padding:8px 10px 10px;background:var(--cream);min-height:120px">
-        <div id="spotlight-ai-bio" style="font-size:.7rem;color:var(--warm-dk);line-height:1.35;font-style:italic;margin-bottom:5px;overflow:hidden;min-height:47px;transition:opacity .3s ease;opacity:0"></div>
-        <div id="spotlight-name" style="font-family:var(--font-display);font-size:.88rem;color:var(--warm-dk);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px"></div>
-        <div id="spotlight-bio" style="font-size:.68rem;color:var(--warm-mid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:8px"></div>
-        <div style="background:var(--forest);color:#fff;font-size:.68rem;font-weight:700;text-align:center;padding:6px 8px;border-radius:8px;letter-spacing:.02em" id="spotlight-cta">View Adoptable Pets →</div>
-      </div>
-    </div>
-
-    <div id="map-loading" style="position:absolute;inset:0;z-index:500;background:rgba(244,241,235,.7);display:flex;align-items:center;justify-content:center;pointer-events:none;transition:opacity .4s ease">
-      <div style="font-size:.85rem;color:var(--warm-mid);font-weight:600;font-family:var(--font-body)">🗺️ Loading map…</div>
-    </div>
-    <!-- Map zoom controls -->
     <div id="map"></div>
 
     <!-- Live banner -->
@@ -1084,19 +629,19 @@ textarea{min-height:64px}
     </div>
 
     <!-- Floating filter pills -->
-    <!-- Map legend — bottom left -->
-
-<div id="map-legend" style="display:flex;flex-direction:column;gap:5px">
-      <div class="legend-item"><div class="stat-dot lost"></div><span id="cnt-lost" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span>Lost</span></div>
-      <div class="legend-item"><div class="stat-dot found"></div><span id="cnt-found" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span>Found</span></div>
-      <div class="legend-item"><div class="legend-pin" style="background:#d06020"></div><span id="cnt-at-shelter" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span>Bringing to Shelter</span></div>
-      <div class="legend-item"><div class="legend-pin" style="background:#1a3f8a"></div><span id="cnt-shelter" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span id="legend-shelter-label">At Heartland Shelter</span></div>
-      <div class="legend-item" style="padding-left:18px"><div class="legend-pin" style="background:#c8841a"></div><span id="cnt-adopt" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span>↳ Adoptable</span></div>
-      <div style="font-size:.55rem;color:var(--warm-mid);line-height:1.4;margin-top:2px;max-width:160px">Info may change. Contact Heartland for official status.</div>
+    <div id="map-filters">
+      <button class="filter-btn all active" onclick="setFilter('all')">All</button>
+      <button class="filter-btn lost"       onclick="setFilter('lost')">🔴 Lost</button>
+      <button class="filter-btn found"      onclick="setFilter('found')">🟢 Found</button>
     </div>
 
-    <div id="drop-hint" onclick="void(0)">
-      <!-- Subtle full-map overlay: tap anywhere on the map to place pin -->
+    <div id="stats-bar">
+      <div class="stat-pill"><div class="stat-dot lost"></div><span id="cnt-lost">0</span>&nbsp;lost</div>
+      <div class="stat-pill"><div class="stat-dot found"></div><span id="cnt-found">0</span>&nbsp;found</div>
+    </div>
+
+    <!-- Placement overlay: full-map, pointer-events:none so taps go through to map -->
+    <div id="drop-hint">
       <div style="pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:12px">
         <div style="background:rgba(0,0,0,.38);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);color:rgba(255,255,255,.92);border-radius:14px;padding:14px 24px;font-size:1.05rem;font-weight:600;font-family:var(--font-display);letter-spacing:.01em;box-shadow:0 4px 24px rgba(0,0,0,.18);animation:hpulse 2s ease-in-out infinite">
           📍 Tap the map to place pin
@@ -1104,17 +649,31 @@ textarea{min-height:64px}
         <button id="drop-cancel" onclick="event.stopPropagation();cancelPlace();closeCard();closePanel();updateOrientationStrip('map');" style="pointer-events:all;padding:10px 22px;min-height:44px;font-size:.82rem;font-weight:700;border:none;border-radius:999px;background:rgba(255,255,255,.18);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);color:rgba(255,255,255,.9);cursor:pointer;font-family:var(--font-body);letter-spacing:.02em">✕ Cancel</button>
       </div>
     </div>
-    <!-- Shown after pin placed on mobile — big tap target to return to form -->
-    <div id="pin-set-btn" style="display:none;position:absolute;bottom:80px;left:50%;transform:translateX(-50%);z-index:900;background:var(--forest);color:var(--cream);border:none;border-radius:999px;padding:14px 28px;font-size:.9rem;font-weight:700;font-family:var(--font-display);box-shadow:0 4px 20px rgba(0,0,0,.35);cursor:pointer;white-space:nowrap;animation:hpulse 1.4s ease-in-out infinite" onclick="document.getElementById('pin-set-btn').style.display='none'; var _s=document.getElementById('orientation-strip'); if(_s) _s.style.display='none'; document.getElementById('side-panel').classList.add('open'); setTimeout(function(){map.invalidateSize();},300);">
-      ✅ Pin placed — tap to continue →
+    <!-- Shown after pin placed on mobile -->
+    <div id="pin-set-btn" style="display:none;position:absolute;bottom:80px;left:50%;transform:translateX(-50%);z-index:900;background:var(--forest);color:var(--cream);border:none;border-radius:999px;padding:14px 28px;font-size:.9rem;font-weight:700;font-family:var(--font-display);box-shadow:0 4px 20px rgba(0,0,0,.35);cursor:pointer;white-space:nowrap;animation:hpulse 1.4s ease-in-out infinite" onclick="document.getElementById('pin-set-btn').style.display='none'; var _s=document.getElementById('orientation-strip'); if(_s) _s.style.display='none'; document.getElementById('side-panel').classList.add('open'); setTimeout(function(){map.invalidateSize();},300);">✅ Pin placed — tap to continue</div>
+    <!-- Out-of-bounds overlay -->
+    <div id="oob-overlay" style="display:none;position:fixed;inset:0;z-index:2000;pointer-events:none;align-items:center;justify-content:center">
+      <div id="oob-msg" style="pointer-events:auto;background:rgba(42,31,18,.92);color:#fff;border-radius:14px;padding:18px 28px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.35);max-width:280px;backdrop-filter:blur(8px)">
+        <div style="font-size:1.4rem;margin-bottom:6px">📍</div>
+        <div style="font-weight:700;font-size:.92rem;margin-bottom:3px">Outside service area</div>
+        <div style="font-size:.78rem;opacity:.82;line-height:1.5">Please tap within Adams County, NE</div>
+      </div>
+    </div>
+    <!-- Map legend -->
+    <div id="map-legend" style="display:flex;flex-direction:column;gap:5px">
+      <div style="display:flex;align-items:center;gap:6px;font-size:.72rem;color:var(--warm-dk)"><span style="width:12px;height:12px;border-radius:50%;background:#c94f2a;display:inline-block;flex-shrink:0"></span>Lost</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:.72rem;color:var(--warm-dk)"><span style="width:12px;height:12px;border-radius:50%;background:#3a7d44;display:inline-block;flex-shrink:0"></span>Found</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:.72rem;color:var(--warm-dk)"><span style="width:12px;height:12px;border-radius:50%;background:#d06020;display:inline-block;flex-shrink:0"></span>Bringing to Shelter</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:.72rem;color:var(--warm-dk)">🐾 Heartland</div>
+      <div style="font-size:.58rem;color:var(--warm-mid);line-height:1.4;margin-top:2px;max-width:160px">Info may change. Contact Heartland for official status.</div>
     </div>
 
     <div id="pin-card">
       <button class="pc-close" onclick="closeCard()">✕</button>
-      <div id="pin-card-body" style="overflow-y:auto;max-height:calc(80vh - 40px);-webkit-overflow-scrolling:touch"></div>
+      <div id="pin-card-body"></div>
     </div>
 
-    <div id="empty-hint">🐾 No reports yet — tap <strong>+ Report</strong> to post the first one.</div>
+    <div id="empty-hint">🐾 No reports yet — tap "Lost Pet" or "Found Pet" above to add one</div>
 
     <div id="side-panel">
       <div class="panel-hdr">
@@ -1139,13 +698,9 @@ textarea{min-height:64px}
           </div>
           <hr class="div">
           <div class="sl">📍 Last Seen Location</div>
-          <div class="loc-prompt on" id="l-prompt">
-            <button onclick="startPlace('lost')" style="width:100%;padding:12px;border:2px dashed #c94f2a;border-radius:9px;background:#fff8f6;color:#c94f2a;font-size:.82rem;font-weight:700;cursor:pointer;font-family:var(--font-body);display:flex;align-items:center;justify-content:center;gap:8px">
-              📍 Tap to Set Location on Map
-            </button>
-            <div style="font-size:.66rem;color:var(--warm-mid);text-align:center;margin-top:4px">The map will open — tap where your pet was last seen</div>
-          </div>
-          <div class="loc-set"       id="l-locset">✅ <span id="l-loctxt">Location set</span> — <button onclick="startPlace('lost')" style="background:none;border:none;color:var(--forest);font-size:.72rem;font-weight:600;cursor:pointer;padding:0;font-family:var(--font-body);text-decoration:underline">Move pin</button></div>
+          <div class="loc-prompt on" id="l-prompt">🗺️ Click the map to place the last-seen pin</div>
+          <div class="loc-set"       id="l-locset">✅ <span id="l-loctxt">Location set</span></div>
+          <button class="reset-loc"  id="l-resetbtn" onclick="startPlace('lost')">📍 Move pin</button>
           <div class="fg"><label>Landmark / Address (optional)</label><input type="text" id="l-address" placeholder="e.g. Near Brickyard Park"></div>
           <hr class="div">
           <div class="sl">🖼️ Photo</div>
@@ -1168,8 +723,7 @@ textarea{min-height:64px}
           </div>
           <div class="fg"><label>Microchip # (optional)</label><input type="text" id="l-chip" placeholder="15-digit number"></div>
           <div class="fg"><label>Additional Details</label><textarea id="l-notes" placeholder="Collar, markings, behavior…"></textarea></div>
-          <!-- Honeypot: hidden from real users, bots fill it in -->
-          <div style="position:absolute;left:-9999px;top:-9999px;opacity:0;pointer-events:none" aria-hidden="true"><input type="text" id="l-confirm-email" name="confirm_email" tabindex="-1" autocomplete="off"></div>
+          <button class="submit-btn lost" onclick="submitLost()">🔴 Submit Lost Pet Report</button>
         </div>
 
         <!-- FOUND FORM -->
@@ -1182,11 +736,9 @@ textarea{min-height:64px}
           <div class="fg"><label>Description</label><textarea id="f-desc" placeholder="Size, age, collar, behavior…"></textarea></div>
           <hr class="div">
           <div class="sl">📍 Where Found</div>
-          <div class="loc-prompt on" id="f-prompt">
-            <button onclick="startPlace('found')" style="width:100%;padding:12px;border:2px dashed #3a7d44;border-radius:9px;background:#f6fff7;color:#3a7d44;font-size:.82rem;font-weight:700;cursor:pointer;font-family:var(--font-body);display:flex;align-items:center;justify-content:center;gap:8px">📍 Tap to Set Location on Map</button>
-            <div style="font-size:.66rem;color:var(--warm-mid);text-align:center;margin-top:4px">The map will open — tap where you found the pet</div>
-          </div>
-          <div class="loc-set" id="f-locset">✅ <span id="f-loctxt">Location set</span> — <button onclick="startPlace('found')" style="background:none;border:none;color:var(--forest);font-size:.72rem;font-weight:600;cursor:pointer;padding:0;font-family:var(--font-body);text-decoration:underline">Move pin</button></div>
+          <div class="loc-prompt on" id="f-prompt">🗺️ Click the map to place where you found them</div>
+          <div class="loc-set"       id="f-locset">✅ <span id="f-loctxt">Location set</span></div>
+          <button class="reset-loc"  id="f-resetbtn" onclick="startPlace('found')">📍 Move pin</button>
           <div class="fg"><label>Landmark / Address (optional)</label><input type="text" id="f-address" placeholder="e.g. Near the fairgrounds"></div>
           <hr class="div">
           <div class="sl">🖼️ Photo</div>
@@ -1196,10 +748,6 @@ textarea{min-height:64px}
             <div class="photo-drop-txt"  id="f-dtxt">Tap to upload a photo</div>
             <img id="f-prev" class="photo-prev" alt="preview">
           </div>
-          <div id="f-ai-wrap" style="display:none;margin-top:8px">
-            <button class="ai-id-btn" id="f-ai-btn" onclick="applyAIIdentify('f')">✨ Identify breed &amp; color with AI</button>
-            <div class="ai-id-result" id="f-ai-result"></div>
-          </div>
           <hr class="div">
           <div class="sl">📞 Your Contact</div>
           <div class="fr">
@@ -1208,22 +756,19 @@ textarea{min-height:64px}
           </div>
           <div class="chk-row">
             <input type="checkbox" id="f-shelter" onchange="document.getElementById('f-sgrp').style.display=this.checked?'':'none'">
-            <label for="f-shelter">🏠 I have brought or am bringing this pet to a shelter or vet</label>
+            <label for="f-shelter">🏠 Pet is at a shelter or vet</label>
           </div>
           <div id="f-sgrp" style="display:none" class="fg">
-            <label>Which shelter or vet?</label>
-            <input type="text" id="f-sname" placeholder="e.g. Heartland Pet Connection">
+            <label>Shelter / Vet Name</label>
+            <input type="text" id="f-sname" placeholder="e.g. Adams County Humane Society">
           </div>
-          <div style="position:absolute;left:-9999px;top:-9999px;opacity:0;pointer-events:none" aria-hidden="true"><input type="text" id="f-confirm-email" name="confirm_email" tabindex="-1" autocomplete="off"></div>
         </div>
-
-      </div>
-      <!-- ═══ PANEL FOOTER — always visible, never scrolls ═══ -->
-      <div id="panel-footer" style="flex-shrink:0;padding:10px 20px 14px;background:var(--cream);border-top:1px solid var(--cream-3)">
-        <div id="l-form-err" style="display:none;background:#fff0ee;border:1.5px solid #c94f2a;border-radius:8px;padding:8px 12px;font-size:.78rem;color:#8a2010;margin-bottom:8px;line-height:1.4"></div>
-        <div id="f-form-err" style="display:none;background:#fff0ee;border:1.5px solid #c94f2a;border-radius:8px;padding:8px 12px;font-size:.78rem;color:#8a2010;margin-bottom:8px;line-height:1.4"></div>
-        <button class="submit-btn lost"  id="panel-submit-lost"  onclick="submitLost()"  style="display:none;margin-top:0">🔴 Submit Lost Pet Report</button>
-        <button class="submit-btn found" id="panel-submit-found" onclick="submitFound()" style="display:none;margin-top:0">🟢 Submit Found Pet Report</button>
+      <!-- Panel footer: always visible -->
+      <div id="panel-footer" style="flex-shrink:0;padding:10px 16px;border-top:1px solid var(--cream-3);background:var(--cream)">
+        <div id="l-form-err" style="display:none;color:#c94f2a;font-size:.75rem;padding:6px 0;font-weight:600"></div>
+        <div id="f-form-err" style="display:none;color:#c94f2a;font-size:.75rem;padding:6px 0;font-weight:600"></div>
+        <button id="panel-submit-lost" onclick="submitLost()" class="submit-btn" style="display:none;width:100%;padding:13px;font-size:.92rem;font-weight:700;border:none;border-radius:10px;background:var(--lost-r);color:#fff;font-family:var(--font-display);cursor:pointer;touch-action:manipulation">Submit Lost Pet Report</button>
+        <button id="panel-submit-found" onclick="submitFound()" class="submit-btn" style="display:none;width:100%;padding:13px;font-size:.92rem;font-weight:700;border:none;border-radius:10px;background:var(--found-g);color:#fff;font-family:var(--font-display);cursor:pointer;touch-action:manipulation">Submit Found Pet Report</button>
       </div>
     </div>
   </div>
@@ -2236,7 +1781,7 @@ function resolveFoundPinFromIntake(foundId, lostOwnerId) {
   var bd    = document.getElementById('intake-match-backdrop');
   if (panel) panel.remove();
   if (bd)    bd.remove();
-  updateOrientationStrip('map');
+
   var r = reports.find(function(x){ return x.id == foundId; });
   if (!r) return;
   r.reunited = true;
@@ -5741,8 +5286,10 @@ function submitLost() {
     r.shelter = false;
   }
   r.source = 'public'; r.createdAt = r.createdAt || r.date;
-  /* Close panel immediately — keeps UI responsive even with large photo */
+  /* Capture photo BEFORE resetForm clears the img src */
+  var _savedPhotoL = r.photo || getPhoto('l-prev');
   closePanel(); resetForm('lost');
+  r.photo = _savedPhotoL;  /* restore after form reset */
   pLat.lost = null; pLng.lost = null;
   var slb2 = document.getElementById('panel-submit-lost');
   if (slb2) slb2.style.opacity = '';
@@ -5799,8 +5346,10 @@ function submitFound() {
   }
   if (r.shelter === true) r.atShelter = false;
   r.source = 'public'; r.createdAt = r.createdAt || r.date;
-  /* Close panel immediately — keeps UI responsive even with large photo */
+  /* Capture photo BEFORE resetForm clears the img src */
+  var _savedPhoto = r.photo || getPhoto('f-prev');
   closePanel(); resetForm('found');
+  r.photo = _savedPhoto;  /* restore after form reset */
   pLat.found = null; pLng.found = null;
   if (sfb) sfb.style.opacity = '';
   /* Defer heavy JSON.stringify + render to avoid main-thread freeze */
@@ -9581,50 +9130,47 @@ function maybeShowTutorial() {
       <div class="fg" style="margin:0"><label>Email</label><input type="email" id="inq-email" placeholder="you@email.com"></div>
     </div>
     <div class="fg"><label>Message (optional)</label><textarea id="inq-msg" placeholder="Tell them about yourself, your home, other pets…" style="min-height:72px"></textarea></div>
-    <div id="inq-success" style="display:none;background:#e8f4e9;border:1px solid var(--found-g);border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:.84rem;color:#2d6a35;font-weight:600">✓ Interest sent! Heartland will be in touch soon.</div>
+    <div id="inq-success" style="display:none;background:#e8f4e9;border:1px solid var(--found-g);border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:.84rem;color:#2d6a35;font-weight:600">✓ Interest sent! The shelter will be in touch soon.</div>
     <div style="display:flex;gap:8px" id="inq-btns">
-      <button class="adopt-ask-btn" style="flex:1;padding:12px 11px;font-size:.9rem;min-height:48px;-webkit-tap-highlight-color:rgba(0,0,0,.1);touch-action:manipulation" onclick="submitInquiry()">📬 Send Interest</button>
+      <button class="adopt-ask-btn" style="flex:1;padding:11px;font-size:.9rem" onclick="submitInquiry()">📬 Send Interest</button>
       <button class="sh-btn" onclick="closeInquiryPanel(null)" style="padding:11px 16px">Cancel</button>
     </div>
   </div>
 </div>
 
-
-
-
-<!-- SEO footer — local signals, minimal UI footprint -->
-<footer id="seo-footer" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:1;background:rgba(42,31,18,.88);padding:2px 10px;font-size:.58rem;color:rgba(255,255,255,.45);display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;white-space:normal;overflow:visible;row-gap:0">
-  <a href="/lost-pets-hastings-ne" style="color:rgba(255,255,255,.5);text-decoration:none">Lost pets in Hastings</a>
-  <span>·</span>
-  <a href="/found-pets-hastings-ne" style="color:rgba(255,255,255,.5);text-decoration:none">Found pets in Hastings</a>
-  <span>·</span>
-  <a href="/pets-in-care-hastings-ne" style="color:rgba(255,255,255,.5);text-decoration:none">Pets in care at Heartland</a>
-  <span>·</span>
-  <span>Hastings, NE &amp; Adams County</span>
-</footer>
-
-<!-- Out-of-bounds overlay — centered on map -->
-<div id="oob-overlay" style="display:none;position:fixed;inset:0;z-index:2000;pointer-events:none;align-items:center;justify-content:center">
-  <div id="oob-msg" style="pointer-events:auto;background:rgba(42,31,18,.92);color:#fff;border-radius:14px;padding:18px 28px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.35);max-width:280px;backdrop-filter:blur(8px)">
-    <div style="font-size:1.4rem;margin-bottom:6px">📍</div>
-    <div style="font-weight:700;font-size:.92rem;margin-bottom:3px">Outside service area</div>
-    <div style="font-size:.78rem;opacity:.82;line-height:1.5">Please tap within Adams County, NE</div>
-  </div>
-</div>
-<!-- STAFF TUTORIAL OVERLAY -->
-<div id="staff-tutorial-overlay" style="display:none">
-  <div id="staff-tutorial-card">
-    <div class="st-header">
-      <h2>Welcome to PawPulse Staff</h2>
-      <p>Your quick walkthrough — 6 steps, 60 seconds</p>
+<!-- Intake Modal -->
+<div id="intake-modal-overlay" style="display:none;position:fixed;inset:0;z-index:4000;background:rgba(0,0,0,.5);align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeIntakeModal()">
+  <div id="intake-modal-inner" style="background:var(--cream);border-radius:18px 18px 0 0;width:100%;max-width:600px;max-height:94vh;display:flex;flex-direction:column;overflow:hidden" onclick="event.stopPropagation()">
+    <div style="padding:14px 20px 10px;border-bottom:1px solid var(--cream-3);display:flex;justify-content:space-between;align-items:center;flex-shrink:0">
+      <div style="font-family:var(--font-display);font-weight:700;font-size:.95rem;color:var(--warm-dk)">Log New Intake</div>
+      <button onclick="closeIntakeModal()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--warm-mid);padding:4px 8px">✕</button>
     </div>
-    <div class="st-steps" id="st-steps-container"></div>
-    <div class="st-footer">
-      <button class="st-btn-skip" onclick="closeTutorial(true)">Skip for now</button>
-      <div class="st-progress" id="st-progress"></div>
-      <button class="st-btn-primary" id="st-next-btn" onclick="tutorialNext()">Next →</button>
+    <div id="intake-modal-body" style="flex:1;overflow-y:auto;padding:16px 20px;-webkit-overflow-scrolling:touch;min-height:0"></div>
+    <div id="intake-modal-footer" style="display:none;flex-shrink:0;padding:10px 20px;border-top:1px solid var(--cream-3);background:var(--cream)">
+      <div style="display:flex;gap:8px">
+        <button class="sh-btn primary" id="intake-submit-btn" style="flex:1;padding:12px;font-size:.9rem;touch-action:manipulation" onclick="submitIntakeFromModal()">✓ Log Intake</button>
+        <button class="sh-btn" style="padding:12px;touch-action:manipulation" onclick="closeIntakeModal()">Cancel</button>
+      </div>
     </div>
   </div>
 </div>
+
+<!-- Animal Edit Modal -->
+<div id="animal-edit-overlay" style="display:none;position:fixed;inset:0;z-index:4000;background:rgba(0,0,0,.5);align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeAnimalEdit()">
+  <div id="animal-edit-inner" style="background:var(--cream);border-radius:18px 18px 0 0;width:100%;max-width:600px;max-height:94vh;display:flex;flex-direction:column;overflow:hidden" onclick="event.stopPropagation()">
+    <div style="padding:14px 20px 10px;border-bottom:1px solid var(--cream-3);display:flex;justify-content:space-between;align-items:center;flex-shrink:0">
+      <div id="animal-edit-title" style="font-family:var(--font-display);font-weight:700;font-size:.95rem;color:var(--warm-dk)">Edit Animal Record</div>
+      <button onclick="closeAnimalEdit()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--warm-mid);padding:4px 8px">✕</button>
+    </div>
+    <div id="animal-edit-body" style="flex:1;overflow-y:auto;padding:16px 20px;-webkit-overflow-scrolling:touch;min-height:0"></div>
+    <div id="animal-edit-footer" style="display:none;flex-shrink:0;padding:10px 20px;border-top:1px solid var(--cream-3);background:var(--cream)">
+      <div style="display:flex;gap:8px">
+        <button class="sh-btn primary" id="ae-save-btn" style="flex:1;padding:12px;font-size:.9rem;touch-action:manipulation" onclick="saveAnimalEdit(window._aeEditId)">✓ Save Changes</button>
+        <button class="sh-btn" style="padding:12px;touch-action:manipulation" onclick="closeAnimalEdit()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
