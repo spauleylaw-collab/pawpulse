@@ -2236,7 +2236,7 @@ function resolveFoundPinFromIntake(foundId, lostOwnerId) {
   var bd    = document.getElementById('intake-match-backdrop');
   if (panel) panel.remove();
   if (bd)    bd.remove();
-
+  updateOrientationStrip('map');
   var r = reports.find(function(x){ return x.id == foundId; });
   if (!r) return;
   r.reunited = true;
