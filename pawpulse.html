@@ -683,7 +683,7 @@ textarea{min-height:64px}
     padding-bottom:0!important;
   }
 }
-/* Issue 29: Phone landscape — compressed layout so map is usable */
+/* Issue 29: Phone landscape */
 @media(max-height:500px) and (orientation:landscape){
   :root{--nav-h:42px}
   #orientation-strip{display:none!important}
@@ -1285,6 +1285,14 @@ var _isStaff  = false;
 
 /* ── SAVE / LOAD ──────────────────────────────────────────────────────── */
 function save() {
+  /* Save photos to separate key so they survive quota-overflow stripping */
+  try {
+    var _photoMap = {};
+    reports.forEach(function(r){ if (r.photo) _photoMap[String(r.id)] = r.photo; });
+    if (Object.keys(_photoMap).length) {
+      localStorage.setItem('pawpulse-photos-v1', JSON.stringify(_photoMap));
+    }
+  } catch(e) { /* photo store failed */ }
   /* Always write to localStorage as offline cache */
   try {
     localStorage.setItem('pawpulse-v2', JSON.stringify(reports));
@@ -1414,6 +1422,13 @@ function startFirestoreListener() {
             var local = localSnapshot.find(function(r){ return String(r.id) === String(data.id); });
             /* Preserve local photo only if Firestore lacks it (failed upload case) */
             if (local && local.photo && !data.photo) { data.photo = local.photo; }
+            /* Also restore from dedicated photo store */
+            if (!data.photo) {
+              try {
+                var _ipm = JSON.parse(localStorage.getItem('pawpulse-photos-v1') || '{}');
+                if (_ipm[String(data.id)]) data.photo = _ipm[String(data.id)];
+              } catch(e) {}
+            }
             reports.push(data);
           });
           localStorage.setItem('pawpulse-v2', JSON.stringify(reports));
@@ -1452,6 +1467,13 @@ function startFirestoreListener() {
             }
             reports[idx] = data;
           } else {
+            /* Restore photo from dedicated store for newly added records */
+            if (!data.photo) {
+              try {
+                var _npm = JSON.parse(localStorage.getItem('pawpulse-photos-v1') || '{}');
+                if (_npm[String(data.id)]) data.photo = _npm[String(data.id)];
+              } catch(e) {}
+            }
             reports.push(data);
           }
           changed = true;
@@ -2199,6 +2221,7 @@ function checkFoundPinsOnIntake(intakeRecord) {
 
   /* Backdrop */
   var bd = document.createElement('div');
+  bd.id = 'intake-found-match-bd';
   bd.style.cssText = 'position:fixed;inset:0;z-index:3999;background:rgba(0,0,0,.45)';
   bd.onclick = function(){ panel.remove(); bd.remove(); };
   document.body.appendChild(bd);
@@ -2216,8 +2239,9 @@ function checkFoundPinsOnIntake(intakeRecord) {
 function resolveFoundPinFromIntake(foundId) {
   var panel = document.getElementById('intake-found-match-panel');
   if (panel) panel.remove();
-  /* Remove backdrop */
-  document.querySelectorAll('[style*="z-index:3999"]').forEach(function(el){ el.remove(); });
+  /* Remove backdrop by stable ID — fixes gray screen freeze */
+  var _ibd = document.getElementById('intake-found-match-bd');
+  if (_ibd) _ibd.remove();
 
   var r = reports.find(function(x){ return x.id == foundId; });
   if (!r) return;
@@ -4423,6 +4447,20 @@ function migrateToIntake(id) {
     /* Mark source report for linking on save */
     window._migrateFromId = id;
 
+    /* Carry photo from found report into intake form */
+    if (r.photo) {
+      setTimeout(function() {
+        var siPrev = document.getElementById('si-prev');
+        var siIcon = document.getElementById('si-photo-icon');
+        var siTxt  = document.getElementById('si-photo-txt');
+        if (siPrev) { siPrev.src = r.photo; siPrev.style.display = 'block'; }
+        if (siIcon) siIcon.style.display = 'none';
+        if (siTxt)  siTxt.style.display  = 'none';
+        var aiWrap = document.getElementById('si-ai-wrap');
+        if (aiWrap) aiWrap.style.display = 'block';
+      }, 400);
+    }
+
     /* Show pre-fill notice at top of form */
     var body = document.getElementById('intake-modal-body');
     if (body) {
@@ -4563,6 +4601,48 @@ async function searchMatchesFromCard(lostId) {
 
 
 /* ── AUTO-MATCH ON INTAKE ─────────────────────────────────────────────── */
+function showCallOwnerPrompt(lostPet, intake) {
+  var ep = document.getElementById('call-owner-panel');
+  var eb = document.getElementById('call-owner-bd');
+  if (ep) ep.remove();
+  if (eb) eb.remove();
+  var name  = lostPet.name || (lostPet.species || 'pet');
+  var owner = lostPet.owner || 'Owner';
+  var phone = lostPet.phone || '';
+  var tel   = phone.replace(/[^0-9+]/g, '');
+  var meta  = [lostPet.species, lostPet.breed, lostPet.color].filter(Boolean).join(' · ');
+  var bd = document.createElement('div');
+  bd.id = 'call-owner-bd';
+  bd.style.cssText = 'position:fixed;inset:0;z-index:5100;background:rgba(0,0,0,.55)';
+  var panel = document.createElement('div');
+  panel.id = 'call-owner-panel';
+  panel.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:5101;background:var(--cream);border-radius:18px 18px 0 0;padding:22px 22px 32px;box-shadow:0 -8px 40px rgba(0,0,0,.3)';
+  var dis = "(function(){var p=document.getElementById('call-owner-panel');var b=document.getElementById('call-owner-bd');if(p)p.remove();if(b)b.remove();})()";
+  panel.innerHTML =
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">'
+    + '<div style="font-family:var(--font-display);font-size:1.1rem;font-weight:700;color:var(--warm-dk)">&#128222; Possible Owner Found</div>'
+    + '<button onclick="' + dis + '" style="background:var(--cream-2);border:none;border-radius:50%;width:32px;height:32px;font-size:1rem;cursor:pointer">&times;</button>'
+    + '</div>'
+    + '<div style="background:#e8f4e9;border:1.5px solid var(--found-g);border-radius:10px;padding:14px;margin-bottom:16px">'
+    + '<div style="font-size:.76rem;color:#2d6a35;font-weight:600;margin-bottom:6px">AI found a possible match for this intake:</div>'
+    + '<div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--warm-dk);margin-bottom:3px">' + esc(name) + '</div>'
+    + (meta ? '<div style="font-size:.78rem;color:var(--warm-mid)">' + esc(meta) + '</div>' : '')
+    + '</div>'
+    + '<div style="font-size:.82rem;font-weight:600;color:var(--warm-mid);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Owner Contact</div>'
+    + '<div style="font-size:.96rem;font-weight:700;color:var(--warm-dk);margin-bottom:14px">' + esc(owner) + '</div>'
+    + (phone
+      ? '<a href="tel:' + tel + '" style="display:block;width:100%;padding:14px;text-align:center;background:var(--found-g);color:#fff;border-radius:12px;font-family:var(--font-display);font-size:1rem;font-weight:700;text-decoration:none;margin-bottom:10px;box-sizing:border-box">&#128222; Call ' + esc(phone) + '</a>'
+        + '<a href="sms:' + tel + '" style="display:block;width:100%;padding:12px;text-align:center;background:#2050a0;color:#fff;border-radius:12px;font-family:var(--font-display);font-size:.9rem;font-weight:700;text-decoration:none;margin-bottom:12px;box-sizing:border-box">&#128172; Text Owner</a>'
+      : '<div style="font-size:.82rem;color:var(--warm-mid);margin-bottom:12px;font-style:italic">No phone on file — check the lost report.</div>')
+    + '<button onclick="' + dis + '" style="width:100%;padding:12px;background:var(--cream-2);border:1.5px solid var(--cream-3);border-radius:10px;font-family:var(--font-display);font-size:.88rem;font-weight:600;cursor:pointer;color:var(--warm-mid)">Not a match — dismiss</button>';
+  bd.onclick = function() { panel.remove(); bd.remove(); };
+  document.body.appendChild(bd);
+  panel.style.transform = 'translateY(100%)';
+  panel.style.transition = 'transform .3s cubic-bezier(.34,1.2,.64,1)';
+  document.body.appendChild(panel);
+  requestAnimationFrame(function(){ requestAnimationFrame(function(){ panel.style.transform = 'translateY(0)'; }); });
+}
+
 async function autoMatchOnIntake(intake) {
   var lostPets = reports.filter(function(r){
     return r.type === 'lost' && !r.reunited && !r.shelter;
@@ -4602,6 +4682,9 @@ async function autoMatchOnIntake(intake) {
     if (USE_FIREBASE && _fbReady && db) {
       writeAnimalRecord(intake, 'staff');
     }
+    /* Show call-owner prompt for best match */
+    var _bestLost = lostPets.find(function(r){return String(r.id)===String(best.id);});
+    if (_bestLost) setTimeout(function(){ showCallOwnerPrompt(_bestLost, intake); }, 400);
   } catch(e) { console.warn('Auto-match error:', e.message); }
 }
 
