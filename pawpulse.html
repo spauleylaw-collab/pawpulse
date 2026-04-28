@@ -9005,7 +9005,10 @@ function quickAdoptReady(id) {
 
 function updateOrientationStrip(view) {
   var strip = document.getElementById('orientation-strip');
-  if (strip) strip.style.display = view === 'map' ? 'block' : 'none';
+  if (!strip) return;
+  /* Never show strip when the report panel is open — it clips the panel header */
+  var panelOpen = document.getElementById('side-panel').classList.contains('open');
+  strip.style.display = (view === 'map' && !panelOpen) ? 'block' : 'none';
 }
 
 /* iOS keyboard: scroll focused input into view */
