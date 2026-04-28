@@ -5177,7 +5177,7 @@ function startPlace(type) {
   map.getContainer().classList.add('placing');
   /* Re-hide spotlight after cancelPlace may have restored it */
   var _sp2 = document.getElementById('shelter-spotlight');
-  if (_sp2) { _sp2.style.transform = 'translateX(240px)'; _sp2.style.opacity = '0'; }
+  if (_sp2) { _sp2.style.transform = 'translateX(-300px)'; _sp2.style.opacity = '0'; }
   document.getElementById('drop-hint').classList.add('on');
   /* On mobile the panel covers the map — close it so user can tap to place pin */
   document.getElementById('side-panel').classList.remove('open');
@@ -5276,10 +5276,14 @@ map.on('click', function(e) {
     setTimeout(function(){ map.invalidateSize(); }, 300);
     if (pinBtn) pinBtn.style.display = 'none';
   } else {
-    /* Mobile: show the "Tap to continue" button — panel can't open over map */
-    if (pinBtn) {
-      pinBtn.style.display = 'block';
-    }
+    /* Mobile: auto-open panel after short delay so user sees pin location */
+    if (pinBtn) pinBtn.style.display = 'none';
+    setTimeout(function() {
+      var _mos = document.getElementById('orientation-strip');
+      if (_mos) _mos.style.display = 'none';
+      document.getElementById('side-panel').classList.add('open');
+      setTimeout(function(){ map.invalidateSize(); }, 300);
+    }, 1500);
   }
   setTimeout(function(){ injectMicButtons(document.getElementById('side-panel')); }, 380);
 });
