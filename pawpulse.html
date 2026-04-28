@@ -5078,14 +5078,6 @@ function renderMarkers() {
     return typeOk && speciesOk;
   }).forEach(function(r){
     var m = L.marker([r.lat,r.lng],{icon:pinIcon(r.type, r.reunited, r.possibleMatch && !r.reunited, r.adoptionStatus==='available', r.atShelter && !r.shelter, false, r)}).addTo(map);
-    /* Brief pulse on pins added after initial load */
-    if (r._isNewPin) {
-      r._isNewPin = false;
-      setTimeout(function(){
-        var el = m.getElement ? m.getElement() : null;
-        if (el) { el.classList.add('pin-new-pulse'); setTimeout(function(){ el.classList.remove('pin-new-pulse'); }, 1500); }
-      }, 50);
-    }
     m._pawpulseId = String(r.id);
     m.on('click', function(e){ closeCard(); var _cur=reports.find(function(x){return String(x.id)===String(r.id);}); openCard(_cur||r,e.containerPoint); L.DomEvent.stopPropagation(e); });
     lMarkers.push(m);
