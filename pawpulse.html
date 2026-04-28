@@ -1530,12 +1530,7 @@ function startFirestoreListener() {
           }
           /* 'modified' changes (position/color updates) handled by next full renderMarkers */
         });
-        /* Only do full re-render if a pin color or position changed */
-        var needsFullRender = snapshot.docChanges().some(function(chg){
-          return chg.type === 'modified';
-        });
-        /* Tag markers with their report ID for surgical removal */
-        if (lMarkers.some(function(m){ return !m._pawpulseId; })) { renderMarkersDebounced(); } //renderMarkers();
+        /* reports[] is updated — markers stay as-is until user action triggers a render */s();
         renderIncareView();
         updateNavCounts();
       }
@@ -1832,11 +1827,6 @@ function doGuestView() {
   var loading = document.getElementById('app-loading');
   if (loading && loading.parentNode) loading.parentNode.removeChild(loading);
   if (USE_FIREBASE) { startFirestoreListener(); } else { bootApp(); }
-  /* Dismiss loading overlay quickly — map tiles are ready even if Firestore isn't */
-  setTimeout(function() {
-    var _ml = document.getElementById('map-loading');
-    if (_ml) { _ml.style.opacity = '0'; setTimeout(function(){ _ml.style.display = 'none'; }, 450); }
-  }, 800);
   setTimeout(function() {
     if (!_bootAppDone) {
       console.warn('PawPulse: Firestore timeout — forcing boot');
@@ -2014,6 +2004,14 @@ function bootApp() {
   var sel = document.getElementById('rpt-filter-shelter');
   if (sel && activeShelter) sel.value = activeShelter;
   renderMarkers();
+  /* Dismiss loading overlay NOW — pins are rendered, map is ready */
+  (function() {
+    var _ml = document.getElementById('map-loading');
+    if (_ml && _ml.style.display !== 'none') {
+      _ml.style.opacity = '0';
+      setTimeout(function(){ _ml.style.display = 'none'; }, 400);
+    }
+  })();
   renderIncareView();
   renderReportTypeList();
   updateNavCounts();
