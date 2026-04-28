@@ -809,8 +809,10 @@ textarea{min-height:64px}
   </div>
   <div style="flex:1"></div>
   <button id="nav-staff-login-btn" onclick="openStaffLogin()" style="padding:5px 12px;font-size:.72rem;font-weight:700;border-radius:999px;border:1.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);cursor:pointer;font-family:var(--font-body);color:var(--cream);display:flex;align-items:center;gap:5px">🔐 Staff</button>
-  <div id="staff-badge" style="display:none;align-items:center;gap:5px">
-    <div id="staff-name-badge" style="color:var(--cream);font-size:.7rem;font-weight:700;white-space:nowrap;opacity:.85">🔐 Staff</div>
+  <div id="staff-badge" style="display:none;align-items:center;gap:4px">
+    <div id="staff-name-badge" style="color:var(--cream);font-size:.65rem;font-weight:700;white-space:nowrap;opacity:.85">🔐 Staff</div>
+    <button onclick="openChangePw()" title="Change Password" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:var(--cream);border-radius:5px;padding:3px 7px;font-size:.62rem;font-weight:600;cursor:pointer;font-family:var(--font-body);white-space:nowrap">🔑 Pw</button>
+    <button onclick="signOut()" title="Sign Out" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:var(--cream);border-radius:5px;padding:3px 7px;font-size:.62rem;font-weight:600;cursor:pointer;font-family:var(--font-body);white-space:nowrap">Sign Out</button>
   </div>
 </nav>
 
@@ -819,7 +821,7 @@ textarea{min-height:64px}
 
 <!-- FAB — bottom right universal action -->
 <button id="rail-fab"
-  onclick="if(window._isStaff){openIntakeModal();}else{openReportPicker();}"
+  onclick="openReportPicker()"
   onmousedown="this.style.transform='scale(.93)'"
   onmouseup="this.style.transform=''"
   ontouchstart="this.style.transform='scale(.93)'"
