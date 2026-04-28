@@ -4965,7 +4965,7 @@ function renderMarkersDebounced() {
 }
 
 function renderMarkers() {
-  lMarkers.forEach(function(m){ map.removeLayer(m); });
+  var oldMarkers = lMarkers.slice(); /* keep reference to old markers */
   lMarkers = [];
 
   /* Adams County bounds — silently drop any out-of-bounds records */
@@ -5001,6 +5001,8 @@ function renderMarkers() {
     m.on('click', function(e){ closeCard(); openCard(r,e.containerPoint); L.DomEvent.stopPropagation(e); });
     lMarkers.push(m);
   });
+  /* Remove old markers AFTER new ones added — eliminates blank-map flash */
+  oldMarkers.forEach(function(m){ map.removeLayer(m); });
 
   /* One building pin — active shelter only */
   shelters.filter(function(s){ return s.name === activeShelter; }).forEach(function(s) {
@@ -5197,6 +5199,8 @@ function showOOBMessage() {
 
 function cancelPlace() {
   placing = null;
+  window._justCancelledPlace = true;
+  setTimeout(function(){ window._justCancelledPlace = false; }, 400);
   map.getContainer().classList.remove('placing');
   document.getElementById('drop-hint').classList.remove('on');
   if (tmpMarker) { map.removeLayer(tmpMarker); tmpMarker = null; }
@@ -5215,6 +5219,7 @@ function exitPlacingMode() {
 }
 
 map.on('click', function(e) {
+  if (window._justCancelledPlace) return;
   if (!placing) {
     closeCard();
     /* Also close side panel on mobile if open */
