@@ -4516,6 +4516,9 @@ function migrateToIntake(id) {
         if (siPrev) { siPrev.src = r.photo; siPrev.style.display = 'block'; }
         if (siIcon) siIcon.style.display = 'none';
         if (siTxt)  siTxt.style.display  = 'none';
+        /* Hide the entire photo-drop area — prevents 'no file selected' label */
+        var siDrop = document.getElementById('si-photo-drop');
+        if (siDrop) siDrop.style.display = 'none';
         var aiWrap = document.getElementById('si-ai-wrap');
         if (aiWrap) aiWrap.style.display = 'block';
       }, 400);
@@ -5104,7 +5107,7 @@ function openPanel(type) {
   document.getElementById('form-lost').style.display  = type==='lost'  ? '' : 'none';
   document.getElementById('form-found').style.display = type==='found' ? '' : 'none';
   document.getElementById('panel-title').textContent  = type==='lost'  ? 'Report a Lost Pet'  : 'Report a Found Pet';
-  document.getElementById('panel-sub').textContent    = type==='lost'  ? 'Help your community find them' : 'Help this pet get home';
+  document.getElementById('panel-sub').textContent    = type==='lost'  ? 'Help your community find them' : 'Help get this pet home';
   /* Show correct footer submit button — always visible, never scrolls away */
   var lBtn = document.getElementById('panel-submit-lost');
   var fBtn = document.getElementById('panel-submit-found');
@@ -5168,6 +5171,9 @@ function startPlace(type) {
   closeCard();
   placing = type;
   map.getContainer().classList.add('placing');
+  /* Re-hide spotlight after cancelPlace may have restored it */
+  var _sp2 = document.getElementById('shelter-spotlight');
+  if (_sp2) { _sp2.style.transform = 'translateX(240px)'; _sp2.style.opacity = '0'; }
   document.getElementById('drop-hint').classList.add('on');
   /* On mobile the panel covers the map — close it so user can tap to place pin */
   document.getElementById('side-panel').classList.remove('open');
@@ -5178,6 +5184,9 @@ function startPlace(type) {
 function showOOBMessage() {
   var el = document.getElementById('oob-overlay');
   if (!el) return;
+  /* Hide drop-hint while OOB message is showing */
+  var dh = document.getElementById('drop-hint');
+  if (dh) dh.classList.remove('on');
   el.style.opacity = '0';
   el.style.display = 'flex';
   el.style.transition = 'opacity .3s ease';
