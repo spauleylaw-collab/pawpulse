@@ -1765,6 +1765,13 @@ function doGuestView() {
   setTimeout(function() {
     var _ml = document.getElementById('map-loading');
     if (_ml) { _ml.style.opacity='0'; setTimeout(function(){ _ml.style.display='none'; },450); }
+    /* Retry spotlight in case data wasn't ready on first initSpotlight call */
+    if (!window._spotlightDismissed) {
+      var _sa = getSpotlightAnimals();
+      if (_sa.length && document.getElementById('shelter-spotlight').style.opacity !== '1') {
+        initSpotlight();
+      }
+    }
   }, 1500);
   /* If Firestore never boots the app within 8s, force it */
   setTimeout(function() {
@@ -9348,7 +9355,14 @@ function dismissSpotlight() {
 function initSpotlight() {
   /* Pre-warm bio cache for first animal, then reveal card with text already ready */
   var animals = getSpotlightAnimals();
-  if (!animals.length) return;
+  if (!animals.length) {
+    /* No animals yet — retry in 3s (data may still be loading from Firestore on mobile) */
+    clearTimeout(window._spotlightRetryTimer);
+    window._spotlightRetryTimer = setTimeout(function() {
+      if (!window._spotlightDismissed) initSpotlight();
+    }, 3000);
+    return;
+  }
   generateSpotlightBio(animals[0].r).then(function() {
     /* Bio is now cached — rotateSpotlight will reveal card + text simultaneously */
     rotateSpotlight();
@@ -9381,7 +9395,12 @@ function setView(v, btn) {
     try { map.invalidateSize(); } catch(e) {}
     setTimeout(function(){ try { map.invalidateSize(); } catch(e){} }, 50);
     setTimeout(function(){ try { map.invalidateSize(); } catch(e){} }, 300);
-    rotateSpotlight();
+    /* Retry spotlight if it hasn't started yet (data may have loaded after initSpotlight) */
+    if (!window._spotlightDismissed) {
+      var _strip = document.getElementById('shelter-spotlight');
+      var _visible = _strip && _strip.style.opacity === '1';
+      if (!_visible) { initSpotlight(); } else { rotateSpotlight(); }
+    }
   } else {
     /* Pause spotlight when not on map */
     clearTimeout(_spotlightRotateTimer);
