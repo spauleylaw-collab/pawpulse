@@ -3190,10 +3190,22 @@ function runActiveReport() {
       + '<div style="background:#f0f8f0;border-radius:10px;padding:12px;text-align:center"><div style="font-size:1.6rem;font-weight:800;color:var(--forest)">' + reunited_r.length + '</div><div style="font-size:.76rem;color:var(--warm-mid)">Reunited</div></div>'
       + '<div style="background:#fff5f5;border-radius:10px;padding:12px;text-align:center"><div style="font-size:1.6rem;font-weight:800;color:var(--lost-r)">' + euth_r.length + '</div><div style="font-size:.76rem;color:var(--warm-mid)">Resolved</div></div>'
       + '</div>'
-      + reportTable('Outcomes Detail — ' + activeShelter,['Animal','Species','Outcome','Date'],
-        [...adopted_r.map(function(r){ return [esc(r.name||r.species||'Unknown'),esc(r.species||'—'),'🌟 Adopted','—']; }),
-         ...reunited_r.map(function(r){ return [esc(r.name||r.species||'Unknown'),esc(r.species||'—'),'🎉 Reunited',r.reunitedDate?new Date(r.reunitedDate).toLocaleDateString():'—']; }),
-         ...euth_r.map(function(r){ return [esc(r.name||r.species||'Unknown'),esc(r.species||'—'),'⚫ Resolved','—']; })]);
+      + reportTable('Outcomes Detail — ' + activeShelter,['Animal','Species','Breed','Outcome','Date'],
+        [...adopted_r.map(function(r){
+          var dt = r.adoptionDate||r.resolvedDate||r.updatedAt||'—';
+          var ds = dt!=='—' ? new Date(dt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
+          return [esc(r.name||r.species||'Unknown'), esc(r.species||'—'), esc(r.breed||'—'), '🌟 Adopted', ds];
+        }),
+         ...reunited_r.map(function(r){
+          var dt = r.reunitedDate||r.updatedAt||'—';
+          var ds = dt!=='—' ? new Date(dt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
+          return [esc(r.name||r.species||'Unknown'), esc(r.species||'—'), esc(r.breed||'—'), '🎉 Reunited', ds];
+        }),
+         ...euth_r.map(function(r){
+          var dt = r.resolvedDate||r.updatedAt||'—';
+          var ds = dt!=='—' ? new Date(dt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
+          return [esc(r.name||r.species||'Unknown'), esc(r.species||'—'), esc(r.breed||'—'), '⚫ Resolved', ds];
+        })]);
 
   } else if (id === 'species') {
     var sp_recs = getShelterData({ includeHolds:true, includeAdopt:true, includeResolved:true }).filter(function(r){
@@ -3223,13 +3235,13 @@ function runActiveReport() {
     } else {
       /* Summary line */
       var totalInq = inq_recs.reduce(function(s,r){ return s+(r.inquiries||[]).length; }, 0);
-      html = '<div style="background:var(--cream-2);border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;gap:20px">'
+      html = '<div style="background:var(--cream-2);border-radius:10px;padding:14px 16px;margin-bottom:16px;display:flex;gap:16px;flex-wrap:wrap;align-items:center">'
         + '<div style="text-align:center"><div style="font-size:1.4rem;font-weight:800;color:var(--forest)">' + inq_recs.length + '</div><div style="font-size:.7rem;color:var(--warm-mid)">Animals</div></div>'
         + '<div style="text-align:center"><div style="font-size:1.4rem;font-weight:800;color:#2050a0">' + totalInq + '</div><div style="font-size:.7rem;color:var(--warm-mid)">Total Inquiries</div></div>'
         + '</div>';
 
-      html += reportTable('Adoption Inquiries — ' + activeShelter,
-        ['Animal', 'Species', 'Days Waiting', '# Inquiries', 'Latest Inquiry', 'Contact'],
+      html += reportTable('Adoption Inquiries',
+        ['Animal', 'Species', 'In Care', 'Inquiries', 'Latest', 'Contact'],
         inq_recs.map(function(r) {
           var inqs = r.inquiries || [];
           var latest = inqs[inqs.length-1] || {};
@@ -3248,7 +3260,7 @@ function runActiveReport() {
       );
 
       /* Detail cards for each inquiry */
-      html += '<h3 style="font-family:var(--font-display);font-size:.9rem;margin:16px 0 8px">Inquiry Details</h3>';
+      html += '<h3 style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--warm-dk);margin:20px 0 10px;padding-top:16px;border-top:1px solid var(--cream-3)">Inquiry Details</h3>';
       inq_recs.forEach(function(r) {
         var inqs = r.inquiries || [];
         html += '<div style="border:1px solid var(--cream-3);border-radius:10px;padding:12px 14px;margin-bottom:10px">'
