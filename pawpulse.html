@@ -1085,7 +1085,7 @@ textarea{min-height:64px}
       </div>
     </div>
 
-    <div id="map-loading" style="position:absolute;inset:0;z-index:500;background:rgba(244,241,235,.7);display:flex;align-items:center;justify-content:center;pointer-events:none;transition:opacity .4s ease">
+    <div id="map-loading" style="position:absolute;inset:0;z-index:500;background:rgba(244,241,235,.85);display:flex;align-items:center;justify-content:center;pointer-events:none;transition:opacity .6s ease">
       <div style="font-size:.85rem;color:var(--warm-mid);font-weight:600;font-family:var(--font-body)">🗺️ Loading map…</div>
     </div>
     <!-- Map zoom controls -->
@@ -1251,6 +1251,13 @@ var MAP_ZOOM = window.innerWidth < 700 ? 10 : 11;
 
 /* Show orientation strip immediately — doesn't depend on Firestore loading */
 (function(){ var s=document.getElementById('orientation-strip'); if(s) s.style.display='block'; })();
+
+/* Render cached pins from localStorage immediately — before Firestore loads.
+   reports[] is populated synchronously from localStorage above.
+   Firestore snapshot will refresh them when it arrives. */
+setTimeout(function() {
+  try { renderMarkers(); updateNavCounts(); } catch(e) {}
+}, 150);
 
 /* Map init — synchronous. Script tag is at bottom of body so #map div exists. */
 var map;
@@ -1765,6 +1772,8 @@ function doGuestView() {
   setTimeout(function() {
     var _ml = document.getElementById('map-loading');
     if (_ml) { _ml.style.opacity='0'; setTimeout(function(){ _ml.style.display='none'; },450); }
+    /* Render pins from cache so legend counts show immediately */
+    try { renderMarkers(); updateNavCounts(); } catch(e) {}
     /* Retry spotlight in case data wasn't ready on first initSpotlight call */
     if (!window._spotlightDismissed) {
       var _sa = getSpotlightAnimals();
@@ -1772,7 +1781,7 @@ function doGuestView() {
         initSpotlight();
       }
     }
-  }, 1500);
+  }, 800);
   /* If Firestore never boots the app within 8s, force it */
   setTimeout(function() {
     if (!_bootAppDone) {
@@ -1780,7 +1789,7 @@ function doGuestView() {
       window._firebaseLoaded = true;
       bootApp();
     }
-  }, 8000);
+  }, 5000);
 }
 
 function doSignOut() {
@@ -1895,6 +1904,8 @@ var _bootAppDone = false;
 function bootApp() {
   if (_bootAppDone) return; /* Guard: only boot once */
   _bootAppDone = true;
+  /* Render cached pins immediately — don't wait for async shelter picker */
+  try { renderMarkers(); updateNavCounts(); } catch(e) {}
   /* Restore staff UI immediately from localStorage — before Firebase auth resolves.
      Firebase IndexedDB session restore is unreliable on mobile Safari. */
   var storedStaff = localStorage.getItem('pawpulse-staff');
