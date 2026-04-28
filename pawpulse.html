@@ -1247,6 +1247,12 @@ window.addEventListener('unhandledrejection', function(e) {
 var HASTINGS = [40.5888, -98.3910];
 var MAP_ZOOM = window.innerWidth < 700 ? 10 : 11;
 
+/* Show orientation strip immediately — before Firestore loads */
+(function(){
+  var s = document.getElementById("orientation-strip");
+  if (s) s.style.display = "block";
+})();
+
 /* Move nav-tabs into right-rail once DOM is ready */
 document.addEventListener("DOMContentLoaded", function() {
   var rail = document.getElementById("right-rail");
@@ -9098,7 +9104,9 @@ function quickAdoptReady(id) {
 
 function updateOrientationStrip(view) {
   var strip = document.getElementById('orientation-strip');
-  if (strip) strip.style.display = view === 'map' ? 'block' : 'none';
+  if (!strip) return;
+  var panelOpen = document.getElementById('side-panel').classList.contains('open');
+  strip.style.display = (view === 'map' && !panelOpen) ? 'block' : 'none';
 }
 
 /* iOS keyboard: scroll focused input into view */
