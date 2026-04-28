@@ -5046,11 +5046,6 @@ function addSinglePin(r) {
     openCard(_cur || r, e.containerPoint);
     L.DomEvent.stopPropagation(e);
   });
-  /* Pulse animation for new pin */
-  setTimeout(function() {
-    var el = m.getElement ? m.getElement() : null;
-    if (el) { el.classList.add('pin-new-pulse'); setTimeout(function(){ el.classList.remove('pin-new-pulse'); }, 1500); }
-  }, 50);
   m._pawpulseId = String(r.id);
   lMarkers.push(m);
   /* Clear _isNewPin so subsequent renderMarkers doesn't re-pulse */
