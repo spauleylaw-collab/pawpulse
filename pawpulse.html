@@ -101,7 +101,7 @@ body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);h
 /* #banner-txt.fade removed */
 /* #banner-dot-reunion removed */
 /* Floating filter pills on map — horizontal row at bottom center */
-#map-filters{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:600;display:flex;flex-direction:row;gap:6px;pointer-events:none;white-space:nowrap}
+#map-filters{position:absolute;top:40px;left:50%;transform:translateX(-50%);z-index:600;display:flex;flex-direction:row;gap:6px;pointer-events:none;white-space:nowrap}
 #map-filters .filter-btn{pointer-events:auto}
 .filter-btn{font-family:var(--font-body);font-size:.72rem;font-weight:600;padding:6px 13px;border-radius:999px;cursor:pointer;transition:all .15s;border:1.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.88);backdrop-filter:blur(8px);color:var(--warm-mid);box-shadow:0 2px 8px rgba(0,0,0,.12);touch-action:manipulation}
 .filter-btn.active.all{background:var(--amber);color:#fff;border-color:var(--amber)}
@@ -3279,11 +3279,6 @@ function runActiveReport() {
             + (d ? '<div style="font-size:.68rem;color:var(--warm-mid);margin-top:2px">' + d + '</div>' : '')
             + '</div>';
         });
-        /* Action buttons for each inquiry animal */
-        html += '<div style="display:flex;gap:8px;margin-top:8px">' 
-          + '<button onclick="clearInquiries(' + r.id + ')" style="flex:1;padding:8px;border:1.5px solid var(--cream-3);border-radius:8px;background:var(--cream-2);font-family:var(--font-body);font-size:.76rem;font-weight:600;cursor:pointer;color:var(--warm-mid)">Clear Inquiries</button>'
-          + '<button onclick="markAdoptableFromInquiry(' + r.id + ')" style="flex:1;padding:8px;border:none;border-radius:8px;background:var(--found-g);color:#fff;font-family:var(--font-body);font-size:.76rem;font-weight:600;cursor:pointer">Mark Adoptable</button>'
-          + '</div>';
         html += '</div>';
       });
     }
@@ -3967,6 +3962,7 @@ function submitInquiry() {
       r.shelterLog.push({ body:'Adoption inquiry from ' + name + (phone?' · '+phone:'') + (email?' · '+email:''), time:'Just now' });
       if (r.adoptionStatus === 'available') r.adoptionStatus = 'pending';
       save();
+      writeAnimalRecord(r, 'public');
     }
   }
   document.getElementById('inq-success').style.display = 'block';
@@ -4102,7 +4098,7 @@ function cardHTML(r) {
   /* AI match button — on lost cards so owner can search shelter intakes */
   var matchBtn = '';
   if (lost && !reunited) {
-    matchBtn = '<button onclick="searchMatchesFromCard(' + r.id + ')" style="width:100%;margin:8px 0 4px;padding:9px;font-family:var(--font-display);font-size:.82rem;font-weight:700;border:none;border-radius:8px;cursor:pointer;background:#f0f4ff;color:#2050a0;border:1.5px solid #a0baf0">🔍 Could this pet be at Heartland?</button>';
+    matchBtn = '<button onclick="searchMatchesFromCard(' + r.id + ')" style="width:100%;margin:8px 0 4px;padding:9px;font-family:var(--font-display);font-size:.82rem;font-weight:700;border:none;border-radius:8px;cursor:pointer;background:#f0f4ff;color:#2050a0;border:1.5px solid #a0baf0">🔍 Search Found Pins & Heartland</button>';
     /* 14-day warning */
     if (daysSince(r.date) >= 14) {
       matchBtn += '<div style="font-size:.68rem;color:var(--amber);text-align:center;margin-bottom:4px">⚠️ Missing ' + Math.floor(daysSince(r.date)) + ' days — no longer shown after 30 days</div>';
@@ -4206,7 +4202,7 @@ function cardHTML(r) {
   /* Info note on found pins explaining how pin disappears */
   var foundNote = (!lost && !reunited && !r.shelter)
     ? (r.atShelter
-        ? '<div style="background:#fff8e8;border:1.5px solid #d4a035;border-radius:7px;padding:8px 12px;font-size:.74rem;color:#7a5010;margin-bottom:8px;line-height:1.5">'          + '🐾 The finder says this animal has been or will be brought to <strong>' + esc(r.shelterName||'a shelter or vet') + '</strong>. This pin stays on the map until intake is confirmed by staff. If you are the owner and your pet has come home, tap \uD83C\uDF89 Mark as Reunited.'          + '</div>'        : '<div style="background:#f0faf1;border:1px solid #b0d8b8;border-radius:7px;padding:8px 12px;font-size:.74rem;color:#2a6030;margin-bottom:8px;line-height:1.5">'          + '📍 This pin stays on the map until the pet is reunited with its owner or brought to a shelter or vet. '          + 'If this is your pet and they have come home, tap 🎉 Mark as Reunited. '          + 'If you have brought or are bringing this pet to a shelter or vet, check the box below.'          + '</div>'      )    : '';
+        ? '<div style="background:#fff8e8;border:1.5px solid #d4a035;border-radius:7px;padding:8px 12px;font-size:.74rem;color:#7a5010;margin-bottom:8px;line-height:1.5">'          + '🐾 The finder says this animal has been or will be brought to <strong>' + esc(r.shelterName||'a shelter or vet') + '</strong>. This pin stays on the map until intake is confirmed by staff. If you are the owner and your pet has come home, tap \uD83C\uDF89 Mark as Reunited.'          + '</div>'        : '<div style="background:#f0faf1;border:1px solid #b0d8b8;border-radius:7px;padding:8px 12px;font-size:.74rem;color:#2a6030;margin-bottom:8px;line-height:1.5">'          + '📍 This pin stays on the map until the pet is reunited with its owner or brought to a shelter or vet. '          + 'If this is your pet and they have come home, tap 🎉 Mark as Reunited. '          + 'Tap the button below if you are bringing this pet to Heartland.'          + '</div>'      )    : '';
 
   /* Staff-only: migrate public report to shelter intake */
   var migrateBtn = (_isStaff && !r.shelter && !reunited && r.type === 'found')
@@ -4846,6 +4842,17 @@ function markAdoptableFromInquiry(id) {
   writeAnimalRecord(updated, 'staff');
   setTimeout(function(){ renderOpsReport('inquiries'); renderIncareView(); }, 400);
   showToast('Marked adoptable');
+}
+
+function dismissInquiry(id) {
+  if (!confirm("Did you contact this inquirer?")) return;
+  var r = reports.find(function(x){ return String(x.id)===String(id); });
+  if (!r) return;
+  r.inquiries = [];
+  if (r.adoptionStatus === 'pending') r.adoptionStatus = 'available';
+  save();
+  writeAnimalRecord(r, 'staff');
+  renderIncareView();
 }
 
 function markReunited(id) {
@@ -8839,7 +8846,9 @@ function renderIncareView() {
       + (isHold?'<span style="font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:999px;background:#fff8f0;color:#8a5010;border:1px solid #e8c090">⚠️ Hold</span>':'')
       + (isAdopt?'<span style="font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:999px;background:#e8f0ff;color:#2050a0">🌟 Adopt</span>':'')
       + (srcLabel?'<span style="font-size:.6rem;padding:2px 6px;border-radius:999px;background:var(--cream-2);color:var(--warm-mid)">' + srcLabel + '</span>':'')
-      + (r.inquiries && r.inquiries.length ? '<span title="View adoption inquiries" style="font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:999px;background:#fff3cd;color:#7a5010;border:1px solid #f0c040;cursor:pointer" onclick="event.stopPropagation();showInquiryPopup(' + r.id + ')">💬 ' + r.inquiries.length + ' inquiry' + (r.inquiries.length!==1?'s':'') + '</span>' : '')
+      + (r.inquiries && r.inquiries.length ? '<span title="View adoption inquiries" style="font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:999px;background:#fff3cd;color:#7a5010;border:1px solid #f0c040;cursor:pointer" onclick="event.stopPropagation();showInquiryPopup(' + r.id + ')">💬 ' + r.inquiries.length + ' inquiry' + (r.inquiries.length!==1?'s':'') + '</span>'
+      + '<span onclick="event.stopPropagation();dismissInquiry(' + r.id + ')"' + ' title="Clear inquiries" style="font-size:.6rem;font-weight:700;padding:2px 5px;border-radius:999px;background:#fde8e0;color:#c94f2a;border:1px solid #f0a090;cursor:pointer;margin-left:2px">&times;</span>'
+      : '')
       + '</div>'
       + (function() {
           /* Status pill — most important field for shelter ops */
