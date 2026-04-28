@@ -63,7 +63,7 @@ if (USE_FIREBASE) {
   --lost-lt:  #f07040;
   --found-g:  #3a7d44;
   --found-lt: #5caa68;
-  --nav-h:    96px;
+  --nav-h:    56px;
   --panel-w:  400px;
   --font-display: 'Fraunces', serif;
   --font-body:    'DM Sans', sans-serif;
@@ -72,26 +72,24 @@ if (USE_FIREBASE) {
 body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);height:100vh;overflow:hidden;user-select:none}
 
 /* NAV */
-#nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;flex-direction:column;height:var(--nav-h);background:var(--forest);box-shadow:0 2px 16px rgba(0,0,0,.3)}
-#nav-row1{display:flex;align-items:center;gap:6px;padding:0 10px;height:56px;flex-shrink:0}
-#nav-row2{display:flex;align-items:stretch;height:40px;border-top:1px solid rgba(255,255,255,.12);flex-shrink:0}
+#nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;gap:8px;padding:0 12px;height:var(--nav-h);background:var(--forest);box-shadow:0 2px 16px rgba(0,0,0,.3)}
 .nav-logo{font-family:var(--font-display);font-size:1.05rem;font-weight:700;color:var(--cream);letter-spacing:-.02em;display:flex;align-items:center;gap:5px;flex-shrink:0}
 .nav-logo-wrap{display:flex;flex-direction:column}
 .nav-logo-sub{font-family:var(--font-body);font-size:.56rem;font-weight:600;color:var(--moss);letter-spacing:.09em;text-transform:uppercase}
 .nav-spacer{flex-shrink:0;width:4px}
 .nav-report-btn{font-family:var(--font-body);font-size:.72rem;font-weight:700;padding:6px 10px;border-radius:6px;border:none;cursor:pointer;transition:all .15s;flex-shrink:0;background:var(--amber);color:#fff;letter-spacing:.01em;white-space:nowrap;touch-action:manipulation}
 .nav-report-btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
-#nav-tabs{display:flex;align-items:stretch;height:40px}
-.tab-btn{font-family:var(--font-body);font-size:.65rem;font-weight:600;padding:0 4px;border-radius:0;border:none;border-right:1px solid rgba(255,255,255,.1);background:transparent;color:rgba(255,255,255,.75);cursor:pointer;transition:background .15s;white-space:nowrap;flex:1;display:flex;align-items:center;justify-content:center;gap:3px}
-.tab-btn:last-child{border-right:none}
-.tab-btn.active{background:rgba(255,255,255,.18);color:#fff}
+#nav-tabs{display:flex;flex-direction:column;width:60px}
+.tab-btn{font-family:var(--font-body);font-size:.6rem;font-weight:600;padding:10px 4px;border-radius:0;border:none;border-bottom:1px solid rgba(255,255,255,.12);background:transparent;color:rgba(255,255,255,.65);cursor:pointer;transition:background .15s;white-space:nowrap;width:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;line-height:1.2;touch-action:manipulation}
+.tab-btn:last-child{border-bottom:none}
+.tab-btn.active{background:rgba(255,255,255,.2);color:#fff}
 .tab-btn:hover:not(.active){background:rgba(255,255,255,.1)}
 .tab-ops{border-color:rgba(90,180,120,.35)}
 .tab-ops.active{background:rgba(100,220,140,.2);color:#c0ffd4}
 .tab-admin{border-color:rgba(212,132,58,.45)}
 .tab-admin.active{background:rgba(220,160,60,.2);color:#ffd090}
 .nav-mode-sep{display:none}
-@media(max-width:700px){input,select,textarea{font-size:16px!important}.tab-btn .tab-lbl{display:none}.nav-logo-sub{display:none}.nav-report-btn .btn-lbl{display:none}}
+@media(max-width:700px){input,select,textarea{font-size:16px!important}.nav-logo-sub{display:none}}
 /* Staff badge hidden by default — only shown via JS after auth confirms */
 #staff-badge { display: none !important; }
 #staff-badge.staff-active { display: inline-flex !important; }
@@ -112,8 +110,6 @@ body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);h
 .filter-btn.active.adopt{background:#2050a0;color:#fff;border-color:#2050a0}
 .filter-btn.active.dog{background:#8b5e3c;color:#fff;border-color:#8b5e3c}
 .filter-btn.active.cat{background:#9b4f8a;color:#fff;border-color:#9b4f8a}
-.filter-btn.active.dog{background:#8b5e3c;color:#fff;border-color:#8b5e3c}
-.filter-btn.active.cat{background:#9b4f8a;color:#fff;border-color:#9b4f8a}
 .filter-btn:hover{transform:translateY(-1px)}
 /* Reunion burst rings */
 @keyframes rburst1{0%{transform:scale(.3);opacity:.9}100%{transform:scale(4);opacity:0}}
@@ -128,15 +124,18 @@ body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);h
 .mode-banner-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 
 /* Map legend */
-@media(max-width:640px){#map-legend{bottom:32px!important;left:8px!important;right:auto!important;flex-direction:row!important;flex-wrap:wrap!important;gap:4px 10px!important;padding:5px 8px!important;max-width:calc(100vw - 230px)}}
-#map-legend{position:absolute;bottom:24px;left:12px;z-index:600;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-radius:8px;padding:6px 10px;display:flex;flex-direction:column;gap:5px;box-shadow:0 2px 10px rgba(0,0,0,.1);border:1px solid var(--cream-3)}
-.legend-item{display:flex;align-items:center;gap:7px;font-size:.7rem;font-weight:500;color:var(--warm-mid);white-space:nowrap}
-.legend-pin{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-.print-btn{font-family:var(--font-body);font-size:.74rem;font-weight:600;padding:7px 13px;border-radius:8px;border:1.5px solid var(--cream-3);background:var(--cream-2);color:var(--warm-mid);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px;width:100%;justify-content:center;margin-top:6px}
+/* legend CSS removed */
+/* legend CSS removed */
+/* legend-item removed */
+/* legend-pin removed */
+/* print-btn removed */
 .print-btn:hover{border-color:var(--amber);color:var(--amber)}
 
 /* VIEW — position:fixed + inset, same as PublicPulse */
-.view{position:fixed;inset:var(--nav-h) 0 0 0;display:none}
+#right-rail{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:990;background:var(--forest);border-radius:12px 0 0 12px;box-shadow:-4px 0 20px rgba(0,0,0,.25)}
+#rail-fab{position:fixed;bottom:calc(24px + env(safe-area-inset-bottom,0px));right:12px;z-index:991;width:56px;height:56px;border-radius:50%;background:var(--amber);color:#fff;border:none;font-size:2rem;font-weight:300;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;touch-action:manipulation;transition:transform .15s}
+#rail-fab:hover{transform:scale(1.08)}
+.view{position:fixed;inset:var(--nav-h) 60px 0 0;display:none}
 .view.active{display:flex}
 
 /* MAP CONTAINER — same as PublicPulse */
@@ -677,7 +676,7 @@ textarea{min-height:64px}
   /* Toast: keep above home indicator */
   #toast{bottom:calc(26px + env(safe-area-inset-bottom,0px))!important}
   /* FAB: clear home indicator */
-  #intake-fab{bottom:calc(40px + env(safe-area-inset-bottom,0px))!important}
+  /* intake-fab removed */
 }
 
 @media(max-width:640px){
@@ -694,12 +693,12 @@ textarea{min-height:64px}
   :root{--nav-h:42px}
   #orientation-strip{display:none!important}
   #pp-banner{top:48px!important}
-  #map-legend{bottom:16px!important}
+  /* legend CSS removed */
   #shelter-spotlight{bottom:70px!important}
   #side-panel{max-height:96vh!important}
   #pin-card{max-height:85vh!important;bottom:4px!important}
   #pin-set-btn{bottom:50px!important}
-  #intake-fab{bottom:calc(16px + env(safe-area-inset-bottom,0px))!important}
+  /* intake-fab removed */
   .leaflet-bottom.leaflet-right{bottom:60px!important;right:8px!important}
 }
 </style>
@@ -781,7 +780,6 @@ textarea{min-height:64px}
 </div>
 
 <nav id="nav">
-  <div id="nav-row1" style="display:flex;align-items:center;gap:6px;padding:0 10px;height:56px">
   <div class="nav-logo">
     🐾
     <div class="nav-logo-wrap">
@@ -789,8 +787,7 @@ textarea{min-height:64px}
       <span class="nav-logo-sub">Hastings, NE &amp; Adams County</span>
     </div>
   </div>
-  <button class="nav-report-btn" id="nav-action-btn" onclick="navActionBtn()">+ Report</button>
-  <!-- Report type picker -->
+  <!-- Report type picker (used by openReportPicker()) -->
   <div id="report-picker" style="display:none;position:fixed;inset:0;z-index:1100;background:rgba(42,31,18,.5);align-items:center;justify-content:center" onclick="if(event.target===this)this.style.display='none'">
     <div style="background:var(--cream);border-radius:16px;padding:24px;width:260px;box-shadow:0 16px 48px rgba(0,0,0,.28)">
       <div style="font-family:var(--font-display);font-size:1rem;font-weight:600;color:var(--warm-dk);margin-bottom:16px;text-align:center">What are you reporting?</div>
@@ -798,30 +795,37 @@ textarea{min-height:64px}
       <button onclick="closePicker();openPanel('found')" style="width:100%;padding:14px;font-family:var(--font-display);font-size:.95rem;font-weight:600;background:var(--found-g);color:#fff;border:none;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">🟢 Found Pet <span style="font-size:.78rem;opacity:.85;font-weight:400">I found a stray</span></button>
     </div>
   </div>
-  </div><!-- end nav-row1 -->
+  <div class="nav-spacer"></div>
   <div id="nav-tabs">
     <!-- PUBLIC MODE -->
     <button class="tab-btn tab-public active" onclick="setView('map',this)" title="Public Map">🗺️ <span class="tab-lbl">Map</span></button>
     <button class="tab-btn tab-public"        onclick="setView('adopt',this)" title="Adoption">🏠 <span class="tab-lbl">Adopt</span></button>
     <!-- STAFF MODE -->
+    <div class="nav-mode-sep"></div>
     <button class="tab-btn tab-ops" onclick="setView('incare',this)"   title="In Care">🏥 <span class="tab-lbl">At Heartland</span> <span id="nav-incare-count" style="display:none;background:var(--found-g);color:#fff;border-radius:999px;font-size:.6rem;padding:1px 5px;margin-left:2px"></span></button>
     <!-- ADMIN MODE -->
+    <div class="nav-mode-sep"></div>
     <button class="tab-btn tab-admin" onclick="setView('reports',this)" title="Reports & Admin">📊 <span class="tab-lbl">Reports</span></button>
-    <!-- Staff sign-in button — shown when not logged in -->
-    <button id="nav-staff-login-btn" onclick="openStaffLogin()" title="Staff Sign In" style="margin-left:6px;padding:5px 12px;font-size:.72rem;font-weight:700;border-radius:999px;border:1.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);cursor:pointer;font-family:var(--font-body);color:var(--cream);display:flex;align-items:center;gap:5px">🔐 <span class="tab-lbl">Staff Login</span></button>
-    <!-- Staff badge — shown when signed in, lives in nav -->
-    <div id="staff-badge" style="display:none;align-items:center;gap:5px;margin-left:6px">
-      <div id="staff-name-badge" style="color:var(--cream);font-size:.7rem;font-weight:700;white-space:nowrap;opacity:.85">🔐 Staff</div>
-      <div style="display:flex;gap:4px">
-        <button onclick="clearTestData()" title="Clear All Data" style="padding:5px 8px;font-size:.65rem;font-weight:600;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,77,77,.25);cursor:pointer;color:var(--cream);font-family:var(--font-body);display:none" id="btn-clear-data">🗑</button>
-        <button onclick="forceSyncPhotos()" title="Force Photo Sync to Cloud" style="padding:5px 8px;font-size:.65rem;font-weight:600;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);cursor:pointer;color:var(--cream);font-family:var(--font-body)">☁️</button>
-        <button onclick="loadDemoData()" title="Load Demo Animals" style="padding:5px 8px;font-size:.65rem;font-weight:600;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);cursor:pointer;color:var(--cream);font-family:var(--font-body);display:none" id="btn-load-demo">🐾</button>
-        <button onclick="openChangePw()" title="Change Password" style="padding:5px 8px;font-size:.65rem;font-weight:600;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);cursor:pointer;color:var(--cream);font-family:var(--font-body)">🔑</button>
-        <button onclick="doSignOut()" style="padding:5px 10px;font-size:.65rem;font-weight:700;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);cursor:pointer;color:var(--cream);font-family:var(--font-body)">Sign Out</button>
-      </div>
-    </div>
+  </div>
+  <div style="flex:1"></div>
+  <button id="nav-staff-login-btn" onclick="openStaffLogin()" style="padding:5px 12px;font-size:.72rem;font-weight:700;border-radius:999px;border:1.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);cursor:pointer;font-family:var(--font-body);color:var(--cream);display:flex;align-items:center;gap:5px">🔐 Staff</button>
+  <div id="staff-badge" style="display:none;align-items:center;gap:5px">
+    <div id="staff-name-badge" style="color:var(--cream);font-size:.7rem;font-weight:700;white-space:nowrap;opacity:.85">🔐 Staff</div>
   </div>
 </nav>
+
+<!-- RIGHT RAIL — nav tabs vertically centered on right edge -->
+<div id="right-rail"></div>
+
+<!-- FAB — bottom right universal action -->
+<button id="rail-fab"
+  onclick="if(window._isStaff){openIntakeModal();}else{openReportPicker();}"
+  onmousedown="this.style.transform='scale(.93)'"
+  onmouseup="this.style.transform=''"
+  ontouchstart="this.style.transform='scale(.93)'"
+  ontouchend="this.style.transform=''"
+  title="Report a pet / Log intake">+</button>
+
 <!-- Orientation strip -->
 <div id="orientation-strip" style="display:none;position:fixed;top:var(--nav-h);left:0;right:0;z-index:999;background:rgba(45,74,53,.92);color:rgba(255,255,255,.78);text-align:center;font-size:.8rem;font-family:var(--font-body);padding:6px 14px;letter-spacing:.01em;pointer-events:none"><div style="font-size:.82rem;font-weight:600;color:rgba(255,255,255,.95);margin-bottom:2px">See lost pets, found animals, and pets in care — all in real time.</div><div style="font-size:.72rem;color:rgba(255,255,255,.75)">Tap a pin to help, or tap <strong style="font-weight:700">+ Report</strong> to post one. <span style="opacity:.7;font-style:italic">You might reunite a pet today.</span></div></div>
 
@@ -903,20 +907,7 @@ textarea{min-height:64px}
   </div>
   <div id="incare-list" style="flex:1;overflow-y:auto;padding:12px;min-height:0;-webkit-overflow-scrolling:touch;padding-bottom:96px"></div>
   <!-- Floating intake FAB — fixed bottom-right, thumb-friendly -->
-  <button onclick="openIntakeModal()"
-    style="position:fixed;bottom:40px;right:18px;z-index:800;
-           width:56px;height:56px;border-radius:50%;
-           background:var(--forest);color:#fff;border:none;
-           font-size:1.5rem;line-height:1;cursor:pointer;
-           box-shadow:0 6px 20px rgba(42,31,18,.35);
-           display:none;align-items:center;justify-content:center;
-           transition:transform .15s ease,box-shadow .15s ease"
-    id="intake-fab"
-    title="Log New Intake"
-    onmousedown="this.style.transform='scale(.93)'"
-    onmouseup="this.style.transform=''"
-    ontouchstart="this.style.transform='scale(.93)'"
-    ontouchend="this.style.transform=''">＋</button>
+  <!-- intake-fab replaced by #rail-fab -->
 </div>
 
 <!-- Intake modal overlay -->
@@ -1066,12 +1057,20 @@ textarea{min-height:64px}
 
 <div id="view-map" class="view active">
   <div id="map-container">
+    <div id="map-filters">
+      <button class="filter-btn type-btn active all" onclick="setFilter('all',this)">All</button>
+      <button class="filter-btn type-btn lost" onclick="setFilter('lost',this)">🔴 Lost</button>
+      <button class="filter-btn type-btn found" onclick="setFilter('found',this)">🟢 Found</button>
+      <div style="width:100%;height:1px;background:rgba(255,255,255,.2);margin:2px 0;pointer-events:none"></div>
+      <button class="filter-btn species-btn" onclick="setFilter('dog',this)">🐕 Dogs</button>
+      <button class="filter-btn species-btn" onclick="setFilter('cat',this)">🐈 Cats</button>
+    </div>
 
     <!-- ── SHELTER SPOTLIGHT — floating card, bottom-right of map ──────
          Doctrine-safe presentation layer only. No pins. No map state.
          Pulls from existing shelter/adoption records only. No new writes.
     ─────────────────────────────────────────────────────────────────── -->
-    <div id="shelter-spotlight" style="display:none;position:absolute;bottom:80px;right:14px;z-index:700;width:200px;border-radius:20px;overflow:hidden;box-shadow:0 12px 40px rgba(42,31,18,.35),0 4px 12px rgba(0,0,0,.15);transition:opacity .6s ease,transform .15s ease;opacity:0;pointer-events:auto;cursor:pointer;border:1.5px solid rgba(255,255,255,.8);background:var(--cream);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)" onclick="this.style.transform='scale(1.04)';setTimeout(function(){setView('adopt',null);},150)">
+    <div id="shelter-spotlight" style="display:none;position:absolute;bottom:80px;left:14px;z-index:700;width:200px;border-radius:20px;overflow:hidden;box-shadow:0 12px 40px rgba(42,31,18,.35),0 4px 12px rgba(0,0,0,.15);transition:opacity .6s ease,transform .15s ease;opacity:0;pointer-events:auto;cursor:pointer;border:1.5px solid rgba(255,255,255,.8);background:var(--cream);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)" onclick="this.style.transform='scale(1.04)';setTimeout(function(){setView('adopt',null);},150)">
       <!-- Shelter companion card — NOT a map feature. No pins. No doctrine impact. -->
       <div style="background:var(--forest);padding:6px 8px 6px 10px;display:flex;align-items:center;gap:6px;width:100%">
         <span style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.85)" id="spotlight-header-label">🏠 From the Shelter</span><button onclick="event.stopPropagation();dismissSpotlight()" style="background:none;border:none;color:rgba(255,255,255,.6);font-size:.85rem;line-height:1;cursor:pointer;padding:0 2px;margin-left:auto;flex-shrink:0" title="Dismiss">✕</button>
@@ -1093,29 +1092,13 @@ textarea{min-height:64px}
       <div style="font-size:.85rem;color:var(--warm-mid);font-weight:600;font-family:var(--font-body)">🗺️ Loading map…</div>
     </div>
     <!-- Map zoom controls -->
-    <div id="map"></div>
+    <!-- legend removed -->
 
     <!-- Live banner -->
 
-    <!-- Floating filter pills on left side -->
-    <div id="map-filters">
-      <button class="filter-btn type-btn active all" onclick="setFilter('all',this)">All</button>
-      <button class="filter-btn type-btn lost" onclick="setFilter('lost',this)">🔴 Lost</button>
-      <button class="filter-btn type-btn found" onclick="setFilter('found',this)">🟢 Found</button>
-      <div style="width:100%;height:1px;background:rgba(255,255,255,.2);margin:2px 0;pointer-events:none"></div>
-      <button class="filter-btn species-btn" onclick="setFilter('dog',this)">🐕 Dogs</button>
-      <button class="filter-btn species-btn" onclick="setFilter('cat',this)">🐈 Cats</button>
-    </div>
+    <!-- Floating filter pills -->
     <!-- Map legend — bottom left -->
 
-<div id="map-legend" style="display:flex;flex-direction:column;gap:5px">
-      <div class="legend-item"><div class="stat-dot lost"></div><span id="cnt-lost" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span>Lost</span></div>
-      <div class="legend-item"><div class="stat-dot found"></div><span id="cnt-found" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span>Found</span></div>
-      <div class="legend-item"><div class="legend-pin" style="background:#d06020"></div><span id="cnt-at-shelter" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span>Bringing to Shelter</span></div>
-      <div class="legend-item"><div class="legend-pin" style="background:#1a3f8a"></div><span id="cnt-shelter" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span id="legend-shelter-label">At Heartland Shelter</span></div>
-      <div class="legend-item" style="padding-left:18px"><div class="legend-pin" style="background:#c8841a"></div><span id="cnt-adopt" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span>↳ Adoptable</span></div>
-      <div style="font-size:.55rem;color:var(--warm-mid);line-height:1.4;margin-top:2px;max-width:160px">Info may change. Contact Heartland for official status.</div>
-    </div>
 
     <div id="drop-hint">
       📍 Tap the map to place pin
@@ -1260,6 +1243,19 @@ window.addEventListener('unhandledrejection', function(e) {
 
 var HASTINGS = [40.5888, -98.3910];
 var MAP_ZOOM = window.innerWidth < 700 ? 10 : 11;
+
+/* Move nav-tabs into right-rail once DOM is ready */
+document.addEventListener("DOMContentLoaded", function() {
+  var rail = document.getElementById("right-rail");
+  var tabs = document.getElementById("nav-tabs");
+  if (rail && tabs) rail.appendChild(tabs);
+}, false);
+/* Also run immediately in case DOMContentLoaded already fired */
+(function() {
+  var rail = document.getElementById("right-rail");
+  var tabs = document.getElementById("nav-tabs");
+  if (rail && tabs) rail.appendChild(tabs);
+})();
 
 /* Map init — synchronous. Script tag is at bottom of body so #map div exists. */
 var map;
@@ -1800,7 +1796,7 @@ function doGuestView() {
   if (USE_FIREBASE) { startFirestoreListener(); } else { bootApp(); }
   setTimeout(function() {
     if (!_bootAppDone) {
-      console.warn("PawPulse: Firestore timeout — forcing boot");
+      console.warn('PawPulse: Firestore timeout — forcing boot');
       window._firebaseLoaded = true;
       bootApp();
     }
@@ -1957,9 +1953,7 @@ function bootApp() {
       _restoredView = lastView;
       /* Apply the correct view class right now — before any render */
       document.querySelectorAll('.view').forEach(function(x){ x.classList.remove('active'); });
-  var fab = document.getElementById('intake-fab');
-  if (fab) fab.style.display = 'none';
-      var _el = document.getElementById('view-' + lastView);
+  var _el = document.getElementById('view-' + lastView);
       if (_el) _el.classList.add('active');
       document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
       var _tb = document.querySelector('[onclick*="setView(\''+lastView+'\')"]');
@@ -4901,9 +4895,6 @@ function dismissInquiry(id) {
   renderIncareView();
 }
 
-/* Banner removed — stub keeps call sites from crashing */
-function pushBannerEvent() { /* no-op */ }
-
 function markReunited(id) {
   var r = reports.find(function(x){ return x.id == id; });
   if (!r || r.reunited) return;
@@ -5029,7 +5020,6 @@ function renderMarkers() {
     m.on('click', function(e){ closeCard(); openCard(r,e.containerPoint); L.DomEvent.stopPropagation(e); });
     lMarkers.push(m);
   });
-  oldMarkers.forEach(function(m){ map.removeLayer(m); });
 
   /* One building pin — active shelter only */
   shelters.filter(function(s){ return s.name === activeShelter; }).forEach(function(s) {
@@ -9480,7 +9470,13 @@ function dismissSpotlight() {
 function initSpotlight() {
   /* Pre-warm bio cache for first animal, then reveal card with text already ready */
   var animals = getSpotlightAnimals();
-  if (!animals.length) return;
+  if (!animals.length) {
+    clearTimeout(window._spotlightRetryTimer);
+    window._spotlightRetryTimer = setTimeout(function() {
+      if (!window._spotlightDismissed) initSpotlight();
+    }, 3000);
+    return;
+  }
   generateSpotlightBio(animals[0].r).then(function() {
     /* Bio is now cached — rotateSpotlight will reveal card + text simultaneously */
     rotateSpotlight();
@@ -9505,8 +9501,7 @@ function setView(v, btn) {
   if (v === 'incare') {
     var incareBtn = document.querySelector('.tab-btn[onclick*="incare"]');
     if (incareBtn) incareBtn.classList.add('active');
-    var fab = document.getElementById('intake-fab');
-    if (fab && _isStaff) fab.style.display = 'flex';
+    /* intake-fab removed */
   }
   if (v === 'map') {
     /* Call immediately for instant tile layout, and again after CSS transitions */
