@@ -1513,7 +1513,8 @@ function startFirestoreListener() {
         } catch(e){}
         localStorage.setItem('pawpulse-v2', JSON.stringify(reports));
         /* Skip visual re-render if we just submitted — 1200ms render already handled it */
-        if (Date.now() - window._lastSubmitTime > 9000) { renderMarkersDebounced(); } //renderMarkers();
+        var _msSince = window._lastSubmitTime ? (Date.now() - window._lastSubmitTime) : 99999;
+        if (_msSince > 9000) { renderMarkersDebounced(); } //renderMarkers();
         renderIncareView();
         updateNavCounts();
       }
@@ -1936,6 +1937,8 @@ var _bootAppDone = false;
 function bootApp() {
   if (_bootAppDone) return; /* Guard: only boot once */
   _bootAppDone = true;
+  /* Block post-boot Firestore re-renders for 9s — prevents flicker of existing pins */
+  window._lastSubmitTime = Date.now();
   /* Restore staff UI immediately from localStorage — before Firebase auth resolves.
      Firebase IndexedDB session restore is unreliable on mobile Safari. */
   var storedStaff = localStorage.getItem('pawpulse-staff');
