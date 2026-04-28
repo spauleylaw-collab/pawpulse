@@ -5012,7 +5012,7 @@ function renderMarkers() {
   reports.filter(function(r) {
     if (r.shelter) return false;         /* shelter animals — handled by building pin below */
     if (!isPublicVisible(r)) return false;
-    if (curFilter === 'all')   return !r.reunited;
+    if (r.reunited) return false;
     var typeOk = curFilter === 'all' || r.type === curFilter;
     var speciesOk = curSpeciesFilter === 'all' || (r.species||'').toLowerCase() === curSpeciesFilter;
     return typeOk && speciesOk;
