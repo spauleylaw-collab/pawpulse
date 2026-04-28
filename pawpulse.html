@@ -1462,8 +1462,17 @@ function startFirestoreListener() {
         if (change.type === 'added' || change.type === 'modified') {
           if (idx > -1) {
             /* Preserve local photo if Firestore lacks it (failed upload) */
-            if (!data.photo && reports[idx].photo) {
-              data.photo = reports[idx].photo;
+            if (!data.photo) {
+              /* First try in-memory copy (most recent) */
+              if (reports[idx].photo) {
+                data.photo = reports[idx].photo;
+              } else {
+                /* Fall back to dedicated photo store */
+                try {
+                  var _up=JSON.parse(localStorage.getItem('pawpulse-photos-v1')||'{}');
+                  if (_up[String(data.id)]) data.photo=_up[String(data.id)];
+                } catch(e) {}
+              }
             }
             reports[idx] = data;
           } else {
@@ -5788,9 +5797,9 @@ function submitLost() {
   /* Defer heavy JSON.stringify + render to avoid main-thread freeze */
   r._isNewPin = true;
   reports.push(r);
+  save(); /* Save immediately so photo is in localStorage before any render */
+  window._pauseFirestoreSync = true;
   setTimeout(function() {
-    save();
-    window._pauseFirestoreSync = true;
     renderMarkers();
     renderIncareView();
     writeAnimalRecord(r, 'public');
@@ -5848,9 +5857,9 @@ function submitFound() {
   /* Defer heavy JSON.stringify + render to avoid main-thread freeze */
   r._isNewPin = true;
   reports.push(r);
+  save(); /* Save immediately so photo is in localStorage before any render */
+  window._pauseFirestoreSync = true;
   setTimeout(function() {
-    save();
-    window._pauseFirestoreSync = true;
     renderMarkers();
     renderIncareView();
     writeAnimalRecord(r, 'public');
