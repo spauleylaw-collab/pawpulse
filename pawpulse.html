@@ -183,7 +183,7 @@ textarea{min-height:64px}
 .submit-btn{width:100%;padding:12px;font-family:var(--font-display);font-size:.98rem;font-weight:600;border:none;border-radius:10px;cursor:pointer;transition:all .2s;margin-top:6px;touch-action:manipulation;-webkit-tap-highlight-color:rgba(0,0,0,.08)}@media(max-width:640px){
   /* Ensure panel-body is scroll container, footer never scrolls away */
   .panel-body{overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;flex:1!important;min-height:0!important}
-  #panel-footer{flex-shrink:0!important;padding-bottom:max(16px,env(safe-area-inset-bottom,16px))!important;padding-top:10px!important}
+  #panel-footer{flex-shrink:0!important;padding-bottom:max(24px,env(safe-area-inset-bottom,24px))!important;padding-top:10px!important;padding-left:16px!important;padding-right:16px!important}
 }
 .submit-btn.lost{background:var(--lost-r);color:#fff}
 .submit-btn.found{background:var(--found-g);color:#fff}
@@ -1096,11 +1096,12 @@ textarea{min-height:64px}
 
     <!-- Floating filter pills -->
     <div id="map-filters">
-      <button class="filter-btn active all" onclick="setFilter('all',this)">All</button>
-      <button class="filter-btn lost" onclick="setFilter('lost',this)">🔴 Lost</button>
-      <button class="filter-btn found" onclick="setFilter('found',this)">🟢 Found</button>
-      <button class="filter-btn" style="background:rgba(255,255,255,.88);color:#555" onclick="setFilter('dog',this)">🐕 Dogs</button>
-      <button class="filter-btn" style="background:rgba(255,255,255,.88);color:#555" onclick="setFilter('cat',this)">🐈 Cats</button>
+      <button class="filter-btn type-btn active all" onclick="setFilter('all',this)">All</button>
+      <button class="filter-btn type-btn lost" onclick="setFilter('lost',this)">🔴 Lost</button>
+      <button class="filter-btn type-btn found" onclick="setFilter('found',this)">🟢 Found</button>
+      <div style="width:100%;height:1px;background:rgba(255,255,255,.2);margin:2px 0;pointer-events:none"></div>
+      <button class="filter-btn species-btn" onclick="setFilter('dog',this)">🐕 Dogs</button>
+      <button class="filter-btn species-btn" onclick="setFilter('cat',this)">🐈 Cats</button>
     </div>
     <!-- Map legend — bottom left -->
 
@@ -1291,6 +1292,7 @@ try {
 var reports  = JSON.parse(localStorage.getItem('pawpulse-v2') || '[]');
 var lMarkers = [];
 var curFilter = 'all';
+var curSpeciesFilter = 'all';
 var placing   = null;
 var pLat = {}, pLng = {};
 var _submissionCount = 0;  /* resets on page reload */
@@ -1418,6 +1420,11 @@ function startFirestoreListener() {
            otherwise keep localStorage data */
         if (!snapshot.empty) {
           var localSnapshot = reports.slice(); /* save local state (has photos) */
+          var localOnly = localSnapshot.filter(function(lr){
+            var inFirestore = false;
+            snapshot.forEach(function(doc){ if (String(doc.data().id)===String(lr.id)) inFirestore=true; });
+            return !inFirestore && lr._isNewPin;
+          });
           reports = [];
           snapshot.forEach(function(doc) {
             var data = doc.data();
@@ -1431,6 +1438,8 @@ function startFirestoreListener() {
             }
             reports.push(data);
           });
+          /* Re-add any local records not yet confirmed by Firestore (in-flight pins) */
+          localOnly.forEach(function(lr){ reports.push(lr); });
           localStorage.setItem('pawpulse-v2', JSON.stringify(reports));
         }
         /* If Firestore empty, reports already loaded from localStorage in bootApp — keep them */
@@ -4976,11 +4985,9 @@ function renderMarkers() {
     if (r.shelter) return false;
     if (!isPublicVisible(r)) return false;
     if (r.reunited) return false;
-    if (curFilter === 'lost')  return r.type==='lost';
-    if (curFilter === 'found') return r.type==='found';
-    if (curFilter === 'dog')   return (r.species||'').toLowerCase()==='dog';
-    if (curFilter === 'cat')   return (r.species||'').toLowerCase()==='cat';
-    return true; /* 'all' */
+    var typeOk = curFilter === 'all' || r.type === curFilter;
+    var speciesOk = curSpeciesFilter === 'all' || (r.species||'').toLowerCase() === curSpeciesFilter;
+    return typeOk && speciesOk;
   }).forEach(function(r){
     var m = L.marker([r.lat,r.lng],{icon:pinIcon(r.type, r.reunited, r.possibleMatch && !r.reunited, r.adoptionStatus==='available', r.atShelter && !r.shelter, false, r)}).addTo(map);
     /* Brief pulse on pins added after initial load */
@@ -5055,14 +5062,21 @@ function renderMarkers() {
 }
 
 function setFilter(f, btn) {
-  curFilter = f;
-  document.querySelectorAll('.filter-btn').forEach(function(b){
-    b.classList.remove('active','all','lost','found','dog','cat','adopt');
-  });
-  if (btn) {
-    btn.classList.add('active');
-    if (f !== 'all') btn.classList.add(f);
-    else btn.classList.add('all');
+  /* Type axis: all/lost/found */
+  if (f === 'all' || f === 'lost' || f === 'found') {
+    curFilter = f;
+    document.querySelectorAll('.filter-btn.type-btn').forEach(function(b){
+      b.classList.remove('active','all','lost','found');
+    });
+    if (btn) { btn.classList.add('active'); btn.classList.add(f); }
+  }
+  /* Species axis: all-species/dog/cat */
+  if (f === 'dog' || f === 'cat' || f === 'all-species') {
+    curSpeciesFilter = (f === 'all-species') ? 'all' : f;
+    document.querySelectorAll('.filter-btn.species-btn').forEach(function(b){
+      b.classList.remove('active','dog','cat');
+    });
+    if (btn && f !== 'all-species') { btn.classList.add('active'); btn.classList.add(f); }
   }
   renderMarkers();
 }
@@ -5803,7 +5817,7 @@ function submitLost() {
     renderMarkers();
     renderIncareView();
     writeAnimalRecord(r, 'public');
-    setTimeout(function(){ window._pauseFirestoreSync = false; }, 4000);
+    setTimeout(function(){ window._pauseFirestoreSync = false; renderMarkers(); }, 6000);
     recordSubmission('lost');
     showToast('lost');
   }, 200);
@@ -5863,7 +5877,7 @@ function submitFound() {
     renderMarkers();
     renderIncareView();
     writeAnimalRecord(r, 'public');
-    setTimeout(function(){ window._pauseFirestoreSync = false; }, 4000);
+    setTimeout(function(){ window._pauseFirestoreSync = false; renderMarkers(); }, 6000);
     recordSubmission('found');
     showToast('found');
   }, 200);
