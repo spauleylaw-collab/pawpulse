@@ -3305,8 +3305,8 @@ function reportTable(title, headers, rows, totals) {
       + totals.map(function(cell){ return '<td style="padding:6px 10px;font-size:.8rem;color:var(--warm-dk)">' + cell + '</td>'; }).join('') + '</tr></tfoot>';
   }
   /* Summary badge below title */
-  var countBadge = rows.length ? '<span style="font-size:.7rem;background:var(--forest);color:#fff;border-radius:999px;padding:2px 8px;margin-left:8px;vertical-align:middle">' + rows.length + ' records</span>' : '';
-  return '<h3 style="font-family:var(--font-display);font-size:.9rem;margin:0 0 10px">' + title + countBadge + '</h3>'
+  var countBadge = rows.length ? '<div style="font-size:.7rem;color:var(--warm-mid);margin-bottom:8px;margin-top:-4px">' + rows.length + ' records</div>' : '';
+  return '<h3 style="font-family:var(--font-display);font-size:.9rem;margin:0 0 4px;white-space:normal">' + title + '</h3>' + countBadge
     + '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:.8rem">'
     + '<thead><tr>' + headers.map(function(h){ return '<th style="text-align:left;padding:6px 10px;background:var(--cream-2);border-bottom:2px solid var(--cream-3);white-space:nowrap">' + h + '</th>'; }).join('') + '</tr></thead>'
     + '<tbody>' + rows.map(function(row,i){
@@ -7205,9 +7205,9 @@ function selectReport(id) {
     ? '<div class="pc-match-banner" style="flex-direction:column;align-items:flex-start;gap:6px">'
       + '<div style="font-weight:700">🐾 Possible match at ' + esc(r.possibleMatch.shelterName||'Heartland') + '</div>'
       + '<div style="font-size:.7rem;font-weight:400;opacity:.85">' + (r.possibleMatch.confidence||'') + ' confidence match — could this be your pet?</div>'
-      + '<div style="display:flex;gap:6px;margin-top:2px;width:100%">'
-      + '<a href="tel:4024627387" style="flex:1;padding:7px;text-align:center;background:var(--found-g);color:#fff;border-radius:7px;font-size:.74rem;font-weight:700;text-decoration:none">📞 Call Heartland</a>'
-      + '<button onclick="window.open(\'https://www.google.com/maps/dir/?api=1&destination=1807+W+J+St+Hastings+NE\',\'_blank\')" style="flex:1;padding:7px;border:none;border-radius:7px;background:#2050a0;color:#fff;font-size:.74rem;font-weight:700;cursor:pointer">🗺 Get Directions</button>'
+      + '<div style="display:flex;gap:6px;margin-top:4px;width:100%">'
+      + '<a href="tel:4024627387" style="flex:1;padding:7px;text-align:center;background:var(--found-g);color:#fff;border-radius:7px;font-size:.74rem;font-weight:700;text-decoration:none">🐾 Search Heartland</a>'
+      + '<button onclick="closeCard();setView(\'map\',document.querySelector(\'.tab-btn[onclick*=map]\'));setFilter(\'found\',document.querySelector(\'.filter-btn.found\'));" style="flex:1;padding:7px;border:none;border-radius:7px;background:#2050a0;color:#fff;font-size:.74rem;font-weight:700;cursor:pointer">🗺 Found Animals</button>'
       + '</div></div>'
     : '';
 
