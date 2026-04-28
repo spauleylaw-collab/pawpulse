@@ -1097,12 +1097,14 @@ textarea{min-height:64px}
     <!-- Map legend — bottom left -->
 
 <div id="map-legend" style="display:flex;flex-direction:column;gap:5px">
+      <div onclick="(function(){var b=document.getElementById('legend-body');var a=document.getElementById('legend-arrow');var open=b.style.display!=='none';b.style.display=open?'none':'';a.textContent=open?'+':'▾';})()" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;margin-bottom:2px"><span style="font-size:.65rem;font-weight:700;color:var(--warm-mid);text-transform:uppercase;letter-spacing:.06em">Legend</span><span id="legend-arrow" style="font-size:.75rem;color:var(--warm-mid)">▾</span></div>
+      <div id="legend-body">
       <div class="legend-item"><div class="stat-dot lost"></div><span id="cnt-lost" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span>Lost</span></div>
       <div class="legend-item"><div class="stat-dot found"></div><span id="cnt-found" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span>Found</span></div>
       <div class="legend-item"><div class="legend-pin" style="background:#d06020"></div><span id="cnt-at-shelter" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span>Bringing to Shelter</span></div>
-      <div class="legend-item"><div class="legend-pin" style="background:#1a3f8a"></div><span id="cnt-shelter" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span id="legend-shelter-label">At Heartland Shelter</span></div>
-      <div class="legend-item" style="padding-left:18px"><div class="legend-pin" style="background:#c8841a"></div><span id="cnt-adopt" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span>↳ Adoptable</span></div>
+      <div class="legend-item"><div class="legend-pin" style="background:#1a3f8a"></div><span id="cnt-shelter" style="font-weight:700;color:var(--warm-dk)">0</span>&nbsp;<span id="legend-shelter-label">At Heartland</span></div>
       <div style="font-size:.55rem;color:var(--warm-mid);line-height:1.4;margin-top:2px;max-width:160px">Info may change. Contact Heartland for official status.</div>
+      </div>
     </div>
 
     <div id="drop-hint">
@@ -2363,7 +2365,8 @@ function submitIntakeFromModal() {
   setTimeout(function() {
     renderIncareView();
     pushBannerEvent((isHold?'⚠️ Animal on hold logged at ':'🐾 New animal received at ') + activeShelter, isHold?'#d4843a':'var(--found-g)');
-    if (!isHold) setTimeout(function(){ autoMatchOnIntake(r); }, 800);
+    /* Run AI match search on every intake */
+    setTimeout(function(){ autoMatchOnIntake(r); }, 800);
     setTimeout(function(){ checkFoundPinsOnIntake(r); }, 1200);
   }, 300);
 }
@@ -4453,6 +4456,14 @@ function migrateToIntake(id) {
       });
       /* Trigger breed field update */
       if (typeof updateBreedField === 'function') updateBreedField('si-species', 'si-breed-wrap');
+      setTimeout(function() {
+        if (r.breed) {
+          var bSel = document.querySelector('#si-breed-wrap select');
+          var bInp = document.getElementById('si-breed');
+          if (bSel) bSel.value = r.breed;
+          else if (bInp) bInp.value = r.breed;
+        }
+      }, 100);
     }
 
     /* Mark source report for linking on save */
@@ -4622,6 +4633,7 @@ function showMatchFoundPanel(lostPet, intake) {
   if (eb) eb.remove();
   var name = lostPet.name || (lostPet.species || 'pet');
   var meta = [lostPet.species, lostPet.breed, lostPet.color].filter(Boolean).join(' · ');
+  window._pendingMatchLostPet = lostPet;
   var bd = document.createElement('div');
   bd.id = 'match-found-bd';
   bd.style.cssText = 'position:fixed;inset:0;z-index:5100;background:rgba(0,0,0,.5)';
@@ -4645,7 +4657,7 @@ function showMatchFoundPanel(lostPet, intake) {
       + 'var p=document.getElementById(\'match-found-panel\');'
       + 'var b=document.getElementById(\'match-found-bd\');'
       + 'if(p)p.remove();if(b)b.remove();'
-      + 'setTimeout(function(){showCallOwnerPrompt(' + JSON.stringify({id:lostPet.id,name:lostPet.name||'',owner:lostPet.owner||'',phone:lostPet.phone||'',species:lostPet.species||'',breed:lostPet.breed||'',color:lostPet.color||''}) + ',null);},100);'
+      + 'if(window._pendingMatchLostPet)showCallOwnerPrompt(window._pendingMatchLostPet,null);'
       + '})()" style="flex:1;padding:12px;border:none;border-radius:10px;background:var(--found-g);color:#fff;font-family:var(--font-display);font-size:.9rem;font-weight:700;cursor:pointer">Yes — Contact Owner</button>'
     + '<button onclick="(function(){var p=document.getElementById(\'match-found-panel\');var b=document.getElementById(\'match-found-bd\');if(p)p.remove();if(b)b.remove();})()" style="flex:1;padding:12px;border:1.5px solid var(--cream-3);border-radius:10px;background:#fff;font-family:var(--font-display);font-size:.9rem;font-weight:700;cursor:pointer;color:var(--warm-mid)">No — Different Animal</button>'
     + '</div>';
@@ -5698,7 +5710,7 @@ function submitLost() {
     renderMarkers();
     renderIncareView();
     writeAnimalRecord(r, 'public');
-    setTimeout(function(){ window._pauseFirestoreSync = false; }, 8000);
+    setTimeout(function(){ window._pauseFirestoreSync = false; }, 4000);
     recordSubmission('lost');
     showToast('lost');
   }, 200);
@@ -5758,7 +5770,7 @@ function submitFound() {
     renderMarkers();
     renderIncareView();
     writeAnimalRecord(r, 'public');
-    setTimeout(function(){ window._pauseFirestoreSync = false; }, 8000);
+    setTimeout(function(){ window._pauseFirestoreSync = false; }, 4000);
     recordSubmission('found');
     showToast('found');
   }, 200);
