@@ -1263,12 +1263,7 @@ var MAP_ZOOM = window.innerWidth < 700 ? 10 : 11;
 /* Show orientation strip immediately — doesn't depend on Firestore loading */
 (function(){ var s=document.getElementById('orientation-strip'); if(s) s.style.display='block'; })();
 
-/* Render cached pins from localStorage immediately — before Firestore loads.
-   reports[] is populated synchronously from localStorage above.
-   Firestore snapshot will refresh them when it arrives. */
-setTimeout(function() {
-  try { renderMarkers(); updateNavCounts(); } catch(e) {}
-}, 150);
+/* Pins render when Firestore arrives via bootApp(). Single render = no flicker. */
 
 /* Map init — synchronous. Script tag is at bottom of body so #map div exists. */
 var map;
@@ -1800,8 +1795,6 @@ function doGuestView() {
   setTimeout(function() {
     var _ml = document.getElementById('map-loading');
     if (_ml) { _ml.style.opacity='0'; setTimeout(function(){ _ml.style.display='none'; },450); }
-    /* Render pins from cache so legend counts show immediately */
-    try { renderMarkers(); updateNavCounts(); } catch(e) {}
     /* Retry spotlight in case data wasn't ready on first initSpotlight call */
     if (!window._spotlightDismissed) {
       var _sa = getSpotlightAnimals();
