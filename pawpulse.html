@@ -183,7 +183,7 @@ textarea{min-height:64px}
 .submit-btn{width:100%;padding:12px;font-family:var(--font-display);font-size:.98rem;font-weight:600;border:none;border-radius:10px;cursor:pointer;transition:all .2s;margin-top:6px;touch-action:manipulation;-webkit-tap-highlight-color:rgba(0,0,0,.08)}@media(max-width:640px){
   /* Ensure panel-body is scroll container, footer never scrolls away */
   .panel-body{overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;flex:1!important;min-height:0!important}
-  #panel-footer{flex-shrink:0!important;padding-bottom:max(24px,env(safe-area-inset-bottom,24px))!important;padding-top:10px!important;padding-left:16px!important;padding-right:16px!important}
+  #panel-footer{flex-shrink:0!important;padding-bottom:max(56px,env(safe-area-inset-bottom,56px))!important;padding-top:10px!important;padding-left:16px!important;padding-right:16px!important}
 }
 .submit-btn.lost{background:var(--lost-r);color:#fff}
 .submit-btn.found{background:var(--found-g);color:#fff}
@@ -5802,7 +5802,7 @@ function submitLost() {
     console.error('Doctrine violation: public write attempted shelter=true — blocked');
     r.shelter = false;
   }
-  r.source = 'public'; r.createdAt = r.createdAt || r.date;
+  r.source = 'public'; r.resolved = false; r.createdAt = r.createdAt || r.date;
   /* Close panel immediately — keeps UI responsive even with large photo */
   closePanel(); resetForm('lost');
   pLat.lost = null; pLng.lost = null;
@@ -5813,14 +5813,15 @@ function submitLost() {
   reports.push(r);
   save(); /* Save immediately so photo is in localStorage before any render */
   window._pauseFirestoreSync = true;
+  writeAnimalRecord(r, 'public');
+  showToast('lost');
+  recordSubmission('lost');
+  /* Delay pin render to 1.2s — Firestore write confirms first, pin appears once and stays */
   setTimeout(function() {
     renderMarkers();
     renderIncareView();
-    writeAnimalRecord(r, 'public');
-    setTimeout(function(){ window._pauseFirestoreSync = false; renderMarkers(); }, 6000);
-    recordSubmission('lost');
-    showToast('lost');
-  }, 200);
+  }, 1200);
+  setTimeout(function(){ window._pauseFirestoreSync = false; }, 6000);
 }
 
 function submitFound() {
@@ -5863,7 +5864,7 @@ function submitFound() {
     r.shelter = false;
   }
   if (r.shelter === true) r.atShelter = false;
-  r.source = 'public'; r.createdAt = r.createdAt || r.date;
+  r.source = 'public'; r.resolved = false; r.createdAt = r.createdAt || r.date;
   /* Close panel immediately — keeps UI responsive even with large photo */
   closePanel(); resetForm('found');
   pLat.found = null; pLng.found = null;
@@ -5873,14 +5874,11 @@ function submitFound() {
   reports.push(r);
   save(); /* Save immediately so photo is in localStorage before any render */
   window._pauseFirestoreSync = true;
-  setTimeout(function() {
-    renderMarkers();
-    renderIncareView();
-    writeAnimalRecord(r, 'public');
-    setTimeout(function(){ window._pauseFirestoreSync = false; renderMarkers(); }, 6000);
-    recordSubmission('found');
-    showToast('found');
-  }, 200);
+  writeAnimalRecord(r, 'public');
+  showToast('found');
+  recordSubmission('found');
+  setTimeout(function() { renderMarkers(); renderIncareView(); }, 1200);
+  setTimeout(function(){ window._pauseFirestoreSync = false; }, 6000);
 }
 
 function resetForm(type) {
