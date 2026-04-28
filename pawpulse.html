@@ -1505,8 +1505,13 @@ function startFirestoreListener() {
       });
 
       if (changed) {
+        /* Write photos to dedicated key before saving main data */
+        try {
+          var _pm={}; reports.forEach(function(r){if(r.photo)_pm[String(r.id)]=r.photo;});
+          if(Object.keys(_pm).length) localStorage.setItem('pawpulse-photos-v1',JSON.stringify(_pm));
+        } catch(e){}
         localStorage.setItem('pawpulse-v2', JSON.stringify(reports));
-        renderMarkers();
+        renderMarkersDebounced(); //renderMarkers();
         renderIncareView();
         updateNavCounts();
       }
@@ -5035,7 +5040,7 @@ function renderMarkers() {
         if (el) { el.classList.add('pin-new-pulse'); setTimeout(function(){ el.classList.remove('pin-new-pulse'); }, 1500); }
       }, 50);
     }
-    m.on('click', function(e){ closeCard(); openCard(r,e.containerPoint); L.DomEvent.stopPropagation(e); });
+    m.on('click', function(e){ closeCard(); var _cur=reports.find(function(x){return String(x.id)===String(r.id);}); openCard(_cur||r,e.containerPoint); L.DomEvent.stopPropagation(e); });
     lMarkers.push(m);
   });
   /* Remove old markers after new ones placed — eliminates blank-map flash */
