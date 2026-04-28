@@ -72,7 +72,7 @@ if (USE_FIREBASE) {
 body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);height:100vh;overflow:hidden;user-select:none}
 
 /* NAV */
-#nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;gap:8px;padding:0 12px;height:var(--nav-h);background:var(--forest);box-shadow:0 2px 16px rgba(0,0,0,.3)}
+#nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;gap:8px;padding:0 12px;height:var(--nav-h);background:var(--forest);box-shadow:0 2px 16px rgba(0,0,0,.3);border-bottom:2px solid rgba(122,172,130,.5);border-bottom:2px solid rgba(122,172,130,.5)}
 .nav-logo{font-family:var(--font-display);font-size:1.05rem;font-weight:700;color:var(--cream);letter-spacing:-.02em;display:flex;align-items:center;gap:5px;flex-shrink:0}
 .nav-logo-wrap{display:flex;flex-direction:column}
 .nav-logo-sub{font-family:var(--font-body);font-size:.56rem;font-weight:600;color:var(--moss);letter-spacing:.09em;text-transform:uppercase}
@@ -101,7 +101,7 @@ body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);h
 /* #banner-txt.fade removed */
 /* #banner-dot-reunion removed */
 /* Floating filter pills on map — horizontal row at bottom center */
-#map-filters{position:absolute;top:120px;left:10px;transform:none;z-index:600;display:flex;flex-direction:column;gap:6px;pointer-events:none;white-space:nowrap}
+#map-filters{position:absolute;top:120px;left:10px;transform:none;z-index:600;display:flex;flex-direction:column;gap:5px;pointer-events:none;white-space:nowrap}
 #map-filters .filter-btn{pointer-events:auto}
 .filter-btn{font-family:var(--font-body);font-size:.72rem;font-weight:600;padding:6px 13px;border-radius:999px;cursor:pointer;transition:all .15s;border:1.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.88);backdrop-filter:blur(8px);color:var(--warm-mid);box-shadow:0 2px 8px rgba(0,0,0,.12);touch-action:manipulation}
 .filter-btn.active.all{background:var(--amber);color:#fff;border-color:var(--amber)}
@@ -518,7 +518,7 @@ textarea{min-height:64px}
 #adopt-inquiry-inner{background:var(--cream);border-radius:18px 18px 0 0;width:100%;max-width:520px;max-height:85vh;overflow-y:auto;padding:22px 22px 32px;animation:slide-up .28s cubic-bezier(.34,1.56,.64,1)}
 
 /* ── SHELTER SPOTLIGHT ── */
-@media(max-width:640px){#shelter-spotlight{bottom:22px!important;right:8px!important;width:min(190px,44vw)!important}#spotlight-name{font-size:.78rem!important}#spotlight-bio{font-size:.6rem!important}#shelter-spotlight [style*="height:130px"]{height:100px!important}}
+@media(max-width:640px){#shelter-spotlight{bottom:22px!important;right:8px!important;width:min(160px,44vw)!important}#spotlight-name{font-size:.78rem!important}#spotlight-bio{font-size:.6rem!important}#shelter-spotlight [style*="height:130px"]{height:100px!important}}
 
 /* ── NEW PIN PULSE — briefly animates pins added after initial load ── */
 @keyframes pinPulse {
@@ -829,7 +829,7 @@ textarea{min-height:64px}
   title="Report a pet / Log intake">+</button>
 
 <!-- Orientation strip -->
-<div id="orientation-strip" style="display:none;position:fixed;top:var(--nav-h);left:0;right:0;z-index:999;background:rgba(45,74,53,.92);color:rgba(255,255,255,.78);text-align:center;font-size:.8rem;font-family:var(--font-body);padding:6px 14px;letter-spacing:.01em;pointer-events:none"><div style="font-size:.82rem;font-weight:600;color:rgba(255,255,255,.95);margin-bottom:2px">See lost pets, found animals, and pets in care — all in real time.</div><div style="font-size:.72rem;color:rgba(255,255,255,.75)">Tap a pin to help, or tap <strong style="font-weight:700">+ Report</strong> to post one. <span style="opacity:.7;font-style:italic">You might reunite a pet today.</span></div></div>
+<div id="orientation-strip" style="display:none;position:fixed;top:var(--nav-h);left:0;right:0;z-index:999;background:rgba(30,55,38,.97);border-bottom:1px solid rgba(122,172,130,.25);border-bottom:1px solid rgba(122,172,130,.3);color:rgba(255,255,255,.78);text-align:center;font-size:.8rem;font-family:var(--font-body);padding:6px 14px;letter-spacing:.01em;pointer-events:none"><div style="font-size:.82rem;font-weight:600;color:rgba(255,255,255,.95);margin-bottom:2px">See lost pets, found animals, and pets in care — all in real time.</div><div style="font-size:.72rem;color:rgba(255,255,255,.75)">Tap a pin to help, or tap <strong style="font-weight:700">+</strong> to post a report. <span style="opacity:.7;font-style:italic">You might reunite a pet today.</span></div></div>
 
 <!-- ADOPT VIEW -->
 <div id="view-adopt" class="view">
@@ -1073,17 +1073,17 @@ textarea{min-height:64px}
          Doctrine-safe presentation layer only. No pins. No map state.
          Pulls from existing shelter/adoption records only. No new writes.
     ─────────────────────────────────────────────────────────────────── -->
-    <div id="shelter-spotlight" style="display:none;position:absolute;bottom:80px;left:14px;z-index:700;width:200px;border-radius:20px;overflow:hidden;box-shadow:0 12px 40px rgba(42,31,18,.35),0 4px 12px rgba(0,0,0,.15);transition:opacity .6s ease,transform .15s ease;opacity:0;pointer-events:auto;cursor:pointer;border:1.5px solid rgba(255,255,255,.8);background:var(--cream);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)" onclick="this.style.transform='scale(1.04)';setTimeout(function(){setView('adopt',null);},150)">
+    <div id="shelter-spotlight" style="display:none;position:absolute;bottom:80px;left:14px;z-index:700;width:160px;border-radius:20px;overflow:hidden;box-shadow:0 12px 40px rgba(42,31,18,.35),0 4px 12px rgba(0,0,0,.15);transition:opacity .6s ease,transform .15s ease;opacity:0;pointer-events:auto;cursor:pointer;border:1.5px solid rgba(255,255,255,.8);background:var(--cream);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)" onclick="this.style.transform='scale(1.04)';setTimeout(function(){setView('adopt',null);},150)">
       <!-- Shelter companion card — NOT a map feature. No pins. No doctrine impact. -->
       <div style="background:var(--forest);padding:6px 8px 6px 10px;display:flex;align-items:center;gap:6px;width:100%">
-        <span style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.85)" id="spotlight-header-label">🏠 From the Shelter</span><button onclick="event.stopPropagation();dismissSpotlight()" style="background:none;border:none;color:rgba(255,255,255,.6);font-size:.85rem;line-height:1;cursor:pointer;padding:0 2px;margin-left:auto;flex-shrink:0" title="Dismiss">✕</button>
+        <span style="font-size:.55rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.85)" id="spotlight-header-label">🏠 From the Shelter</span><button onclick="event.stopPropagation();dismissSpotlight()" style="background:none;border:none;color:rgba(255,255,255,.6);font-size:.85rem;line-height:1;cursor:pointer;padding:0 2px;margin-left:auto;flex-shrink:0" title="Dismiss">✕</button>
       </div>
-      <div style="position:relative;height:120px;background:var(--cream-2);overflow:hidden">
+      <div style="position:relative;height:90px;background:var(--cream-2);overflow:hidden">
         <img id="spotlight-img" src="" alt="" style="width:100%;height:100%;object-fit:contain;object-position:center center;background:var(--cream-2);display:none">
         <div id="spotlight-emoji" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:3rem;background:var(--cream-2)">🐾</div>
         <div id="spotlight-label" style="position:absolute;bottom:6px;left:6px;background:rgba(255,255,255,.9);color:var(--forest);font-size:.56rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:2px 7px;border-radius:999px;box-shadow:0 1px 4px rgba(0,0,0,.12)">Adoptable</div>
       </div>
-      <div style="padding:8px 10px 10px;background:var(--cream);min-height:120px">
+      <div style="padding:6px 8px 8px;background:var(--cream);min-height:90px">
         <div id="spotlight-ai-bio" style="font-size:.7rem;color:var(--warm-dk);line-height:1.35;font-style:italic;margin-bottom:5px;overflow:hidden;min-height:47px;transition:opacity .3s ease;opacity:0"></div>
         <div id="spotlight-name" style="font-family:var(--font-display);font-size:.88rem;color:var(--warm-dk);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px"></div>
         <div id="spotlight-bio" style="font-size:.68rem;color:var(--warm-mid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:8px"></div>
@@ -5039,7 +5039,7 @@ function renderMarkers() {
     var icon = L.divIcon({
       className: '',
       html: '<div style="text-align:center;filter:drop-shadow(0 2px 6px rgba(0,0,0,.5))">'
-        + '<div style="font-size:2.4rem;line-height:1">🏠</div>'
+        + '<div style="font-size:2.4rem;line-height:1">🐾</div>'
         + '</div>',
       iconAnchor: [20, 38]
     });
