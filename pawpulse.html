@@ -1512,9 +1512,30 @@ function startFirestoreListener() {
           if(Object.keys(_pm).length) localStorage.setItem('pawpulse-photos-v1',JSON.stringify(_pm));
         } catch(e){}
         localStorage.setItem('pawpulse-v2', JSON.stringify(reports));
-        /* Skip visual re-render if we just submitted — 1200ms render already handled it */
-        var _msSince = window._lastSubmitTime ? (Date.now() - window._lastSubmitTime) : 99999;
-        if (_msSince > 9000) { renderMarkersDebounced(); } //renderMarkers();
+        /* Surgical per-change map update — never wipe and redraw all markers */
+        snapshot.docChanges().forEach(function(chg) {
+          var d = chg.doc.data();
+          var rid = String(d.id || chg.doc.id);
+          var r = reports.find(function(x){ return String(x.id) === rid; });
+          if (chg.type === 'removed') {
+            /* Remove just this marker */
+            lMarkers = lMarkers.filter(function(m) {
+              if (m._pawpulseId === rid) { map.removeLayer(m); return false; }
+              return true;
+            });
+          } else if (chg.type === 'added' && r && !window._justSubmittedId) {
+            /* New pin from another device — add it directly */
+            var alreadyOn = lMarkers.some(function(m){ return m._pawpulseId === rid; });
+            if (!alreadyOn && r) addSinglePin(r);
+          }
+          /* 'modified' changes (position/color updates) handled by next full renderMarkers */
+        });
+        /* Only do full re-render if a pin color or position changed */
+        var needsFullRender = snapshot.docChanges().some(function(chg){
+          return chg.type === 'modified';
+        });
+        /* Tag markers with their report ID for surgical removal */
+        if (lMarkers.some(function(m){ return !m._pawpulseId; })) { renderMarkersDebounced(); } //renderMarkers();
         renderIncareView();
         updateNavCounts();
       }
@@ -5021,7 +5042,9 @@ function addSinglePin(r) {
   }).addTo(map);
   m.on('click', function(e) {
     closeCard();
-    var _cur = reports.find(function(x){ return String(x.id) === String(r.id); });
+    /* Always look up current report — photo may have loaded after marker was created */
+    var _rid = String(r.id);
+    var _cur = reports.find(function(x){ return String(x.id) === _rid; });
     openCard(_cur || r, e.containerPoint);
     L.DomEvent.stopPropagation(e);
   });
@@ -5030,6 +5053,7 @@ function addSinglePin(r) {
     var el = m.getElement ? m.getElement() : null;
     if (el) { el.classList.add('pin-new-pulse'); setTimeout(function(){ el.classList.remove('pin-new-pulse'); }, 1500); }
   }, 50);
+  m._pawpulseId = String(r.id);
   lMarkers.push(m);
   /* Clear _isNewPin so subsequent renderMarkers doesn't re-pulse */
   r._isNewPin = false;
@@ -5069,6 +5093,7 @@ function renderMarkers() {
         if (el) { el.classList.add('pin-new-pulse'); setTimeout(function(){ el.classList.remove('pin-new-pulse'); }, 1500); }
       }, 50);
     }
+    m._pawpulseId = String(r.id);
     m.on('click', function(e){ closeCard(); var _cur=reports.find(function(x){return String(x.id)===String(r.id);}); openCard(_cur||r,e.containerPoint); L.DomEvent.stopPropagation(e); });
     lMarkers.push(m);
   });
