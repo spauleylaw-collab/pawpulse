@@ -1131,6 +1131,18 @@ textarea{min-height:64px}
 
         <!-- LOST FORM -->
         <div id="form-lost">
+          <div class="sl">🖼️ Photo <span style="font-size:.72rem;font-weight:400;color:var(--warm-mid)">— upload first to auto-fill fields with AI</span></div>
+          <div class="photo-drop">
+            <input type="file" id="l-photo" accept="image/*" onchange="previewPhoto(this,'l-prev','l-dicon','l-dtxt');showAIBtn('l')">
+            <div class="photo-drop-icon" id="l-dicon">📷</div>
+            <div class="photo-drop-txt"  id="l-dtxt">Tap to upload a photo</div>
+            <img id="l-prev" class="photo-prev" alt="preview">
+          </div>
+          <div id="l-ai-wrap" style="display:none;margin-top:8px">
+            <button class="ai-id-btn" id="l-ai-btn" onclick="applyAIIdentify('l')">✨ Identify breed &amp; color with AI</button>
+            <div class="ai-id-result" id="l-ai-result"></div>
+          </div>
+          <hr class="div">
           <div class="sl">📋 Pet Information</div>
           <div class="fr">
             <div class="fg" style="margin:0"><label>Pet Name</label><input type="text" id="l-name" placeholder="e.g. Biscuit"></div>
@@ -1151,18 +1163,6 @@ textarea{min-height:64px}
           <div class="loc-set"       id="l-locset">✅ <span id="l-loctxt">Location set</span> — <button onclick="startPlace('lost')" style="background:none;border:none;color:var(--forest);font-size:.72rem;font-weight:600;cursor:pointer;padding:0;font-family:var(--font-body);text-decoration:underline">Move pin</button></div>
           <div class="fg"><label>Landmark / Address (optional)</label><input type="text" id="l-address" placeholder="e.g. Near Brickyard Park"></div>
           <hr class="div">
-          <div class="sl">🖼️ Photo</div>
-          <div class="photo-drop">
-            <input type="file" id="l-photo" accept="image/*" onchange="previewPhoto(this,'l-prev','l-dicon','l-dtxt');showAIBtn('l')">
-            <div class="photo-drop-icon" id="l-dicon">📷</div>
-            <div class="photo-drop-txt"  id="l-dtxt">Tap to upload a photo</div>
-            <img id="l-prev" class="photo-prev" alt="preview">
-          </div>
-          <div id="l-ai-wrap" style="display:none;margin-top:8px">
-            <button class="ai-id-btn" id="l-ai-btn" onclick="applyAIIdentify('l')">✨ Identify breed &amp; color with AI</button>
-            <div class="ai-id-result" id="l-ai-result"></div>
-          </div>
-          <hr class="div">
           <div class="sl">👤 Owner Contact</div>
           <div class="fg"><label>Your Name</label><input type="text" id="l-owner" placeholder="Full name"></div>
           <div class="fr">
@@ -1177,6 +1177,18 @@ textarea{min-height:64px}
 
         <!-- FOUND FORM -->
         <div id="form-found" style="display:none">
+          <div class="sl">🖼️ Photo <span style="font-size:.72rem;font-weight:400;color:var(--warm-mid)">— upload first to auto-fill fields with AI</span></div>
+          <div class="photo-drop">
+            <input type="file" id="f-photo" accept="image/*" onchange="previewPhoto(this,'f-prev','f-dicon','f-dtxt')">
+            <div class="photo-drop-icon" id="f-dicon">📷</div>
+            <div class="photo-drop-txt"  id="f-dtxt">Tap to upload a photo</div>
+            <img id="f-prev" class="photo-prev" alt="preview">
+          </div>
+          <div id="f-ai-wrap" style="display:none;margin-top:8px">
+            <button class="ai-id-btn" id="f-ai-btn" onclick="applyAIIdentify('f')">✨ Identify breed &amp; color with AI</button>
+            <div class="ai-id-result" id="f-ai-result"></div>
+          </div>
+          <hr class="div">
           <div class="sl">📋 Pet Description</div>
           <div class="fr">
             <div class="fg" style="margin:0"><label>Species</label><select id="f-species"><option value="">Select…</option><option>Dog</option><option>Cat</option><option>Bird</option><option>Rabbit</option><option>Other</option></select></div>
@@ -1191,18 +1203,6 @@ textarea{min-height:64px}
           </div>
           <div class="loc-set" id="f-locset">✅ <span id="f-loctxt">Location set</span> — <button onclick="startPlace('found')" style="background:none;border:none;color:var(--forest);font-size:.72rem;font-weight:600;cursor:pointer;padding:0;font-family:var(--font-body);text-decoration:underline">Move pin</button></div>
           <div class="fg"><label>Landmark / Address (optional)</label><input type="text" id="f-address" placeholder="e.g. Near the fairgrounds"></div>
-          <hr class="div">
-          <div class="sl">🖼️ Photo</div>
-          <div class="photo-drop">
-            <input type="file" id="f-photo" accept="image/*" onchange="previewPhoto(this,'f-prev','f-dicon','f-dtxt')">
-            <div class="photo-drop-icon" id="f-dicon">📷</div>
-            <div class="photo-drop-txt"  id="f-dtxt">Tap to upload a photo</div>
-            <img id="f-prev" class="photo-prev" alt="preview">
-          </div>
-          <div id="f-ai-wrap" style="display:none;margin-top:8px">
-            <button class="ai-id-btn" id="f-ai-btn" onclick="applyAIIdentify('f')">✨ Identify breed &amp; color with AI</button>
-            <div class="ai-id-result" id="f-ai-result"></div>
-          </div>
           <hr class="div">
           <div class="sl">📞 Your Contact</div>
           <div class="fr">
