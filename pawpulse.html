@@ -5008,6 +5008,30 @@ function renderMarkersDebounced() {
   _renderMarkersDebounce = setTimeout(renderMarkers, 100);
 }
 
+/* Add a single new pin to the map without re-rendering all markers.
+   Used after submit to eliminate the full-redraw flicker. */
+function addSinglePin(r) {
+  if (!r || !r.lat || !r.lng) return;
+  if (r.shelter || !isPublicVisible(r) || r.reunited) return;
+  var m = L.marker([r.lat, r.lng], {
+    icon: pinIcon(r.type, false, false, false, r.atShelter && !r.shelter, false, r)
+  }).addTo(map);
+  m.on('click', function(e) {
+    closeCard();
+    var _cur = reports.find(function(x){ return String(x.id) === String(r.id); });
+    openCard(_cur || r, e.containerPoint);
+    L.DomEvent.stopPropagation(e);
+  });
+  /* Pulse animation for new pin */
+  setTimeout(function() {
+    var el = m.getElement ? m.getElement() : null;
+    if (el) { el.classList.add('pin-new-pulse'); setTimeout(function(){ el.classList.remove('pin-new-pulse'); }, 1500); }
+  }, 50);
+  lMarkers.push(m);
+  /* Clear _isNewPin so subsequent renderMarkers doesn't re-pulse */
+  r._isNewPin = false;
+}
+
 function renderMarkers() {
   var oldMarkers = lMarkers.slice(); /* keep reference to old markers */
   lMarkers = [];
@@ -5835,9 +5859,11 @@ function submitLost() {
   window._lastSubmitTime = Date.now();
   window._pauseFirestoreSync = true;
   writeAnimalRecord(r, 'public');
-  showToast('lost');
   recordSubmission('lost');
-  setTimeout(function(){ renderMarkers(); renderIncareView(); }, 1200);
+  setTimeout(function(){
+    addSinglePin(r);
+    renderIncareView();
+  }, 1000);
   setTimeout(function(){ window._pauseFirestoreSync = false; }, 6000);
 }
 
@@ -5895,7 +5921,11 @@ function submitFound() {
   writeAnimalRecord(r, 'public');
   showToast('found');
   recordSubmission('found');
-  setTimeout(function(){ renderMarkers(); renderIncareView(); }, 1200);
+  /* Add just the new pin directly — no full re-render, no flicker */
+  setTimeout(function(){
+    addSinglePin(r);
+    renderIncareView();
+  }, 1000);
   setTimeout(function(){ window._pauseFirestoreSync = false; }, 6000);
 }
 
