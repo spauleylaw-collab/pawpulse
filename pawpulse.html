@@ -4912,22 +4912,26 @@ function dismissInquiry(id) {
 function markReunited(id) {
   var r = reports.find(function(x){ return x.id == id; });
   if (!r || r.reunited) return;
+  if (!confirm('Mark this pet as reunited with its owner? This cannot be undone.')) return;
+  /* Ensure required fields are set */
   r.reunited = true;
   r.reunitedDate = new Date().toISOString();
-  save();
-  /* Sync to Firestore so ALL devices see the pin disappear immediately */
+  if (!r.source) r.source = 'public';
+  if (r.resolved === undefined) r.resolved = false;
+  /* Sync to Firestore */
   if (USE_FIREBASE && _fbReady && db) {
     window._pauseFirestoreSync = true;
-    /* Use set+merge so it works even if doc doesn't exist yet in Firestore */
-    writeAnimalRecord(r, r.source || 'public');
-      setTimeout(function(){ window._pauseFirestoreSync = false; }, 2000);
+    writeAnimalRecord(r, r.source);
+    setTimeout(function(){ window._pauseFirestoreSync = false; }, 2000);
   }
-  /* Re-render card */
+  save();
+  /* Defer heavy renders so UI thread stays responsive */
   var cardBody = document.getElementById('pin-card-body');
   if (cardBody) cardBody.innerHTML = cardHTML(r);
-  /* Gray the marker */
-  renderMarkers();
-  renderIncareView();
+  setTimeout(function() {
+    renderMarkers();
+    renderIncareView();
+  }, 50);
   /* Burst animation on map at pin location */
   fireBurst(r.lat, r.lng);
   /* Fade pin card away after brief pause — let user see the 🎉 state first */
