@@ -93,13 +93,13 @@ body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);h
 /* Staff badge hidden by default — only shown via JS after auth confirms */
 #staff-badge { display: none !important; }
 #staff-badge.staff-active { display: inline-flex !important; }
-#pp-banner{position:absolute;top:28px;left:50%;transform:translateX(-50%);z-index:600;background:rgba(45,74,53,.93);backdrop-filter:blur(12px);border:1px solid rgba(122,172,130,.3);border-radius:999px;padding:9px 18px;display:flex;align-items:center;gap:10px;min-width:280px;max-width:460px;box-shadow:0 4px 20px rgba(0,0,0,.28);pointer-events:none;transition:opacity .3s}@media(max-width:640px){#map-container{margin-top:60px!important}}
-@media(max-width:640px){#pp-banner{top:42px!important}}
-.banner-dot{width:7px;height:7px;border-radius:50%;background:var(--moss);box-shadow:0 0 7px var(--moss);flex-shrink:0;animation:bdot 2s ease-in-out infinite}
-@keyframes bdot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.75)}}
-#banner-txt{font-size:.76rem;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .35s}
-#banner-txt.fade{opacity:0}
-#banner-dot-reunion{background:#f0b840;box-shadow:0 0 8px #f0b840}
+/* #pp-banner removed — spotlight is the story layer *//* map-container banner-margin override removed */
+/* mobile #pp-banner override removed */
+/* .banner-dot removed */
+/* @keyframes bdot removed */
+/* #banner-txt removed */
+/* #banner-txt.fade removed */
+/* #banner-dot-reunion removed */
 /* Floating filter pills on map — horizontal row at bottom center */
 #map-filters{position:absolute;bottom:54px;left:50%;transform:translateX(-50%);z-index:600;display:flex;flex-direction:row;gap:6px;pointer-events:none;white-space:nowrap}
 #map-filters .filter-btn{pointer-events:auto}
@@ -1067,7 +1067,7 @@ textarea{min-height:64px}
          Doctrine-safe presentation layer only. No pins. No map state.
          Pulls from existing shelter/adoption records only. No new writes.
     ─────────────────────────────────────────────────────────────────── -->
-    <div id="shelter-spotlight" style="display:none;position:absolute;bottom:124px;right:14px;z-index:700;width:200px;border-radius:20px;overflow:hidden;box-shadow:0 12px 40px rgba(42,31,18,.35),0 4px 12px rgba(0,0,0,.15);transition:opacity .6s ease,transform .15s ease;opacity:0;pointer-events:auto;cursor:pointer;border:1.5px solid rgba(255,255,255,.8);background:var(--cream);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)" onclick="this.style.transform='scale(1.04)';setTimeout(function(){setView('adopt',null);},150)">
+    <div id="shelter-spotlight" style="display:none;position:absolute;bottom:80px;right:14px;z-index:700;width:200px;border-radius:20px;overflow:hidden;box-shadow:0 12px 40px rgba(42,31,18,.35),0 4px 12px rgba(0,0,0,.15);transition:opacity .6s ease,transform .15s ease;opacity:0;pointer-events:auto;cursor:pointer;border:1.5px solid rgba(255,255,255,.8);background:var(--cream);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)" onclick="this.style.transform='scale(1.04)';setTimeout(function(){setView('adopt',null);},150)">
       <!-- Shelter companion card — NOT a map feature. No pins. No doctrine impact. -->
       <div style="background:var(--forest);padding:6px 8px 6px 10px;display:flex;align-items:center;gap:6px;width:100%">
         <span style="font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.85)" id="spotlight-header-label">🏠 From the Shelter</span><button onclick="event.stopPropagation();dismissSpotlight()" style="background:none;border:none;color:rgba(255,255,255,.6);font-size:.85rem;line-height:1;cursor:pointer;padding:0 2px;margin-left:auto;flex-shrink:0" title="Dismiss">✕</button>
@@ -1092,10 +1092,6 @@ textarea{min-height:64px}
     <div id="map"></div>
 
     <!-- Live banner -->
-    <div id="pp-banner">
-      <div class="banner-dot" id="banner-dot"></div>
-      <div id="banner-txt">🐾 PawPulse is live in Hastings</div>
-    </div>
 
     <!-- Floating filter pills -->
     <!-- Map legend — bottom left -->
@@ -1430,7 +1426,7 @@ function startFirestoreListener() {
         if (_ml) { _ml.style.opacity = '0'; setTimeout(function(){ _ml.style.display='none'; }, 450); }
         initSpotlight();
         showShelterPicker();
-        setTimeout(rotateBanner, 200); /* Rotate banner as soon as data loads */
+        /* rotateBanner removed */
         return;
       }
 
@@ -1470,7 +1466,6 @@ function startFirestoreListener() {
         renderMarkers();
         renderIncareView();
         updateNavCounts();
-        rotateBanner();
       }
     }, function(err) {
       console.warn('Firestore listener error:', err);
@@ -4775,94 +4770,8 @@ function closeCard() {
   c.style.display = '';
 }
 
-/* ── Banner system ──────────────────────────── */
-var bannerEvents = [
-  { text:'🐾 PawPulse is live — helping Hastings pets get home', dot:'var(--moss)' },
-  { text:'🔴 Lost a pet? Tap "Lost Pet" to alert the community',  dot:'var(--moss)' },
-  { text:'🟢 Found a stray? Tap "Found Pet" to post it on the map', dot:'var(--moss)' },
-  { text:'🏠 Shelter staff can log intake and search lost pet reports', dot:'var(--moss)' },
-];
-var bannerIdx = 0;
-
-function pushBannerEvent(text, dotColor) {
-  bannerEvents.push({ text: text, dot: dotColor || 'var(--moss)', expires: Date.now() + 120000 });
-}
-
-function rotateBanner() {
-  /* Prune expired events, keep permanent ones */
-  bannerEvents = bannerEvents.filter(function(e){ return !e.expires || e.expires > Date.now(); });
-  /* Also build from live reports */
-  var liveMsgs = [];
-  var lostActive = reports.filter(function(r){ return r.type==='lost' && !r.reunited; });
-  var foundActive = reports.filter(function(r){ return r.type==='found' && !r.reunited; });
-  if (lostActive.length) {
-    var r = lostActive[Math.floor(Math.random()*lostActive.length)];
-    var name = r.name ? r.name : (r.species || 'A pet');
-    var lostAddr = r.address && !r.address.match(/^-?\d+\.\d+/) ? r.address.trim() : null;
-    liveMsgs.push({ text: '🔴 ' + name + ' is still missing' + (lostAddr ? ' \u2014 last seen near ' + lostAddr : '') + '. Can you help?', dot:'var(--lost-lt)' });
-  }
-  if (foundActive.length) {
-    var rf = foundActive[Math.floor(Math.random()*foundActive.length)];
-    var rfAddr = rf.address && !rf.address.match(/^-?\d+\.\d+/) ? rf.address.trim() : 'Hastings';
-    liveMsgs.push({ text: '🟢 ' + (rf.species||'A pet') + ' found near ' + rfAddr + ' — do you know this animal?', dot:'var(--found-lt)' });
-  }
-  /* Adoptable animals by name */
-  var adoptableNamed = reports.filter(function(r){
-    return r.shelter && r.adoptionStatus === 'available' && r.name && !r.reunited && !r.resolved;
-  });
-  adoptableNamed.forEach(function(r) {
-    var d = Math.floor(daysSince(r.dateAvailable||r.date));
-    var dText = d === 0 ? 'just became available' : d === 1 ? 'been available for 1 day' : 'been available for ' + d + ' days';
-    liveMsgs.push({ text: '🐾 ' + r.name + ' has ' + dText + ' — tap Adopt to meet them', dot:'var(--forest)' });
-  });
-
-  /* Recent shelter intakes — animals brought in last 3 days */
-  var recentIntake = reports.filter(function(r){
-    return r.shelter && r.shelterName && !r.reunited && daysSince(r.date) <= 3;
-  });
-  if (recentIntake.length > 0) {
-    var ri = recentIntake[Math.floor(Math.random()*recentIntake.length)];
-    var daysAgo = Math.floor(daysSince(ri.date));
-    var when = daysAgo === 0 ? 'today' : daysAgo === 1 ? 'yesterday' : daysAgo + ' days ago';
-    liveMsgs.push({ text: '🏠 ' + (ri.name || ri.species || 'A pet') + ' arrived at Heartland Pet Connection ' + when + ' — ' + (ri.intakeSource === 'stray' ? 'found stray' : ri.intakeSource === 'surrender' ? 'owner surrender' : 'brought in') + '.', dot: '#3a7d44' });
-  }
-  /* Build pool: static events + live report messages */
-  var pool = bannerEvents.concat(liveMsgs);
-  /* Community reunited milestone */
-  var communityReunited = reports.filter(function(r){
-    return (r.reunited === true) && (r.shelter !== true);
-  }).length;
-  var REUNITE_THRESHOLD = 5;
-  if (communityReunited >= REUNITE_THRESHOLD) {
-    pool.push({ text: '🎉 ' + communityReunited + ' pet' + (communityReunited!==1?'s':'') + ' reunited in Hastings — without ever entering a shelter', dot:'#f0b840' });
-  }
-  /* Adoption messages */
-  var adoptable = reports.filter(function(r){ return r.adoptionStatus==='available' && !r.reunited; });
-  if (adoptable.length) {
-    var longest = adoptable.slice().sort(function(a,b){ return daysSince(b.dateAvailable)-daysSince(a.dateAvailable); })[0];
-    var dw = longest.dateAvailable ? Math.floor(daysSince(longest.dateAvailable)) : 0;
-    var sh = longest.shelterName || longest.finder || 'a shelter';
-    pool.push({ text: '🏠 ' + adoptable.length + ' pet' + (adoptable.length>1?'s are':' is') + ' ready for adoption' + (adoptable.length===1?' at ' + sh:'') + ' — tap 🏠 Adopt to see them', dot:'#6090e0' });
-    if (dw >= 7) pool.push({ text: '🐾 This ' + (longest.species||'pet') + ' has been waiting ' + dw + ' days for a home — ask about adoption', dot:'#6090e0' });
-  }
-  if (!pool.length) return;
-  var next = pool[bannerIdx % pool.length];
-  bannerIdx++;
-
-  var txtEl  = document.getElementById('banner-txt');
-  var dotEl  = document.getElementById('banner-dot');
-  if (!txtEl) return;
-  txtEl.classList.add('fade');
-  setTimeout(function() {
-    txtEl.textContent = next.text;
-    if (dotEl) dotEl.style.background = next.dot || 'var(--moss)';
-    txtEl.classList.remove('fade');
-  }, 350);
-}
-
-setInterval(rotateBanner, 5000);
-setTimeout(rotateBanner, 1500);
-
+/* Banner system removed — pushBannerEvent stubbed so call sites do not crash */
+function pushBannerEvent() { /* no-op */ }
 function markReunited(id) {
   var r = reports.find(function(x){ return x.id == id; });
   if (!r || r.reunited) return;
@@ -5039,9 +4948,7 @@ function renderMarkers() {
   if (cntA) cntA.textContent = reports.filter(function(r){return r.adoptionStatus==='available' && !r.reunited;}).length;
   if (lblS && activeShelter) lblS.textContent = 'In Care of ' + activeShelter.split(' ')[0];
   var _eh = document.getElementById('empty-hint');
-  var _bn = document.getElementById('banner');
   if (_eh) _eh.style.opacity = (window._firebaseLoaded && !reports.length) ? '1' : '0';
-  if (_bn) _bn.style.opacity = (window._firebaseLoaded && !reports.length) ? '0' : '1';
   updateNavCounts();
   var rptView = document.getElementById('view-reports');
   var adoptView = document.getElementById('view-adopt');
@@ -9299,10 +9206,19 @@ function getSpotlightAnimals() {
   /* Priority 3: Recently adopted (good news) */
   var adopted = (reports || []).filter(function(r){
     return r.shelter && r.adoptionStatus === 'adopted'
-        && r.resolvedDate && daysSince(r.resolvedDate) <= 14;
+        && daysSince(r.adoptionDate || r.reunitedDate || r.date) <= 60;
   });
   adopted.forEach(function(r){
-    eligible.push({ r:r, label:'Recently adopted — great news! 🎉', cta:'See who is available →' });
+    eligible.push({ r:r, label:'Good news — found a home', cta:'See who is available →' });
+  });
+
+  /* Priority 4: Recently reunited */
+  var reunited = (reports || []).filter(function(r){
+    return r.reunited === true
+        && daysSince(r.reunitedDate || r.date) <= 60;
+  }).slice(0, 3);
+  reunited.forEach(function(r){
+    eligible.push({ r:r, label:'Good news — made it home', cta:'View lost & found map →' });
   });
 
   return eligible;
@@ -9338,7 +9254,7 @@ async function renderSpotlightCard(item) {
   /* Update header label with shelter name */
   var hdrLabel = document.getElementById('spotlight-header-label');
   if (hdrLabel && activeShelter) {
-    hdrLabel.textContent = '🏠 In care at ' + activeShelter;
+    hdrLabel.textContent = 'From Heartland Pet Connection';
   }
   name.textContent  = r.name || r.species || 'Animal';
   bio.textContent   = [r.breed, r.color, r.age].filter(Boolean).join(' · ');
