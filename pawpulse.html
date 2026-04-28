@@ -1289,6 +1289,7 @@ var reports  = JSON.parse(localStorage.getItem('pawpulse-v2') || '[]');
 var lMarkers = [];
 var curFilter = 'all';
 var curSpeciesFilter = 'all';
+var _lastSubmitTime = 0; /* ms timestamp of last public submit — gates onSnapshot re-render */
 var curSpeciesFilter = 'all';
 var placing   = null;
 var pLat = {}, pLng = {};
@@ -1511,7 +1512,8 @@ function startFirestoreListener() {
           if(Object.keys(_pm).length) localStorage.setItem('pawpulse-photos-v1',JSON.stringify(_pm));
         } catch(e){}
         localStorage.setItem('pawpulse-v2', JSON.stringify(reports));
-        renderMarkersDebounced(); //renderMarkers();
+        /* Skip visual re-render if we just submitted — 1200ms render already handled it */
+        if (Date.now() - window._lastSubmitTime > 9000) { renderMarkersDebounced(); } //renderMarkers();
         renderIncareView();
         updateNavCounts();
       }
@@ -5830,6 +5832,7 @@ function submitLost() {
   r._isNewPin = true;
   reports.push(r);
   save();
+  window._lastSubmitTime = Date.now();
   window._pauseFirestoreSync = true;
   writeAnimalRecord(r, 'public');
   showToast('lost');
@@ -5887,6 +5890,7 @@ function submitFound() {
   r._isNewPin = true;
   reports.push(r);
   save();
+  window._lastSubmitTime = Date.now();
   window._pauseFirestoreSync = true;
   writeAnimalRecord(r, 'public');
   showToast('found');
