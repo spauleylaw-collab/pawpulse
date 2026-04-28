@@ -194,8 +194,8 @@ textarea{min-height:64px}
 .stat-dot{width:8px;height:8px;border-radius:50%}
 .stat-dot.lost{background:var(--lost-r)}
 .stat-dot.found{background:var(--found-g)}
-#drop-hint{display:none;position:absolute;inset:0;z-index:700;background:rgba(42,31,18,.18);align-items:center;justify-content:center;flex-direction:column;gap:16px;pointer-events:none}
-#drop-hint-pill{background:var(--forest);color:var(--cream);border-radius:999px;padding:11px 22px;font-size:.88rem;font-weight:700;box-shadow:0 4px 20px rgba(0,0,0,.35);letter-spacing:.01em;display:flex;align-items:center;gap:8px}
+#drop-hint{display:none;position:absolute;bottom:100px;left:50%;transform:translateX(-50%);z-index:700;background:rgba(42,31,18,.85);color:var(--cream);border-radius:12px;padding:10px 18px;font-size:.82rem;font-weight:600;align-items:center;gap:12px;box-shadow:0 4px 18px rgba(0,0,0,.3);backdrop-filter:blur(8px);pointer-events:none;white-space:nowrap}
+/* #drop-hint-pill removed — hint is now the pill itself */
 #drop-hint.on{display:flex}/* drop-hint mobile override removed — now full transparent overlay on all sizes */
 @keyframes hpulse{0%,100%{opacity:.88}50%{opacity:1}}
 #drop-cancel{background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.4);color:rgba(255,255,255,.9);border-radius:999px;padding:9px 22px;font-size:.82rem;font-weight:700;cursor:pointer;font-family:var(--font-body);pointer-events:auto;box-shadow:0 2px 12px rgba(0,0,0,.2)}
@@ -1108,8 +1108,8 @@ textarea{min-height:64px}
     </div>
 
     <div id="drop-hint">
-      <div id="drop-hint-pill">📍 Tap the map to place pin</div>
-      <button id="drop-cancel" onclick="event.stopPropagation();cancelPlace();">✕ Cancel</button>
+      📍 Tap the map to place pin
+      <button id="drop-cancel" onclick="event.stopPropagation();cancelPlace();" style="pointer-events:auto">✕ Cancel</button>
     </div>
     <!-- Shown after pin placed on mobile — big tap target to return to form -->
     <div id="pin-set-btn" style="display:none;position:absolute;bottom:80px;left:50%;transform:translateX(-50%);z-index:900;background:var(--forest);color:var(--cream);border:none;border-radius:999px;padding:14px 28px;font-size:.9rem;font-weight:700;font-family:var(--font-display);box-shadow:0 4px 20px rgba(0,0,0,.35);cursor:pointer;white-space:nowrap;animation:hpulse 1.4s ease-in-out infinite" onclick="document.getElementById('pin-set-btn').style.display='none'; var _s=document.getElementById('orientation-strip'); if(_s) _s.style.display='none'; document.getElementById('side-panel').classList.add('open'); setTimeout(function(){map.invalidateSize();},300);">
@@ -2367,7 +2367,6 @@ function submitIntakeFromModal() {
     pushBannerEvent((isHold?'⚠️ Animal on hold logged at ':'🐾 New animal received at ') + activeShelter, isHold?'#d4843a':'var(--found-g)');
     /* Run AI match search on every intake */
     setTimeout(function(){ autoMatchOnIntake(r); }, 800);
-    setTimeout(function(){ checkFoundPinsOnIntake(r); }, 1200);
   }, 300);
 }
 
@@ -4578,7 +4577,7 @@ async function searchMatchesFromCard(lostId) {
       var confColor = { high: 'var(--found-g)', medium: 'var(--amber)', low: '#a0a0a0' };
       var confBg    = { high: '#f0fff4', medium: '#fffbf0', low: '#f8f8f8' };
       existingEl.innerHTML = '<div style="font-weight:700;color:var(--warm-dk);margin-bottom:8px">'
-        + '🔍 ' + matches.length + ' possible match' + (matches.length>1?'es':'') + ' at Heartland — is one of these your pet?</div>'
+        + (function(){ var v=matches.filter(function(m){return shelterAnimals.find(function(x){return String(x.id)===String(m.id);});}); return '🔍 '+v.length+' possible match'+(v.length>1?'es':'')+' at Heartland — is one of these your pet?'; })() + '</div>'
         + matches.map(function(m) {
           var a = shelterAnimals.find(function(x){ return String(x.id)===String(m.id); });
           if (!a) return '';
@@ -4685,7 +4684,9 @@ function showCallOwnerPrompt(lostPet, intake) {
   var panel = document.createElement('div');
   panel.id = 'call-owner-panel';
   panel.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:5201;background:var(--cream);border-radius:18px 18px 0 0;padding:22px 22px 32px;box-shadow:0 -8px 40px rgba(0,0,0,.3)';
-  var dis = "(function(){var p=document.getElementById('call-owner-panel');var b=document.getElementById('call-owner-bd');if(p)p.remove();if(b)b.remove();setView('incare',document.querySelector('.tab-btn[onclick*=incare]'));})()";
+  var _io = document.getElementById('intake-modal-overlay');
+  var _intakeOpen = _io && _io.style.display !== 'none';
+  var dis = "(function(){var p=document.getElementById('call-owner-panel');var b=document.getElementById('call-owner-bd');if(p)p.remove();if(b)b.remove();" + (_intakeOpen ? '' : "setView('incare',document.querySelector('.tab-btn[onclick*=incare]'));") + "})()";
   panel.innerHTML =
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">'
     + '<div style="font-family:var(--font-display);font-size:1.05rem;font-weight:700;color:var(--warm-dk)">Call the Owner</div>'
@@ -5165,17 +5166,10 @@ map.on('click', function(e) {
   exitPlacingMode();  /* keeps tmpMarker visible so user sees the pin they just dropped */
   /* Show a floating button so user can return to form — more reliable than auto-open on mobile */
   var pinBtn = document.getElementById('pin-set-btn');
-  if (window.innerWidth > 600) {
-    /* Desktop: open panel immediately — pin is already visually placed */
-    document.getElementById('side-panel').classList.add('open');
-    setTimeout(function(){ map.invalidateSize(); }, 300);
-    if (pinBtn) pinBtn.style.display = 'none';
-  } else {
-    /* Mobile: show the "Tap to continue" button — panel can't open over map */
-    if (pinBtn) {
-      pinBtn.style.display = 'block';
-    }
-  }
+  /* Open panel immediately on all screen sizes after pin placed */
+  document.getElementById('side-panel').classList.add('open');
+  if (pinBtn) pinBtn.style.display = 'none';
+  setTimeout(function(){ map.invalidateSize(); }, 300);
   setTimeout(function(){ injectMicButtons(document.getElementById('side-panel')); }, 380);
 });
 
