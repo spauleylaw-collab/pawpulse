@@ -2002,6 +2002,11 @@ function bootApp() {
   if (sel && activeShelter) sel.value = activeShelter;
   _recordsReady = true;
   renderMarkers();
+  /* Retry if map wasn't ready yet (defensive) */
+  if (lMarkers.length === 0 && reports.length > 0) {
+    setTimeout(function() { if (lMarkers.length === 0) { renderMarkers(); } }, 800);
+    setTimeout(function() { if (lMarkers.length === 0) { renderMarkers(); } }, 2000);
+  }
   initSpotlight();
   /* Overlay dismissed by startFirestoreListener dismiss timer */
   renderIncareView();
@@ -5050,7 +5055,7 @@ function renderMarkersDebounced() {
 /* Add a single new pin to the map without re-rendering all markers.
    Used after submit to eliminate the full-redraw flicker. */
 function addSinglePin(r) {
-  if (!_mapReady || !r || !r.lat || !r.lng) return;
+  if (!map || !map.addLayer || !r || !r.lat || !r.lng) return;
   if (r.shelter || !isPublicVisible(r) || r.reunited) return;
   var m = L.marker([r.lat, r.lng], {
     icon: pinIcon(r.type, false, false, false, r.atShelter && !r.shelter, false, r)
@@ -5070,7 +5075,7 @@ function addSinglePin(r) {
 }
 
 function renderMarkers() {
-  if (!_mapReady || !Array.isArray(reports)) return; /* wait for Leaflet + data */
+  if (!map || !map.addLayer || !Array.isArray(reports)) return; /* map must exist */
   var oldMarkers = lMarkers.slice(); /* keep reference to old markers */
   lMarkers = [];
 
