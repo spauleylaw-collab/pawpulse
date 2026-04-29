@@ -1408,8 +1408,8 @@ function _dismissOverlay() {
 }
 
 function startFirestoreListener() {
-  /* Hard safety: dismiss overlay after 4s no matter what */
-  setTimeout(_dismissOverlay, 4000);
+  /* Safety dismiss — overlay should already be gone from bootApp */
+  setTimeout(_dismissOverlay, 2000);
   if (!db) {
     console.warn('Firestore unavailable — using localStorage');
     _fbReady = true;
@@ -1425,8 +1425,7 @@ function startFirestoreListener() {
       }
 
       if (!_fbReady) {
-        /* Initial load — take everything from Firestore if it has data,
-           otherwise keep localStorage data */
+        /* Firestore arrived — merge with already-rendered localStorage data */
         if (!snapshot.empty) {
           var localSnapshot = reports.slice(); /* save local state (has photos) */
           var localOnly = localSnapshot.filter(function(lr){
@@ -1452,16 +1451,25 @@ function startFirestoreListener() {
         _fbReady = true;
         installBypassDetection();
         setTimeout(function(){ assertNoInvalidStates(reports); }, 800);
-        /* Mark data as loaded — gates empty-hint and dismisses loading overlay */
         window._firebaseLoaded = true;
+        /* Surgical merge: add new pins, remove deleted ones — no full re-render */
+        try {
+          reports.forEach(function(r) {
+            if (r.shelter || r.reunited || !isPublicVisible(r)) return;
+            var onMap = lMarkers.some(function(m){ return m._pawpulseId === String(r.id); });
+            if (!onMap) addSinglePin(r);
+          });
+          lMarkers = lMarkers.filter(function(m) {
+            if (!m._pawpulseId) return true;
+            var stillExists = reports.some(function(r){ return String(r.id) === m._pawpulseId; });
+            if (!stillExists) { map.removeLayer(m); return false; }
+            return true;
+          });
+          updateNavCounts();
+        } catch(e) { console.warn('Firestore merge:', e.message); }
         initSpotlight();
-        if (window._firestoreTimedOut) {
-          /* Firestore arrived after 5s fallback — re-render with real data */
-          try { renderMarkers(); updateNavCounts(); } catch(e) {}
-        }
         showShelterPicker();
-        /* Dismiss after bootApp+renderMarkers have run */
-        setTimeout(_dismissOverlay, 100);
+        _dismissOverlay();
         /* rotateBanner removed */
         return;
       }
@@ -1815,16 +1823,10 @@ function doGuestView() {
   document.getElementById('login-overlay').style.display = 'none';
   var loading = document.getElementById('app-loading');
   if (loading && loading.parentNode) loading.parentNode.removeChild(loading);
-  if (USE_FIREBASE) { startFirestoreListener(); } else { bootApp(); }
-  setTimeout(function() {
-    if (!_bootAppDone) {
-      console.warn('PawPulse: Firestore timeout — booting without data');
-      window._firestoreTimedOut = true;
-      window._firebaseLoaded = true;
-      bootApp(); /* renders from localStorage cache */
-      setTimeout(_dismissOverlay, 200); /* ensure overlay clears */
-    }
-  }, 5000);
+  /* Boot from localStorage immediately — don't wait for Firestore */
+  if (!_bootAppDone) { bootApp(); }
+  /* Then start Firestore listener to sync updates in background */
+  if (USE_FIREBASE) { startFirestoreListener(); }
 }
 
 function doSignOut() {
