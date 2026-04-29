@@ -4608,9 +4608,12 @@ async function searchMatchesFromCard(lostId) {
     : '';
 
   try {
+    var _ctrl = new AbortController();
+    var _tout = setTimeout(function(){ _ctrl.abort(); }, 15000);
     var resp = await fetch('/api/anthropic', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      signal: _ctrl.signal,
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 600,
@@ -4626,6 +4629,7 @@ async function searchMatchesFromCard(lostId) {
         }]
       })
     });
+    clearTimeout(_tout);
     var data = await resp.json();
     if (data.error) throw new Error(data.error.message);
     var text = (data.content||[]).map(function(b){ return b.text||''; }).join('').trim();
@@ -4677,6 +4681,12 @@ async function searchMatchesFromCard(lostId) {
         }).join('');
     }
   } catch(e) {
+    clearTimeout(_tout || 0);
+    if (e.name === 'AbortError') {
+      existingEl.innerHTML = '<div style="color:var(--warm-mid);padding:6px 0">Search timed out — please try again.</div>';
+      if (btn) { btn.disabled = false; btn.textContent = '🔍 Search Again'; }
+      return;
+    }
     /* Fallback: simple species match */
     var fallback = shelterAnimals.filter(function(r){
       return lost.species && r.species && lost.species.toLowerCase()===r.species.toLowerCase();
@@ -8579,6 +8589,12 @@ function restitTable(restit) {
 function openAdoptDetail(id) {
   var r = reports.find(function(x){ return x.id == id; });
   if (!r) return;
+  /* Block hold animals from adoption detail */
+  if (r.intakeType === 'hold') {
+    var daysLeft = Math.max(0, 5 - Math.floor(daysSince(r.date)));
+    alert('⏳ ' + (r.name || 'This animal') + ' is on a ' + daysLeft + '-day hold and cannot be adopted yet. Please check back soon.');
+    return;
+  }
   var name = r.name || r.species || 'Animal';
   var meta = [r.breed, r.color, r.sex, r.age].filter(Boolean).join(' · ');
   var fee = r.adoptionFee != null ? '$' + r.adoptionFee + ' adoption fee' : '';
@@ -8680,7 +8696,7 @@ function renderAdoptView() {
         + '⏳ On Hold — ' + holdDaysLeft + ' day' + (holdDaysLeft === 1 ? '' : 's') + ' left'
         + '</div></div>'
       : '';
-    return '<div class="adopt-card" onclick="openAdoptDetail(' + r.id + ')" style="cursor:pointer;position:relative">'
+    return '<div class="adopt-card" onclick="' + (isHold ? '' : 'openAdoptDetail(' + r.id + ')') + '" style="cursor:' + (isHold ? 'default' : 'pointer') + ';position:relative">'
       + holdOverlay
       + '<div style="height:3px;background:' + urgencyColor + ';border-radius:999px 999px 0 0"></div>'
       + imgHTML
