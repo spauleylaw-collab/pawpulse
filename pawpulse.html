@@ -1244,6 +1244,65 @@ window.addEventListener('unhandledrejection', function(e) {
   console.error('PawPulse unhandled promise:', e.reason);
 });
 
+/* ── IndexedDB Photo Store — no 5MB cap, photos persist reliably ── */
+var _photoDB = null;
+var _photoCache = {}; /* in-memory: {id: dataUrl} — loaded from IDB at boot */
+(function initPhotoDB() {
+  try {
+    var req = indexedDB.open('pawpulse-photos', 1);
+    req.onupgradeneeded = function(e) {
+      e.target.result.createObjectStore('photos', { keyPath: 'id' });
+    };
+    req.onsuccess = function(e) {
+      _photoDB = e.target.result;
+      /* Load all photos into memory cache */
+      var tx = _photoDB.transaction('photos', 'readonly');
+      var req2 = tx.objectStore('photos').getAll();
+      req2.onsuccess = function(e2) {
+        (e2.target.result || []).forEach(function(row) { _photoCache[row.id] = row.photo; });
+        console.log('PawPulse: loaded ' + Object.keys(_photoCache).length + ' photos from IDB');
+      };
+    };
+    req.onerror = function(e) { console.warn('IDB open failed:', e.target.error); };
+  } catch(e) { console.warn('IDB not available:', e.message); }
+})();
+
+function savePhotoIDB(id, photo) {
+  _photoCache[String(id)] = photo; /* always update in-memory */
+  if (!_photoDB) return;
+  try {
+    var tx = _photoDB.transaction('photos', 'readwrite');
+    tx.objectStore('photos').put({ id: String(id), photo: photo });
+  } catch(e) { console.warn('IDB photo save failed:', e.message); }
+}
+
+function deletePhotoIDB(id) {
+  delete _photoCache[String(id)];
+  if (!_photoDB) return;
+  try {
+    var tx = _photoDB.transaction('photos', 'readwrite');
+    tx.objectStore('photos').delete(String(id));
+  } catch(e) {}
+}
+
+/* Compress photo to max 900px wide, JPEG 72% — keeps well under Firestore 1MB doc limit */
+function compressPhoto(dataUrl, callback) {
+  try {
+    var img = new Image();
+    img.onload = function() {
+      var MAX = 900;
+      var w = img.width, h = img.height;
+      if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+      var canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      callback(canvas.toDataURL('image/jpeg', 0.72));
+    };
+    img.onerror = function() { callback(dataUrl); };
+    img.src = dataUrl;
+  } catch(e) { callback(dataUrl); }
+}
+
 var HASTINGS = [40.5888, -98.3910];
 var MAP_ZOOM = window.innerWidth < 700 ? 10 : 11;
 
@@ -1302,16 +1361,11 @@ var _isStaff  = false;
 
 /* ── SAVE / LOAD ──────────────────────────────────────────────────────── */
 function save() {
-  /* Save photos to dedicated key — only active public pins, prunes stale entries */
-  try {
-    var _pm = {};
-    reports.forEach(function(r) {
-      /* Only keep photos for active (non-reunited) public pins to stay within quota */
-      if (r.photo && !r.shelter && !r.reunited && !r.resolved) _pm[String(r.id)] = r.photo;
-    });
-    localStorage.setItem('pawpulse-photos-v1', JSON.stringify(_pm));
-  } catch(e) { console.warn('photo save failed:', e.message); }
-  /* Always strip photos from main store — photos live only in pawpulse-photos-v1 */
+  /* Update in-memory photo cache for this session */
+  reports.forEach(function(r) {
+    if (r.photo) _photoCache[String(r.id)] = r.photo;
+  });
+  /* Strip photos from localStorage — Firestore is source of truth for photos now */
   try {
     var _stripped = reports.map(function(r) {
       var s = Object.assign({}, r); delete s.photo; return s;
@@ -1434,13 +1488,10 @@ function startFirestoreListener() {
           reports = [];
           snapshot.forEach(function(doc) {
             var data = doc.data();
-            /* Preserve local photo if Firestore version lacks it
-               (happens when photo write failed due to slow auth on mobile) */
-            var local = localSnapshot.find(function(r){ return String(r.id) === String(data.id); });
-            /* Preserve local photo only if Firestore lacks it (failed upload case) */
-            if (local && local.photo && !data.photo) { data.photo = local.photo; }
-            if (!data.photo) {
-              try { var _rp=JSON.parse(localStorage.getItem('pawpulse-photos-v1')||'{}'); if (_rp[String(data.id)]) data.photo=_rp[String(data.id)]; } catch(e){}
+            /* Photo now stored in Firestore — use it directly.
+               Fall back to in-memory cache for photos not yet synced. */
+            if (!data.photo && _photoCache[String(data.id)]) {
+              data.photo = _photoCache[String(data.id)];
             }
             reports.push(data);
           });
@@ -1478,21 +1529,12 @@ function startFirestoreListener() {
           if (idx > -1) {
             /* Preserve local photo if Firestore lacks it (failed upload) */
             if (!data.photo) {
-              /* First try in-memory copy (most recent) */
-              if (reports[idx].photo) {
-                data.photo = reports[idx].photo;
-              } else {
-                /* Fall back to dedicated photo store */
-                try {
-                  var _up=JSON.parse(localStorage.getItem('pawpulse-photos-v1')||'{}');
-                  if (_up[String(data.id)]) data.photo=_up[String(data.id)];
-                } catch(e) {}
-              }
+              data.photo = (reports[idx] && reports[idx].photo) || _photoCache[String(data.id)] || null;
             }
             reports[idx] = data;
           } else {
-            if (!data.photo) {
-              try { var _np=JSON.parse(localStorage.getItem('pawpulse-photos-v1')||'{}'); if (_np[String(data.id)]) data.photo=_np[String(data.id)]; } catch(e){}
+            if (!data.photo && _photoCache[String(data.id)]) {
+              data.photo = _photoCache[String(data.id)];
             }
             reports.push(data);
           }
@@ -1504,10 +1546,7 @@ function startFirestoreListener() {
 
       if (changed) {
         /* Write photos to dedicated key before saving main data */
-        try {
-          var _pm={}; reports.forEach(function(r){if(r.photo)_pm[String(r.id)]=r.photo;});
-          if(Object.keys(_pm).length) localStorage.setItem('pawpulse-photos-v1',JSON.stringify(_pm));
-        } catch(e){}
+        /* photos are in IDB/_photoCache — no localStorage write needed */
         localStorage.setItem('pawpulse-v2', JSON.stringify(reports));
         /* Surgical per-change map update — never wipe and redraw all markers */
         snapshot.docChanges().forEach(function(chg) {
@@ -5709,14 +5748,21 @@ function writeAnimalRecord(r, source) {
   if (r.shelter === true) r.atShelter = false;
   /* Stamp updatedAt */
   r.updatedAt = new Date().toISOString();
-  /* Persist to Firestore — strip photo (base64) before write to stay within
-     document size limits and reduce bandwidth. Photo is preserved in
-     localStorage and restored by the onSnapshot handler if Firestore lacks it. */
+  /* Persist to Firestore — compress photo before write to stay under 1MB doc limit */
   if (USE_FIREBASE && _fbReady && db) {
-    var firestoreDoc = Object.assign({}, r);
-    delete firestoreDoc.photo;  /* keep photo local only */
-    db.collection('reports').doc(String(r.id)).set(firestoreDoc, {merge: true})
-      .catch(function(e){ console.warn('Firestore write error:', e.message); });
+    var _writeToFS = function(doc) {
+      db.collection('reports').doc(String(doc.id)).set(doc, {merge: true})
+        .catch(function(e){ console.warn('Firestore write error:', e.message); });
+    };
+    if (r.photo) {
+      /* Compress then write — photo travels with the record, no local cache needed */
+      compressPhoto(r.photo, function(compressed) {
+        var doc = Object.assign({}, r, { photo: compressed });
+        _writeToFS(doc);
+      });
+    } else {
+      _writeToFS(Object.assign({}, r));
+    }
   }
 }
 
@@ -9763,4 +9809,4 @@ function maybeShowTutorial() {
   </div>
 </div>
 </body>
-</html>
+</html>s
