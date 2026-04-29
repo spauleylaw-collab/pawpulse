@@ -518,7 +518,7 @@ textarea{min-height:64px}
 #adopt-inquiry-inner{background:var(--cream);border-radius:18px 18px 0 0;width:100%;max-width:520px;max-height:85vh;overflow-y:auto;padding:22px 22px 32px;animation:slide-up .28s cubic-bezier(.34,1.56,.64,1)}
 
 /* ── SHELTER SPOTLIGHT ── */
-@media(max-width:640px){#shelter-spotlight{bottom:22px!important;right:8px!important;width:min(160px,44vw)!important}#spotlight-name{font-size:.78rem!important}#spotlight-bio{font-size:.6rem!important}#shelter-spotlight [style*="height:130px"]{height:100px!important}}
+@media(max-width:640px){#shelter-spotlight{bottom:44px!important;right:8px!important;width:min(160px,44vw)!important}#spotlight-name{font-size:.78rem!important}#spotlight-bio{font-size:.6rem!important}#shelter-spotlight [style*="height:130px"]{height:100px!important}}
 
 /* ── NEW PIN PULSE — briefly animates pins added after initial load ── */
 @keyframes pinPulse {
@@ -781,7 +781,7 @@ textarea{min-height:64px}
 
 <nav id="nav">
   <div class="nav-logo">
-    🐾
+    <span style="font-size:1.4rem;filter:drop-shadow(0 0 3px rgba(255,200,80,.7));color:#fff">🐾</span>
     <div class="nav-logo-wrap">
       PawPulse
       <span class="nav-logo-sub">Hastings &amp; Adams County, NE</span>
@@ -802,7 +802,7 @@ textarea{min-height:64px}
     <button class="tab-btn tab-public"        onclick="setView('adopt',this)" title="Adoption">🏠 <span class="tab-lbl">Adopt</span></button>
     <!-- STAFF MODE -->
     <div class="nav-mode-sep"></div>
-    <button class="tab-btn tab-ops" onclick="setView('incare',this)"   title="In Care">🏥 <span class="tab-lbl">At Heartland</span> <span id="nav-incare-count" style="display:none;background:var(--found-g);color:#fff;border-radius:999px;font-size:.6rem;padding:1px 5px;margin-left:2px"></span></button>
+    <button class="tab-btn tab-ops" onclick="setView('incare',this)"   title="In Care">🐾 <span class="tab-lbl">At Heartland</span> <span id="nav-incare-count" style="display:none;background:var(--found-g);color:#fff;border-radius:999px;font-size:.6rem;padding:1px 5px;margin-left:2px"></span></button>
     <!-- ADMIN MODE -->
     <div class="nav-mode-sep"></div>
     <button class="tab-btn tab-admin" onclick="setView('reports',this)" title="Reports & Admin">📊 <span class="tab-lbl">Reports</span></button>
@@ -1040,8 +1040,8 @@ textarea{min-height:64px}
           <button onclick="printActiveReport()" title="Print" style="padding:5px 8px;font-size:.68rem;border-radius:6px;border:1px solid var(--cream-3);background:var(--cream);cursor:pointer;touch-action:manipulation;color:var(--warm-dk)">🖨️</button>
           <button onclick="exportReportWord()" title="Export Word" style="padding:5px 8px;font-size:.68rem;border-radius:6px;border:1px solid #2050a0;background:var(--cream);cursor:pointer;touch-action:manipulation;color:#2050a0">📄</button>
           <button onclick="emailActiveReport()" title="Email" style="padding:5px 8px;font-size:.68rem;border-radius:6px;border:1px solid #059669;background:var(--cream);cursor:pointer;touch-action:manipulation;color:#059669">✉️</button>
-          <button onclick="openContentGen('press')" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid #e0a090;background:#fff;cursor:pointer;font-family:var(--font-body);color:#c0392b;white-space:nowrap;flex-shrink:0">📣 Shareable Summary</button>
-          <button onclick="openContentGen('fund')" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid #e0c090;background:#fff;cursor:pointer;font-family:var(--font-body);color:#b06010;white-space:nowrap;flex-shrink:0">💛 Donor Message</button>
+          <button onclick="openContentGen('press')" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid #e0a090;background:#fff;cursor:pointer;font-family:var(--font-body);color:#c0392b;white-space:nowrap;flex-shrink:0">📣 Share All</button>
+          <button onclick="openContentGen('fund')" style="padding:6px 10px;font-size:.72rem;font-weight:600;border-radius:7px;border:1.5px solid #e0c090;background:#fff;cursor:pointer;font-family:var(--font-body);color:#b06010;white-space:nowrap;flex-shrink:0">💛 Donor All</button>
           
         </div>
       </div>
@@ -1073,7 +1073,7 @@ textarea{min-height:64px}
          Doctrine-safe presentation layer only. No pins. No map state.
          Pulls from existing shelter/adoption records only. No new writes.
     ─────────────────────────────────────────────────────────────────── -->
-    <div id="shelter-spotlight" style="display:none;position:absolute;bottom:80px;left:8px;z-index:700;width:150px;border-radius:20px;overflow:hidden;box-shadow:0 12px 40px rgba(42,31,18,.35),0 4px 12px rgba(0,0,0,.15);transition:opacity .6s ease,transform .15s ease;opacity:0;pointer-events:auto;cursor:pointer;border:1.5px solid rgba(255,255,255,.8);background:var(--cream);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)" onclick="this.style.transform='scale(1.04)';setTimeout(function(){setView('adopt',null);},150)">
+    <div id="shelter-spotlight" style="display:none;position:absolute;bottom:100px;left:8px;z-index:700;width:150px;border-radius:20px;overflow:hidden;box-shadow:0 12px 40px rgba(42,31,18,.35),0 4px 12px rgba(0,0,0,.15);transition:opacity .6s ease,transform .15s ease;opacity:0;pointer-events:auto;cursor:pointer;border:1.5px solid rgba(255,255,255,.8);background:var(--cream);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)" onclick="this.style.transform='scale(1.04)';setTimeout(function(){setView('adopt',null);},150)">
       <!-- Shelter companion card — NOT a map feature. No pins. No doctrine impact. -->
       <div style="background:var(--forest);padding:6px 8px 6px 10px;display:flex;align-items:center;gap:6px;width:100%">
         <span style="display:flex;align-items:center;gap:4px" id="spotlight-header-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="5" cy="6" rx="2.2" ry="3" fill="rgba(255,255,255,.9)"/><ellipse cx="19" cy="6" rx="2.2" ry="3" fill="rgba(255,255,255,.9)"/><ellipse cx="9" cy="3.5" rx="2" ry="2.8" fill="rgba(255,255,255,.9)"/><ellipse cx="15" cy="3.5" rx="2" ry="2.8" fill="rgba(255,255,255,.9)"/><path d="M12 9c-4 0-7 2.5-6.5 6 .4 2.8 2.5 4.5 6.5 4.5s6.1-1.7 6.5-4.5C19 11.5 16 9 12 9z" fill="rgba(255,255,255,.9)"/></svg><span style="font-size:.55rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.85)">Heartland</span></span><button onclick="event.stopPropagation();dismissSpotlight()" style="background:none;border:none;color:rgba(255,255,255,.6);font-size:.85rem;line-height:1;cursor:pointer;padding:0 2px;margin-left:auto;flex-shrink:0" title="Dismiss">✕</button>
