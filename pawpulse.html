@@ -1244,64 +1244,6 @@ window.addEventListener('unhandledrejection', function(e) {
   console.error('PawPulse unhandled promise:', e.reason);
 });
 
-/* ── IndexedDB Photo Store — no 5MB cap, photos persist reliably ── */
-var _photoDB = null;
-var _photoCache = {}; /* in-memory: {id: dataUrl} — loaded from IDB at boot */
-(function initPhotoDB() {
-  try {
-    var req = indexedDB.open('pawpulse-photos', 1);
-    req.onupgradeneeded = function(e) {
-      e.target.result.createObjectStore('photos', { keyPath: 'id' });
-    };
-    req.onsuccess = function(e) {
-      _photoDB = e.target.result;
-      /* Load all photos into memory cache */
-      var tx = _photoDB.transaction('photos', 'readonly');
-      var req2 = tx.objectStore('photos').getAll();
-      req2.onsuccess = function(e2) {
-        (e2.target.result || []).forEach(function(row) { _photoCache[row.id] = row.photo; });
-        console.log('PawPulse: loaded ' + Object.keys(_photoCache).length + ' photos from IDB');
-      };
-    };
-    req.onerror = function(e) { console.warn('IDB open failed:', e.target.error); };
-  } catch(e) { console.warn('IDB not available:', e.message); }
-})();
-
-function savePhotoIDB(id, photo) {
-  _photoCache[String(id)] = photo; /* always update in-memory */
-  if (!_photoDB) return;
-  try {
-    var tx = _photoDB.transaction('photos', 'readwrite');
-    tx.objectStore('photos').put({ id: String(id), photo: photo });
-  } catch(e) { console.warn('IDB photo save failed:', e.message); }
-}
-
-function deletePhotoIDB(id) {
-  delete _photoCache[String(id)];
-  if (!_photoDB) return;
-  try {
-    var tx = _photoDB.transaction('photos', 'readwrite');
-    tx.objectStore('photos').delete(String(id));
-  } catch(e) {}
-}
-
-/* Compress photo to max 900px wide, JPEG 72% — keeps well under Firestore 1MB doc limit */
-function compressPhoto(dataUrl, callback) {
-  try {
-    var img = new Image();
-    img.onload = function() {
-      var MAX = 900;
-      var w = img.width, h = img.height;
-      if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
-      var canvas = document.createElement('canvas');
-      canvas.width = w; canvas.height = h;
-      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      callback(canvas.toDataURL('image/jpeg', 0.72));
-    };
-    img.onerror = function() { callback(dataUrl); };
-    img.src = dataUrl;
-  } catch(e) { callback(dataUrl); }
-}
 
 var HASTINGS = [40.5888, -98.3910];
 var MAP_ZOOM = window.innerWidth < 700 ? 10 : 11;
@@ -5761,6 +5703,27 @@ function validateSchemaShape(r) {
   return true;
 }
 
+var _photoCache = {};
+
+/* Compress a base64 dataUrl before writing to Firestore (max 900px, JPEG 72%) */
+function compressDataUrl(dataUrl, callback) {
+  try {
+    var img = new Image();
+    img.onload = function() {
+      var MAX = 900;
+      var w = img.width, h = img.height;
+      if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+      if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
+      var canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      callback(canvas.toDataURL('image/jpeg', 0.72));
+    };
+    img.onerror = function() { callback(dataUrl); };
+    img.src = dataUrl;
+  } catch(e) { callback(dataUrl); }
+}
+
 function writeAnimalRecord(r, source) {
   /* The only entry point for animal record persistence */
   var existing = reports.find(function(x){ return String(x.id) === String(r.id); });
@@ -5783,7 +5746,7 @@ function writeAnimalRecord(r, source) {
     };
     if (r.photo) {
       /* Compress then write — photo travels with the record, no local cache needed */
-      compressPhoto(r.photo, function(compressed) {
+      compressDataUrl(r.photo, function(compressed) {
         var doc = Object.assign({}, r, { photo: compressed });
         _writeToFS(doc);
       });
