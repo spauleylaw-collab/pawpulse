@@ -1524,7 +1524,13 @@ function startFirestoreListener() {
           }
           /* 'modified' changes (position/color updates) handled by next full renderMarkers */
         });
-        /* reports[] is updated — markers stay as-is until user action triggers a render */
+        /* Trigger render after snapshot updates reports[] */
+        if (_mapReady) {
+          console.log('[RENDER AFTER SNAPSHOT]');
+          renderMarkers();
+        } else {
+          console.log('[SNAPSHOT WAITING FOR MAP]');
+        }
         renderIncareView();
         updateNavCounts();
       }
