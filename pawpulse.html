@@ -1413,7 +1413,7 @@ function startFirestoreListener() {
   if (window._firestoreListenerActive) return; /* already running */
   setTimeout(_dismissOverlay, 2000);
   if (!db) {
-    console.warn('Firestore unavailable — using localStorage');
+    console.warn('[FIRESTORE OFFLINE / NOT READY] Firestore unavailable — using localStorage only');
     _fbReady = true;
     showShelterPicker();
     return;
@@ -1524,7 +1524,7 @@ function startFirestoreListener() {
           }
           /* 'modified' changes (position/color updates) handled by next full renderMarkers */
         });
-        /* reports[] is updated — markers stay as-is until user action triggers a render */s();
+        /* reports[] is updated — markers stay as-is until user action triggers a render */
         renderIncareView();
         updateNavCounts();
       }
@@ -5760,8 +5760,8 @@ function writeAnimalRecord(r, source) {
   if (r.shelter === true) r.atShelter = false;
   /* Stamp updatedAt */
   r.updatedAt = new Date().toISOString();
-  /* Persist to Firestore — compress photo before write to stay under 1MB doc limit */
-  if (USE_FIREBASE && _fbReady && db) {
+  /* Persist to Firestore — gate on db only, NOT _fbReady. Write before first snapshot. */
+  if (USE_FIREBASE && db) {
     var _writeToFS = function(doc) {
       console.log('[WRITE TO FIRESTORE ATTEMPT]', { id: doc.id, type: doc.type, source: doc.source, hasPhoto: !!doc.photo, photoLength: doc.photo ? doc.photo.length : 0 });
       db.collection('reports').doc(String(doc.id)).set(doc, {merge: true})
