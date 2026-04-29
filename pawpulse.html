@@ -701,6 +701,11 @@ textarea{min-height:64px}
   /* intake-fab removed */
   .leaflet-bottom.leaflet-right{bottom:60px!important;right:8px!important}
 }
+@media (orientation:landscape) and (max-height:500px) {
+  #map-banner { display:none !important; }
+  #top-nav { padding:4px 10px !important; min-height:40px !important; }
+  #shelter-spotlight { bottom:10px !important; }
+}
 </style>
 <script type="application/ld+json">
 {
@@ -1133,7 +1138,7 @@ textarea{min-height:64px}
         <div id="form-lost">
           <div class="sl">🖼️ Photo <span style="font-size:.72rem;font-weight:400;color:var(--warm-mid)">— upload first to auto-fill fields with AI</span></div>
           <div class="photo-drop">
-            <input type="file" id="l-photo" accept="image/*" onchange="previewPhoto(this,'l-prev','l-dicon','l-dtxt');showAIBtn('l')">
+            <input type="file" id="l-photo" accept="image/*" capture="environment" onchange="previewPhoto(this,'l-prev','l-dicon','l-dtxt');showAIBtn('l')">
             <div class="photo-drop-icon" id="l-dicon">📷</div>
             <div class="photo-drop-txt"  id="l-dtxt">Tap to upload a photo</div>
             <img id="l-prev" class="photo-prev" alt="preview">
@@ -1179,7 +1184,7 @@ textarea{min-height:64px}
         <div id="form-found" style="display:none">
           <div class="sl">🖼️ Photo <span style="font-size:.72rem;font-weight:400;color:var(--warm-mid)">— upload first to auto-fill fields with AI</span></div>
           <div class="photo-drop">
-            <input type="file" id="f-photo" accept="image/*" onchange="previewPhoto(this,'f-prev','f-dicon','f-dtxt')">
+            <input type="file" id="f-photo" accept="image/*" capture="environment" onchange="previewPhoto(this,'f-prev','f-dicon','f-dtxt')">
             <div class="photo-drop-icon" id="f-dicon">📷</div>
             <div class="photo-drop-txt"  id="f-dtxt">Tap to upload a photo</div>
             <img id="f-prev" class="photo-prev" alt="preview">
@@ -4127,7 +4132,7 @@ function cardHTML(r) {
   /* AI match button — on lost cards so owner can search shelter intakes */
   var matchBtn = '';
   if (lost && !reunited) {
-    matchBtn = '<button onclick="searchMatchesFromCard(' + r.id + ')" style="width:100%;margin:8px 0 4px;padding:9px;font-family:var(--font-display);font-size:.82rem;font-weight:700;border:none;border-radius:8px;cursor:pointer;background:#f0f4ff;color:#2050a0;border:1.5px solid #a0baf0">🔍 Could this pet be at Heartland or Found?</button>';
+    matchBtn = '<button onclick="searchMatchesFromCard(' + r.id + ')" style="width:100%;margin:8px 0 4px;padding:9px;font-family:var(--font-display);font-size:.82rem;font-weight:700;border:none;border-radius:8px;cursor:pointer;background:#f0f4ff;color:#2050a0;border:1.5px solid #a0baf0">🔍 Search Heartland &amp; Found Pins</button>';
     /* 14-day warning */
     if (daysSince(r.date) >= 14) {
       matchBtn += '<div style="font-size:.68rem;color:var(--amber);text-align:center;margin-bottom:4px">⚠️ Missing ' + Math.floor(daysSince(r.date)) + ' days — no longer shown after 30 days</div>';
@@ -4305,8 +4310,10 @@ function openCard(r, cp) {
     var mc = document.getElementById('map-container');
     var _seo = document.getElementById('seo-footer');
     var _seoH = (_seo && _seo.offsetHeight) || 16;
-    var M = 14, mh = mc.offsetHeight;
-    var bottomMargin = M + 60 + _seoH;
+    var _rH = (document.getElementById('top-nav') || {offsetHeight:56}).offsetHeight
+           + ((document.getElementById('map-banner') || {offsetHeight:0}).offsetHeight || 0);
+    var M = _rH + 10, mh = mc.offsetHeight;
+    var bottomMargin = 10 + 60 + _seoH;
     var maxAvail = mh - M - bottomMargin;
     if (maxAvail > 100) card.style.maxHeight = maxAvail + 'px';
   })();
@@ -4314,9 +4321,11 @@ function openCard(r, cp) {
     var mc   = document.getElementById('map-container');
     var cw   = card.offsetWidth, ch = card.offsetHeight;
     var mw   = mc.offsetWidth,   mh = mc.offsetHeight;
-    var M    = 14;
+    var _rH2 = (document.getElementById('top-nav') || {offsetHeight:56}).offsetHeight
+            + ((document.getElementById('map-banner') || {offsetHeight:0}).offsetHeight || 0);
+    var M    = _rH2 + 10;
     var seoH = (document.getElementById('seo-footer') || {}).offsetHeight || 16;
-    var clearBottom = seoH + 24;        /* clear SEO bar + breathing room */
+    var clearBottom = seoH + 24;
     var available   = mh - M - clearBottom;   /* max usable height */
 
     /* If card is already taller than available, hard-cap it */
