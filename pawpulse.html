@@ -4233,7 +4233,9 @@ function cardHTML(r) {
   /* Info note on found pins explaining how pin disappears */
   var foundNote = (!lost && !reunited && !r.shelter)
     ? (r.atShelter
-        ? '<div style="background:#fff8e8;border:1.5px solid #d4a035;border-radius:7px;padding:8px 12px;font-size:.74rem;color:#7a5010;margin-bottom:8px;line-height:1.5">'          + '🏠 The finder says this animal has been or will be brought to <strong>' + esc(r.shelterName||'a shelter or vet') + '</strong>. This pin stays on the map until intake is confirmed by staff. If you are the owner and your pet has come home, tap \uD83C\uDF89 Mark as Reunited.'          + '</div>'        : '<div style="background:#f0faf1;border:1px solid #b0d8b8;border-radius:7px;padding:8px 12px;font-size:.74rem;color:#2a6030;margin-bottom:8px;line-height:1.5">'          + '📍 This pin stays on the map until the pet is reunited with its owner or brought to a shelter or vet. '          + 'If this is your pet and they have come home, tap 🎉 Mark as Reunited. '          + ''          + '</div>'      )    : '';
+        ? '<div style="background:#fff8e8;border:1.5px solid #d4a035;border-radius:7px;padding:8px 12px;font-size:.74rem;color:#7a5010;margin-bottom:8px;line-height:1.5">'          + '🏠 The finder says this animal has been or will be brought to <strong>' + esc(r.shelterName||'a shelter or vet') + '</strong>. This pin stays on the map until intake is confirmed by staff. If you are the owner and your pet has come home, tap \uD83C\uDF89 Mark as Reunited.'          + '</div>'
+        : '')
+    : '';
 
   /* Staff-only: migrate public report to shelter intake */
   var migrateBtn = (_isStaff && !r.shelter && !reunited && r.type === 'found')
@@ -4372,7 +4374,7 @@ async function generateWhatNext(r) {
   /* Found public pin — always the same process, no AI needed */
   if (found) {
     var sp = (r.species || 'animal').toLowerCase();
-    bodyEl.textContent = 'If this is your missing ' + sp + ', contact the finder directly or visit Heartland Pet Connection at 1807 W J St, Hastings — (402) 462-7387. Staff can check if a lost report matches this description.';
+    bodyEl.textContent = 'If this is your missing ' + sp + ', contact the finder directly or visit Heartland Pet Connection at 1807 W J St, Hastings — (402) 462-7387. Staff can check if a lost report matches this description.<br><br><em style="font-size:.72rem;color:var(--warm-mid)">📍 Pin stays on the map until reunited or confirmed at a shelter.</em>';
     bodyEl.style.color = 'var(--warm-dk)';
     bodyEl.style.fontStyle = 'normal';
     return;
