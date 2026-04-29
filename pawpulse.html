@@ -5622,7 +5622,14 @@ function toggleMic(targetId, btnEl) {
     var sep = base.trim() ? ' ' : '';
     target.value = base + sep + (final || interim).trim();
   };
-  _micRec.onerror = function() { stopMic(); };
+  _micRec.onerror = function(e) {
+    var msg = (e.error === 'not-allowed') ? 'Mic permission denied — check browser settings'
+      : (e.error === 'no-speech') ? 'No speech detected — try again'
+      : 'Voice input unavailable on this browser';
+    var t = document.getElementById(targetId);
+    if (t) { t.placeholder = msg; }
+    stopMic();
+  };
   _micRec.onend   = function() { stopMic(); };
   _micRec.start();
 }
