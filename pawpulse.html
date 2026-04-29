@@ -2005,12 +2005,7 @@ function bootApp() {
   var sel = document.getElementById('rpt-filter-shelter');
   if (sel && activeShelter) sel.value = activeShelter;
   _recordsReady = true;
-  renderMarkers();
-  /* Retry if map wasn't ready yet (defensive) */
-  if (lMarkers.length === 0 && reports.length > 0) {
-    setTimeout(function() { if (lMarkers.length === 0) { renderMarkers(); } }, 800);
-    setTimeout(function() { if (lMarkers.length === 0) { renderMarkers(); } }, 2000);
-  }
+  refreshMapPins('bootApp');
   initSpotlight();
   /* Overlay dismissed by startFirestoreListener dismiss timer */
   renderIncareView();
