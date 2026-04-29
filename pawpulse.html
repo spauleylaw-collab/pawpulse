@@ -5185,9 +5185,15 @@ function setFilter(f, btn) {
     if (btn) { btn.classList.add('active'); btn.classList.add(f); }
   }
   if (f === 'dog' || f === 'cat' || f === 'all-species') {
-    curSpeciesFilter = (f === 'all-species') ? 'all' : f;
-    document.querySelectorAll('.filter-btn.species-btn').forEach(function(b){ b.classList.remove('active','dog','cat'); });
-    if (btn && f !== 'all-species') { btn.classList.add('active'); btn.classList.add(f); }
+    if (f !== 'all-species' && curSpeciesFilter === f) {
+      /* Tapping active filter deselects it — show all species */
+      curSpeciesFilter = 'all';
+      document.querySelectorAll('.filter-btn.species-btn').forEach(function(b){ b.classList.remove('active','dog','cat'); });
+    } else {
+      curSpeciesFilter = (f === 'all-species') ? 'all' : f;
+      document.querySelectorAll('.filter-btn.species-btn').forEach(function(b){ b.classList.remove('active','dog','cat'); });
+      if (btn && f !== 'all-species') { btn.classList.add('active'); btn.classList.add(f); }
+    }
   }
   refreshMapPins('filter-click');
 }
@@ -7540,7 +7546,7 @@ function getAdoptable() {
   var q = ((document.getElementById('adopt-search')||{}).value||'').toLowerCase().trim();
   var sort = ((document.getElementById('adopt-sort')||{}).value) || 'longest';
   var list = getShelterData({ includeHolds: true })
-    .filter(function(r){ return r.adoptionStatus === 'available'; })
+    .filter(function(r){ return r.adoptionStatus === 'available' || r.intakeType === 'hold'; })
     .sort(function(a,b){
       if (sort === 'alpha')   return (a.name||'').localeCompare(b.name||'');
       if (sort === 'newest')  return new Date(b.dateAvailable||b.date) - new Date(a.dateAvailable||a.date);
@@ -8640,7 +8646,9 @@ function renderAdoptView() {
     var days         = Math.floor(daysSince(r.dateAvailable || r.date));
     var lastUpdated  = r.profileUpdatedAt ? Math.floor(daysSince(r.profileUpdatedAt)) : null;
     var tags         = r.tags ? r.tags.split(',').filter(Boolean) : [];
-    var urgencyColor = days > 30 ? 'var(--lost-r)' : days > 14 ? 'var(--amber)' : 'var(--found-g)';
+    var isHold       = r.intakeType === 'hold';
+    var holdDaysLeft = isHold ? Math.max(0, 5 - Math.floor(daysSince(r.date))) : 0;
+    var urgencyColor = isHold ? '#aaa' : days > 30 ? 'var(--lost-r)' : days > 14 ? 'var(--amber)' : 'var(--found-g)';
     var meta         = [r.breed, r.color, r.sex, r.age].filter(Boolean).join(' · ');
     var imgHTML      = r.photo
       ? '<img class="adopt-card-img" src="' + r.photo + '" alt="' + esc(name) + '" style="width:100%;max-height:240px;object-fit:contain;background:var(--cream-2)">'
@@ -8657,7 +8665,14 @@ function renderAdoptView() {
         + '</button>'
       : '';
 
-    return '<div class="adopt-card" onclick="openAdoptDetail(' + r.id + ')" style="cursor:pointer">'
+    var holdOverlay = isHold
+      ? '<div style="position:absolute;inset:0;background:rgba(220,220,220,.65);z-index:2;display:flex;align-items:center;justify-content:center;border-radius:12px;pointer-events:none">'
+        + '<div style="background:#fff;border:1.5px solid #bbb;border-radius:8px;padding:8px 14px;text-align:center;font-size:.76rem;color:#555">'
+        + '⏳ On Hold — ' + holdDaysLeft + ' day' + (holdDaysLeft === 1 ? '' : 's') + ' left'
+        + '</div></div>'
+      : '';
+    return '<div class="adopt-card" onclick="openAdoptDetail(' + r.id + ')" style="cursor:pointer;position:relative">'
+      + holdOverlay
       + '<div style="height:3px;background:' + urgencyColor + ';border-radius:999px 999px 0 0"></div>'
       + imgHTML
       + '<div class="adopt-card-body">'
