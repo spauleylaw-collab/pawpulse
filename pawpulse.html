@@ -5199,6 +5199,8 @@ function setFilter(f, btn) {
 }
 
 function openReportPicker() {
+  /* On incare view, + opens intake form not public report picker */
+  if (_curView === 'incare') { openIntakeModal(); return; }
   /* Report flow only makes sense on the map — redirect if elsewhere */
   if (_curView !== 'map') {
     setView('map', document.querySelector('[onclick*="setView(\'map\')"]'));
