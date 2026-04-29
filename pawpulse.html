@@ -1447,9 +1447,17 @@ function startFirestoreListener() {
         setTimeout(function(){ assertNoInvalidStates(reports); }, 800);
         /* Mark data as loaded — gates empty-hint and dismisses loading overlay */
         window._firebaseLoaded = true;
-        var _ml = document.getElementById('map-loading');
-        if (_ml) { _ml.style.opacity = '0'; setTimeout(function(){ _ml.style.display='none'; }, 450); }
+        /* Overlay dismissed inside bootApp after renderMarkers — do not dismiss here */
         initSpotlight();
+        if (window._firestoreTimedOut) {
+          /* Firestore arrived after 5s fallback already ran — re-render with real data */
+          try { renderMarkers(); updateNavCounts(); } catch(e) {}
+          var _ml2 = document.getElementById('map-loading');
+          if (_ml2 && _ml2.style.display !== 'none') {
+            _ml2.style.opacity = '0';
+            setTimeout(function(){ _ml2.style.display='none'; }, 400);
+          }
+        }
         showShelterPicker();
         /* rotateBanner removed */
         return;
@@ -1807,9 +1815,10 @@ function doGuestView() {
   if (USE_FIREBASE) { startFirestoreListener(); } else { bootApp(); }
   setTimeout(function() {
     if (!_bootAppDone) {
-      console.warn('PawPulse: Firestore timeout — forcing boot');
+      console.warn('PawPulse: Firestore timeout — booting without data');
+      window._firestoreTimedOut = true;
       window._firebaseLoaded = true;
-      bootApp();
+      bootApp(); /* renders from localStorage cache */
     }
   }, 5000);
 }
@@ -4345,7 +4354,6 @@ async function generateWhatNext(r) {
     bodyEl.textContent = 'If this is your missing ' + sp + ', contact the finder directly or visit Heartland Pet Connection at 1807 W J St, Hastings — (402) 462-7387. Staff can check if a lost report matches this description.';
     bodyEl.style.color = 'var(--warm-dk)';
     bodyEl.style.fontStyle = 'normal';
-    setTimeout(function(){ var card = document.getElementById('pin-card-body'); if (card) card.scrollTop = card.scrollHeight; }, 100);
     return;
   }
   var isHold      = r.intakeType === 'hold';
@@ -4412,8 +4420,7 @@ async function generateWhatNext(r) {
       /* Scroll the pin card so text is visible on mobile */
       setTimeout(function(){
         var card = document.getElementById('pin-card-body');
-        if (card) card.scrollTop = card.scrollHeight;
-        else bodyEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        /* stay at top — photo remains visible */
       }, 100);
     } else if (bodyEl) {
       bodyEl.textContent = '';  /* Hide gracefully if no content */
