@@ -5083,7 +5083,9 @@ function addSinglePin(r) {
 }
 
 function renderMarkers() {
-  if (!map || !map.addLayer || !Array.isArray(reports)) return; /* map must exist */
+  if (!Array.isArray(reports)) return;
+  if (!map || !map.addLayer) { setTimeout(renderMarkers, 100); return; }
+  if (!_mapReady) { setTimeout(renderMarkers, 100); return; }
   var oldMarkers = lMarkers.slice(); /* keep reference to old markers */
   lMarkers = [];
 
