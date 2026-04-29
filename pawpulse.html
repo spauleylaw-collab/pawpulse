@@ -2074,13 +2074,31 @@ function checkFoundPinMatch() {
 }
 
 function confirmFoundPinMatch(foundId) {
-  /* Link this intake to the found pin — will remove it when intake is saved */
+  /* Link this intake to the found pin — populate form fields from pin data */
   window._migrateFromId = foundId;
   var r = reports.find(function(x){ return x.id == foundId; });
+  if (!r) return;
+  /* Populate intake form fields with found pin data */
+  var fields = {
+    'si-species': r.species || '',
+    'si-color':   r.color   || '',
+    'si-breed':   r.breed   || '',
+    'si-desc':    r.desc    || '',
+    'si-address': r.address || ''
+  };
+  Object.keys(fields).forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el && fields[id]) el.value = fields[id];
+  });
+  /* Show photo if available */
+  if (r.photo) {
+    var prev = document.getElementById('si-photo-prev');
+    if (prev) { prev.src = r.photo; prev.style.display = 'block'; }
+  }
   var container = document.getElementById('found-pin-matches');
-  if (container && r) {
+  if (container) {
     container.innerHTML = '<div style="background:#e8f4e9;border:1px solid var(--found-g);border-radius:8px;padding:8px 12px;font-size:.76rem;color:#1a5c28;margin-bottom:6px">'
-      + '✅ Linked to found pin near ' + esc(r.address||'map') + '. Pin will disappear when you complete intake.'
+      + '✅ Form pre-filled from found pin near ' + esc(r.address||'map') + '. Review and complete intake.'
       + '</div>';
   }
 }
@@ -2261,7 +2279,7 @@ function checkFoundPinsOnIntake(intakeRecord) {
 
   panel.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">'
     + '<div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--warm-dk)">🔍 Possible Match on Map</div>'
-    + '<button onclick="var p=document.getElementById(\'intake-found-match-panel\');if(p)p.remove();" style="background:var(--cream-2);border:none;border-radius:50%;width:32px;height:32px;font-size:1rem;cursor:pointer">✕</button>'
+    + '<button onclick="var p=document.getElementById(\'intake-found-match-panel\');var bd2=document.getElementById(\\\'intake-found-match-bd\\\');if(bd2)bd2.remove();if(p)p.remove();" style="background:var(--cream-2);border:none;border-radius:50%;width:32px;height:32px;font-size:1rem;cursor:pointer">✕</button>'
     + '</div>'
     + '<div style="font-size:.84rem;color:var(--warm-mid);margin-bottom:14px;line-height:1.5">A found pet report on the map may match this intake. Resolving it removes the pin and prevents duplicates.</div>'
     + '<div style="background:var(--cream-2);border-radius:10px;padding:12px;margin-bottom:14px">'
@@ -2274,7 +2292,7 @@ function checkFoundPinsOnIntake(intakeRecord) {
     + '</div>'
     + '<div style="display:flex;gap:10px">'
     + '<button onclick="resolveFoundPinFromIntake(' + r.id + ')" style="flex:1;padding:12px;border:none;border-radius:10px;background:var(--forest);color:#fff;font-family:var(--font-display);font-size:.9rem;font-weight:700;cursor:pointer">✅ Yes — Same Animal</button>'
-    + '<button onclick="var p=document.getElementById(\'intake-found-match-panel\');if(p)p.remove();" style="flex:1;padding:12px;border:1.5px solid var(--cream-3);border-radius:10px;background:#fff;font-family:var(--font-display);font-size:.9rem;font-weight:700;cursor:pointer;color:var(--warm-dk)">No — Different Animal</button>'
+    + '<button onclick="var p=document.getElementById(\'intake-found-match-panel\');var bd2=document.getElementById(\\\'intake-found-match-bd\\\');if(bd2)bd2.remove();if(p)p.remove();" style="flex:1;padding:12px;border:1.5px solid var(--cream-3);border-radius:10px;background:#fff;font-family:var(--font-display);font-size:.9rem;font-weight:700;cursor:pointer;color:var(--warm-dk)">No — Different Animal</button>'
     + '</div>';
 
   /* Backdrop */
@@ -2308,7 +2326,7 @@ function resolveFoundPinFromIntake(foundId) {
   r.resolvedByIntake = true;
   save();
   writeAnimalRecord(r, 'staff');
-  renderMarkers();
+  refreshMapPins('intake-match-resolved');
   updateNavCounts();
   pushBannerEvent('📍 Found pin removed — matched to shelter intake', 'var(--found-g)');
 }
@@ -2412,7 +2430,9 @@ function submitIntakeFromModal() {
     renderIncareView();
     pushBannerEvent((isHold?'⚠️ Animal on hold logged at ':'🐾 New animal received at ') + activeShelter, isHold?'#d4843a':'var(--found-g)');
     if (!isHold) setTimeout(function(){ autoMatchOnIntake(r); }, 800);
-    setTimeout(function(){ checkFoundPinsOnIntake(r); }, 1200);
+    /* Only show post-submit found-pin prompt if no match was already confirmed */
+    if (!window._migrateFromId) setTimeout(function(){ checkFoundPinsOnIntake(r); }, 1200);
+    window._migrateFromId = null; /* reset for next intake */
   }, 300);
 }
 
