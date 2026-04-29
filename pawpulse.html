@@ -1268,7 +1268,7 @@ document.addEventListener("DOMContentLoaded", function() {
 })();
 
 /* Map init — synchronous. Script tag is at bottom of body so #map div exists. */
-var _mapReady     = false; /* set to true after Leaflet map init */
+var _mapReady     = !!window._leafletMapInstance; /* true if map already initialized */
 var _recordsReady = false; /* set to true when reports[] is populated */
 var map;
 try {
@@ -1951,6 +1951,18 @@ function doChangePw() {
 
 
 var _bootAppDone = false;
+function forceMobileMapRender(reason) {
+  if (!map || !Array.isArray(reports)) return;
+  console.log('[FORCE MOBILE MAP RENDER]', reason, {
+    reports: reports.length,
+    markers: lMarkers.length,
+    mapReady: _mapReady
+  });
+  try { map.invalidateSize(true); } catch(e) {}
+  _mapReady = true;
+  renderMarkers();
+}
+
 function bootApp() {
   if (_bootAppDone) return; /* Guard: only boot once */
   _bootAppDone = true;
@@ -2022,10 +2034,11 @@ function bootApp() {
   if (sel && activeShelter) sel.value = activeShelter;
   _recordsReady = true;
   renderMarkers();
-  /* Retry if map wasn't ready yet (defensive) */
-  if (lMarkers.length === 0 && reports.length > 0) {
-    setTimeout(function() { if (lMarkers.length === 0) { renderMarkers(); } }, 800);
-    setTimeout(function() { if (lMarkers.length === 0) { renderMarkers(); } }, 2000);
+  /* Mobile first-load kicker — fires after Leaflet layout stabilizes */
+  if (window.innerWidth <= 700) {
+    setTimeout(function(){ forceMobileMapRender('boot-250'); }, 250);
+    setTimeout(function(){ forceMobileMapRender('boot-750'); }, 750);
+    setTimeout(function(){ forceMobileMapRender('boot-1500'); }, 1500);
   }
   initSpotlight();
   /* Overlay dismissed by startFirestoreListener dismiss timer */
@@ -9691,6 +9704,21 @@ try {
   _dismissOverlay();
 }
 setTimeout(function(){ injectMicButtons(document.getElementById('side-panel')); }, 100);
+
+/* Mobile: re-render when returning from background or bfcache */
+window.addEventListener('pageshow', function(e) {
+  setTimeout(function(){
+    forceMobileMapRender(e.persisted ? 'pageshow-bfcache' : 'pageshow');
+  }, 250);
+});
+
+document.addEventListener('visibilitychange', function() {
+  if (!document.hidden) {
+    setTimeout(function(){
+      forceMobileMapRender('visibilitychange');
+    }, 250);
+  }
+});
 
 /* ═══ STAFF TUTORIAL ═══════════════════════════════════════════════════ */
 var _tutorialStep = 0;
