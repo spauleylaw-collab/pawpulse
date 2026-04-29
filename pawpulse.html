@@ -1281,13 +1281,18 @@ try {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     maxZoom: 19
   }).addTo(map);
-  map.whenReady(function() {
+  /* Leaflet map is synchronously ready after init — whenReady may not fire if already ready */
+  var _onMapReady = function() {
+    if (_mapReady) return; /* guard: only run once */
     _mapReady = true;
     if (_recordsReady) {
       renderMarkersDebounced();
       initSpotlight();
     }
-  });
+  };
+  map.whenReady(_onMapReady);
+  /* Also fire immediately in case map is already ready (synchronous init) */
+  setTimeout(_onMapReady, 0);
 } catch(e) {
   console.error('Leaflet init failed:', e.message);
   map = { addLayer:function(){}, invalidateSize:function(){}, removeLayer:function(){}, hasLayer:function(){return false;}, fitBounds:function(){}, setView:function(){}, on:function(){}, off:function(){} };
