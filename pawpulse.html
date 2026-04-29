@@ -4333,8 +4333,11 @@ function openCard(r, cp) {
     var mc = document.getElementById('map-container');
     var _seo = document.getElementById('seo-footer');
     var _seoH = (_seo && _seo.offsetHeight) || 16;
-    var M = 14, mh = mc.offsetHeight;
-    var bottomMargin = M + 60 + _seoH;
+    var _nav = document.getElementById('top-nav');
+    var _banner = document.getElementById('map-banner');
+    var _ribbonH = (_nav ? _nav.offsetHeight : 56) + (_banner && _banner.offsetHeight > 0 ? _banner.offsetHeight : 0);
+    var M = _ribbonH + 8, mh = mc.offsetHeight;
+    var bottomMargin = 8 + 60 + _seoH;
     var maxAvail = mh - M - bottomMargin;
     if (maxAvail > 100) card.style.maxHeight = maxAvail + 'px';
   })();
@@ -4342,7 +4345,10 @@ function openCard(r, cp) {
     var mc   = document.getElementById('map-container');
     var cw   = card.offsetWidth, ch = card.offsetHeight;
     var mw   = mc.offsetWidth,   mh = mc.offsetHeight;
-    var M    = 14;
+    var _nav2 = document.getElementById('top-nav');
+    var _banner2 = document.getElementById('map-banner');
+    var _ribbonH2 = (_nav2 ? _nav2.offsetHeight : 56) + (_banner2 && _banner2.offsetHeight > 0 ? _banner2.offsetHeight : 0);
+    var M    = _ribbonH2 + 8;  /* card must clear top ribbon */
     var seoH = (document.getElementById('seo-footer') || {}).offsetHeight || 16;
     var clearBottom = seoH + 24;        /* clear SEO bar + breathing room */
     var available   = mh - M - clearBottom;   /* max usable height */
