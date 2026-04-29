@@ -812,7 +812,7 @@ textarea{min-height:64px}
   <div id="staff-badge" style="display:none;align-items:center;gap:4px">
     <div id="staff-name-badge" style="color:var(--cream);font-size:.65rem;font-weight:700;white-space:nowrap;opacity:.85">🔐 Staff</div>
     <button onclick="openChangePw()" title="Change Password" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:var(--cream);border-radius:5px;padding:3px 7px;font-size:.62rem;font-weight:600;cursor:pointer;font-family:var(--font-body);white-space:nowrap">🔑 Pw</button>
-    <button onclick="signOut()" title="Sign Out" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:var(--cream);border-radius:5px;padding:3px 7px;font-size:.62rem;font-weight:600;cursor:pointer;font-family:var(--font-body);white-space:nowrap">Sign Out</button>
+    <button onclick="doSignOut()" title="Sign Out" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:var(--cream);border-radius:5px;padding:3px 7px;font-size:.62rem;font-weight:600;cursor:pointer;font-family:var(--font-body);white-space:nowrap">Sign Out</button>
   </div>
 </nav>
 
@@ -1833,8 +1833,9 @@ function doSignOut() {
   if (navBtn) navBtn.style.display = 'flex';
   /* Hide staff-only tabs */
   document.querySelectorAll('.tab-ops,.tab-admin').forEach(function(el){ el.style.display='none'; });
-  if (!USE_FIREBASE || !auth) return;
-  auth.signOut();
+  if (USE_FIREBASE && auth) auth.signOut();
+  /* Reload to fully reset to public view */
+  setTimeout(function(){ location.reload(); }, 300);
 }
 
 function clearTestData() {
