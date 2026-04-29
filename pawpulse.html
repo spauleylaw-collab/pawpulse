@@ -8591,7 +8591,9 @@ function openAdoptDetail(id) {
   if (!r) return;
   /* Block hold animals from adoption detail */
   if (r.intakeType === 'hold') {
-    var daysLeft = Math.max(0, 5 - Math.floor(daysSince(r.date)));
+    var _hDays  = (r.holdType === 'bite' || r.holdType === 'dangerous') ? 10 : 5;
+    var _hStart = r.shelterHoldStart || r.date;
+    var daysLeft = Math.max(0, _hDays - Math.floor(daysSince(_hStart)));
     alert('⏳ ' + (r.name || 'This animal') + ' is on a ' + daysLeft + '-day hold and cannot be adopted yet. Please check back soon.');
     return;
   }
@@ -8672,7 +8674,9 @@ function renderAdoptView() {
     var lastUpdated  = r.profileUpdatedAt ? Math.floor(daysSince(r.profileUpdatedAt)) : null;
     var tags         = r.tags ? r.tags.split(',').filter(Boolean) : [];
     var isHold       = r.intakeType === 'hold';
-    var holdDaysLeft = isHold ? Math.max(0, 5 - Math.floor(daysSince(r.date))) : 0;
+    var _holdDays  = (r.holdType === 'bite' || r.holdType === 'dangerous') ? 10 : 5;
+    var _holdStart = r.shelterHoldStart || r.date;
+    var holdDaysLeft = isHold ? Math.max(0, _holdDays - Math.floor(daysSince(_holdStart))) : 0;
     var urgencyColor = isHold ? '#aaa' : days > 30 ? 'var(--lost-r)' : days > 14 ? 'var(--amber)' : 'var(--found-g)';
     var meta         = [r.breed, r.color, r.sex, r.age].filter(Boolean).join(' · ');
     var imgHTML      = r.photo
