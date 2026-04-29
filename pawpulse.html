@@ -5105,7 +5105,9 @@ function renderMarkers() {
     if (!isPublicVisible(r)) return false;
     if (r.reunited) return false;
     var typeOk = curFilter === 'all' || r.type === curFilter;
-    var speciesOk = curSpeciesFilter === 'all' || (r.species||'').toLowerCase() === curSpeciesFilter;
+    var species   = (r.species || '').toLowerCase().trim();
+  var filter    = (curSpeciesFilter || '').toLowerCase().trim();
+  var speciesOk = filter === 'all' || species === filter;
     return typeOk && speciesOk;
   }).forEach(function(r){
     var m = L.marker([r.lat,r.lng],{icon:pinIcon(r.type, r.reunited, r.possibleMatch && !r.reunited, r.adoptionStatus==='available', r.atShelter && !r.shelter, false, r)}).addTo(map);
