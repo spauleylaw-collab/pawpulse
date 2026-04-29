@@ -1281,6 +1281,13 @@ try {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     maxZoom: 19
   }).addTo(map);
+  map.whenReady(function() {
+    _mapReady = true;
+    if (_recordsReady) {
+      renderMarkersDebounced();
+      initSpotlight();
+    }
+  });
 } catch(e) {
   console.error('Leaflet init failed:', e.message);
   map = { addLayer:function(){}, invalidateSize:function(){}, removeLayer:function(){}, hasLayer:function(){return false;}, fitBounds:function(){}, setView:function(){}, on:function(){}, off:function(){} };
@@ -1288,6 +1295,8 @@ try {
 
 var reports  = JSON.parse(localStorage.getItem('pawpulse-v2') || '[]');
 var lMarkers = [];
+var _mapReady     = false; /* set by map.whenReady() */
+var _recordsReady = false; /* set when Firestore/localStorage data is in reports[] */
 var curFilter = 'all';
 var curSpeciesFilter = 'all';
 var _lastSubmitTime = 0; /* ms timestamp of last public submit — gates onSnapshot re-render */
@@ -1443,23 +1452,12 @@ function startFirestoreListener() {
         installBypassDetection();
         setTimeout(function(){ assertNoInvalidStates(reports); }, 800);
         window._firebaseLoaded = true;
-        /* Surgical merge: add new pins, remove deleted ones — no full re-render */
-        try {
-          reports.forEach(function(r) {
-            if (r.shelter || r.reunited || !isPublicVisible(r)) return;
-            var onMap = lMarkers.some(function(m){ return m._pawpulseId === String(r.id); });
-            if (!onMap) addSinglePin(r);
-          });
-          lMarkers = lMarkers.filter(function(m) {
-            if (!m._pawpulseId) return true;
-            var stillExists = reports.some(function(r){ return String(r.id) === m._pawpulseId; });
-            if (!stillExists) { map.removeLayer(m); return false; }
-            return true;
-          });
-          updateNavCounts();
-        } catch(e) { console.warn('Firestore merge:', e.message); }
-        initSpotlight();
-        showShelterPicker();
+        /* Firestore has real data — full re-boot so map, adopt, incare all populate */
+        _recordsReady = true;
+        _bootAppDone = false;
+        lMarkers.forEach(function(m){ try { map.removeLayer(m); } catch(e){} });
+        lMarkers = [];
+        showShelterPicker(); /* → bootApp() → sets _recordsReady again + renders */
         _dismissOverlay();
         /* rotateBanner removed */
         return;
@@ -1818,10 +1816,8 @@ function doGuestView() {
   try {
     if (!_bootAppDone) { bootApp(); }
   } catch(e) { console.error('bootApp threw:', e.message, e.stack); }
-  /* Then start Firestore listener to sync updates in background */
-  try {
-    if (USE_FIREBASE) { startFirestoreListener(); }
-  } catch(e) { console.error('startFirestoreListener threw:', e.message); }
+  setTimeout(_dismissOverlay, 300);
+  /* Firestore listener started by Firebase auth callback — not here */
 }
 
 function doSignOut() {
@@ -1992,7 +1988,9 @@ function bootApp() {
   /* Pre-set shelter filter */
   var sel = document.getElementById('rpt-filter-shelter');
   if (sel && activeShelter) sel.value = activeShelter;
+  _recordsReady = true;
   renderMarkers();
+  initSpotlight();
   /* Overlay dismissed by startFirestoreListener dismiss timer */
   renderIncareView();
   renderReportTypeList();
@@ -5060,6 +5058,7 @@ function addSinglePin(r) {
 }
 
 function renderMarkers() {
+  if (!_mapReady || !Array.isArray(reports)) return; /* wait for Leaflet + data */
   var oldMarkers = lMarkers.slice(); /* keep reference to old markers */
   lMarkers = [];
 
