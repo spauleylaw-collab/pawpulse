@@ -1409,15 +1409,17 @@ function initFirebase() {
 }
 
 
-function forceCloudMapRender(reason) {
-  console.log('[FORCE CLOUD MAP RENDER]', reason, {
-    reports: Array.isArray(reports) ? reports.length : 'no reports',
-    markers: Array.isArray(lMarkers) ? lMarkers.length : 'no markers',
+function refreshMapPins(reason) {
+  console.log('[REFRESH MAP PINS]', reason, {
+    reports: reports.length,
+    markers: lMarkers.length,
     mapReady: _mapReady,
-    fbReady: _fbReady
+    recordsReady: _recordsReady
   });
-  try { if (map && map.invalidateSize) map.invalidateSize(true); } catch(e) {}
   _mapReady = true;
+  try { if (map && map.invalidateSize) map.invalidateSize(true); } catch(e) {}
+  lMarkers.forEach(function(m){ try { map.removeLayer(m); } catch(e){} });
+  lMarkers = [];
   renderMarkers();
 }
 
@@ -1474,6 +1476,9 @@ function startFirestoreListener() {
         lMarkers.forEach(function(m){ try { map.removeLayer(m); } catch(e){} });
         lMarkers = [];
         showShelterPicker(); /* → bootApp() → sets _recordsReady again + renders */
+        refreshMapPins('first-firestore-load');
+        setTimeout(function(){ refreshMapPins('first-firestore-load-500'); }, 500);
+        setTimeout(function(){ refreshMapPins('first-firestore-load-1500'); }, 1500);
         _dismissOverlay();
         /* rotateBanner removed */
         return;
@@ -1513,7 +1518,7 @@ function startFirestoreListener() {
 
       if (changed) {
         localStorage.setItem('pawpulse-v2', JSON.stringify(reports));
-        forceCloudMapRender('firestore-changed-full-render');
+        refreshMapPins('firestore-changed');
         renderIncareView();
         updateNavCounts();
       }
@@ -2009,6 +2014,8 @@ function bootApp() {
   if (_restoredView === 'map' || !_restoredView) {
     setTimeout(function(){ try { map.invalidateSize(); } catch(e){} }, 400);
   }
+  setTimeout(function(){ refreshMapPins('boot-final-500');  }, 500);
+  setTimeout(function(){ refreshMapPins('boot-final-1500'); }, 1500);
 }
 
 /* ── INTAKE MODAL (replaces separate Intake tab) ─────────────────────── */
@@ -5171,7 +5178,7 @@ function setFilter(f, btn) {
     document.querySelectorAll('.filter-btn.species-btn').forEach(function(b){ b.classList.remove('active','dog','cat'); });
     if (btn && f !== 'all-species') { btn.classList.add('active'); btn.classList.add(f); }
   }
-  renderMarkers();
+  refreshMapPins('filter-click');
 }
 
 function openReportPicker() {
