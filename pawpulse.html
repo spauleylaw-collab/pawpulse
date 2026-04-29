@@ -1402,7 +1402,14 @@ function initFirebase() {
 }
 
 
+function _dismissOverlay() {
+  var _ml = document.getElementById('map-loading');
+  if (_ml) { _ml.style.opacity = '0'; setTimeout(function(){ _ml.style.display='none'; }, 400); }
+}
+
 function startFirestoreListener() {
+  /* Hard safety: dismiss overlay after 4s no matter what */
+  setTimeout(_dismissOverlay, 4000);
   if (!db) {
     console.warn('Firestore unavailable — using localStorage');
     _fbReady = true;
@@ -1447,18 +1454,14 @@ function startFirestoreListener() {
         setTimeout(function(){ assertNoInvalidStates(reports); }, 800);
         /* Mark data as loaded — gates empty-hint and dismisses loading overlay */
         window._firebaseLoaded = true;
-        /* Overlay dismissed inside bootApp after renderMarkers — do not dismiss here */
         initSpotlight();
         if (window._firestoreTimedOut) {
-          /* Firestore arrived after 5s fallback already ran — re-render with real data */
+          /* Firestore arrived after 5s fallback — re-render with real data */
           try { renderMarkers(); updateNavCounts(); } catch(e) {}
-          var _ml2 = document.getElementById('map-loading');
-          if (_ml2 && _ml2.style.display !== 'none') {
-            _ml2.style.opacity = '0';
-            setTimeout(function(){ _ml2.style.display='none'; }, 400);
-          }
         }
         showShelterPicker();
+        /* Dismiss after bootApp+renderMarkers have run */
+        setTimeout(_dismissOverlay, 100);
         /* rotateBanner removed */
         return;
       }
@@ -1819,6 +1822,7 @@ function doGuestView() {
       window._firestoreTimedOut = true;
       window._firebaseLoaded = true;
       bootApp(); /* renders from localStorage cache */
+      setTimeout(_dismissOverlay, 200); /* ensure overlay clears */
     }
   }, 5000);
 }
@@ -1991,14 +1995,7 @@ function bootApp() {
   var sel = document.getElementById('rpt-filter-shelter');
   if (sel && activeShelter) sel.value = activeShelter;
   renderMarkers();
-  /* Dismiss loading overlay NOW — pins are rendered, map is ready */
-  (function() {
-    var _ml = document.getElementById('map-loading');
-    if (_ml && _ml.style.display !== 'none') {
-      _ml.style.opacity = '0';
-      setTimeout(function(){ _ml.style.display = 'none'; }, 400);
-    }
-  })();
+  /* Overlay dismissed by startFirestoreListener dismiss timer */
   renderIncareView();
   renderReportTypeList();
   updateNavCounts();
