@@ -1268,8 +1268,7 @@ document.addEventListener("DOMContentLoaded", function() {
 })();
 
 /* Map init — synchronous. Script tag is at bottom of body so #map div exists. */
-var _mapReady     = false; /* set true after Leaflet init */
-var _recordsReady = false; /* set true when reports[] is populated */
+var _mapReady = false; /* set true inside Leaflet init block */
 var map;
 try {
   map = L.map('map', { center: HASTINGS, zoom: MAP_ZOOM, zoomControl: false,
@@ -1300,9 +1299,11 @@ try {
 
 var reports  = JSON.parse(localStorage.getItem('pawpulse-v2') || '[]');
 var lMarkers = [];
+var _recordsReady = false; /* set when Firestore/localStorage data is in reports[] */
 var curFilter = 'all';
 var curSpeciesFilter = 'all';
-var _lastSubmitTime = 0; /* ms timestamp of last public submit */
+var _lastSubmitTime = 0; /* ms timestamp of last public submit — gates onSnapshot re-render */
+var curSpeciesFilter = 'all';
 var placing   = null;
 var pLat = {}, pLng = {};
 var _submissionCount = 0;  /* resets on page reload */
@@ -1523,7 +1524,8 @@ function startFirestoreListener() {
           }
           /* 'modified' changes (position/color updates) handled by next full renderMarkers */
         });
-        forceCloudMapRender('firestore-changed');
+        localStorage.setItem('pawpulse-v2', JSON.stringify(reports));
+        forceCloudMapRender('firestore-changed-full-render');
         renderIncareView();
         updateNavCounts();
       }
@@ -1944,14 +1946,13 @@ function doChangePw() {
 
 var _bootAppDone = false;
 function forceCloudMapRender(reason) {
-  if (!map || !Array.isArray(reports)) return;
   console.log('[FORCE CLOUD MAP RENDER]', reason, {
-    reports: reports.length,
-    markers: lMarkers ? lMarkers.length : 0,
-    fbReady: _fbReady,
-    mapReady: _mapReady
+    reports: Array.isArray(reports) ? reports.length : 'no reports',
+    markers: Array.isArray(lMarkers) ? lMarkers.length : 'no markers',
+    mapReady: _mapReady,
+    fbReady: _fbReady
   });
-  try { map.invalidateSize(true); } catch(e) {}
+  try { if (map && map.invalidateSize) map.invalidateSize(true); } catch(e) {}
   _mapReady = true;
   renderMarkers();
 }
@@ -1960,6 +1961,7 @@ function bootApp() {
   if (_bootAppDone) return; /* Guard: only boot once */
   _bootAppDone = true;
   /* Block post-boot Firestore re-renders for 9s — prevents flicker of existing pins */
+  window._lastSubmitTime = Date.now();
   /* Restore staff UI immediately from localStorage — before Firebase auth resolves.
      Firebase IndexedDB session restore is unreliable on mobile Safari. */
   var storedStaff = localStorage.getItem('pawpulse-staff');
