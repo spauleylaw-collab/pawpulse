@@ -1530,6 +1530,7 @@ function startFirestoreListener() {
           renderMarkers();
         } else {
           console.log('[SNAPSHOT WAITING FOR MAP]');
+          setTimeout(renderMarkers, 300);
         }
         renderIncareView();
         updateNavCounts();
@@ -1976,6 +1977,17 @@ function bootApp() {
   }
   /* Force map to recalculate size now that loading screen is gone */
   setTimeout(function(){ try { map.invalidateSize(); } catch(e){} }, 300);
+  /* Mobile: Leaflet may not have finished layout — re-render after size stabilizes */
+  if (_restoredView === 'map' || !_restoredView) {
+    setTimeout(function(){
+      try { map.invalidateSize(); } catch(e){}
+      renderMarkers();
+    }, 400);
+    setTimeout(function(){
+      try { map.invalidateSize(); } catch(e){}
+      renderMarkers();
+    }, 900);
+  }
   /* Dismiss map loading overlay — Firebase will dismiss it after first snapshot; this covers non-Firebase path */
   if (!USE_FIREBASE) {
     window._firebaseLoaded = true;
