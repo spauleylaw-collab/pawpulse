@@ -1411,7 +1411,6 @@ function initFirebase() {
 
 function startFirestoreListener() {
   if (window._firestoreListenerActive) return; /* already running */
-  window._firestoreListenerActive = true;
   setTimeout(_dismissOverlay, 2000);
   if (!db) {
     console.warn('Firestore unavailable — using localStorage');
@@ -1421,6 +1420,8 @@ function startFirestoreListener() {
   }
   try {
     db.collection('reports').onSnapshot(function(snapshot) {
+      window._firestoreListenerActive = true; /* confirmed receiving */
+      console.log('[FIRESTORE SNAPSHOT]', { size: snapshot.size, changes: snapshot.docChanges().length });
       if (window._pauseFirestoreSync) {
         /* Demo load or major write in progress — skip listener */
         if (!_fbReady) { _fbReady = true; showShelterPicker(); }
@@ -1470,6 +1471,7 @@ function startFirestoreListener() {
       var changed = false;
       snapshot.docChanges().forEach(function(change) {
         var data = change.doc.data();
+        console.log('[FIRESTORE DOC]', { id: change.doc.id, type: data.type, changeType: change.type, hasPhoto: !!data.photo, photoLength: data.photo ? data.photo.length : 0 });
         /* Use document path ID as primary key — data.id may be absent on old records */
         var docPathId = change.doc.id;
         var dataId = (data.id !== undefined && data.id !== null) ? String(data.id) : docPathId;
@@ -5761,8 +5763,10 @@ function writeAnimalRecord(r, source) {
   /* Persist to Firestore — compress photo before write to stay under 1MB doc limit */
   if (USE_FIREBASE && _fbReady && db) {
     var _writeToFS = function(doc) {
+      console.log('[WRITE TO FIRESTORE ATTEMPT]', { id: doc.id, type: doc.type, source: doc.source, hasPhoto: !!doc.photo, photoLength: doc.photo ? doc.photo.length : 0 });
       db.collection('reports').doc(String(doc.id)).set(doc, {merge: true})
-        .catch(function(e){ console.warn('Firestore write error:', e.message); });
+        .then(function() { console.log('[WRITE TO FIRESTORE OK]', doc.id); })
+        .catch(function(e) { console.error('[WRITE TO FIRESTORE FAILED]', { id: doc.id, error: e.message, code: e.code }); });
     };
     if (r.photo) {
       /* Compress then write — photo travels with the record, no local cache needed */
@@ -5922,6 +5926,7 @@ function submitLost() {
   r._isNewPin = true;
   reports.push(r);
   save();
+  console.log('[PUBLIC SUBMIT START]', { type: r.type, id: r.id, hasPhoto: !!r.photo, photoLength: r.photo ? r.photo.length : 0, source: r.source, shelter: r.shelter, atShelter: r.atShelter });
   window._lastSubmitTime = Date.now();
   window._pauseFirestoreSync = true;
   writeAnimalRecord(r, 'public');
@@ -5982,6 +5987,7 @@ function submitFound() {
   r._isNewPin = true;
   reports.push(r);
   save();
+  console.log('[PUBLIC SUBMIT START]', { type: r.type, id: r.id, hasPhoto: !!r.photo, photoLength: r.photo ? r.photo.length : 0, source: r.source, shelter: r.shelter, atShelter: r.atShelter });
   window._lastSubmitTime = Date.now();
   window._pauseFirestoreSync = true;
   writeAnimalRecord(r, 'public');
