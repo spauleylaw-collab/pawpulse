@@ -1409,6 +1409,18 @@ function initFirebase() {
 }
 
 
+function forceCloudMapRender(reason) {
+  console.log('[FORCE CLOUD MAP RENDER]', reason, {
+    reports: Array.isArray(reports) ? reports.length : 'no reports',
+    markers: Array.isArray(lMarkers) ? lMarkers.length : 'no markers',
+    mapReady: _mapReady,
+    fbReady: _fbReady
+  });
+  try { if (map && map.invalidateSize) map.invalidateSize(true); } catch(e) {}
+  _mapReady = true;
+  renderMarkers();
+}
+
 function startFirestoreListener() {
   if (window._firestoreListenerActive) return; /* already running */
   setTimeout(_dismissOverlay, 2000);
@@ -1462,6 +1474,9 @@ function startFirestoreListener() {
         lMarkers.forEach(function(m){ try { map.removeLayer(m); } catch(e){} });
         lMarkers = [];
         showShelterPicker(); /* → bootApp() → sets _recordsReady again + renders */
+        forceCloudMapRender('first-firestore-snapshot');
+        setTimeout(function(){ forceCloudMapRender('first-firestore-1000'); }, 1000);
+        setTimeout(function(){ forceCloudMapRender('first-firestore-3000'); }, 3000);
         _dismissOverlay();
         /* rotateBanner removed */
         return;
@@ -1500,30 +1515,6 @@ function startFirestoreListener() {
       });
 
       if (changed) {
-        /* Write photos to dedicated key before saving main data */
-        /* photos are in IDB/_photoCache — no localStorage write needed */
-        localStorage.setItem('pawpulse-v2', JSON.stringify(reports));
-        /* Surgical per-change map update — never wipe and redraw all markers */
-        snapshot.docChanges().forEach(function(chg) {
-          var d = chg.doc.data();
-          var rid = String(d.id || chg.doc.id);
-          var r = reports.find(function(x){ return String(x.id) === rid; });
-          if (chg.type === 'removed') {
-            /* Remove just this marker */
-            lMarkers = lMarkers.filter(function(m) {
-              if (m._pawpulseId === rid) { map.removeLayer(m); return false; }
-              return true;
-            });
-          } else if (chg.type === 'added' && r && !window._pauseFirestoreSync) {
-            /* New pin from another device — add once map is ready */
-            var alreadyOn = lMarkers.some(function(m){ return m._pawpulseId === rid; });
-            if (!alreadyOn && r) {
-              if (_mapReady) { addSinglePin(r); }
-              else { setTimeout(function(){ if (!lMarkers.some(function(m){ return m._pawpulseId===rid; })) addSinglePin(r); }, 1000); }
-            }
-          }
-          /* 'modified' changes (position/color updates) handled by next full renderMarkers */
-        });
         localStorage.setItem('pawpulse-v2', JSON.stringify(reports));
         forceCloudMapRender('firestore-changed-full-render');
         renderIncareView();
@@ -1945,18 +1936,6 @@ function doChangePw() {
 
 
 var _bootAppDone = false;
-function forceCloudMapRender(reason) {
-  console.log('[FORCE CLOUD MAP RENDER]', reason, {
-    reports: Array.isArray(reports) ? reports.length : 'no reports',
-    markers: Array.isArray(lMarkers) ? lMarkers.length : 'no markers',
-    mapReady: _mapReady,
-    fbReady: _fbReady
-  });
-  try { if (map && map.invalidateSize) map.invalidateSize(true); } catch(e) {}
-  _mapReady = true;
-  renderMarkers();
-}
-
 function bootApp() {
   if (_bootAppDone) return; /* Guard: only boot once */
   _bootAppDone = true;
