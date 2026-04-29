@@ -1352,6 +1352,12 @@ function showStaffLoginBtn() {
   if (btn) btn.style.display = 'flex';
 }
 
+/* Global overlay dismiss — accessible from anywhere including catch blocks */
+function _dismissOverlay() {
+  var _ml = document.getElementById('map-loading');
+  if (_ml) { _ml.style.opacity = '0'; setTimeout(function(){ _ml.style.display='none'; }, 400); }
+}
+
 function initFirebase() {
   /* Boot straight to map — no login gate for public users */
   doGuestView();
@@ -1369,21 +1375,10 @@ function initFirebase() {
         document.getElementById('staff-badge').classList.add('staff-active');
         document.querySelectorAll('.tab-ops,.tab-admin').forEach(function(el){ el.style.display = ''; });
         hideStaffLoginBtn();
-        if (_fbReady !== true) {
+        if (_fbReady !== true && !window._firestoreListenerActive) {
           if (db) { startFirestoreListener(); } else { showShelterPicker(); }
         }
-        /* Re-sync any records with photos that may have failed to write
-           when auth was not yet restored (common on mobile Safari) */
-        if (db && reports.length > 0) {
-          setTimeout(function(){
-            reports.forEach(function(r){
-              if (r.photo) {
-                db.collection('reports').doc(String(r.id)).set(r)
-                  .catch(function(){});
-              }
-            });
-          }, 1500);
-        }
+        /* Photos are written to Firestore at submit time via compressDataUrl */
         setTimeout(function(){ renderAdoptView(); }, 800);
       } else {
         /* null — only clear if localStorage flag also gone (real sign-out, not just slow restore) */
@@ -1402,13 +1397,9 @@ function initFirebase() {
 }
 
 
-function _dismissOverlay() {
-  var _ml = document.getElementById('map-loading');
-  if (_ml) { _ml.style.opacity = '0'; setTimeout(function(){ _ml.style.display='none'; }, 400); }
-}
-
 function startFirestoreListener() {
-  /* Safety dismiss — overlay should already be gone from bootApp */
+  if (window._firestoreListenerActive) return; /* already running */
+  window._firestoreListenerActive = true;
   setTimeout(_dismissOverlay, 2000);
   if (!db) {
     console.warn('Firestore unavailable — using localStorage');
@@ -1824,9 +1815,13 @@ function doGuestView() {
   var loading = document.getElementById('app-loading');
   if (loading && loading.parentNode) loading.parentNode.removeChild(loading);
   /* Boot from localStorage immediately — don't wait for Firestore */
-  if (!_bootAppDone) { bootApp(); }
+  try {
+    if (!_bootAppDone) { bootApp(); }
+  } catch(e) { console.error('bootApp threw:', e.message, e.stack); }
   /* Then start Firestore listener to sync updates in background */
-  if (USE_FIREBASE) { startFirestoreListener(); }
+  try {
+    if (USE_FIREBASE) { startFirestoreListener(); }
+  } catch(e) { console.error('startFirestoreListener threw:', e.message); }
 }
 
 function doSignOut() {
@@ -9644,9 +9639,9 @@ function setView(v, btn) {
 try {
   initFirebase();
 } catch(e) {
-  console.error('PawPulse boot error:', e.message);
-  var lo = document.getElementById('login-overlay');
-  if (lo) lo.style.display = 'flex';
+  console.error('PawPulse boot error:', e.message, e.stack);
+  if (!window._bootAppDone) { try { bootApp(); } catch(e2) { console.error('bootApp fallback error:', e2.message); } }
+  _dismissOverlay();
 }
 setTimeout(function(){ injectMicButtons(document.getElementById('side-panel')); }, 100);
 
