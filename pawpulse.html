@@ -1532,6 +1532,14 @@ function startFirestoreListener() {
           console.log('[SNAPSHOT WAITING FOR MAP]');
           setTimeout(renderMarkers, 300);
         }
+        /* If a pin card is open, rebuild it so photo from Firestore appears immediately */
+        if (window._openPinId) {
+          var _openRecord = reports.find(function(r){ return String(r.id) === String(window._openPinId); });
+          if (_openRecord && _openRecord.photo) {
+            var _body = document.getElementById('pin-card-body');
+            if (_body) _body.innerHTML = cardHTML(_openRecord);
+          }
+        }
         renderIncareView();
         updateNavCounts();
       }
@@ -4321,6 +4329,7 @@ function openCard(r, cp) {
   /* Guard against rapid tapping — cancel any closing animation */
   var card = document.getElementById('pin-card');
   card.classList.remove('closing');
+  window._openPinId = String(r.id); /* track open card for photo refresh */
   document.getElementById('pin-card-body').innerHTML = cardHTML(r);
   card.style.visibility = 'hidden';
   card.scrollTop = 0;  /* Always start at top of card */
@@ -4895,6 +4904,7 @@ function printCageCard(id) {
 }
 
 function closeCard() {
+  window._openPinId = null;
   var c = document.getElementById('pin-card');
   c.className = '';
   c.style.display = '';
