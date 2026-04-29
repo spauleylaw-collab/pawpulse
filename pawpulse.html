@@ -1268,8 +1268,6 @@ document.addEventListener("DOMContentLoaded", function() {
 })();
 
 /* Map init — synchronous. Script tag is at bottom of body so #map div exists. */
-var _mapReady     = !!window._leafletMapInstance; /* true if map already initialized */
-var _recordsReady = false; /* set to true when reports[] is populated */
 var map;
 try {
   map = L.map('map', { center: HASTINGS, zoom: MAP_ZOOM, zoomControl: false,
@@ -1300,6 +1298,8 @@ try {
 
 var reports  = JSON.parse(localStorage.getItem('pawpulse-v2') || '[]');
 var lMarkers = [];
+var _mapReady     = !!window._leafletMapInstance; /* true if map already initialized */
+var _recordsReady = false; /* set when Firestore/localStorage data is in reports[] */
 var curFilter = 'all';
 var curSpeciesFilter = 'all';
 var _lastSubmitTime = 0; /* ms timestamp of last public submit — gates onSnapshot re-render */
@@ -1413,7 +1413,7 @@ function startFirestoreListener() {
   if (window._firestoreListenerActive) return; /* already running */
   setTimeout(_dismissOverlay, 2000);
   if (!db) {
-    console.warn('[FIRESTORE OFFLINE / NOT READY] Firestore unavailable — using localStorage only');
+    console.warn('Firestore unavailable — using localStorage');
     _fbReady = true;
     showShelterPicker();
     return;
@@ -1463,10 +1463,6 @@ function startFirestoreListener() {
         lMarkers = [];
         showShelterPicker(); /* → bootApp() → sets _recordsReady again + renders */
         _dismissOverlay();
-        /* Cellular-safe delayed retries — data may arrive after first render attempt */
-        setTimeout(renderMarkers, 500);
-        setTimeout(renderMarkers, 1500);
-        setTimeout(renderMarkers, 3000);
         /* rotateBanner removed */
         return;
       }
@@ -1528,16 +1524,7 @@ function startFirestoreListener() {
           }
           /* 'modified' changes (position/color updates) handled by next full renderMarkers */
         });
-        /* Trigger render after snapshot updates reports[] */
-        forceMapRender('firestore-snapshot');
-        /* If a pin card is open, rebuild it so photo from Firestore appears immediately */
-        if (window._openPinId) {
-          var _openRecord = reports.find(function(r){ return String(r.id) === String(window._openPinId); });
-          if (_openRecord && _openRecord.photo) {
-            var _body = document.getElementById('pin-card-body');
-            if (_body) _body.innerHTML = cardHTML(_openRecord);
-          }
-        }
+        forceCloudMapRender('firestore-changed');
         renderIncareView();
         updateNavCounts();
       }
@@ -1957,24 +1944,12 @@ function doChangePw() {
 
 
 var _bootAppDone = false;
-function forceMapRender(reason) {
+function forceCloudMapRender(reason) {
   if (!map || !Array.isArray(reports)) return;
-  console.log('[FORCE MAP RENDER]', reason, {
+  console.log('[FORCE CLOUD MAP RENDER]', reason, {
     reports: reports.length,
-    markers: lMarkers.length,
+    markers: lMarkers ? lMarkers.length : 0,
     fbReady: _fbReady,
-    mapReady: _mapReady
-  });
-  try { map.invalidateSize(true); } catch(e) {}
-  _mapReady = true;
-  renderMarkers();
-}
-
-function forceMobileMapRender(reason) {
-  if (!map || !Array.isArray(reports)) return;
-  console.log('[FORCE MOBILE MAP RENDER]', reason, {
-    reports: reports.length,
-    markers: lMarkers.length,
     mapReady: _mapReady
   });
   try { map.invalidateSize(true); } catch(e) {}
@@ -1986,7 +1961,6 @@ function bootApp() {
   if (_bootAppDone) return; /* Guard: only boot once */
   _bootAppDone = true;
   /* Block post-boot Firestore re-renders for 9s — prevents flicker of existing pins */
-  window._lastSubmitTime = Date.now();
   /* Restore staff UI immediately from localStorage — before Firebase auth resolves.
      Firebase IndexedDB session restore is unreliable on mobile Safari. */
   var storedStaff = localStorage.getItem('pawpulse-staff');
@@ -2008,17 +1982,6 @@ function bootApp() {
   }
   /* Force map to recalculate size now that loading screen is gone */
   setTimeout(function(){ try { map.invalidateSize(); } catch(e){} }, 300);
-  /* Mobile: Leaflet may not have finished layout — re-render after size stabilizes */
-  if (_restoredView === 'map' || !_restoredView) {
-    setTimeout(function(){
-      try { map.invalidateSize(); } catch(e){}
-      renderMarkers();
-    }, 400);
-    setTimeout(function(){
-      try { map.invalidateSize(); } catch(e){}
-      renderMarkers();
-    }, 900);
-  }
   /* Dismiss map loading overlay — Firebase will dismiss it after first snapshot; this covers non-Firebase path */
   if (!USE_FIREBASE) {
     window._firebaseLoaded = true;
@@ -2053,14 +2016,11 @@ function bootApp() {
   if (sel && activeShelter) sel.value = activeShelter;
   _recordsReady = true;
   renderMarkers();
-  /* Delayed render kickers — cellular safe, fire on all devices */
-  if (window.innerWidth <= 700) {
-    setTimeout(function(){ forceMobileMapRender('boot-250'); }, 250);
+  /* Retry if map wasn't ready yet (defensive) */
+  if (lMarkers.length === 0 && reports.length > 0) {
+    setTimeout(function() { if (lMarkers.length === 0) { renderMarkers(); } }, 800);
+    setTimeout(function() { if (lMarkers.length === 0) { renderMarkers(); } }, 2000);
   }
-  setTimeout(function(){ forceMapRender('boot-750');  }, 750);
-  setTimeout(function(){ forceMapRender('boot-1500'); }, 1500);
-  setTimeout(function(){ forceMapRender('boot-3000'); }, 3000);
-  setTimeout(function(){ forceMapRender('boot-5000'); }, 5000);
   initSpotlight();
   /* Overlay dismissed by startFirestoreListener dismiss timer */
   renderIncareView();
@@ -4342,7 +4302,6 @@ function openCard(r, cp) {
   /* Guard against rapid tapping — cancel any closing animation */
   var card = document.getElementById('pin-card');
   card.classList.remove('closing');
-  window._openPinId = String(r.id); /* track open card for photo refresh */
   document.getElementById('pin-card-body').innerHTML = cardHTML(r);
   card.style.visibility = 'hidden';
   card.scrollTop = 0;  /* Always start at top of card */
@@ -4355,11 +4314,8 @@ function openCard(r, cp) {
     var mc = document.getElementById('map-container');
     var _seo = document.getElementById('seo-footer');
     var _seoH = (_seo && _seo.offsetHeight) || 16;
-    var _nav = document.getElementById('top-nav');
-    var _banner = document.getElementById('map-banner');
-    var _ribbonH = (_nav ? _nav.offsetHeight : 56) + (_banner && _banner.offsetHeight > 0 ? _banner.offsetHeight : 0);
-    var M = _ribbonH + 8, mh = mc.offsetHeight;
-    var bottomMargin = 8 + 60 + _seoH;
+    var M = 14, mh = mc.offsetHeight;
+    var bottomMargin = M + 60 + _seoH;
     var maxAvail = mh - M - bottomMargin;
     if (maxAvail > 100) card.style.maxHeight = maxAvail + 'px';
   })();
@@ -4367,10 +4323,7 @@ function openCard(r, cp) {
     var mc   = document.getElementById('map-container');
     var cw   = card.offsetWidth, ch = card.offsetHeight;
     var mw   = mc.offsetWidth,   mh = mc.offsetHeight;
-    var _nav2 = document.getElementById('top-nav');
-    var _banner2 = document.getElementById('map-banner');
-    var _ribbonH2 = (_nav2 ? _nav2.offsetHeight : 56) + (_banner2 && _banner2.offsetHeight > 0 ? _banner2.offsetHeight : 0);
-    var M    = _ribbonH2 + 8;  /* card must clear top ribbon */
+    var M    = 14;
     var seoH = (document.getElementById('seo-footer') || {}).offsetHeight || 16;
     var clearBottom = seoH + 24;        /* clear SEO bar + breathing room */
     var available   = mh - M - clearBottom;   /* max usable height */
@@ -4917,7 +4870,6 @@ function printCageCard(id) {
 }
 
 function closeCard() {
-  window._openPinId = null;
   var c = document.getElementById('pin-card');
   c.className = '';
   c.style.display = '';
@@ -5137,9 +5089,7 @@ function addSinglePin(r) {
 }
 
 function renderMarkers() {
-  if (!Array.isArray(reports)) return;
-  if (!map || !map.addLayer) { setTimeout(renderMarkers, 100); return; }
-  if (!_mapReady) { setTimeout(renderMarkers, 100); return; }
+  if (!map || !map.addLayer || !Array.isArray(reports)) return; /* map must exist */
   var oldMarkers = lMarkers.slice(); /* keep reference to old markers */
   lMarkers = [];
 
@@ -5161,9 +5111,7 @@ function renderMarkers() {
     if (!isPublicVisible(r)) return false;
     if (r.reunited) return false;
     var typeOk = curFilter === 'all' || r.type === curFilter;
-    var species   = (r.species || '').toLowerCase().trim();
-  var filter    = (curSpeciesFilter || '').toLowerCase().trim();
-  var speciesOk = filter === 'all' || species === filter;
+    var speciesOk = curSpeciesFilter === 'all' || (r.species||'').toLowerCase() === curSpeciesFilter;
     return typeOk && speciesOk;
   }).forEach(function(r){
     var m = L.marker([r.lat,r.lng],{icon:pinIcon(r.type, r.reunited, r.possibleMatch && !r.reunited, r.adoptionStatus==='available', r.atShelter && !r.shelter, false, r)}).addTo(map);
@@ -5824,8 +5772,8 @@ function writeAnimalRecord(r, source) {
   if (r.shelter === true) r.atShelter = false;
   /* Stamp updatedAt */
   r.updatedAt = new Date().toISOString();
-  /* Persist to Firestore — gate on db only, NOT _fbReady. Write before first snapshot. */
-  if (USE_FIREBASE && db) {
+  /* Persist to Firestore — compress photo before write to stay under 1MB doc limit */
+  if (USE_FIREBASE && _fbReady && db) {
     var _writeToFS = function(doc) {
       console.log('[WRITE TO FIRESTORE ATTEMPT]', { id: doc.id, type: doc.type, source: doc.source, hasPhoto: !!doc.photo, photoLength: doc.photo ? doc.photo.length : 0 });
       db.collection('reports').doc(String(doc.id)).set(doc, {merge: true})
@@ -9733,24 +9681,6 @@ try {
   _dismissOverlay();
 }
 setTimeout(function(){ injectMicButtons(document.getElementById('side-panel')); }, 100);
-
-/* Cellular reconnect — re-render when network comes back */
-window.addEventListener('online', function() {
-  setTimeout(function(){ forceMapRender('online'); }, 500);
-});
-
-/* Mobile: re-render when returning from background or bfcache */
-window.addEventListener('pageshow', function(e) {
-  setTimeout(function(){
-    forceMapRender(e.persisted ? 'pageshow-bfcache' : 'pageshow');
-  }, 500);
-});
-
-document.addEventListener('visibilitychange', function() {
-  if (!document.hidden) {
-    setTimeout(function(){ forceMapRender('visibilitychange'); }, 500);
-  }
-});
 
 /* ═══ STAFF TUTORIAL ═══════════════════════════════════════════════════ */
 var _tutorialStep = 0;
