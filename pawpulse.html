@@ -7040,12 +7040,11 @@ function submitIntake() {
   var srcLabels   = { ac:'Brought by Animal Control', surrender:'Owner Surrender', citizen:'Found by Citizen', other:'Transfer / Other Agency' };
   var srcLabel    = srcLabels[intakeSource] || 'Unknown';
   /* holdType is a legal/operational state independent of who brought the animal */
-  var holdType    = 'none';
-  if (isHold) {
-    if (caseType.indexOf('bite') > -1)           holdType = 'bite';
-    else if (caseType.indexOf('dangerous') > -1) holdType = 'dangerous';
-    else                                          holdType = 'standard';
-  }
+  /* holdType set from caseType regardless of intakeType — bite/dangerous cases are always holds */
+  var holdType = 'none';
+  if (caseType.indexOf('bite') > -1)           { holdType = 'bite';      isHold = true; }
+  else if (caseType.indexOf('dangerous') > -1) { holdType = 'dangerous'; isHold = true; }
+  else if (isHold)                               holdType = 'standard';
 
   var r = {
     id: Date.now(), type: 'found', date: new Date().toISOString(),
