@@ -1463,6 +1463,10 @@ function startFirestoreListener() {
         lMarkers = [];
         showShelterPicker(); /* → bootApp() → sets _recordsReady again + renders */
         _dismissOverlay();
+        /* Cellular-safe delayed retries — data may arrive after first render attempt */
+        setTimeout(renderMarkers, 500);
+        setTimeout(renderMarkers, 1500);
+        setTimeout(renderMarkers, 3000);
         /* rotateBanner removed */
         return;
       }
