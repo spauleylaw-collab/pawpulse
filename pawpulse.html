@@ -784,7 +784,7 @@ textarea{min-height:64px}
     🐾
     <div class="nav-logo-wrap">
       PawPulse
-      <span class="nav-logo-sub">Hastings, NE &amp; Adams County</span>
+      <span class="nav-logo-sub">Hastings &amp; Adams County, NE</span>
     </div>
   </div>
   <!-- Report type picker (used by openReportPicker()) -->
@@ -1073,10 +1073,10 @@ textarea{min-height:64px}
          Doctrine-safe presentation layer only. No pins. No map state.
          Pulls from existing shelter/adoption records only. No new writes.
     ─────────────────────────────────────────────────────────────────── -->
-    <div id="shelter-spotlight" style="display:none;position:absolute;bottom:80px;left:14px;z-index:700;width:160px;border-radius:20px;overflow:hidden;box-shadow:0 12px 40px rgba(42,31,18,.35),0 4px 12px rgba(0,0,0,.15);transition:opacity .6s ease,transform .15s ease;opacity:0;pointer-events:auto;cursor:pointer;border:1.5px solid rgba(255,255,255,.8);background:var(--cream);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)" onclick="this.style.transform='scale(1.04)';setTimeout(function(){setView('adopt',null);},150)">
+    <div id="shelter-spotlight" style="display:none;position:absolute;bottom:80px;left:8px;z-index:700;width:150px;border-radius:20px;overflow:hidden;box-shadow:0 12px 40px rgba(42,31,18,.35),0 4px 12px rgba(0,0,0,.15);transition:opacity .6s ease,transform .15s ease;opacity:0;pointer-events:auto;cursor:pointer;border:1.5px solid rgba(255,255,255,.8);background:var(--cream);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)" onclick="this.style.transform='scale(1.04)';setTimeout(function(){setView('adopt',null);},150)">
       <!-- Shelter companion card — NOT a map feature. No pins. No doctrine impact. -->
       <div style="background:var(--forest);padding:6px 8px 6px 10px;display:flex;align-items:center;gap:6px;width:100%">
-        <span style="font-size:.55rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.85)" id="spotlight-header-label">🏠 From the Shelter</span><button onclick="event.stopPropagation();dismissSpotlight()" style="background:none;border:none;color:rgba(255,255,255,.6);font-size:.85rem;line-height:1;cursor:pointer;padding:0 2px;margin-left:auto;flex-shrink:0" title="Dismiss">✕</button>
+        <span style="display:flex;align-items:center;gap:4px" id="spotlight-header-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="5" cy="6" rx="2.2" ry="3" fill="rgba(255,255,255,.9)"/><ellipse cx="19" cy="6" rx="2.2" ry="3" fill="rgba(255,255,255,.9)"/><ellipse cx="9" cy="3.5" rx="2" ry="2.8" fill="rgba(255,255,255,.9)"/><ellipse cx="15" cy="3.5" rx="2" ry="2.8" fill="rgba(255,255,255,.9)"/><path d="M12 9c-4 0-7 2.5-6.5 6 .4 2.8 2.5 4.5 6.5 4.5s6.1-1.7 6.5-4.5C19 11.5 16 9 12 9z" fill="rgba(255,255,255,.9)"/></svg><span style="font-size:.55rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.85)">Heartland</span></span><button onclick="event.stopPropagation();dismissSpotlight()" style="background:none;border:none;color:rgba(255,255,255,.6);font-size:.85rem;line-height:1;cursor:pointer;padding:0 2px;margin-left:auto;flex-shrink:0" title="Dismiss">✕</button>
       </div>
       <div style="position:relative;height:75px;background:var(--cream-2);overflow:hidden">
         <img id="spotlight-img" src="" alt="" style="width:100%;height:100%;object-fit:contain;object-position:center center;background:var(--cream-2);display:none">
@@ -1087,7 +1087,7 @@ textarea{min-height:64px}
         <div id="spotlight-ai-bio" style="font-size:.7rem;color:var(--warm-dk);line-height:1.35;font-style:italic;margin-bottom:5px;overflow:hidden;min-height:47px;transition:opacity .3s ease;opacity:0"></div>
         <div id="spotlight-name" style="font-family:var(--font-display);font-size:.88rem;color:var(--warm-dk);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px"></div>
         <div id="spotlight-bio" style="font-size:.68rem;color:var(--warm-mid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:8px"></div>
-        <div style="background:var(--forest);color:#fff;font-size:.68rem;font-weight:700;text-align:center;padding:6px 8px;border-radius:8px;letter-spacing:.02em" id="spotlight-cta">View Adoptable Pets →</div>
+        <div style="background:var(--amber);color:#fff;font-size:.62rem;font-weight:700;text-align:center;padding:5px 6px;border-radius:8px;letter-spacing:.02em;margin-top:auto" id="spotlight-cta">Find Me a Home 🐾</div>
       </div>
     </div>
 
@@ -1298,7 +1298,7 @@ try {
 
 var reports  = JSON.parse(localStorage.getItem('pawpulse-v2') || '[]');
 var lMarkers = [];
-var _mapReady     = !!window._leafletMapInstance;
+var _mapReady     = false; /* set by map.whenReady() */
 var _recordsReady = false; /* set when Firestore/localStorage data is in reports[] */
 var curFilter = 'all';
 var curSpeciesFilter = 'all';
@@ -1409,20 +1409,6 @@ function initFirebase() {
 }
 
 
-function refreshMapPins(reason) {
-  console.log('[REFRESH MAP PINS]', reason, {
-    reports: reports.length,
-    markers: lMarkers.length,
-    mapReady: _mapReady,
-    recordsReady: _recordsReady
-  });
-  _mapReady = true;
-  try { if (map && map.invalidateSize) map.invalidateSize(true); } catch(e) {}
-  lMarkers.forEach(function(m){ try { map.removeLayer(m); } catch(e){} });
-  lMarkers = [];
-  renderMarkers();
-}
-
 function startFirestoreListener() {
   if (window._firestoreListenerActive) return; /* already running */
   setTimeout(_dismissOverlay, 2000);
@@ -1476,9 +1462,6 @@ function startFirestoreListener() {
         lMarkers.forEach(function(m){ try { map.removeLayer(m); } catch(e){} });
         lMarkers = [];
         showShelterPicker(); /* → bootApp() → sets _recordsReady again + renders */
-        refreshMapPins('first-firestore-load');
-        setTimeout(function(){ refreshMapPins('first-firestore-load-500'); }, 500);
-        setTimeout(function(){ refreshMapPins('first-firestore-load-1500'); }, 1500);
         _dismissOverlay();
         /* rotateBanner removed */
         return;
@@ -1517,8 +1500,31 @@ function startFirestoreListener() {
       });
 
       if (changed) {
+        /* Write photos to dedicated key before saving main data */
+        /* photos are in IDB/_photoCache — no localStorage write needed */
         localStorage.setItem('pawpulse-v2', JSON.stringify(reports));
-        refreshMapPins('firestore-changed');
+        /* Surgical per-change map update — never wipe and redraw all markers */
+        snapshot.docChanges().forEach(function(chg) {
+          var d = chg.doc.data();
+          var rid = String(d.id || chg.doc.id);
+          var r = reports.find(function(x){ return String(x.id) === rid; });
+          if (chg.type === 'removed') {
+            /* Remove just this marker */
+            lMarkers = lMarkers.filter(function(m) {
+              if (m._pawpulseId === rid) { map.removeLayer(m); return false; }
+              return true;
+            });
+          } else if (chg.type === 'added' && r && !window._pauseFirestoreSync) {
+            /* New pin from another device — add once map is ready */
+            var alreadyOn = lMarkers.some(function(m){ return m._pawpulseId === rid; });
+            if (!alreadyOn && r) {
+              if (_mapReady) { addSinglePin(r); }
+              else { setTimeout(function(){ if (!lMarkers.some(function(m){ return m._pawpulseId===rid; })) addSinglePin(r); }, 1000); }
+            }
+          }
+          /* 'modified' changes (position/color updates) handled by next full renderMarkers */
+        });
+        /* reports[] is updated — markers stay as-is until user action triggers a render */s();
         renderIncareView();
         updateNavCounts();
       }
@@ -2014,8 +2020,6 @@ function bootApp() {
   if (_restoredView === 'map' || !_restoredView) {
     setTimeout(function(){ try { map.invalidateSize(); } catch(e){} }, 400);
   }
-  setTimeout(function(){ refreshMapPins('boot-final-500');  }, 500);
-  setTimeout(function(){ refreshMapPins('boot-final-1500'); }, 1500);
 }
 
 /* ── INTAKE MODAL (replaces separate Intake tab) ─────────────────────── */
@@ -5178,7 +5182,7 @@ function setFilter(f, btn) {
     document.querySelectorAll('.filter-btn.species-btn').forEach(function(b){ b.classList.remove('active','dog','cat'); });
     if (btn && f !== 'all-species') { btn.classList.add('active'); btn.classList.add(f); }
   }
-  refreshMapPins('filter-click');
+  renderMarkers();
 }
 
 function openReportPicker() {
@@ -9794,7 +9798,7 @@ function maybeShowTutorial() {
   <span>·</span>
   <a href="/pets-in-care-hastings-ne" style="color:rgba(255,255,255,.5);text-decoration:none">Pets in care at Heartland</a>
   <span>·</span>
-  <span>Hastings, NE &amp; Adams County</span>
+  <span>Hastings &amp; Adams County, NE</span>
 </footer>
 
 <!-- Out-of-bounds overlay — centered on map -->
