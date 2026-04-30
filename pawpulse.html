@@ -1743,7 +1743,7 @@ function loadDemoData() {
   ];
 
   demo.forEach(function(r){ reports.push(r); });
-  save(); renderMarkers(); renderIncareView(); renderAdoptView(); updateNavCounts();
+  save(); refreshMapPins('data-changed'); renderIncareView(); renderAdoptView(); updateNavCounts();
 
   /* Sync demo animals to Firestore — use individual writes (batch fails security rules) */
   if (USE_FIREBASE && _fbReady && db) {
@@ -1919,7 +1919,7 @@ function clearTestData() {
 
   reports = [];
   save();
-  renderMarkers();
+  refreshMapPins('data-changed');
   renderIncareView();
   renderAdoptView();
   updateNavCounts();
@@ -2466,7 +2466,7 @@ function submitIntakeFromModal() {
   /* Close modal FIRST so phone UI doesn't freeze while rendering */
   closeIntakeModal();
   /* Stagger heavy renders: markers first (fast), then incare grid (heavy) */
-  setTimeout(function() { renderMarkers(); updateNavCounts(); }, 80);
+  setTimeout(function() { refreshMapPins('data-changed'); updateNavCounts(); }, 80);
   setTimeout(function() {
     renderIncareView();
     pushBannerEvent((isHold?'⚠️ Animal on hold logged at ':'🐾 New animal received at ') + activeShelter, isHold?'#d4843a':'var(--found-g)');
@@ -2931,7 +2931,7 @@ function saveAnimalEdit(id) {
   r.tags  = ((document.getElementById('ae-tags')||{}).value||'').trim();
   r.about = ((document.getElementById('ae-about')||{}).value||'').trim();
 
-  save(); renderMarkers(); renderIncareView(); renderAdoptView(); updateNavCounts();
+  save(); refreshMapPins('data-changed'); renderIncareView(); renderAdoptView(); updateNavCounts();
   closeAnimalEdit();
   /* Write to Firestore — pause listener long enough for write to confirm */
   if (USE_FIREBASE && _fbReady && db && _isStaff) {
@@ -3980,7 +3980,7 @@ function setAdoptionStatus(id, status) {
   if (status === 'available' && !r.dateAvailable) r.dateAvailable = new Date().toISOString();
   if (!r.shelterLog) r.shelterLog = [];
   r.shelterLog.push({ body: 'Adoption status set to: ' + status, time: 'Just now' });
-  save(); renderMarkers(); renderIncareView();
+  save(); refreshMapPins('data-changed'); renderIncareView();
   /* Refresh whichever panel is open */
   if (selectedIntakeId === id) selectIntake(id);
 }
@@ -5168,7 +5168,7 @@ function markReunited(id) {
   var cardBody = document.getElementById('pin-card-body');
   if (cardBody) cardBody.innerHTML = cardHTML(r);
   setTimeout(function() {
-    renderMarkers();
+    refreshMapPins('data-changed');
     renderIncareView();
   }, 50);
   /* Burst animation on map at pin location */
@@ -5248,7 +5248,7 @@ function addSinglePin(r) {
   var m = L.marker([r.lat, r.lng], {
     icon: pinIcon(r.type, false, false, false, r.atShelter && !r.shelter, false, r)
   }).addTo(map);
-  m.on('click', function(e) {
+  m.on('click tap', function(e) {
     closeCard();
     /* Always look up current report — photo may have loaded after marker was created */
     var _rid = String(r.id);
@@ -5290,7 +5290,7 @@ function renderMarkers() {
   }).forEach(function(r){
     var m = L.marker([r.lat,r.lng],{icon:pinIcon(r.type, r.reunited, r.possibleMatch && !r.reunited, r.adoptionStatus==='available', r.atShelter && !r.shelter, false, r)}).addTo(map);
     m._pawpulseId = String(r.id);
-    m.on('click', function(e){ closeCard(); var _cur=reports.find(function(x){return String(x.id)===String(r.id);}); openCard(_cur||r,e.containerPoint); L.DomEvent.stopPropagation(e); });
+    m.on('click tap', function(e){ closeCard(); var _cur=reports.find(function(x){return String(x.id)===String(r.id);}); openCard(_cur||r,e.containerPoint); L.DomEvent.stopPropagation(e); });
     lMarkers.push(m);
   });
   /* Remove old markers after new ones placed — eliminates blank-map flash */
@@ -5310,7 +5310,7 @@ function renderMarkers() {
       iconAnchor: [20, 38]
     });
     var m = L.marker([s.lat, s.lng], { icon: icon }).addTo(map);
-    m.on('click', function(e) {
+    m.on('click tap', function(e) {
       closeCard();
       /* Show a summary card for the shelter */
       var card = document.getElementById('pin-card');
@@ -6992,7 +6992,7 @@ function postMatchComment(lostId, intakeId) {
   }
 
   save();
-  renderMarkers();
+  refreshMapPins('data-changed');
 
   /* Owner notification toast */
   var ownerName = lost.owner || 'the owner';
@@ -7250,7 +7250,7 @@ function submitIntake() {
   };
 
   reports.push(r); save();
-  renderMarkers();
+  refreshMapPins('data-changed');
   renderIncareView();
   var leftCol = document.querySelector('#view-shelters .sh-col-left');
   if (leftCol) leftCol.style.display = '';
@@ -7340,7 +7340,7 @@ function closeHold(id, outcome) {
   }
 
   save();
-  renderMarkers();
+  refreshMapPins('data-changed');
   renderShelterQueue();
   renderIncareView();
 
@@ -7875,7 +7875,7 @@ function saveField(id, field, value) {
   if (!r) return;
   r[field] = value;
   save();
-  renderMarkers();
+  refreshMapPins('data-changed');
   if (field === 'animalId' || field === 'name' || field === 'species') {
     renderShelterQueue();
     renderIncareView();
@@ -9055,7 +9055,7 @@ function submitAdoptListing() {
     shelterLog: [{ body: 'Posted for adoption by ' + shelterName, time: 'Just now' }],
     photo: (photoEl && photoEl.src && photoEl.src.startsWith('data:')) ? photoEl.src : null
   };
-  reports.push(r); save(); renderMarkers();
+  reports.push(r); save(); refreshMapPins('data-changed');
   closeAdoptForm(null);
   renderAdoptView();
   /* Reset form */
