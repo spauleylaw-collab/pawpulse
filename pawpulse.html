@@ -1094,7 +1094,7 @@ textarea{min-height:64px}
     </div>
 
     <div id="map-loading" style="position:absolute;inset:0;z-index:500;background:rgba(244,241,235,.7);display:flex;align-items:center;justify-content:center;pointer-events:none;transition:opacity .4s ease">
-      <div style="font-size:.85rem;color:var(--warm-mid);font-weight:600;font-family:var(--font-body)">🗺️ Loading map…</div>
+      <div style="font-size:.85rem;color:var(--warm-mid);font-weight:600;font-family:var(--font-body)">🗺️ Loading nearby pets…</div>
     </div>
     <!-- Map zoom controls -->
     <!-- legend removed -->
@@ -1270,6 +1270,13 @@ document.addEventListener("DOMContentLoaded", function() {
 })();
 
 /* Map init — synchronous. Script tag is at bottom of body so #map div exists. */
+window.PAWPULSE_BUILD = 'map-baseline-2026-04-29-01';
+console.log('[PAWPULSE BUILD]', window.PAWPULSE_BUILD);
+document.addEventListener('DOMContentLoaded', function(){
+  document.body.insertAdjacentHTML('beforeend',
+    '<div id="build-stamp" style="position:fixed;bottom:10px;right:10px;background:#000;color:#fff;padding:6px 10px;font-size:12px;z-index:9999;border-radius:4px">map-baseline-2026-04-29-01</div>');
+  setTimeout(function(){ var el=document.getElementById('build-stamp'); if(el)el.remove(); }, 8000);
+});
 var _mapReady = !!window._leafletMapInstance;
 var map;
 try {
@@ -1287,6 +1294,7 @@ try {
   window._leafletMapInstance = map;
   /* Map is synchronously ready after L.map() + tileLayer — set flag immediately */
   _mapReady = true;
+  tryInitialRender('map-ready');
 } catch(e) {
   if (e.message && e.message.indexOf('already initialized') > -1) {
     /* Map already exists — retrieve it and set ready */
@@ -1421,6 +1429,40 @@ function refreshMapPins(reason) {
   lMarkers.forEach(function(m){ try { map.removeLayer(m); } catch(e){} });
   lMarkers = [];
   renderMarkers();
+  /* Hide loading overlay once pins are on the map */
+  if (lMarkers.length > 0) _dismissOverlay();
+}
+
+var _initialRenderDone = false;
+var _initialRenderAttempts = 0;
+function tryInitialRender(reason) {
+  _initialRenderAttempts++;
+  console.log('[TRY INITIAL RENDER]', reason, {
+    attempt: _initialRenderAttempts,
+    initialDone: _initialRenderDone,
+    mapReady: _mapReady,
+    recordsReady: _recordsReady,
+    reports: Array.isArray(reports) ? reports.length : 'not-array',
+    markers: Array.isArray(lMarkers) ? lMarkers.length : 'not-array'
+  });
+  if (_initialRenderDone) return;
+  if (_mapReady && _recordsReady && Array.isArray(reports) && reports.length > 0) {
+    _initialRenderDone = true;
+    refreshMapPins('initial-ready-' + reason);
+    setTimeout(function(){ refreshMapPins('initial-confirm-500'); }, 500);
+    setTimeout(function(){
+      if (Array.isArray(reports) && reports.length > 0 && Array.isArray(lMarkers) && lMarkers.length === 0) {
+        _initialRenderDone = false;
+        tryInitialRender('initial-marker-empty-retry');
+      }
+    }, 1500);
+    return;
+  }
+  if (_initialRenderAttempts < 8) {
+    setTimeout(function(){
+      tryInitialRender(reason + '-retry-' + _initialRenderAttempts);
+    }, 350);
+  }
 }
 
 function startFirestoreListener() {
@@ -1472,6 +1514,7 @@ function startFirestoreListener() {
         window._firebaseLoaded = true;
         /* Firestore has real data — full re-boot so map, adopt, incare all populate */
         _recordsReady = true;
+        tryInitialRender('first-firestore-ready');
         _bootAppDone = false;
         lMarkers.forEach(function(m){ try { map.removeLayer(m); } catch(e){} });
         lMarkers = [];
@@ -1518,6 +1561,8 @@ function startFirestoreListener() {
 
       if (changed) {
         localStorage.setItem('pawpulse-v2', JSON.stringify(reports));
+        _recordsReady = true;
+        tryInitialRender('firestore-changed-ready');
         refreshMapPins('firestore-changed-full-render');
         /* Rebuild open card so photo appears without refresh */
         if (window._openPinId) {
@@ -2005,6 +2050,7 @@ function bootApp() {
   var sel = document.getElementById('rpt-filter-shelter');
   if (sel && activeShelter) sel.value = activeShelter;
   _recordsReady = true;
+  tryInitialRender('boot-records-ready');
   refreshMapPins('bootApp');
   initSpotlight();
   /* Overlay dismissed by startFirestoreListener dismiss timer */
@@ -2174,7 +2220,7 @@ function openIntakeForm(intakeSource) {
     + '<div class="ai-id-result" id="si-ai-result"></div></div>'
 
     + '<div class="fr"><div class="fg" style="margin:0"><label>Species</label>'
-    + '<select id="si-species" onchange="updateBreedField(\'si-species\',\'si-breed-wrap\');checkFoundPinMatch()"><option value="">Select…</option><option>Dog</option><option>Cat</option><option>Bird</option><option>Rabbit</option><option>Other</option></select></div>'
+    + '<select id="si-species" onchange="updateBreedField(\'si-species\',\'si-breed-wrap\');"><option value="">Select…</option><option>Dog</option><option>Cat</option><option>Bird</option><option>Rabbit</option><option>Other</option></select></div>'
     + '<div class="fg" style="margin:0"><label>Sex</label><select id="si-sex"><option value="">Unknown</option><option>Male</option><option>Female</option></select></div></div>'
     + '<div class="fr" style="margin-top:10px"><div class="fg" style="margin:0"><label>Breed</label><div id="si-breed-wrap"><input type="text" id="si-breed" placeholder="Select species first"></div></div>'
     + '<div class="fg" style="margin:0"><label>Color / Markings</label><input type="text" id="si-color" placeholder="e.g. Black &amp; tan"></div></div>'
@@ -2215,7 +2261,7 @@ function openIntakeForm(intakeSource) {
   /* Reset intake submit button text in case it was changed */
   var isb = document.getElementById('intake-submit-btn');
   if (isb) { isb.textContent = '✓ Log Intake'; isb.disabled = false; }
-  setTimeout(function(){ injectMicButtons(body); setTimeout(checkFoundPinMatch, 150); setupKeyboardScroll(body); }, 50);
+  setTimeout(function(){ injectMicButtons(body); setupKeyboardScroll(body); }, 50);
 }
 
 /* ── FOUND PIN MATCH ON INTAKE ──────────────────────────────────────────
@@ -2430,9 +2476,7 @@ function submitIntakeFromModal() {
     renderIncareView();
     pushBannerEvent((isHold?'⚠️ Animal on hold logged at ':'🐾 New animal received at ') + activeShelter, isHold?'#d4843a':'var(--found-g)');
     if (!isHold) setTimeout(function(){ autoMatchOnIntake(r); }, 800);
-    /* Only show post-submit found-pin prompt if no match was already confirmed */
-    if (!window._migrateFromId) setTimeout(function(){ checkFoundPinsOnIntake(r); }, 1200);
-    window._migrateFromId = null; /* reset for next intake */
+    window._migrateFromId = null;
   }, 300);
 }
 
@@ -6935,7 +6979,7 @@ function toggleIntakeForm(intakeSource) {
     + '<div class="ai-id-result" id="si-ai-result"></div></div>'
 
     + '<div class="fr"><div class="fg" style="margin:0"><label>Species</label>'
-    + '<select id="si-species" onchange="updateBreedField(\'si-species\',\'si-breed-wrap\');checkFoundPinMatch()"><option value="">Select…</option><option>Dog</option><option>Cat</option><option>Bird</option><option>Rabbit</option><option>Other</option></select></div>'
+    + '<select id="si-species" onchange="updateBreedField(\'si-species\',\'si-breed-wrap\');"><option value="">Select…</option><option>Dog</option><option>Cat</option><option>Bird</option><option>Rabbit</option><option>Other</option></select></div>'
     + '<div class="fg" style="margin:0"><label>Sex</label><select id="si-sex"><option value="">Unknown</option><option>Male</option><option>Female</option></select></div></div>'
     + '<div class="fr" style="margin-top:10px"><div class="fg" style="margin:0"><label>Breed</label><div id="si-breed-wrap"><input type="text" id="si-breed" placeholder="Select species first"></div></div>'
     + '<div class="fg" style="margin:0"><label>Color / Markings</label><input type="text" id="si-color" placeholder="e.g. Black &amp; tan"></div></div>'
@@ -7117,6 +7161,9 @@ function submitIntake() {
   showToast('found');
   /* Banner announcement */
   pushBannerEvent((isHold ? '⚠️ Animal on hold logged at ' : '🐾 Stray animal received at ') + activeShelter, isHold ? '#d4843a' : 'var(--found-g)');
+  if (!isHold) setTimeout(function(){ autoMatchOnIntake(r); }, 800);
+  setTimeout(function(){ checkFoundPinsOnIntake(r); }, 1200);
+  window._migrateFromId = null;
 }
 
 /* ── Hold outcomes ── */
@@ -8608,8 +8655,9 @@ function restitTable(restit) {
 function openAdoptDetail(id) {
   var r = reports.find(function(x){ return x.id == id; });
   if (!r) return;
-  /* Block hold animals from adoption detail */
-  if (r.intakeType === 'hold') {
+  /* Block hold animals — intakeType=hold OR holdType set to bite/dangerous/standard */
+  var _isHoldAnimal = r.intakeType === 'hold' || (r.holdType && r.holdType !== 'none');
+  if (_isHoldAnimal) {
     var _hDays  = (r.holdType === 'bite' || r.holdType === 'dangerous') ? 10 : 5;
     var _hStart = r.shelterHoldStart || r.date;
     var daysLeft = Math.max(0, _hDays - Math.floor(daysSince(_hStart)));
@@ -8692,7 +8740,7 @@ function renderAdoptView() {
     var days         = Math.floor(daysSince(r.dateAvailable || r.date));
     var lastUpdated  = r.profileUpdatedAt ? Math.floor(daysSince(r.profileUpdatedAt)) : null;
     var tags         = r.tags ? r.tags.split(',').filter(Boolean) : [];
-    var isHold       = r.intakeType === 'hold';
+    var isHold       = r.intakeType === 'hold' || (r.holdType && r.holdType !== 'none');
     var _holdDays  = (r.holdType === 'bite' || r.holdType === 'dangerous') ? 10 : 5;
     var _holdStart = r.shelterHoldStart || r.date;
     var holdDaysLeft = isHold ? Math.max(0, _holdDays - Math.floor(daysSince(_holdStart))) : 0;
