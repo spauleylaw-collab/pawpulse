@@ -80,9 +80,9 @@ body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);h
 .nav-report-btn{font-family:var(--font-body);font-size:.72rem;font-weight:700;padding:6px 10px;border-radius:6px;border:none;cursor:pointer;transition:all .15s;flex-shrink:0;background:var(--amber);color:#fff;letter-spacing:.01em;white-space:nowrap;touch-action:manipulation}
 .nav-report-btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
 #nav-tabs{display:flex;flex-direction:column;width:60px}
-.tab-btn{font-family:var(--font-body);font-size:.6rem;font-weight:600;padding:10px 8px;border-radius:0;border:none;border-bottom:1px solid rgba(255,255,255,.12);background:transparent;color:rgba(255,255,255,.65);cursor:pointer;transition:background .15s;white-space:nowrap;width:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;line-height:1.2;touch-action:manipulation}
+.tab-btn{font-family:var(--font-body);font-size:.6rem;font-weight:600;padding:10px 8px;border-radius:0;border:none;border-bottom:1px solid rgba(255,255,255,.12);background:transparent;color:rgba(255,255,255,.82);cursor:pointer;transition:background .15s;white-space:nowrap;width:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;line-height:1.2;touch-action:manipulation}
 .tab-btn:last-child{border-bottom:none}
-.tab-btn.active{background:rgba(255,255,255,.2);color:#fff}
+.tab-btn.active{background:rgba(255,255,255,.22);color:#fff;font-weight:700}
 .tab-btn:hover:not(.active){background:rgba(255,255,255,.1)}
 .tab-ops{border-color:rgba(90,180,120,.35)}
 .tab-ops.active{background:rgba(100,220,140,.2);color:#c0ffd4}
@@ -132,7 +132,7 @@ body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);h
 .print-btn:hover{border-color:var(--amber);color:var(--amber)}
 
 /* VIEW — position:fixed + inset, same as PublicPulse */
-#right-rail{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:990;background:rgba(30,50,30,.8);border-radius:12px;margin-right:4px;min-width:72px;box-shadow:-4px 0 20px rgba(0,0,0,.25)}
+#right-rail{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:990;background:rgba(28,45,28,.96);border-radius:12px;margin-right:4px;min-width:72px;border:1px solid rgba(255,255,255,.12);box-shadow:-2px 2px 16px rgba(0,0,0,.45)}
 #rail-fab{position:fixed;bottom:calc(80px + env(safe-area-inset-bottom,0px));right:12px;z-index:991;width:56px;height:56px;border-radius:50%;background:var(--amber);color:#fff;border:none;font-size:2rem;font-weight:300;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;touch-action:manipulation;transition:transform .15s}
 #rail-fab:hover{transform:scale(1.08)}
 .view{position:fixed;inset:var(--nav-h) 0 0 0;display:none}
@@ -4688,6 +4688,8 @@ async function searchMatchesFromCard(lostId) {
             + (shelterList ? shelterList + '\n\n' : '')
             + (foundList  ? foundList  + '\n\n' : '')
             + 'Compare the lost pet against ALL animals above and identify possible matches. '
+            + 'Rank results by match confidence — high confidence first, regardless of whether the match is at Heartland or a found pin on the map. '
+            + 'Visual description similarity (species, breed, color, markings) should be the primary ranking factor. '
             + 'Return ONLY valid JSON — an array of match objects with: id (number), source ("heartland" or "found_pin"), confidence ("high", "medium", or "low"), reason (1-2 warm sentences explaining the possible match), phone (contact phone if available from the data). '
             + 'Only include genuine possible matches. If nothing matches, return [].'
         }]
@@ -4895,11 +4897,14 @@ async function autoMatchOnIntake(intake) {
     var best = matches[0];
     var lostPet = lostPets.find(function(r){return String(r.id)===String(best.id);});
     var petName = lostPet ? (lostPet.name || lostPet.species || 'pet') : 'a pet';
-    pushBannerEvent('\uD83D\uDD0D ' + matches.length + ' possible lost pet match' + (matches.length>1?'es':'') + ' for this intake \u2014 ' + petName + ' was reported missing nearby. Check the map.', '#2050a0');
     intake.possibleMatchIds = matches.map(function(m){return m.id;});
     save();
-    if (USE_FIREBASE && _fbReady && db) {
-      writeAnimalRecord(intake, 'staff');
+    if (USE_FIREBASE && _fbReady && db) { writeAnimalRecord(intake, 'staff'); }
+    /* Show actionable match panel so staff can contact owner immediately */
+    if (lostPet) {
+      showMatchFoundPanel(lostPet, intake);
+    } else {
+      pushBannerEvent('\uD83D\uDD0D ' + matches.length + ' possible match' + (matches.length>1?'es':'') + ' — ' + petName + ' reported missing nearby. Check the map.', '#2050a0');
     }
   } catch(e) { console.warn('Auto-match error:', e.message); }
 }
@@ -5119,7 +5124,7 @@ function fireBurst(lat, lng) {
   } catch(e) {}
 }
 
-var ADAMS_BOUNDS = { n:40.700, s:40.348, e:-98.046, w:-98.605 };
+var ADAMS_BOUNDS = { n:40.700, s:40.348, e:-98.046, w:-98.750 };
 function inBounds(r) {
   if (!r.lat || !r.lng) return true;
   return r.lat <= ADAMS_BOUNDS.n && r.lat >= ADAMS_BOUNDS.s && r.lng <= ADAMS_BOUNDS.e && r.lng >= ADAMS_BOUNDS.w;
