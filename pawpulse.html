@@ -6133,7 +6133,7 @@ function submitLost() {
   writeAnimalRecord(r, 'public');
   recordSubmission('lost');
   setTimeout(function(){
-    addSinglePin(r);
+    refreshMapPins('submitLost-new-pin');
     renderIncareView();
   }, 1000);
   setTimeout(function(){ window._pauseFirestoreSync = false; }, 6000);
@@ -6194,9 +6194,8 @@ function submitFound() {
   writeAnimalRecord(r, 'public');
   showToast('found');
   recordSubmission('found');
-  /* Add just the new pin directly — no full re-render, no flicker */
   setTimeout(function(){
-    addSinglePin(r);
+    refreshMapPins('submitFound-new-pin');
     renderIncareView();
   }, 1000);
   setTimeout(function(){ window._pauseFirestoreSync = false; }, 6000);
