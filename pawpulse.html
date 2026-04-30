@@ -2317,7 +2317,7 @@ function checkFoundPinsOnIntake(intakeRecord) {
 
   var panel = document.createElement('div');
   panel.id = 'intake-found-match-panel';
-  panel.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:4000;background:#fff;border-radius:18px 18px 0 0;box-shadow:0 -8px 40px rgba(0,0,0,.25);padding:20px;max-height:70vh;overflow-y:auto;-webkit-overflow-scrolling:touch';
+  panel.style.cssText = 'position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;z-index:4000;background:#fff;border-radius:18px 18px 0 0;box-shadow:0 -8px 40px rgba(0,0,0,.25);padding:20px;max-height:70vh;overflow-y:auto;-webkit-overflow-scrolling:touch';
 
   var r = top.r;
   var dateStr = r.date ? new Date(r.date).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
@@ -4838,7 +4838,7 @@ function showCallOwnerPrompt(lostPet, intake) {
   bd.style.cssText = 'position:fixed;inset:0;z-index:5200;background:rgba(0,0,0,.55)';
   var panel = document.createElement('div');
   panel.id = 'call-owner-panel';
-  panel.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:5201;background:var(--cream);border-radius:18px 18px 0 0;padding:22px 22px 32px;box-shadow:0 -8px 40px rgba(0,0,0,.3)';
+  panel.style.cssText = 'position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;z-index:5201;background:var(--cream);border-radius:18px 18px 0 0;padding:22px 22px 32px;box-shadow:0 -8px 40px rgba(0,0,0,.3)';
   var dis = "(function(){var p=document.getElementById('call-owner-panel');var b=document.getElementById('call-owner-bd');if(p)p.remove();if(b)b.remove();setView('incare',document.querySelector('.tab-btn[onclick*=incare]'));})()";
   panel.innerHTML =
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">'
@@ -8684,7 +8684,7 @@ function openAdoptDetail(id) {
   if (!panel) {
     panel = document.createElement('div');
     panel.id = 'adopt-detail-panel';
-    panel.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:3000;background:#fff;border-radius:18px 18px 0 0;box-shadow:0 -8px 40px rgba(0,0,0,.18);max-height:90vh;overflow-y:auto;-webkit-overflow-scrolling:touch;transform:translateY(100%);transition:transform .32s cubic-bezier(.34,1.2,.64,1)';
+    panel.style.cssText = 'position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;z-index:3000;background:#fff;border-radius:18px 18px 0 0;box-shadow:0 -8px 40px rgba(0,0,0,.18);max-height:90vh;overflow-y:auto;-webkit-overflow-scrolling:touch;transform:translateY(100%);transition:transform .32s cubic-bezier(.34,1.2,.64,1)';
     document.body.appendChild(panel);
   }
 
@@ -9431,7 +9431,7 @@ async function runBatchLostMatch() {
   bd.style.cssText = 'position:fixed;inset:0;z-index:3999;background:rgba(0,0,0,.45)';
   var panel = document.createElement('div');
   panel.id = 'batch-match-panel';
-  panel.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:4000;background:var(--cream);border-radius:18px 18px 0 0;box-shadow:0 -8px 40px rgba(0,0,0,.25);padding:20px 20px 32px;max-height:78vh;overflow-y:auto;-webkit-overflow-scrolling:touch';
+  panel.style.cssText = 'position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;z-index:4000;background:var(--cream);border-radius:18px 18px 0 0;box-shadow:0 -8px 40px rgba(0,0,0,.25);padding:20px 20px 32px;max-height:78vh;overflow-y:auto;-webkit-overflow-scrolling:touch';
   panel.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">'
     + '<div style="font-family:var(--font-display);font-size:1rem;font-weight:700">🔍 Matching Lost Pins to Shelter Animals…</div>'
     + '' + 
