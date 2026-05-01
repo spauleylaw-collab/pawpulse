@@ -1284,6 +1284,11 @@ try {
   window._leafletMapInstance = map;
   /* Map is synchronously ready after L.map() + tileLayer — set flag immediately */
   _mapReady = true;
+  /* [FIX] Guaranteed render trigger — fires after map is ready, covers phone first-load */
+  if (_recordsReady && Array.isArray(reports) && reports.length > 0) {
+    console.log('[map-ready-render] _recordsReady already true — rendering immediately');
+    renderMarkers();
+  }
 } catch(e) {
   if (e.message && e.message.indexOf('already initialized') > -1) {
     /* Map already exists — retrieve it and set ready */
@@ -2032,6 +2037,8 @@ function bootApp() {
   if (sel && activeShelter) sel.value = activeShelter;
   _recordsReady = true;
   renderMarkers();
+  /* [FIX] 300ms phone fallback — covers Firestore-slow first load */
+  setTimeout(function() { if (reports.length > 0 && lMarkers.length === 0) { console.log('[fallback-300] rendering'); renderMarkers(); } }, 300);
   /* Retry if map wasn't ready yet (defensive) */
   if (lMarkers.length === 0 && reports.length > 0) {
     setTimeout(function() { if (lMarkers.length === 0) { renderMarkers(); } }, 800);
@@ -5124,7 +5131,12 @@ function addSinglePin(r) {
 }
 
 function renderMarkers() {
-  if (!map || !map.addLayer || !Array.isArray(reports)) return; /* map must exist */
+  /* [DEBUG] Log render gate state on every call */
+  console.log('[renderMarkers] called — _mapReady:', _mapReady, '| reports:', Array.isArray(reports)?reports.length:'NOT ARRAY', '| map.addLayer:', !!(map&&map.addLayer));
+  if (!map || !map.addLayer || !Array.isArray(reports)) {
+    console.log('[renderMarkers] SKIPPED — guard failed: map=',!!map,' addLayer=',!!(map&&map.addLayer),' reportsArray=',Array.isArray(reports));
+    return; /* map must exist */
+  }
   var oldMarkers = lMarkers.slice(); /* keep reference to old markers */
   lMarkers = [];
 
