@@ -4125,7 +4125,7 @@ function cardHTML(r) {
   /* AI match button — on lost cards so owner can search shelter intakes */
   var matchBtn = '';
   if (found && !reunited && !r.shelter) {
-    matchBtn = '<button onclick="searchLostPinsFromCard(' + r.id + ')" style="width:100%;margin:8px 0 4px;padding:9px;font-family:var(--font-display);font-size:.82rem;font-weight:700;border:none;border-radius:8px;cursor:pointer;background:#f0fff4;color:#1a5c28;border:1.5px solid #7acc8a">🔍 Search Lost Pins for Owner</button>';
+    matchBtn = '<button onclick="searchLostPinsFromCard(' + r.id + ')" style="width:100%;margin:8px 0 4px;padding:9px;font-family:var(--font-display);font-size:.82rem;font-weight:700;border:none;border-radius:8px;cursor:pointer;background:#f0fff4;color:#1a5c28;border:1.5px solid #7acc8a">&#128269; Search Lost Pins for Owner</button>';
   }
   if (lost && !reunited) {
     matchBtn = '<button onclick="searchMatchesFromCard(' + r.id + ')" style="width:100%;margin:8px 0 4px;padding:9px;font-family:var(--font-display);font-size:.82rem;font-weight:700;border:none;border-radius:8px;cursor:pointer;background:#f0f4ff;color:#2050a0;border:1.5px solid #a0baf0">🔍 Could this pet be at Heartland or Found?</button>';
@@ -4691,113 +4691,6 @@ async function searchMatchesFromCard(lostId) {
   if (btn) { btn.disabled = false; btn.textContent = '🔍 Search Again'; }
 }
 
-async function searchLostPinsFromCard(foundId) {
-  var found = reports.find(function(x){ return String(x.id)===String(foundId); });
-  if (!found) return;
-
-  var resultsId = 'card-match-results-' + foundId;
-  var existingEl = document.getElementById(resultsId);
-  if (!existingEl) {
-    var btn = document.querySelector('[onclick="searchLostPinsFromCard(' + foundId + ')"]');
-    if (!btn) return;
-    var el = document.createElement('div');
-    el.id = resultsId;
-    el.style.cssText = 'margin-top:8px;font-size:.76rem';
-    btn.parentNode.insertBefore(el, btn.nextSibling);
-    existingEl = el;
-  }
-
-  var btn = document.querySelector('[onclick="searchLostPinsFromCard(' + foundId + ')"]');
-  if (btn) { btn.disabled = true; btn.textContent = '🔍 Searching…'; }
-
-  var lostPins = reports.filter(function(r){
-    return r.type === 'lost' && !r.reunited && !r.shelter;
-  });
-  if (!lostPins.length) {
-    existingEl.innerHTML = '<div style="color:var(--warm-mid);padding:6px 0;font-size:.8rem">No active lost pet reports found.</div>';
-    if (btn) { btn.disabled = false; btn.textContent = '🔍 Search Again'; }
-    return;
-  }
-
-  existingEl.innerHTML = '<div style="color:var(--warm-mid);padding:6px 0;font-size:.8rem">Searching lost reports…</div>';
-
-  var foundDesc = [
-    found.species && 'Species: ' + found.species,
-    found.breed   && 'Breed: '   + found.breed,
-    found.color   && 'Color: '   + found.color,
-    found.sex     && 'Sex: '     + found.sex,
-    found.address && 'Found near: ' + found.address
-  ].filter(Boolean).join('. ');
-
-  var lostList = lostPins.map(function(r, i){
-    return (i+1) + '. ID:' + r.id
-      + (r.name    ? ' Name:'    + r.name    : '')
-      + (r.species ? ' Species:' + r.species : '')
-      + (r.breed   ? ' Breed:'   + r.breed   : '')
-      + (r.color   ? ' Color:'   + r.color   : '')
-      + (r.owner   ? ' Owner:'   + r.owner   : '')
-      + (r.phone   ? ' Phone:'   + r.phone   : '')
-      + (r.address ? ' Last seen:' + r.address : '');
-  }).join('\n');
-
-  try {
-    var _ctrl = new AbortController();
-    var _tout = setTimeout(function(){ _ctrl.abort(); }, 15000);
-    var resp = await fetch('/api/anthropic', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      signal: _ctrl.signal,
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514', max_tokens: 600,
-        messages: [{ role: 'user', content:
-          'A person found this animal:\n' + foundDesc +
-          '\n\nActive lost pet reports:\n' + lostList +
-          '\n\nCompare the found animal against the lost reports. Rank by match confidence — high confidence first. Visual description similarity (species, breed, color) is the primary factor.' +
-          '\nReturn ONLY valid JSON — array of: id (number), confidence ("high","medium","low"), reason (1-2 warm sentences), owner (owner name), phone (owner phone). Empty array if no matches.'
-        }]
-      })
-    });
-    clearTimeout(_tout);
-    var data = await resp.json();
-    if (data.error) throw new Error(data.error.message);
-    var text = (data.content||[]).map(function(b){ return b.text||''; }).join('').trim();
-    var matches = JSON.parse(text.replace(/```json|```/g,'').trim());
-
-    if (!matches.length) {
-      existingEl.innerHTML = '<div style="background:#f5f8ff;border-radius:8px;padding:10px 12px"><div style="font-weight:600;color:var(--warm-dk);margin-bottom:4px">No matching lost reports found</div><div style="color:var(--warm-mid);font-size:.8rem">No active lost reports closely match this found animal. The owner may not have filed a report yet.</div></div>';
-    } else {
-      existingEl.innerHTML = '<div style="font-size:.74rem;font-weight:700;color:var(--warm-dk);margin-bottom:8px">' + matches.length + ' possible match' + (matches.length>1?'es':'') + ' — could one of these be the owner?</div>'
-        + matches.map(function(m) {
-          var lp = lostPins.find(function(x){ return String(x.id)===String(m.id); });
-          if (!lp) return '';
-          var lpName = lp.name || (lp.species || 'Unknown');
-          var lpMeta = [lp.breed, lp.color, lp.sex, lp.age].filter(Boolean).join(' · ');
-          var lpPhoto = lp.photo
-            ? '<img src="' + lp.photo + '" style="width:100%;height:110px;object-fit:contain;background:var(--cream-2);border-radius:6px;margin-bottom:6px;display:block">'
-            : '<div style="width:100%;height:60px;background:var(--cream-2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin-bottom:6px">' + (lp.species==='Dog'?'🐕':lp.species==='Cat'?'🐈':'🐾') + '</div>';
-          var phone = m.phone || lp.phone || '';
-          var tel = phone.replace(/[^0-9+]/g,'');
-          var callBtn = phone
-            ? '<a href="tel:' + tel + '" style="display:block;text-align:center;padding:7px;background:var(--found-g);color:#fff;border-radius:7px;font-family:var(--font-display);font-size:.78rem;font-weight:700;text-decoration:none;margin-top:6px">📞 Call Owner' + (lp.owner ? ' — ' + lp.owner : '') + '</a>'
-            : '<div style="font-size:.74rem;color:var(--warm-mid);margin-top:4px;font-style:italic">No phone on file</div>';
-          var badge = m.confidence === 'high' ? 'background:#d4edda;color:#1a5c28' : m.confidence === 'medium' ? 'background:#fff3cd;color:#7a5010' : 'background:#f8f9fa;color:#666';
-          return '<div style="background:var(--cream-2);border-radius:8px;padding:10px;margin-bottom:8px">'
-            + lpPhoto
-            + '<div style="font-family:var(--font-display);font-size:.88rem;font-weight:700;color:var(--warm-dk)">' + esc(lpName) + '</div>'
-            + (lpMeta ? '<div style="font-size:.72rem;color:var(--warm-mid);margin-bottom:4px">' + esc(lpMeta) + '</div>' : '')
-            + '<span style="font-size:.66rem;font-weight:700;padding:2px 6px;border-radius:4px;' + badge + '">' + m.confidence.toUpperCase() + '</span>'
-            + '<div style="font-size:.74rem;color:var(--warm-mid);margin-top:4px;line-height:1.4">' + esc(m.reason) + '</div>'
-            + callBtn
-            + '</div>';
-        }).join('');
-    }
-  } catch(e) {
-    existingEl.innerHTML = '<div style="color:var(--warm-mid);padding:6px 0;font-size:.8rem">' + (e.name==='AbortError' ? 'Search timed out — try again.' : 'Search unavailable right now.') + '</div>';
-  }
-  if (btn) { btn.disabled = false; btn.textContent = '🔍 Search Again'; }
-}
-
-
 
 async function searchLostPinsFromCard(foundId) {
   var found = reports.find(function(x){ return String(x.id)===String(foundId); });
@@ -4808,57 +4701,55 @@ async function searchLostPinsFromCard(foundId) {
     var btn = document.querySelector('[onclick="searchLostPinsFromCard(' + foundId + ')"]');
     if (!btn) return;
     var el = document.createElement('div');
-    el.id = resultsId;
-    el.style.cssText = 'margin-top:8px;font-size:.76rem';
+    el.id = resultsId; el.style.cssText = 'margin-top:8px;font-size:.76rem';
     btn.parentNode.insertBefore(el, btn.nextSibling);
     existingEl = el;
   }
   var btn = document.querySelector('[onclick="searchLostPinsFromCard(' + foundId + ')"]');
-  if (btn) { btn.disabled = true; btn.textContent = 'Searching…'; }
-  var lostPins = reports.filter(function(r){ return r.type === 'lost' && !r.reunited && !r.shelter; });
+  if (btn) { btn.disabled = true; btn.textContent = 'Searching...'; }
+  var lostPins = reports.filter(function(r){ return r.type==='lost' && !r.reunited && !r.shelter; });
   if (!lostPins.length) {
     existingEl.innerHTML = '<div style="color:var(--warm-mid);padding:6px 0;font-size:.8rem">No active lost pet reports found.</div>';
-    if (btn) { btn.disabled = false; btn.textContent = 'Search Again'; }
+    if (btn) { btn.disabled = false; btn.textContent = '&#128269; Search Again'; }
     return;
   }
-  existingEl.innerHTML = '<div style="color:var(--warm-mid);padding:6px 0;font-size:.8rem">Searching lost reports…</div>';
-  var foundDesc = [found.species && 'Species: '+found.species, found.breed && 'Breed: '+found.breed, found.color && 'Color: '+found.color, found.sex && 'Sex: '+found.sex, found.address && 'Found near: '+found.address].filter(Boolean).join('. ');
+  existingEl.innerHTML = '<div style="color:var(--warm-mid);padding:6px 0;font-size:.8rem">Searching lost reports...</div>';
+  var foundDesc = [found.species&&'Species:'+found.species,found.breed&&'Breed:'+found.breed,found.color&&'Color:'+found.color,found.sex&&'Sex:'+found.sex,found.address&&'Found near:'+found.address].filter(Boolean).join('. ');
   var lostList = lostPins.map(function(r,i){ return (i+1)+'. ID:'+r.id+(r.name?' Name:'+r.name:'')+(r.species?' Species:'+r.species:'')+(r.breed?' Breed:'+r.breed:'')+(r.color?' Color:'+r.color:'')+(r.owner?' Owner:'+r.owner:'')+(r.phone?' Phone:'+r.phone:'')+(r.address?' Last seen:'+r.address:''); }).join('\n');
   try {
     var _ctrl = new AbortController();
     var _tout = setTimeout(function(){ _ctrl.abort(); }, 15000);
-    var resp = await fetch('/api/anthropic', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: _ctrl.signal,
-      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 600,
-        messages: [{ role: 'user', content: 'A person found this animal:\n' + foundDesc + '\n\nActive lost pet reports:\n' + lostList + '\n\nCompare the found animal against the lost reports. Rank by match confidence. Visual description similarity is the primary factor.\nReturn ONLY valid JSON array of: id (number), confidence ("high","medium","low"), reason (1-2 sentences), owner (name), phone. Empty array if no matches.' }]
+    var resp = await fetch('/api/anthropic', { method:'POST', headers:{'Content-Type':'application/json'}, signal:_ctrl.signal,
+      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:600,
+        messages:[{role:'user',content:'Found animal:\n'+foundDesc+'\n\nLost reports:\n'+lostList+'\n\nRank by match confidence. Visual similarity is primary.\nReturn ONLY valid JSON array: id,confidence(high/medium/low),reason,owner,phone. Empty if no matches.'}]
       })
     });
     clearTimeout(_tout);
     var data = await resp.json();
     if (data.error) throw new Error(data.error.message);
-    var text = (data.content||[]).map(function(b){ return b.text||''; }).join('').trim();
+    var text = (data.content||[]).map(function(b){return b.text||'';}).join('').trim();
     var matches = JSON.parse(text.replace(/```json|```/g,'').trim());
     if (!matches.length) {
-      existingEl.innerHTML = '<div style="background:#f5f8ff;border-radius:8px;padding:10px 12px"><div style="font-weight:600;color:var(--warm-dk);margin-bottom:4px">No matching lost reports found</div><div style="color:var(--warm-mid);font-size:.8rem">No active lost reports closely match this found animal.</div></div>';
+      existingEl.innerHTML = '<div style="background:#f5f8ff;border-radius:8px;padding:10px 12px"><div style="font-weight:600;color:var(--warm-dk);margin-bottom:4px">No matching lost reports found</div></div>';
     } else {
-      existingEl.innerHTML = '<div style="font-size:.74rem;font-weight:700;color:var(--warm-dk);margin-bottom:8px">'+matches.length+' possible match'+(matches.length>1?'es':'')+' — could one of these be the owner?</div>'
+      existingEl.innerHTML = '<div style="font-size:.74rem;font-weight:700;color:var(--warm-dk);margin-bottom:8px">'+matches.length+' possible match'+(matches.length>1?'es':'')+' - could one be the owner?</div>'
         + matches.map(function(m) {
           var lp = lostPins.find(function(x){ return String(x.id)===String(m.id); });
           if (!lp) return '';
-          var lpName = lp.name || lp.species || 'Unknown';
-          var lpMeta = [lp.breed,lp.color,lp.sex,lp.age].filter(Boolean).join(' · ');
-          var lpPhoto = lp.photo ? '<img src="'+lp.photo+'" style="width:100%;height:110px;object-fit:contain;background:var(--cream-2);border-radius:6px;margin-bottom:6px;display:block">' : '<div style="width:100%;height:60px;background:var(--cream-2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin-bottom:6px">'+(lp.species==='Dog'?'&#x1F415;':lp.species==='Cat'?'&#x1F408;':'&#x1F43E;')+'</div>';
-          var phone = m.phone || lp.phone || '';
+          var lpName = lp.name||lp.species||'Unknown';
+          var lpMeta = [lp.breed,lp.color,lp.sex].filter(Boolean).join(' - ');
+          var lpPhoto = lp.photo ? '<img src="'+lp.photo+'" style="width:100%;height:110px;object-fit:contain;background:var(--cream-2);border-radius:6px;margin-bottom:6px;display:block">' : '';
+          var phone = m.phone||lp.phone||'';
           var tel = phone.replace(/[^0-9+]/g,'');
-          var callBtn = phone ? '<a href="tel:'+tel+'" style="display:block;text-align:center;padding:7px;background:var(--found-g);color:#fff;border-radius:7px;font-family:var(--font-display);font-size:.78rem;font-weight:700;text-decoration:none;margin-top:6px">Call Owner'+(lp.owner?' — '+lp.owner:'')+'</a>' : '<div style="font-size:.74rem;color:var(--warm-mid);margin-top:4px;font-style:italic">No phone on file</div>';
-          var badge = m.confidence==='high' ? 'background:#d4edda;color:#1a5c28' : m.confidence==='medium' ? 'background:#fff3cd;color:#7a5010' : 'background:#f8f9fa;color:#666';
-          return '<div style="background:var(--cream-2);border-radius:8px;padding:10px;margin-bottom:8px">'+lpPhoto+'<div style="font-family:var(--font-display);font-size:.88rem;font-weight:700;color:var(--warm-dk)">'+esc(lpName)+'</div>'+(lpMeta?'<div style="font-size:.72rem;color:var(--warm-mid);margin-bottom:4px">'+esc(lpMeta)+'</div>':'')+'<span style="font-size:.66rem;font-weight:700;padding:2px 6px;border-radius:4px;'+badge+'">'+m.confidence.toUpperCase()+'</span><div style="font-size:.74rem;color:var(--warm-mid);margin-top:4px;line-height:1.4">'+esc(m.reason)+'</div>'+callBtn+'</div>';
+          var callBtn = phone ? '<a href="tel:'+tel+'" style="display:block;text-align:center;padding:7px;background:var(--found-g);color:#fff;border-radius:7px;font-size:.78rem;font-weight:700;text-decoration:none;margin-top:6px">Call Owner'+(lp.owner?' - '+lp.owner:'')+'</a>' : '<div style="font-size:.74rem;color:var(--warm-mid);margin-top:4px;font-style:italic">No phone on file</div>';
+          var badge = m.confidence==='high'?'background:#d4edda;color:#1a5c28':m.confidence==='medium'?'background:#fff3cd;color:#7a5010':'background:#f8f9fa;color:#666';
+          return '<div style="background:var(--cream-2);border-radius:8px;padding:10px;margin-bottom:8px">'+lpPhoto+'<div style="font-family:var(--font-display);font-size:.88rem;font-weight:700">'+esc(lpName)+'</div>'+(lpMeta?'<div style="font-size:.72rem;color:var(--warm-mid);margin-bottom:4px">'+esc(lpMeta)+'</div>':'')+'<span style="font-size:.66rem;font-weight:700;padding:2px 6px;border-radius:4px;'+badge+'">'+m.confidence.toUpperCase()+'</span><div style="font-size:.74rem;color:var(--warm-mid);margin-top:4px">'+esc(m.reason)+'</div>'+callBtn+'</div>';
         }).join('');
     }
   } catch(e) {
-    existingEl.innerHTML = '<div style="color:var(--warm-mid);padding:6px 0;font-size:.8rem">'+(e.name==='AbortError'?'Search timed out — try again.':'Search unavailable right now.')+'</div>';
+    existingEl.innerHTML = '<div style="color:var(--warm-mid);padding:6px 0;font-size:.8rem">'+(e.name==='AbortError'?'Search timed out.':'Search unavailable.')+'</div>';
   }
-  if (btn) { btn.disabled = false; btn.textContent = 'Search Again'; }
+  if (btn) { btn.disabled = false; btn.textContent = '&#128269; Search Again'; }
 }
 
 /* ── AUTO-MATCH ON INTAKE ─────────────────────────────────────────────── */
