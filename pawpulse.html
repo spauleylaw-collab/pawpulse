@@ -132,7 +132,7 @@ body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);h
 .print-btn:hover{border-color:var(--amber);color:var(--amber)}
 
 /* VIEW — position:fixed + inset, same as PublicPulse */
-#right-rail{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:990;background:rgba(30,50,30,.8);border-radius:12px;margin-right:4px;min-width:72px;box-shadow:-4px 0 20px rgba(0,0,0,.25)}
+#right-rail{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:990;background:rgba(42,62,42,.82);border-radius:12px;margin-right:4px;min-width:72px;box-shadow:-4px 0 20px rgba(0,0,0,.25)}
 #rail-fab{position:fixed;bottom:calc(80px + env(safe-area-inset-bottom,0px));right:12px;z-index:991;width:56px;height:56px;border-radius:50%;background:var(--amber);color:#fff;border:none;font-size:2rem;font-weight:300;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;touch-action:manipulation;transition:transform .15s}
 #rail-fab:hover{transform:scale(1.08)}
 .view{position:fixed;inset:var(--nav-h) 0 0 0;display:none}
@@ -1135,7 +1135,7 @@ textarea{min-height:64px}
         <div id="form-lost">
           <div class="sl">🖼️ Photo <span style="font-size:.72rem;font-weight:400;color:var(--warm-mid)">— upload first to auto-fill fields with AI</span></div>
           <div class="photo-drop">
-            <input type="file" id="l-photo" accept="image/*" onchange="previewPhoto(this,'l-prev','l-dicon','l-dtxt');showAIBtn('l')">
+            <input type="file" id="l-photo" accept="image/*" capture="environment" onchange="previewPhoto(this,'l-prev','l-dicon','l-dtxt');showAIBtn('l')">
             <div class="photo-drop-icon" id="l-dicon">📷</div>
             <div class="photo-drop-txt"  id="l-dtxt">Tap to upload a photo</div>
             <img id="l-prev" class="photo-prev" alt="preview">
@@ -1181,7 +1181,7 @@ textarea{min-height:64px}
         <div id="form-found" style="display:none">
           <div class="sl">🖼️ Photo <span style="font-size:.72rem;font-weight:400;color:var(--warm-mid)">— upload first to auto-fill fields with AI</span></div>
           <div class="photo-drop">
-            <input type="file" id="f-photo" accept="image/*" onchange="previewPhoto(this,'f-prev','f-dicon','f-dtxt')">
+            <input type="file" id="f-photo" accept="image/*" capture="environment" onchange="previewPhoto(this,'f-prev','f-dicon','f-dtxt')">
             <div class="photo-drop-icon" id="f-dicon">📷</div>
             <div class="photo-drop-txt"  id="f-dtxt">Tap to upload a photo</div>
             <img id="f-prev" class="photo-prev" alt="preview">
@@ -4433,7 +4433,7 @@ async function generateWhatNext(r) {
   /* Found public pin — always the same process, no AI needed */
   if (found) {
     var sp = (r.species || 'animal').toLowerCase();
-    bodyEl.innerHTML = 'If this is your missing ' + sp + ', contact the finder directly or visit Heartland Pet Connection at 1807 W J St, Hastings — (402) 462-7387. Staff can check if a lost report matches this description.<br><br><em style="font-size:.72rem;color:var(--warm-mid)">📍 Pin stays on the map until reunited or confirmed at a shelter.</em>';
+    bodyEl.textContent = 'If this is your missing ' + sp + ', contact the finder directly or visit Heartland Pet Connection at 1807 W J St, Hastings — (402) 462-7387. Staff can check if a lost report matches this description.<br><br><em style="font-size:.72rem;color:var(--warm-mid)">📍 Pin stays on the map until reunited or confirmed at a shelter.</em>';
     bodyEl.style.color = 'var(--warm-dk)';
     bodyEl.style.fontStyle = 'normal';
     return;
