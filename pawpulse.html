@@ -1296,15 +1296,9 @@ try {
   }
 }
 
-
-// =======================================================================================
-// SECTION: STATE — Global variables, reports array, filter state, app flags
-// ⚠️  RISK ZONE: _mapReady and lMarkers control render gate — do not reorder
-// =======================================================================================
 var reports  = JSON.parse(localStorage.getItem('pawpulse-v2') || '[]');
 var lMarkers = [];
 var _mapReady     = false; /* set by map.whenReady() */
-  /* [DEBUG] _mapReady will be set true inside map.whenReady() callback */
 var _recordsReady = false; /* set when Firestore/localStorage data is in reports[] */
 var curFilter = 'all';
 var curSpeciesFilter = 'all';
@@ -1320,10 +1314,6 @@ var _fbReady  = false; /* true once Firestore listener is live */
 var _isStaff  = false;
 
 /* ── SAVE / LOAD ──────────────────────────────────────────────────────── */
-
-// =======================================================================================
-// SECTION: DATA PERSISTENCE — localStorage save/load, Firestore write helpers
-// =======================================================================================
 function save() {
   /* Update in-memory photo cache for this session */
   reports.forEach(function(r) {
@@ -1351,10 +1341,6 @@ function deleteFromFirestore(id) {
     .catch(function(e){ console.warn('Firestore delete error:', e); });
 }
 
-
-// =======================================================================================
-// SECTION: AUTH — Staff login, guest view, sign out, password management
-// =======================================================================================
 function openStaffLogin() {
   var overlay = document.getElementById('login-overlay');
   overlay.style.display = 'flex';
@@ -1384,11 +1370,6 @@ function _dismissOverlay() {
   if (_ml) { _ml.style.opacity = '0'; setTimeout(function(){ _ml.style.display='none'; }, 400); }
 }
 
-
-// =======================================================================================
-// SECTION: FIREBASE INIT — Firebase app init, auth listener, Firestore connection
-// ⚠️  RISK ZONE: async timing — Firebase auth resolves after map may already be ready
-// =======================================================================================
 function initFirebase() {
   /* Boot straight to map — no login gate for public users */
   doGuestView();
@@ -1428,12 +1409,6 @@ function initFirebase() {
 }
 
 
-
-// =======================================================================================
-// SECTION: FIRESTORE LISTENER — Real-time snapshot listener, first-load merge logic
-// ⚠️  RISK ZONE: Do not change snapshot handling order or _fbReady flag timing
-// ⚠️  RISK ZONE: changed block must update reports[], then trigger render — not surgical
-// =======================================================================================
 function startFirestoreListener() {
   if (window._firestoreListenerActive) return; /* already running */
   setTimeout(_dismissOverlay, 2000);
@@ -1449,7 +1424,7 @@ function startFirestoreListener() {
       console.log('[FIRESTORE SNAPSHOT]', { size: snapshot.size, changes: snapshot.docChanges().length });
       if (window._pauseFirestoreSync) {
         /* Demo load or major write in progress — skip listener */
-        if (!_fbReady) { _fbReady = true; console.log('[PAWPULSE] Firestore connected (no data path)'); showShelterPicker(); }
+        if (!_fbReady) { _fbReady = true; showShelterPicker(); }
         return;
       }
 
@@ -1478,7 +1453,6 @@ function startFirestoreListener() {
         }
         /* If Firestore empty, reports already loaded from localStorage in bootApp — keep them */
         _fbReady = true;
-        console.log('[PAWPULSE] Firestore first snapshot received. reports:', reports.length);
         installBypassDetection();
         setTimeout(function(){ assertNoInvalidStates(reports); }, 800);
         window._firebaseLoaded = true;
@@ -1970,14 +1944,8 @@ function doChangePw() {
 
 
 var _bootAppDone = false;
-
-// =======================================================================================
-// SECTION: APP BOOT — bootApp() called after auth + Firestore first load
-// ⚠️  RISK ZONE: _bootAppDone guard prevents double-boot. Do not remove.
-// =======================================================================================
 function bootApp() {
-  if (_bootAppDone) return;
-  console.log('[PAWPULSE] bootApp() starting. reports:', reports.length); /* Guard: only boot once */
+  if (_bootAppDone) return; /* Guard: only boot once */
   _bootAppDone = true;
   /* Block post-boot Firestore re-renders for 9s — prevents flicker of existing pins */
   window._lastSubmitTime = Date.now();
@@ -2055,10 +2023,6 @@ function bootApp() {
 }
 
 /* ── INTAKE MODAL (replaces separate Intake tab) ─────────────────────── */
-
-// =======================================================================================
-// SECTION: INTAKE — Staff intake modal, found pin match, intake form, submit
-// =======================================================================================
 function checkFoundPinMatch() {
   /* When staff selects species during intake, check for matching found pins */
   var species = (document.getElementById('si-species')||{}).value || '';
@@ -3941,10 +3905,6 @@ function pinIcon(type, reunited, matched, adoptReady, atShelter, urgentAdopt, r)
   });
 }
 
-
-// =======================================================================================
-// SECTION: UTILITIES — esc(), daysSince(), derivePinColor(), pinIcon(), compressDataUrl()
-// =======================================================================================
 function esc(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
@@ -4116,10 +4076,6 @@ function sanitizePublicDesc(text) {
     .trim();
 }
 
-
-// =======================================================================================
-// SECTION: PIN CARDS — Card HTML generation, openCard(), closeCard(), What Happens Next
-// =======================================================================================
 function cardHTML(r) {
   var lost     = r.type === 'lost';
   var reunited = r.reunited === true;
@@ -5078,13 +5034,6 @@ function fireBurst(lat, lng) {
 }
 
 var ADAMS_BOUNDS = { n:40.700, s:40.348, e:-98.046, w:-98.605 };
-
-// =======================================================================================
-// SECTION: MAP RENDERING — Pin visibility, marker creation, filter application
-// ⚠️  RISK ZONE: renderMarkers() must only be called from refreshMapPins() or debounced path
-// ⚠️  RISK ZONE: addSinglePin() is surgical — do not remove (used post-submit)
-// ⚠️  RISK ZONE: _mapReady flag — do not reset or reassign outside map init block
-// =======================================================================================
 function inBounds(r) {
   if (!r.lat || !r.lng) return true;
   return r.lat <= ADAMS_BOUNDS.n && r.lat >= ADAMS_BOUNDS.s && r.lng <= ADAMS_BOUNDS.e && r.lng >= ADAMS_BOUNDS.w;
@@ -5128,7 +5077,6 @@ function addSinglePin(r) {
 }
 
 function renderMarkers() {
-  console.log('[PAWPULSE] renderMarkers() called. reports:', reports.length, '_mapReady:', _mapReady);
   if (!map || !map.addLayer || !Array.isArray(reports)) return; /* map must exist */
   var oldMarkers = lMarkers.slice(); /* keep reference to old markers */
   lMarkers = [];
@@ -5899,10 +5847,6 @@ function installBypassDetection() {
 
 
 
-
-// =======================================================================================
-// SECTION: REPORT FORMS — submitLost(), submitFound(), photo preview, validation
-// =======================================================================================
 function submitLost() {
   /* Immediately disable button to prevent double-tap while validating */
   var slb = document.getElementById('panel-submit-lost');
@@ -6121,10 +6065,6 @@ var grants = [];
  * ALL operational queries MUST go through getShelterData() below.
  */
 
-
-// =======================================================================================
-// SECTION: SHELTER / IN CARE — Shelter data, intake queue, hold logic, costs
-// =======================================================================================
 function getShelterData(opts) {
   /* opts: { includeHolds, includeAdopt, includeResolved, includeLost, cutoffDays } */
   opts = opts || {};
@@ -8614,10 +8554,6 @@ function restitTable(restit) {
   return html;
 }
 
-
-// =======================================================================================
-// SECTION: ADOPTION — Adopt grid, detail panel, listing form, inquiry flow
-// =======================================================================================
 function openAdoptDetail(id) {
   var r = reports.find(function(x){ return x.id == id; });
   if (!r) return;
@@ -9501,10 +9437,6 @@ async function generateSpotlightPills(r) {
 }
 
 
-
-// =======================================================================================
-// SECTION: SPOTLIGHT — Adoptable animal spotlight card, rotation, dismiss
-// =======================================================================================
 function getSpotlightAnimals() {
   /* Presentation layer only — reads existing records, writes nothing */
   if (!reports || !reports.length) return [];
@@ -9689,10 +9621,6 @@ function initSpotlight() {
 }
 
 
-
-// =======================================================================================
-// SECTION: NAVIGATION — setView(), nav counts, orientation, keyboard scroll
-// =======================================================================================
 function setView(v, btn) {
   _curView = v;
   updateOrientationStrip(v);
