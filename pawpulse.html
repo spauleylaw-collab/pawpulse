@@ -5133,7 +5133,7 @@ function refreshMapPins(reason) {
   try { if (map && map.invalidateSize) map.invalidateSize(true); } catch(e) {}
   lMarkers.forEach(function(m){ try { map.removeLayer(m); } catch(e){} });
   lMarkers = [];
-  refreshMapPins('update');
+  renderMarkers();
 }
 
 function renderMarkers() {
