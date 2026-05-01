@@ -1500,30 +1500,8 @@ function startFirestoreListener() {
       });
 
       if (changed) {
-        /* Write photos to dedicated key before saving main data */
-        /* photos are in IDB/_photoCache — no localStorage write needed */
         localStorage.setItem('pawpulse-v2', JSON.stringify(reports));
-        /* Full rer-change map update — never wipe and redraw all markers */
-        snapshot.docChanges().forEach(function(chg) {
-          var d = chg.doc.data();
-          var rid = String(d.id || chg.doc.id);
-          var r = reports.find(function(x){ return String(x.id) === rid; });
-          if (chg.type === 'removed') {
-            /* Remove just this marker */
-            lMarkers = lMarkers.filter(function(m) {
-              if (m._pawpulseId === rid) { map.removeLayer(m); return false; }
-              return true;
-            });
-          } else if (chg.type === 'added' && r && !window._pauseFirestoreSync) {
-            /* New pin from another device — add once map is ready */
-            var alreadyOn = lMarkers.some(function(m){ return m._pawpulseId === rid; });
-            if (!alreadyOn && r) {
-              /* new pin will appear on next Firestore changed full refresh */
-            }
-          }
-          /* 'modified' changes (position/color updates) handled by next full renderMarkers */
-        });
-        /* full render via refreshMapPins below */
+        refreshMapPins('firestore-changed');
         renderIncareView();
         updateNavCounts();
       }
@@ -2003,6 +1981,9 @@ function bootApp() {
   if (sel && activeShelter) sel.value = activeShelter;
   _recordsReady = true;
   refreshMapPins('bootApp');
+  /* Phone retry — map may not be ready on first call */
+  setTimeout(function(){ if (lMarkers.length === 0 && reports.length > 0) { refreshMapPins('bootApp-retry-800'); } }, 800);
+  setTimeout(function(){ if (lMarkers.length === 0 && reports.length > 0) { refreshMapPins('bootApp-retry-2000'); } }, 2000);
   initSpotlight();
   /* Overlay dismissed by startFirestoreListener dismiss timer */
   renderIncareView();
@@ -5165,6 +5146,12 @@ function renderMarkers() {
     var m = L.marker([r.lat,r.lng],{icon:pinIcon(r.type, r.reunited, r.possibleMatch && !r.reunited, r.adoptionStatus==='available', r.atShelter && !r.shelter, false, r)}).addTo(map);
     m._pawpulseId = String(r.id);
     m.on('click', function(e){ closeCard(); var _cur=reports.find(function(x){return String(x.id)===String(r.id);}); openCard(_cur||r,e.containerPoint); L.DomEvent.stopPropagation(e); });
+    m.on('tap touchend', function(e) {
+      if (e && e.originalEvent) { L.DomEvent.preventDefault(e.originalEvent); L.DomEvent.stopPropagation(e.originalEvent); }
+      var pt = null; try { pt = map.latLngToContainerPoint(m.getLatLng()); } catch(err) {}
+      var _cur = reports.find(function(x){ return String(x.id)===String(r.id); });
+      openCard(_cur||r, pt);
+    });
     lMarkers.push(m);
   });
   /* Remove old markers after new ones placed — eliminates blank-map flash */
