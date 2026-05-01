@@ -1298,7 +1298,7 @@ try {
 
 var reports  = JSON.parse(localStorage.getItem('pawpulse-v2') || '[]');
 var lMarkers = [];
-var _mapReady     = false; /* set by map.whenReady() */
+var _mapReady = !!window._leafletMapInstance;
 var _recordsReady = false; /* set when Firestore/localStorage data is in reports[] */
 var curFilter = 'all';
 var curSpeciesFilter = 'all';
@@ -1503,7 +1503,7 @@ function startFirestoreListener() {
         /* Write photos to dedicated key before saving main data */
         /* photos are in IDB/_photoCache — no localStorage write needed */
         localStorage.setItem('pawpulse-v2', JSON.stringify(reports));
-        /* Surgical per-change map update — never wipe and redraw all markers */
+        /* Full rer-change map update — never wipe and redraw all markers */
         snapshot.docChanges().forEach(function(chg) {
           var d = chg.doc.data();
           var rid = String(d.id || chg.doc.id);
@@ -1518,13 +1518,12 @@ function startFirestoreListener() {
             /* New pin from another device — add once map is ready */
             var alreadyOn = lMarkers.some(function(m){ return m._pawpulseId === rid; });
             if (!alreadyOn && r) {
-              if (_mapReady) { addSinglePin(r); }
-              else { setTimeout(function(){ if (!lMarkers.some(function(m){ return m._pawpulseId===rid; })) addSinglePin(r); }, 1000); }
+              /* new pin will appear on next Firestore changed full refresh */
             }
           }
           /* 'modified' changes (position/color updates) handled by next full renderMarkers */
         });
-        /* reports[] is updated — markers stay as-is until user action triggers a render */s();
+        /* full render via refreshMapPins below */
         renderIncareView();
         updateNavCounts();
       }
@@ -1701,7 +1700,7 @@ function loadDemoData() {
   ];
 
   demo.forEach(function(r){ reports.push(r); });
-  save(); renderMarkers(); renderIncareView(); renderAdoptView(); updateNavCounts();
+  save(); refreshMapPins('update'); renderIncareView(); renderAdoptView(); updateNavCounts();
 
   /* Sync demo animals to Firestore — use individual writes (batch fails security rules) */
   if (USE_FIREBASE && _fbReady && db) {
@@ -1877,7 +1876,7 @@ function clearTestData() {
 
   reports = [];
   save();
-  renderMarkers();
+  refreshMapPins('update');
   renderIncareView();
   renderAdoptView();
   updateNavCounts();
@@ -2003,12 +2002,7 @@ function bootApp() {
   var sel = document.getElementById('rpt-filter-shelter');
   if (sel && activeShelter) sel.value = activeShelter;
   _recordsReady = true;
-  renderMarkers();
-  /* Retry if map wasn't ready yet (defensive) */
-  if (lMarkers.length === 0 && reports.length > 0) {
-    setTimeout(function() { if (lMarkers.length === 0) { renderMarkers(); } }, 800);
-    setTimeout(function() { if (lMarkers.length === 0) { renderMarkers(); } }, 2000);
-  }
+  refreshMapPins('bootApp');
   initSpotlight();
   /* Overlay dismissed by startFirestoreListener dismiss timer */
   renderIncareView();
@@ -2309,7 +2303,7 @@ function resolveFoundPinFromIntake(foundId) {
   r.resolvedByIntake = true;
   save();
   writeAnimalRecord(r, 'staff');
-  renderMarkers();
+  refreshMapPins('intake-match-resolved');
   updateNavCounts();
   pushBannerEvent('📍 Found pin removed — matched to shelter intake', 'var(--found-g)');
 }
@@ -2408,7 +2402,7 @@ function submitIntakeFromModal() {
   /* Close modal FIRST so phone UI doesn't freeze while rendering */
   closeIntakeModal();
   /* Stagger heavy renders: markers first (fast), then incare grid (heavy) */
-  setTimeout(function() { renderMarkers(); updateNavCounts(); }, 80);
+  setTimeout(function() { refreshMapPins('update'); updateNavCounts(); }, 80);
   setTimeout(function() {
     renderIncareView();
     pushBannerEvent((isHold?'⚠️ Animal on hold logged at ':'🐾 New animal received at ') + activeShelter, isHold?'#d4843a':'var(--found-g)');
@@ -2873,7 +2867,7 @@ function saveAnimalEdit(id) {
   r.tags  = ((document.getElementById('ae-tags')||{}).value||'').trim();
   r.about = ((document.getElementById('ae-about')||{}).value||'').trim();
 
-  save(); renderMarkers(); renderIncareView(); renderAdoptView(); updateNavCounts();
+  save(); refreshMapPins('update'); renderIncareView(); renderAdoptView(); updateNavCounts();
   closeAnimalEdit();
   /* Write to Firestore — pause listener long enough for write to confirm */
   if (USE_FIREBASE && _fbReady && db && _isStaff) {
@@ -3922,7 +3916,7 @@ function setAdoptionStatus(id, status) {
   if (status === 'available' && !r.dateAvailable) r.dateAvailable = new Date().toISOString();
   if (!r.shelterLog) r.shelterLog = [];
   r.shelterLog.push({ body: 'Adoption status set to: ' + status, time: 'Just now' });
-  save(); renderMarkers(); renderIncareView();
+  save(); refreshMapPins('update'); renderIncareView();
   /* Refresh whichever panel is open */
   if (selectedIntakeId === id) selectIntake(id);
 }
@@ -4702,54 +4696,47 @@ async function searchLostPinsFromCard(foundId) {
     if (!btn) return;
     var el = document.createElement('div');
     el.id = resultsId; el.style.cssText = 'margin-top:8px;font-size:.76rem';
-    btn.parentNode.insertBefore(el, btn.nextSibling);
-    existingEl = el;
+    btn.parentNode.insertBefore(el, btn.nextSibling); existingEl = el;
   }
   var btn = document.querySelector('[onclick="searchLostPinsFromCard(' + foundId + ')"]');
   if (btn) { btn.disabled = true; btn.textContent = 'Searching...'; }
   var lostPins = reports.filter(function(r){ return r.type==='lost' && !r.reunited && !r.shelter; });
   if (!lostPins.length) {
-    existingEl.innerHTML = '<div style="color:var(--warm-mid);padding:6px 0;font-size:.8rem">No active lost pet reports found.</div>';
-    if (btn) { btn.disabled = false; btn.textContent = '&#128269; Search Again'; }
-    return;
+    existingEl.innerHTML = '<div style="color:var(--warm-mid);padding:6px 0;font-size:.8rem">No active lost reports found.</div>';
+    if (btn) { btn.disabled=false; btn.textContent='&#128269; Search Again'; } return;
   }
-  existingEl.innerHTML = '<div style="color:var(--warm-mid);padding:6px 0;font-size:.8rem">Searching lost reports...</div>';
-  var foundDesc = [found.species&&'Species:'+found.species,found.breed&&'Breed:'+found.breed,found.color&&'Color:'+found.color,found.sex&&'Sex:'+found.sex,found.address&&'Found near:'+found.address].filter(Boolean).join('. ');
-  var lostList = lostPins.map(function(r,i){ return (i+1)+'. ID:'+r.id+(r.name?' Name:'+r.name:'')+(r.species?' Species:'+r.species:'')+(r.breed?' Breed:'+r.breed:'')+(r.color?' Color:'+r.color:'')+(r.owner?' Owner:'+r.owner:'')+(r.phone?' Phone:'+r.phone:'')+(r.address?' Last seen:'+r.address:''); }).join('\n');
+  existingEl.innerHTML = '<div style="color:var(--warm-mid);padding:6px 0;font-size:.8rem">Searching...</div>';
+  var foundDesc=[found.species&&'Species:'+found.species,found.breed&&'Breed:'+found.breed,found.color&&'Color:'+found.color,found.sex&&'Sex:'+found.sex,found.address&&'Found near:'+found.address].filter(Boolean).join('. ');
+  var lostList=lostPins.map(function(r,i){return(i+1)+'. ID:'+r.id+(r.name?' Name:'+r.name:'')+(r.species?' Species:'+r.species:'')+(r.breed?' Breed:'+r.breed:'')+(r.color?' Color:'+r.color:'')+(r.owner?' Owner:'+r.owner:'')+(r.phone?' Phone:'+r.phone:'')+(r.address?' Last seen:'+r.address:'');}).join('\n');
   try {
-    var _ctrl = new AbortController();
-    var _tout = setTimeout(function(){ _ctrl.abort(); }, 15000);
-    var resp = await fetch('/api/anthropic', { method:'POST', headers:{'Content-Type':'application/json'}, signal:_ctrl.signal,
-      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:600,
-        messages:[{role:'user',content:'Found animal:\n'+foundDesc+'\n\nLost reports:\n'+lostList+'\n\nRank by match confidence. Visual similarity is primary.\nReturn ONLY valid JSON array: id,confidence(high/medium/low),reason,owner,phone. Empty if no matches.'}]
-      })
-    });
+    var _ctrl=new AbortController(); var _tout=setTimeout(function(){_ctrl.abort();},15000);
+    var resp=await fetch('/api/anthropic',{method:'POST',headers:{'Content-Type':'application/json'},signal:_ctrl.signal,
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,
+        messages:[{role:'user',content:'Found animal:\n'+foundDesc+'\n\nLost reports:\n'+lostList+'\n\nRank by confidence. Return ONLY valid JSON array: id,confidence(high/medium/low),reason,owner,phone. Empty if no matches.'}]
+      })});
     clearTimeout(_tout);
-    var data = await resp.json();
-    if (data.error) throw new Error(data.error.message);
-    var text = (data.content||[]).map(function(b){return b.text||'';}).join('').trim();
-    var matches = JSON.parse(text.replace(/```json|```/g,'').trim());
-    if (!matches.length) {
-      existingEl.innerHTML = '<div style="background:#f5f8ff;border-radius:8px;padding:10px 12px"><div style="font-weight:600;color:var(--warm-dk);margin-bottom:4px">No matching lost reports found</div></div>';
+    var data=await resp.json(); if(data.error) throw new Error(data.error.message);
+    var text=(data.content||[]).map(function(b){return b.text||'';}).join('').trim();
+    var matches=JSON.parse(text.replace(/```json|```/g,'').trim());
+    if(!matches.length){
+      existingEl.innerHTML='<div style="background:#f5f8ff;border-radius:8px;padding:10px 12px"><b>No matching lost reports found</b></div>';
     } else {
-      existingEl.innerHTML = '<div style="font-size:.74rem;font-weight:700;color:var(--warm-dk);margin-bottom:8px">'+matches.length+' possible match'+(matches.length>1?'es':'')+' - could one be the owner?</div>'
-        + matches.map(function(m) {
-          var lp = lostPins.find(function(x){ return String(x.id)===String(m.id); });
-          if (!lp) return '';
-          var lpName = lp.name||lp.species||'Unknown';
-          var lpMeta = [lp.breed,lp.color,lp.sex].filter(Boolean).join(' - ');
-          var lpPhoto = lp.photo ? '<img src="'+lp.photo+'" style="width:100%;height:110px;object-fit:contain;background:var(--cream-2);border-radius:6px;margin-bottom:6px;display:block">' : '';
-          var phone = m.phone||lp.phone||'';
-          var tel = phone.replace(/[^0-9+]/g,'');
-          var callBtn = phone ? '<a href="tel:'+tel+'" style="display:block;text-align:center;padding:7px;background:var(--found-g);color:#fff;border-radius:7px;font-size:.78rem;font-weight:700;text-decoration:none;margin-top:6px">Call Owner'+(lp.owner?' - '+lp.owner:'')+'</a>' : '<div style="font-size:.74rem;color:var(--warm-mid);margin-top:4px;font-style:italic">No phone on file</div>';
-          var badge = m.confidence==='high'?'background:#d4edda;color:#1a5c28':m.confidence==='medium'?'background:#fff3cd;color:#7a5010':'background:#f8f9fa;color:#666';
-          return '<div style="background:var(--cream-2);border-radius:8px;padding:10px;margin-bottom:8px">'+lpPhoto+'<div style="font-family:var(--font-display);font-size:.88rem;font-weight:700">'+esc(lpName)+'</div>'+(lpMeta?'<div style="font-size:.72rem;color:var(--warm-mid);margin-bottom:4px">'+esc(lpMeta)+'</div>':'')+'<span style="font-size:.66rem;font-weight:700;padding:2px 6px;border-radius:4px;'+badge+'">'+m.confidence.toUpperCase()+'</span><div style="font-size:.74rem;color:var(--warm-mid);margin-top:4px">'+esc(m.reason)+'</div>'+callBtn+'</div>';
+      existingEl.innerHTML='<div style="font-size:.74rem;font-weight:700;margin-bottom:8px">'+matches.length+' possible match'+(matches.length>1?'es':'')+' - could one be the owner?</div>'
+        +matches.map(function(m){
+          var lp=lostPins.find(function(x){return String(x.id)===String(m.id);});
+          if(!lp) return '';
+          var phone=m.phone||lp.phone||''; var tel=phone.replace(/[^0-9+]/g,'');
+          var photo=lp.photo?'<img src="'+lp.photo+'" style="width:100%;height:110px;object-fit:contain;background:var(--cream-2);border-radius:6px;margin-bottom:6px;display:block">':
+            '<div style="width:100%;height:60px;background:var(--cream-2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin-bottom:6px">'+(lp.species==='Dog'?'&#128021;':lp.species==='Cat'?'&#128008;':'&#128062;')+'</div>';
+          var callBtn=phone?'<a href="tel:'+tel+'" style="display:block;text-align:center;padding:7px;background:var(--found-g);color:#fff;border-radius:7px;font-size:.78rem;font-weight:700;text-decoration:none;margin-top:6px">Call Owner'+(lp.owner?' - '+lp.owner:'')+'</a>':'<div style="font-size:.74rem;color:var(--warm-mid);margin-top:4px;font-style:italic">No phone on file</div>';
+          var badge=m.confidence==='high'?'background:#d4edda;color:#1a5c28':m.confidence==='medium'?'background:#fff3cd;color:#7a5010':'background:#f8f9fa;color:#666';
+          return '<div style="background:var(--cream-2);border-radius:8px;padding:10px;margin-bottom:8px">'+photo+'<div style="font-family:var(--font-display);font-size:.88rem;font-weight:700">'+esc(lp.name||lp.species||'Unknown')+'</div>'+'<span style="font-size:.66rem;font-weight:700;padding:2px 6px;border-radius:4px;'+badge+'">'+m.confidence.toUpperCase()+'</span><div style="font-size:.74rem;color:var(--warm-mid);margin-top:4px">'+esc(m.reason)+'</div>'+callBtn+'</div>';
         }).join('');
     }
   } catch(e) {
-    existingEl.innerHTML = '<div style="color:var(--warm-mid);padding:6px 0;font-size:.8rem">'+(e.name==='AbortError'?'Search timed out.':'Search unavailable.')+'</div>';
+    existingEl.innerHTML='<div style="color:var(--warm-mid);padding:6px 0;font-size:.8rem">'+(e.name==='AbortError'?'Search timed out.':'Search unavailable.')+'</div>';
   }
-  if (btn) { btn.disabled = false; btn.textContent = '&#128269; Search Again'; }
+  if(btn){btn.disabled=false;btn.textContent='&#128269; Search Again';}
 }
 
 /* ── AUTO-MATCH ON INTAKE ─────────────────────────────────────────────── */
@@ -5045,7 +5032,7 @@ function markReunited(id) {
   var cardBody = document.getElementById('pin-card-body');
   if (cardBody) cardBody.innerHTML = cardHTML(r);
   setTimeout(function() {
-    renderMarkers();
+    refreshMapPins('markReunited');
     renderIncareView();
   }, 50);
   /* Burst animation on map at pin location */
@@ -5137,6 +5124,16 @@ function addSinglePin(r) {
   lMarkers.push(m);
   /* Clear _isNewPin so subsequent renderMarkers doesn't re-pulse */
   r._isNewPin = false;
+}
+
+function refreshMapPins(reason) {
+  console.log('[REFRESH MAP PINS]', reason || '', { reports: reports.length, markers: lMarkers.length });
+  if (!window._leafletMapInstance) return;
+  _mapReady = true;
+  try { if (map && map.invalidateSize) map.invalidateSize(true); } catch(e) {}
+  lMarkers.forEach(function(m){ try { map.removeLayer(m); } catch(e){} });
+  lMarkers = [];
+  refreshMapPins('update');
 }
 
 function renderMarkers() {
@@ -5245,7 +5242,7 @@ function setFilter(f, btn) {
     document.querySelectorAll('.filter-btn.species-btn').forEach(function(b){ b.classList.remove('active','dog','cat'); });
     if (btn && f !== 'all-species') { btn.classList.add('active'); btn.classList.add(f); }
   }
-  renderMarkers();
+  refreshMapPins('filter-click');
 }
 
 function openReportPicker() {
@@ -5995,7 +5992,7 @@ function submitLost() {
   writeAnimalRecord(r, 'public');
   recordSubmission('lost');
   setTimeout(function(){
-    addSinglePin(r);
+    refreshMapPins('submitLost');
     renderIncareView();
   }, 1000);
   setTimeout(function(){ window._pauseFirestoreSync = false; }, 6000);
@@ -6056,9 +6053,8 @@ function submitFound() {
   writeAnimalRecord(r, 'public');
   showToast('found');
   recordSubmission('found');
-  /* Add just the new pin directly — no full re-render, no flicker */
   setTimeout(function(){
-    addSinglePin(r);
+    refreshMapPins('submitFound');
     renderIncareView();
   }, 1000);
   setTimeout(function(){ window._pauseFirestoreSync = false; }, 6000);
@@ -6855,7 +6851,7 @@ function postMatchComment(lostId, intakeId) {
   }
 
   save();
-  renderMarkers();
+  refreshMapPins('update');
 
   /* Owner notification toast */
   var ownerName = lost.owner || 'the owner';
@@ -7114,7 +7110,7 @@ function submitIntake() {
   };
 
   reports.push(r); save();
-  renderMarkers();
+  refreshMapPins('submitIntake');
   renderIncareView();
   var leftCol = document.querySelector('#view-shelters .sh-col-left');
   if (leftCol) leftCol.style.display = '';
@@ -7201,7 +7197,7 @@ function closeHold(id, outcome) {
   }
 
   save();
-  renderMarkers();
+  refreshMapPins('update');
   renderShelterQueue();
   renderIncareView();
 
@@ -7736,7 +7732,7 @@ function saveField(id, field, value) {
   if (!r) return;
   r[field] = value;
   save();
-  renderMarkers();
+  refreshMapPins('update');
   if (field === 'animalId' || field === 'name' || field === 'species') {
     renderShelterQueue();
     renderIncareView();
@@ -8896,7 +8892,7 @@ function submitAdoptListing() {
     shelterLog: [{ body: 'Posted for adoption by ' + shelterName, time: 'Just now' }],
     photo: (photoEl && photoEl.src && photoEl.src.startsWith('data:')) ? photoEl.src : null
   };
-  reports.push(r); save(); renderMarkers();
+  reports.push(r); save(); refreshMapPins('update');
   closeAdoptForm(null);
   renderAdoptView();
   /* Reset form */
