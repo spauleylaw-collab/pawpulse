@@ -1284,11 +1284,6 @@ try {
   window._leafletMapInstance = map;
   /* Map is synchronously ready after L.map() + tileLayer — set flag immediately */
   _mapReady = true;
-  /* [FIX] Guaranteed render trigger — fires after map is ready, covers phone first-load */
-  if (_recordsReady && Array.isArray(reports) && reports.length > 0) {
-    console.log('[map-ready-render] _recordsReady already true — rendering immediately');
-    renderMarkers();
-  }
 } catch(e) {
   if (e.message && e.message.indexOf('already initialized') > -1) {
     /* Map already exists — retrieve it and set ready */
@@ -1301,10 +1296,6 @@ try {
   }
 }
 
-
-// =====================================================================
-// STATE — reports[], lMarkers[], filter flags, _mapReady, _recordsReady
-// =====================================================================
 var reports  = JSON.parse(localStorage.getItem('pawpulse-v2') || '[]');
 var lMarkers = [];
 var _mapReady     = false; /* set by map.whenReady() */
@@ -1323,10 +1314,6 @@ var _fbReady  = false; /* true once Firestore listener is live */
 var _isStaff  = false;
 
 /* ── SAVE / LOAD ──────────────────────────────────────────────────────── */
-
-// =====================================================================
-// DATA PERSISTENCE — save(), syncReportsToFirestore(), deleteFromFirestore()
-// =====================================================================
 function save() {
   /* Update in-memory photo cache for this session */
   reports.forEach(function(r) {
@@ -1354,10 +1341,6 @@ function deleteFromFirestore(id) {
     .catch(function(e){ console.warn('Firestore delete error:', e); });
 }
 
-
-// =====================================================================
-// AUTH — Staff login, guest view, sign out, password management
-// =====================================================================
 function openStaffLogin() {
   var overlay = document.getElementById('login-overlay');
   overlay.style.display = 'flex';
@@ -1387,11 +1370,6 @@ function _dismissOverlay() {
   if (_ml) { _ml.style.opacity = '0'; setTimeout(function(){ _ml.style.display='none'; }, 400); }
 }
 
-
-// =====================================================================
-// MAP SETUP — initFirebase(), Firebase app init, auth listener
-// ⚠️  DO NOT CHANGE TIMING — async auth resolves after map may be ready
-// =====================================================================
 function initFirebase() {
   /* Boot straight to map — no login gate for public users */
   doGuestView();
@@ -1431,12 +1409,6 @@ function initFirebase() {
 }
 
 
-
-// =====================================================================
-// FIRESTORE LISTENER — DO NOT CHANGE SNAPSHOT FLOW
-// ⚠️  Snapshot handling order and _fbReady flag timing are load-critical
-// ⚠️  changed block updates reports[] then triggers render — do not make surgical
-// =====================================================================
 function startFirestoreListener() {
   if (window._firestoreListenerActive) return; /* already running */
   setTimeout(_dismissOverlay, 2000);
@@ -1972,11 +1944,6 @@ function doChangePw() {
 
 
 var _bootAppDone = false;
-
-// =====================================================================
-// APP BOOT — bootApp() called after auth + first Firestore load
-// ⚠️  _bootAppDone guard prevents double-boot — do not remove
-// =====================================================================
 function bootApp() {
   if (_bootAppDone) return; /* Guard: only boot once */
   _bootAppDone = true;
@@ -2037,8 +2004,6 @@ function bootApp() {
   if (sel && activeShelter) sel.value = activeShelter;
   _recordsReady = true;
   renderMarkers();
-  /* [FIX] 300ms phone fallback — covers Firestore-slow first load */
-  setTimeout(function() { if (reports.length > 0 && lMarkers.length === 0) { console.log('[fallback-300] rendering'); renderMarkers(); } }, 300);
   /* Retry if map wasn't ready yet (defensive) */
   if (lMarkers.length === 0 && reports.length > 0) {
     setTimeout(function() { if (lMarkers.length === 0) { renderMarkers(); } }, 800);
@@ -2058,10 +2023,6 @@ function bootApp() {
 }
 
 /* ── INTAKE MODAL (replaces separate Intake tab) ─────────────────────── */
-
-// =====================================================================
-// INTAKE — Staff intake modal, found pin match, intake form, submit
-// =====================================================================
 function checkFoundPinMatch() {
   /* When staff selects species during intake, check for matching found pins */
   var species = (document.getElementById('si-species')||{}).value || '';
@@ -3944,10 +3905,6 @@ function pinIcon(type, reunited, matched, adoptReady, atShelter, urgentAdopt, r)
   });
 }
 
-
-// =====================================================================
-// UTILITIES — esc(), daysSince(), derivePinColor(), pinIcon(), compressDataUrl()
-// =====================================================================
 function esc(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
@@ -4119,10 +4076,6 @@ function sanitizePublicDesc(text) {
     .trim();
 }
 
-
-// =====================================================================
-// PIN CARD / USER INTERACTION — cardHTML(), openCard(), closeCard()
-// =====================================================================
 function cardHTML(r) {
   var lost     = r.type === 'lost';
   var reunited = r.reunited === true;
@@ -5081,13 +5034,6 @@ function fireBurst(lat, lng) {
 }
 
 var ADAMS_BOUNDS = { n:40.700, s:40.348, e:-98.046, w:-98.605 };
-
-// =====================================================================
-// MAP RENDERING — DO NOT CHANGE refreshMapPins / renderMarkers RELATIONSHIP
-// ⚠️  addSinglePin() is intentional — used post-submit to avoid full redraw
-// ⚠️  _mapReady flag must not be reassigned outside the map.whenReady() block
-// ⚠️  renderMarkersDebounced() wraps renderMarkers() — both must remain
-// =====================================================================
 function inBounds(r) {
   if (!r.lat || !r.lng) return true;
   return r.lat <= ADAMS_BOUNDS.n && r.lat >= ADAMS_BOUNDS.s && r.lng <= ADAMS_BOUNDS.e && r.lng >= ADAMS_BOUNDS.w;
@@ -5131,12 +5077,7 @@ function addSinglePin(r) {
 }
 
 function renderMarkers() {
-  /* [DEBUG] Log render gate state on every call */
-  console.log('[renderMarkers] called — _mapReady:', _mapReady, '| reports:', Array.isArray(reports)?reports.length:'NOT ARRAY', '| map.addLayer:', !!(map&&map.addLayer));
-  if (!map || !map.addLayer || !Array.isArray(reports)) {
-    console.log('[renderMarkers] SKIPPED — guard failed: map=',!!map,' addLayer=',!!(map&&map.addLayer),' reportsArray=',Array.isArray(reports));
-    return; /* map must exist */
-  }
+  if (!map || !map.addLayer || !Array.isArray(reports)) return; /* map must exist */
   var oldMarkers = lMarkers.slice(); /* keep reference to old markers */
   lMarkers = [];
 
@@ -5906,10 +5847,6 @@ function installBypassDetection() {
 
 
 
-
-// =====================================================================
-// REPORT FORMS — submitLost(), submitFound(), validation, photo preview
-// =====================================================================
 function submitLost() {
   /* Immediately disable button to prevent double-tap while validating */
   var slb = document.getElementById('panel-submit-lost');
@@ -6128,10 +6065,6 @@ var grants = [];
  * ALL operational queries MUST go through getShelterData() below.
  */
 
-
-// =====================================================================
-// SHELTER / IN CARE — Shelter data, intake queue, hold logic, costs
-// =====================================================================
 function getShelterData(opts) {
   /* opts: { includeHolds, includeAdopt, includeResolved, includeLost, cutoffDays } */
   opts = opts || {};
@@ -8621,10 +8554,6 @@ function restitTable(restit) {
   return html;
 }
 
-
-// =====================================================================
-// ADOPTION — Adopt grid, detail panel, listing form, inquiry flow
-// =====================================================================
 function openAdoptDetail(id) {
   var r = reports.find(function(x){ return x.id == id; });
   if (!r) return;
@@ -9508,10 +9437,6 @@ async function generateSpotlightPills(r) {
 }
 
 
-
-// =====================================================================
-// SPOTLIGHT — Adoptable animal spotlight card, rotation, dismiss
-// =====================================================================
 function getSpotlightAnimals() {
   /* Presentation layer only — reads existing records, writes nothing */
   if (!reports || !reports.length) return [];
@@ -9696,10 +9621,6 @@ function initSpotlight() {
 }
 
 
-
-// =====================================================================
-// NAVIGATION — setView(), nav counts, orientation, keyboard scroll
-// =====================================================================
 function setView(v, btn) {
   _curView = v;
   updateOrientationStrip(v);
