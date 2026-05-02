@@ -1378,14 +1378,6 @@ function showStaffLoginBtn() {
 function _dismissOverlay() {
   var _ml = document.getElementById('map-loading');
   if (_ml) { _ml.style.opacity = '0'; setTimeout(function(){ _ml.style.display='none'; }, 400); }
-  /* loading-dismiss-final-check: if overlay hides but pins never rendered, retry */
-  setTimeout(function(){
-    if (Array.isArray(reports) && reports.length > 0 &&
-        _mapReady === true &&
-        Array.isArray(lMarkers) && lMarkers.length === 0) {
-      refreshMapPins('loading-dismiss-final-check');
-    }
-  }, 500);
 }
 
 function initFirebase() {
@@ -1437,6 +1429,36 @@ function refreshMapPins(reason) {
   lMarkers.forEach(function(m){ try { map.removeLayer(m); } catch(e){} });
   lMarkers = [];
   renderMarkers();
+  /* [DIAG] On-screen overlay — remove after diagnosis */
+  (function(){
+    var _el = document.getElementById('map');
+    var _sz = (map && map.getSize) ? map.getSize() : {};
+    var _data = {
+      reason:reason, reports:reports.length, lMarkers:lMarkers.length,
+      iconsInDOM:document.querySelectorAll('.leaflet-marker-icon').length,
+      mapSizeX:_sz.x, mapSizeY:_sz.y,
+      containerW:_el?_el.offsetWidth:'?', containerH:_el?_el.offsetHeight:'?',
+      _mapReady:_mapReady, _recordsReady:_recordsReady
+    };
+    console.log('[POST-RENDER-DIAG]', reason, _data);
+    var box = document.getElementById('_pawpulse_diag');
+    if (!box) {
+      box = document.createElement('div');
+      box.id = '_pawpulse_diag';
+      box.style.cssText = 'position:fixed;bottom:60px;left:8px;right:8px;z-index:99999;background:rgba(0,0,0,0.88);color:#0f0;font:11px/1.5 monospace;padding:10px 12px;border-radius:8px;max-height:260px;overflow-y:auto;pointer-events:none;';
+      document.body.appendChild(box);
+    }
+    var ts = new Date().toISOString().substr(11,8);
+    var line = document.createElement('div');
+    line.style.cssText = 'border-bottom:1px solid #333;padding-bottom:4px;margin-bottom:4px;';
+    line.innerHTML =
+      '<b style="color:#ff0">['+ts+'] '+reason+'</b><br>'+
+      'reports='+_data.reports+' lM='+_data.lMarkers+' icons='+_data.iconsInDOM+'<br>'+
+      'mapSz='+_data.mapSizeX+'x'+_data.mapSizeY+
+      ' cont='+_data.containerW+'x'+_data.containerH+'<br>'+
+      'mapRdy='+_data._mapReady+' recRdy='+_data._recordsReady;
+    box.insertBefore(line, box.firstChild);
+  })();
   /* Hide loading overlay once pins are on the map */
   if (lMarkers.length > 0) _dismissOverlay();
 }
@@ -2030,14 +2052,6 @@ function bootApp() {
     window._firebaseLoaded = true;
     var _ml = document.getElementById('map-loading');
     if (_ml) { _ml.style.opacity = '0'; setTimeout(function(){ _ml.style.display='none'; }, 450); }
-    /* loading-dismiss-final-check: Firestore path — if overlay hides but pins missed, retry */
-    setTimeout(function(){
-      if (Array.isArray(reports) && reports.length > 0 &&
-          _mapReady === true &&
-          Array.isArray(lMarkers) && lMarkers.length === 0) {
-        refreshMapPins('loading-dismiss-final-check');
-      }
-    }, 600);
   }
   /* Update incare shelter label */
   var lbl = document.getElementById('incare-shelter-label');
@@ -2081,23 +2095,6 @@ function bootApp() {
   }
   setTimeout(function(){ refreshMapPins('boot-final-500');  }, 500);
   setTimeout(function(){ refreshMapPins('boot-final-1500'); }, 1500);
-  /* ── Mobile first-load watchdog ─────────────────────────────────────────
-     Safety net ONLY. Fires only when _mapReady=true AND reports exist AND
-     lMarkers is empty (pins missed the render window). Never fires if pins
-     already rendered. Does not replace or modify existing render flow.     */
-  (function(){
-    function _mobileWatchdog(label) {
-      if (Array.isArray(reports) && reports.length > 0 &&
-          _mapReady === true &&
-          Array.isArray(lMarkers) && lMarkers.length === 0) {
-        refreshMapPins(label);
-      }
-    }
-    setTimeout(function(){ _mobileWatchdog('map-loading-watchdog-1000'); }, 1000);
-    setTimeout(function(){ _mobileWatchdog('map-loading-watchdog-2000'); }, 2000);
-    setTimeout(function(){ _mobileWatchdog('map-loading-watchdog-3500'); }, 3500);
-    setTimeout(function(){ _mobileWatchdog('map-loading-watchdog-5000'); }, 5000);
-  })();
 }
 
 /* ── INTAKE MODAL (replaces separate Intake tab) ─────────────────────── */
