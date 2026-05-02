@@ -4316,21 +4316,33 @@ function cardHTML(r) {
     ? '<button onclick="migrateToIntake(' + r.id + ')" style="width:100%;margin-top:6px;padding:9px;font-family:var(--font-display);font-size:.82rem;font-weight:700;border:none;border-radius:8px;cursor:pointer;background:var(--forest);color:#fff;display:flex;align-items:center;justify-content:center;gap:6px">🏠 Populate Intake Form from This Report</button>'
     : '';
 
-  /* Adoption section — only for found strays, not holds */
+  /* Adoption section — holds show days-remaining message; strays show adopt button */
   var adoptSection = '';
-  if (!lost && !reunited && r.intakeType !== 'hold') {
+  if (!lost && !reunited) {
+    var _onHold      = r.intakeType === 'hold' || (r.holdType && r.holdType !== 'none');
     var isAdoptAvail = r.adoptionStatus === 'available';
     var isAdoptPend  = r.adoptionStatus === 'pending';
     var isAdopted    = r.adoptionStatus === 'adopted';
-    if (isAdoptAvail) {
-      var daysWaiting = r.dateAvailable ? Math.floor(daysSince(r.dateAvailable)) : 0;
-      adoptSection = '<div class="pc-adopt">🌟 Adoption Ready'
-        + (daysWaiting > 0 ? ' · Waiting ' + daysWaiting + ' day' + (daysWaiting!==1?'s':'') : '') + '</div>'
-        + '<button class="adopt-btn" onclick="contactShelterForAdoption(' + r.id + ')">💬 Ask About Adoption</button>';
-    } else if (isAdoptPend) {
-      adoptSection = '<div class="pc-adopt" style="background:linear-gradient(135deg,#fff8e8,#fdf3da);border-color:#d4a035;color:#7a5a10">⏳ Adoption Pending</div>';
-    } else if (isAdopted) {
-      adoptSection = '<div class="pc-adopt" style="background:linear-gradient(135deg,#e8f4e9,#d8eeda);border-color:#5caa68;color:#2d6a35">🎉 Adopted!</div>';
+    if (_onHold && isAdoptAvail) {
+      /* Hold active — calculate days remaining, block adopt button */
+      var _hDays  = (r.holdType === 'bite' || r.holdType === 'dangerous') ? 10 : 5;
+      var _hStart = r.shelterHoldStart || r.date;
+      var _hLeft  = Math.max(0, _hDays - Math.floor(daysSince(_hStart)));
+      var _hMsg   = _hLeft > 0
+        ? 'On hold — ' + _hLeft + ' day' + (_hLeft !== 1 ? 's' : '') + ' remaining before adoptable'
+        : 'Hold period ending — check back soon';
+      adoptSection = '<div class="pc-adopt" style="background:linear-gradient(135deg,#fff0e0,#fde8c8);border-color:#c07000;color:#7a4500">⏸ ' + _hMsg + '</div>';
+    } else if (!_onHold) {
+      if (isAdoptAvail) {
+        var daysWaiting = r.dateAvailable ? Math.floor(daysSince(r.dateAvailable)) : 0;
+        adoptSection = '<div class="pc-adopt">🌟 Adoption Ready'
+          + (daysWaiting > 0 ? ' · Waiting ' + daysWaiting + ' day' + (daysWaiting!==1?'s':'') : '') + '</div>'
+          + '<button class="adopt-btn" onclick="contactShelterForAdoption(' + r.id + ')">💬 Ask About Adoption</button>';
+      } else if (isAdoptPend) {
+        adoptSection = '<div class="pc-adopt" style="background:linear-gradient(135deg,#fff8e8,#fdf3da);border-color:#d4a035;color:#7a5a10">⏳ Adoption Pending</div>';
+      } else if (isAdopted) {
+        adoptSection = '<div class="pc-adopt" style="background:linear-gradient(135deg,#e8f4e9,#d8eeda);border-color:#5caa68;color:#2d6a35">🎉 Adopted!</div>';
+      }
     }
   }
 
