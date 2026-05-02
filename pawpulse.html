@@ -1313,22 +1313,6 @@ var _recordsReady = false; /* set when Firestore/localStorage data is in reports
 var curFilter = 'all';
 var curSpeciesFilter = 'all';
 var _lastSubmitTime = 0; /* ms timestamp of last public submit — gates onSnapshot re-render */
-/* [DIAG] On-screen log helper — remove after diagnosis */
-function _diagLog(label, data) {
-  var box = document.getElementById('_pawpulse_diag');
-  if (!box) {
-    box = document.createElement('div');
-    box.id = '_pawpulse_diag';
-    box.style.cssText = 'position:fixed;bottom:60px;left:8px;right:8px;z-index:99999;background:rgba(0,0,0,0.88);color:#0f0;font:11px/1.5 monospace;padding:8px 12px;border-radius:8px;max-height:260px;overflow-y:auto;pointer-events:none;';
-    document.body.appendChild(box);
-  }
-  var ts = new Date().toISOString().substr(11,8);
-  var line = document.createElement('div');
-  line.style.cssText = 'border-bottom:1px solid #333;padding-bottom:3px;margin-bottom:3px;';
-  var rows = Object.keys(data).map(function(k){ return k+'='+data[k]; }).join(' ');
-  line.innerHTML = '<b style="color:#ff0">['+ts+'] '+label+'</b><br>'+rows;
-  box.insertBefore(line, box.firstChild);
-}
 var curSpeciesFilter = 'all';
 var placing   = null;
 var pLat = {}, pLng = {};
@@ -1445,18 +1429,6 @@ function refreshMapPins(reason) {
   lMarkers.forEach(function(m){ try { map.removeLayer(m); } catch(e){} });
   lMarkers = [];
   renderMarkers();
-  /* [DIAG] Post-render state */
-  (function(){
-    var _el = document.getElementById('map');
-    var _sz = (map && map.getSize) ? map.getSize() : {};
-    _diagLog('rMP:'+reason, {
-      rep: reports.length, lM: lMarkers.length,
-      icons: document.querySelectorAll('.leaflet-marker-icon').length,
-      mSz: (_sz.x||0)+'x'+(_sz.y||0),
-      ctr: (_el?_el.offsetWidth:0)+'x'+(_el?_el.offsetHeight:0),
-      mRdy: _mapReady, rRdy: _recordsReady
-    });
-  })();
   /* Hide loading overlay once pins are on the map */
   if (lMarkers.length > 0) _dismissOverlay();
 }
@@ -1498,21 +1470,15 @@ function startFirestoreListener() {
   setTimeout(_dismissOverlay, 2000);
   if (!db) {
     console.warn('Firestore unavailable — using localStorage');
+    _diagLog('FS-listener-NO-DB', { USE_FIREBASE: USE_FIREBASE });
     _fbReady = true;
     showShelterPicker();
     return;
   }
   try {
-    db.collection('reports').onSnapshot(function(snapshot) {
-      window._firestoreListenerActive = true; /* confirmed receiving */
+    var _fsUnsub = db.collection('reports').onSnapshot(function(snapshot) {
+      /* _firestoreListenerActive set synchronously after onSnapshot returns — see below */
       console.log('[FIRESTORE SNAPSHOT]', { size: snapshot.size, changes: snapshot.docChanges().length });
-      /* [DIAG] On-screen: Firestore snapshot arrived */
-      _diagLog('FS-snapshot', {
-        size: snapshot.size, empty: snapshot.empty,
-        changes: snapshot.docChanges().length,
-        fbReady: _fbReady, pauseSync: !!window._pauseFirestoreSync,
-        reports_before: reports.length
-      });
       if (window._pauseFirestoreSync) {
         /* Demo load or major write in progress — skip listener */
         if (!_fbReady) { _fbReady = true; showShelterPicker(); }
@@ -1615,7 +1581,15 @@ function startFirestoreListener() {
       _fbReady = true;
       showShelterPicker();
     });
+    /* Set active flag synchronously — prevents double-attach race */
+    if (typeof _fsUnsub === 'function') {
+      window._firestoreListenerActive = true;
+      _diagLog('FS-listener-attached', { dbOk: !!db });
+    } else {
+      _diagLog('FS-listener-FAILED', { unsubType: typeof _fsUnsub });
+    }
   } catch(e) {
+    _diagLog('FS-listener-CATCH', { msg: e.message });
     console.warn('Firestore init error:', e.message);
     _fbReady = true;
     showShelterPicker();
@@ -1893,6 +1867,19 @@ function doLogin() {
   if (match) { onSuccess(); } else { onFail(); }
 }
 
+/* Explicit public listener attachment — call this from any boot path */
+function ensurePublicReportsListener(source) {
+  if (window._firestoreListenerActive) return; /* already attached */
+  /* Attempt db recovery if Firebase init failed silently */
+  if (!db && typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length) {
+    try { db = firebase.firestore(); } catch(e) {}
+  }
+  _diagLog('FS-ensure-called', { source: source, dbOk: !!db, active: !!window._firestoreListenerActive });
+  if (USE_FIREBASE && db) {
+    startFirestoreListener();
+  }
+}
+
 function doGuestView() {
   /* If localStorage flag exists, skip staff UI reset — bootApp will restore it */
   if (!localStorage.getItem('pawpulse-staff')) {
@@ -1906,13 +1893,12 @@ function doGuestView() {
   try {
     if (!_bootAppDone) { bootApp(); }
   } catch(e) { console.error('bootApp threw:', e.message, e.stack); }
+  /* Ensure Firestore listener is attached immediately — not deferred */
+  ensurePublicReportsListener('guest-boot-direct');
   setTimeout(_dismissOverlay, 300);
-  /* Firestore listener started by Firebase auth callback.
-     Safety: if auth is slow or fails, start listener directly after 1.5s */
+  /* Safety: re-check after 1.5s in case auth callback beat us and db was unavailable */
   setTimeout(function() {
-    if (!window._firestoreListenerActive && USE_FIREBASE && db) {
-      startFirestoreListener();
-    }
+    ensurePublicReportsListener('guest-boot-safety-1500');
   }, 1500);
 }
 
@@ -9978,5 +9964,4 @@ function maybeShowTutorial() {
   </div>
 </div>
 </body>
-</html>s
-  
+</html>
