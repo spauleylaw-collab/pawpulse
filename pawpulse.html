@@ -26,23 +26,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script>
 var db = null; var auth = null;
-/* [DIAG] On-screen log — defined first so all code can call it safely */
-function _diagLog(label, data) {
-  var box = document.getElementById('_pawpulse_diag');
-  if (!box) {
-    box = document.createElement('div');
-    box.id = '_pawpulse_diag';
-    box.style.cssText = 'position:fixed;bottom:60px;left:8px;right:8px;z-index:99999;background:rgba(0,0,0,0.88);color:#0f0;font:11px/1.5 monospace;padding:8px 12px;border-radius:8px;max-height:260px;overflow-y:auto;pointer-events:none;';
-    document.body.appendChild(box);
-  }
-  var ts = new Date().toISOString().substr(11,8);
-  var line = document.createElement('div');
-  line.style.cssText = 'border-bottom:1px solid #333;padding-bottom:3px;margin-bottom:3px;';
-  var rows = Object.keys(data).map(function(k){ return k+'='+data[k]; }).join(' ');
-  line.innerHTML = '<b style="color:#ff0">['+ts+'] '+label+'</b><br>'+rows;
-  box.insertBefore(line, box.firstChild);
-  console.log('[DIAG]', label, data);
-}
 var USE_FIREBASE = (typeof firebase !== 'undefined') && "AIzaSyBVzQ84gSSnukH_JEmYN70ZjXqqmxsNVIw" !== "PASTE_YOUR_API_KEY";
 
 if (USE_FIREBASE) {
@@ -1287,7 +1270,7 @@ document.addEventListener("DOMContentLoaded", function() {
 })();
 
 /* Map init — synchronous. Script tag is at bottom of body so #map div exists. */
-window.PAWPULSE_BUILD = 'map-baseline-2026-04-29-02';
+window.PAWPULSE_BUILD = 'map-baseline-2026-04-29-01';
 console.log('[PAWPULSE BUILD]', window.PAWPULSE_BUILD);
 document.addEventListener('DOMContentLoaded', function(){
   document.body.insertAdjacentHTML('beforeend',
@@ -1446,16 +1429,6 @@ function refreshMapPins(reason) {
   lMarkers.forEach(function(m){ try { map.removeLayer(m); } catch(e){} });
   lMarkers = [];
   renderMarkers();
-  /* [DIAG] Post-render state */
-  (function(){
-    var _el = document.getElementById('map');
-    var _sz = (map && map.getSize) ? map.getSize() : {};
-    _diagLog('rMP:'+reason, { rep: reports.length, lM: lMarkers.length,
-      icons: document.querySelectorAll('.leaflet-marker-icon').length,
-      mSz: (_sz.x||0)+'x'+(_sz.y||0),
-      ctr: (_el?_el.offsetWidth:0)+'x'+(_el?_el.offsetHeight:0),
-      mRdy: _mapReady, rRdy: _recordsReady });
-  })();
   /* Hide loading overlay once pins are on the map */
   if (lMarkers.length > 0) _dismissOverlay();
 }
@@ -1503,11 +1476,7 @@ function startFirestoreListener() {
   }
   try {
     var _fsUnsub = db.collection('reports').onSnapshot(function(snapshot) {
-      /* _firestoreListenerActive set synchronously after onSnapshot returns — see below */
       console.log('[FIRESTORE SNAPSHOT]', { size: snapshot.size, changes: snapshot.docChanges().length });
-      _diagLog('FS-snapshot', { size: snapshot.size, empty: snapshot.empty,
-        changes: snapshot.docChanges().length, fbReady: _fbReady,
-        pauseSync: !!window._pauseFirestoreSync, reports_before: reports.length });
       if (window._pauseFirestoreSync) {
         /* Demo load or major write in progress — skip listener */
         if (!_fbReady) { _fbReady = true; showShelterPicker(); }
@@ -1607,20 +1576,13 @@ function startFirestoreListener() {
       }
     }, function(err) {
       console.warn('Firestore listener error:', err);
-      _diagLog('FS-snapshot-error', { msg: String(err) });
       _fbReady = true;
       showShelterPicker();
     });
-    /* Set active flag synchronously — prevents double-attach race before first snapshot */
-    if (typeof _fsUnsub === 'function') {
-      window._firestoreListenerActive = true;
-      _diagLog('FS-listener-attached', { dbOk: !!db });
-    } else {
-      _diagLog('FS-listener-FAILED', { unsubType: typeof _fsUnsub });
-    }
+    /* Set active flag synchronously after onSnapshot registers — prevents double-attach race */
+    if (typeof _fsUnsub === 'function') { window._firestoreListenerActive = true; }
   } catch(e) {
     console.warn('Firestore init error:', e.message);
-    _diagLog('FS-listener-CATCH', { msg: e.message });
     _fbReady = true;
     showShelterPicker();
   }
@@ -1897,14 +1859,13 @@ function doLogin() {
   if (match) { onSuccess(); } else { onFail(); }
 }
 
-/* Attach Firestore listener for public users — idempotent, safe to call multiple times */
+/* Attach public Firestore listener — idempotent, safe to call multiple times */
 function ensurePublicReportsListener(source) {
   if (window._firestoreListenerActive) return;
-  /* Recover db if Firebase init failed silently */
   if (!db && typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length) {
     try { db = firebase.firestore(); } catch(e) {}
   }
-  _diagLog('FS-ensure-called', { source: source, dbOk: !!db, active: !!window._firestoreListenerActive });
+  console.log('[PAWPULSE] ensurePublicReportsListener', source, { dbOk: !!db });
   if (USE_FIREBASE && db) { startFirestoreListener(); }
 }
 
@@ -1924,7 +1885,7 @@ function doGuestView() {
   /* Attach Firestore listener immediately — do not wait for auth callback */
   ensurePublicReportsListener('guest-boot-direct');
   setTimeout(_dismissOverlay, 300);
-  /* Safety re-check: covers edge case where db was null during direct call */
+  /* Safety: re-attach if db was unavailable during direct call */
   setTimeout(function() { ensurePublicReportsListener('guest-boot-safety-1500'); }, 1500);
 }
 
