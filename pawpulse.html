@@ -1321,6 +1321,7 @@ var SUBMIT_COOLDOWN_MS = 1 * 60 * 1000;  /* 1 min between submissions (keep shor
 var SUBMIT_SESSION_MAX = 3;  /* max per session */
 var tmpMarker = null;
 var _fbReady  = false; /* true once Firestore listener is live */
+var _fsUnsub  = null;  /* Firestore unsubscribe fn — true source of truth for listener state */
 var _isStaff  = false;
 
 /* ── SAVE / LOAD ──────────────────────────────────────────────────────── */
@@ -1475,7 +1476,7 @@ function startFirestoreListener() {
     return;
   }
   try {
-    var _fsUnsub = db.collection('reports').onSnapshot(function(snapshot) {
+    _fsUnsub = db.collection('reports').onSnapshot(function(snapshot) {
       console.log('[FIRESTORE SNAPSHOT]', { size: snapshot.size, changes: snapshot.docChanges().length });
       if (window._pauseFirestoreSync) {
         /* Demo load or major write in progress — skip listener */
@@ -1861,7 +1862,13 @@ function doLogin() {
 
 /* Attach public Firestore listener — idempotent, safe to call multiple times */
 function ensurePublicReportsListener(source) {
-  if (window._firestoreListenerActive) return;
+  /* _fsUnsub is the true source of truth — if it exists the listener is live */
+  if (_fsUnsub) return;
+  /* Broken state: flag says active but no unsubscribe fn — recover and reattach */
+  if (window._firestoreListenerActive && !_fsUnsub) {
+    console.warn('[PAWPULSE] FS-listener-recover — active flag set but no unsub fn, reattaching');
+    window._firestoreListenerActive = false;
+  }
   if (!db && typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length) {
     try { db = firebase.firestore(); } catch(e) {}
   }
