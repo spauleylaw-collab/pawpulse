@@ -1313,6 +1313,22 @@ var _recordsReady = false; /* set when Firestore/localStorage data is in reports
 var curFilter = 'all';
 var curSpeciesFilter = 'all';
 var _lastSubmitTime = 0; /* ms timestamp of last public submit — gates onSnapshot re-render */
+/* [DIAG] On-screen log helper — remove after diagnosis */
+function _diagLog(label, data) {
+  var box = document.getElementById('_pawpulse_diag');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = '_pawpulse_diag';
+    box.style.cssText = 'position:fixed;bottom:60px;left:8px;right:8px;z-index:99999;background:rgba(0,0,0,0.88);color:#0f0;font:11px/1.5 monospace;padding:8px 12px;border-radius:8px;max-height:260px;overflow-y:auto;pointer-events:none;';
+    document.body.appendChild(box);
+  }
+  var ts = new Date().toISOString().substr(11,8);
+  var line = document.createElement('div');
+  line.style.cssText = 'border-bottom:1px solid #333;padding-bottom:3px;margin-bottom:3px;';
+  var rows = Object.keys(data).map(function(k){ return k+'='+data[k]; }).join(' ');
+  line.innerHTML = '<b style="color:#ff0">['+ts+'] '+label+'</b><br>'+rows;
+  box.insertBefore(line, box.firstChild);
+}
 var curSpeciesFilter = 'all';
 var placing   = null;
 var pLat = {}, pLng = {};
@@ -1429,35 +1445,17 @@ function refreshMapPins(reason) {
   lMarkers.forEach(function(m){ try { map.removeLayer(m); } catch(e){} });
   lMarkers = [];
   renderMarkers();
-  /* [DIAG] On-screen overlay — remove after diagnosis */
+  /* [DIAG] Post-render state */
   (function(){
     var _el = document.getElementById('map');
     var _sz = (map && map.getSize) ? map.getSize() : {};
-    var _data = {
-      reason:reason, reports:reports.length, lMarkers:lMarkers.length,
-      iconsInDOM:document.querySelectorAll('.leaflet-marker-icon').length,
-      mapSizeX:_sz.x, mapSizeY:_sz.y,
-      containerW:_el?_el.offsetWidth:'?', containerH:_el?_el.offsetHeight:'?',
-      _mapReady:_mapReady, _recordsReady:_recordsReady
-    };
-    console.log('[POST-RENDER-DIAG]', reason, _data);
-    var box = document.getElementById('_pawpulse_diag');
-    if (!box) {
-      box = document.createElement('div');
-      box.id = '_pawpulse_diag';
-      box.style.cssText = 'position:fixed;bottom:60px;left:8px;right:8px;z-index:99999;background:rgba(0,0,0,0.88);color:#0f0;font:11px/1.5 monospace;padding:10px 12px;border-radius:8px;max-height:260px;overflow-y:auto;pointer-events:none;';
-      document.body.appendChild(box);
-    }
-    var ts = new Date().toISOString().substr(11,8);
-    var line = document.createElement('div');
-    line.style.cssText = 'border-bottom:1px solid #333;padding-bottom:4px;margin-bottom:4px;';
-    line.innerHTML =
-      '<b style="color:#ff0">['+ts+'] '+reason+'</b><br>'+
-      'reports='+_data.reports+' lM='+_data.lMarkers+' icons='+_data.iconsInDOM+'<br>'+
-      'mapSz='+_data.mapSizeX+'x'+_data.mapSizeY+
-      ' cont='+_data.containerW+'x'+_data.containerH+'<br>'+
-      'mapRdy='+_data._mapReady+' recRdy='+_data._recordsReady;
-    box.insertBefore(line, box.firstChild);
+    _diagLog('rMP:'+reason, {
+      rep: reports.length, lM: lMarkers.length,
+      icons: document.querySelectorAll('.leaflet-marker-icon').length,
+      mSz: (_sz.x||0)+'x'+(_sz.y||0),
+      ctr: (_el?_el.offsetWidth:0)+'x'+(_el?_el.offsetHeight:0),
+      mRdy: _mapReady, rRdy: _recordsReady
+    });
   })();
   /* Hide loading overlay once pins are on the map */
   if (lMarkers.length > 0) _dismissOverlay();
@@ -1508,6 +1506,13 @@ function startFirestoreListener() {
     db.collection('reports').onSnapshot(function(snapshot) {
       window._firestoreListenerActive = true; /* confirmed receiving */
       console.log('[FIRESTORE SNAPSHOT]', { size: snapshot.size, changes: snapshot.docChanges().length });
+      /* [DIAG] On-screen: Firestore snapshot arrived */
+      _diagLog('FS-snapshot', {
+        size: snapshot.size, empty: snapshot.empty,
+        changes: snapshot.docChanges().length,
+        fbReady: _fbReady, pauseSync: !!window._pauseFirestoreSync,
+        reports_before: reports.length
+      });
       if (window._pauseFirestoreSync) {
         /* Demo load or major write in progress — skip listener */
         if (!_fbReady) { _fbReady = true; showShelterPicker(); }
@@ -9973,4 +9978,5 @@ function maybeShowTutorial() {
   </div>
 </div>
 </body>
-</html>
+</html>s
+  
