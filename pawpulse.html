@@ -1270,7 +1270,7 @@ document.addEventListener("DOMContentLoaded", function() {
 })();
 
 /* Map init — synchronous. Script tag is at bottom of body so #map div exists. */
-window.PAWPULSE_BUILD = 'map-baseline-2026-05-06';
+window.PAWPULSE_BUILD = 'map-baseline-2026-05-07';
 console.log('[PAWPULSE BUILD]', window.PAWPULSE_BUILD);
 document.addEventListener('DOMContentLoaded', function(){
   document.body.insertAdjacentHTML('beforeend',
@@ -1310,41 +1310,6 @@ try {
 var reports  = JSON.parse(localStorage.getItem('pawpulse-v2') || '[]');
 var lMarkers = [];
 var _recordsReady = false; /* set when Firestore/localStorage data is in reports[] */
-
-/* ── [DIAG] Diagnostic state — remove after diagnosis ── */
-var _diagState = {
-  lsReports: reports.length,
-  lsPhotos: reports.filter(function(r){ return !!r.photo; }).length,
-  fsSnapSize: null, fsSnapPhotos: null,
-  lastRMPReason: '(none)', hydrated: false
-};
-function _diagLog(label) {
-  var box = document.getElementById('_pp_diag');
-  if (!box) {
-    box = document.createElement('div');
-    box.id = '_pp_diag';
-    box.style.cssText = 'position:fixed;top:90px;right:6px;z-index:99999;'
-      + 'background:rgba(0,0,0,.87);color:#0f0;font:10px/1.4 monospace;'
-      + 'padding:7px 9px;border-radius:7px;max-width:220px;pointer-events:none;'
-      + 'white-space:pre-wrap;box-shadow:0 2px 12px rgba(0,0,0,.5);';
-    document.body.appendChild(box);
-  }
-  var s = _diagState;
-  var rPh = reports.filter(function(r){ return !!r.photo; }).length;
-  box.textContent =
-    'BUILD: ' + (window.PAWPULSE_BUILD||'?') + '\n'
-    + '[' + label + ']\n'
-    + 'LS:  rep=' + s.lsReports + ' ph=' + s.lsPhotos + '\n'
-    + 'FS:  sz=' + (s.fsSnapSize===null?'?':s.fsSnapSize)
-             + ' ph=' + (s.fsSnapPhotos===null?'?':s.fsSnapPhotos) + '\n'
-    + 'NOW: rep=' + reports.length + ' ph=' + rPh + '\n'
-    + 'lM=' + lMarkers.length
-    + ' mRdy=' + _mapReady
-    + ' rRdy=' + _recordsReady + '\n'
-    + 'hydr=' + s.hydrated + '\n'
-    + 'rMP: ' + s.lastRMPReason;
-}
-/* ── [/DIAG] ── */
 var curFilter = 'all';
 var curSpeciesFilter = 'all';
 var _lastSubmitTime = 0; /* ms timestamp of last public submit — gates onSnapshot re-render */
@@ -1356,27 +1321,19 @@ var SUBMIT_COOLDOWN_MS = 1 * 60 * 1000;  /* 1 min between submissions (keep shor
 var SUBMIT_SESSION_MAX = 3;  /* max per session */
 var tmpMarker = null;
 var _fbReady  = false; /* true once Firestore listener is live */
-var _fsUnsub  = null;  /* Firestore unsubscribe fn — true source of truth for listener state */
+var _fsUnsub  = null;  /* Firestore unsubscribe fn — source of truth for listener state */
 var _isStaff  = false;
 
 /* ── SAVE / LOAD ──────────────────────────────────────────────────────── */
-/* Safe localStorage cache — never throws, never stores photos */
 function safeLocalCache(records) {
   try {
-    var _s = records.map(function(r){
-      var s = Object.assign({}, r); delete s.photo; return s;
-    });
+    var _s = records.map(function(r){ var s=Object.assign({},r); delete s.photo; return s; });
     localStorage.setItem('pawpulse-v2', JSON.stringify(_s));
-  } catch(e) {
-    console.warn('[PAWPULSE] cache skipped:', e && e.name);
-  }
+  } catch(e) { console.warn('[PAWPULSE] cache skipped:', e&&e.name); }
 }
 
 function save() {
-  /* Update in-memory photo cache for this session */
-  reports.forEach(function(r) {
-    if (r.photo) _photoCache[String(r.id)] = r.photo;
-  });
+  reports.forEach(function(r){ if(r.photo) _photoCache[String(r.id)]=r.photo; });
   safeLocalCache(reports);
 }
 
@@ -1462,7 +1419,6 @@ function initFirebase() {
 
 
 function refreshMapPins(reason) {
-  _diagState.lastRMPReason = reason; _diagLog('rMP');
   console.log('[REFRESH MAP PINS]', reason, {
     reports: reports.length, markers: lMarkers.length,
     mapReady: _mapReady, recordsReady: _recordsReady
@@ -1519,6 +1475,7 @@ function startFirestoreListener() {
   }
   try {
     _fsUnsub = db.collection('reports').onSnapshot(function(snapshot) {
+      window._firestoreListenerActive = true; /* confirmed receiving */
       console.log('[FIRESTORE SNAPSHOT]', { size: snapshot.size, changes: snapshot.docChanges().length });
       if (window._pauseFirestoreSync) {
         /* Demo load or major write in progress — skip listener */
@@ -1535,11 +1492,6 @@ function startFirestoreListener() {
             snapshot.forEach(function(doc){ if (String(doc.data().id)===String(lr.id)) inFirestore=true; });
             return !inFirestore && lr._isNewPin;
           });
-          /* [DIAG] Capture FS snapshot stats before rebuild */
-          _diagState.fsSnapSize = snapshot.size;
-          _diagState.fsSnapPhotos = 0;
-          snapshot.forEach(function(doc){ if (doc.data().photo) _diagState.fsSnapPhotos++; });
-          _diagLog('fs-snap-arrived');
           reports = [];
           snapshot.forEach(function(doc) {
             var data = doc.data();
@@ -1566,7 +1518,6 @@ function startFirestoreListener() {
         lMarkers.forEach(function(m){ try { map.removeLayer(m); } catch(e){} });
         lMarkers = [];
         showShelterPicker();
-        _diagState.hydrated = true; _diagLog('fs-hydrated');
         refreshMapPins('first-firestore-load');
         setTimeout(function(){ refreshMapPins('first-firestore-500'); }, 500);
         setTimeout(function(){ refreshMapPins('first-firestore-1500'); }, 1500);
@@ -1628,7 +1579,6 @@ function startFirestoreListener() {
       _fbReady = true;
       showShelterPicker();
     });
-    /* Set active flag synchronously after onSnapshot registers — prevents double-attach race */
     if (typeof _fsUnsub === 'function') { window._firestoreListenerActive = true; }
   } catch(e) {
     console.warn('Firestore init error:', e.message);
@@ -1908,11 +1858,10 @@ function doLogin() {
   if (match) { onSuccess(); } else { onFail(); }
 }
 
-/* Attach public Firestore listener — idempotent, safe to call multiple times */
 function ensurePublicReportsListener(source) {
   if (_fsUnsub) return;
   if (window._firestoreListenerActive && !_fsUnsub) {
-    console.warn('[PAWPULSE] FS-listener-recover — active flag set but no unsub fn, reattaching');
+    console.warn('[PAWPULSE] FS-listener-recover');
     window._firestoreListenerActive = false;
   }
   if (!db && typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length) {
@@ -1923,7 +1872,6 @@ function ensurePublicReportsListener(source) {
 }
 
 function doGuestView() {
-  /* If localStorage flag exists, skip staff UI reset — bootApp will restore it */
   if (!localStorage.getItem('pawpulse-staff')) {
     _isStaff = false;
     document.querySelectorAll('.tab-ops,.tab-admin').forEach(function(el){ el.style.display='none'; });
@@ -1931,29 +1879,23 @@ function doGuestView() {
   document.getElementById('login-overlay').style.display = 'none';
   var loading = document.getElementById('app-loading');
   if (loading && loading.parentNode) loading.parentNode.removeChild(loading);
-  /* Boot from localStorage immediately — don't wait for Firestore */
   try {
     if (!_bootAppDone) { bootApp(); }
   } catch(e) { console.error('bootApp threw:', e.message, e.stack); }
-  /* Attach Firestore listener immediately — do not wait for auth callback */
   ensurePublicReportsListener('guest-boot-direct');
   setTimeout(_dismissOverlay, 300);
-  /* Safety: re-attach if db was unavailable during direct call */
   setTimeout(function() { ensurePublicReportsListener('guest-boot-safety-1500'); }, 1500);
-  /* Hydration watchdog: if Firestore snapshot still hasn't fired, force reattach */
   setTimeout(function() {
     if (!_fbReady && USE_FIREBASE && db) {
-      console.warn('[PAWPULSE] hydration-watchdog-2500: no snapshot yet, reattaching');
-      window._firestoreListenerActive = false;
-      _fsUnsub = null;
+      console.warn('[PAWPULSE] hydration-watchdog-2500');
+      window._firestoreListenerActive = false; _fsUnsub = null;
       startFirestoreListener();
     }
   }, 2500);
   setTimeout(function() {
     if (!_fbReady && USE_FIREBASE && db) {
-      console.warn('[PAWPULSE] hydration-watchdog-5000: no snapshot yet, reattaching');
-      window._firestoreListenerActive = false;
-      _fsUnsub = null;
+      console.warn('[PAWPULSE] hydration-watchdog-5000');
+      window._firestoreListenerActive = false; _fsUnsub = null;
       startFirestoreListener();
     }
   }, 5000);
@@ -2407,20 +2349,13 @@ function checkFoundPinsOnIntake(intakeRecord) {
     + '</div>'
     + '<div style="font-size:.84rem;color:var(--warm-mid);margin-bottom:14px;line-height:1.5">A found pet report on the map may match this intake. Resolving it removes the pin and prevents duplicates.</div>'
     + '<div style="background:var(--cream-2);border-radius:10px;padding:12px;margin-bottom:14px">'
-    + '<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:6px">'
-    + (r.photo
-        ? '<img src="' + r.photo + '" style="width:64px;height:64px;object-fit:cover;border-radius:8px;flex-shrink:0;background:var(--cream-2)">'
-        : '<div style="width:64px;height:64px;border-radius:8px;background:var(--cream-2);display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0">'
-          + (r.species==='Dog'?'🐕':r.species==='Cat'?'🐈':'🐾') + '</div>'
-      )
-    + '<div style="flex:1">'
     + '<div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--warm-mid);margin-bottom:6px">Found Pin Report</div>'
     + '<div style="font-size:.86rem;font-weight:600;color:var(--warm-dk)">' + esc(r.species||'Unknown') + (r.color ? ' · ' + esc(r.color) : '') + '</div>'
     + (r.address ? '<div style="font-size:.76rem;color:var(--warm-mid);margin-top:2px">📍 ' + esc(r.address) + '</div>' : '')
     + (r.finder ? '<div style="font-size:.76rem;color:var(--warm-mid)">Found by: ' + esc(r.finder) + (r.fphone?' · '+esc(r.fphone):'') + '</div>' : '')
     + '<div style="font-size:.72rem;color:var(--warm-mid)">Reported ' + dateStr + '</div>'
     + atShelterNote
-    + '</div></div>'  /* close flex:1 + photo row */
+    + '</div>'
     + '<div style="display:flex;gap:10px">'
     + '<button onclick="resolveFoundPinFromIntake(\'' + r.id + '\',\'' + intakeRecord.id + '\')" style="flex:1;padding:12px;border:none;border-radius:10px;background:var(--forest);color:#fff;font-family:var(--font-display);font-size:.9rem;font-weight:700;cursor:pointer">✅ Yes — Same Animal</button>'
     + '<button onclick="var p=document.getElementById(\'intake-found-match-panel\');var bd2=document.getElementById(\\\'intake-found-match-bd\\\');if(bd2)bd2.remove();if(p)p.remove();" style="flex:1;padding:12px;border:1.5px solid var(--cream-3);border-radius:10px;background:#fff;font-family:var(--font-display);font-size:.9rem;font-weight:700;cursor:pointer;color:var(--warm-dk)">No — Different Animal</button>'
@@ -2443,44 +2378,16 @@ function checkFoundPinsOnIntake(intakeRecord) {
   });
 }
 
-function _matchToast(msg, color) {
-  var t = document.createElement('div');
-  t.style.cssText = 'position:fixed;top:60px;left:10px;right:10px;z-index:99999;background:' + (color||'#1a3a1a') + ';color:#fff;font:12px/1.4 monospace;padding:10px 14px;border-radius:8px;white-space:pre-wrap;pointer-events:none';
-  t.textContent = msg;
-  document.body.appendChild(t);
-  setTimeout(function(){ t.remove(); }, 6000);
-}
-
 function resolveFoundPinFromIntake(foundId, intakeId) {
   console.log('[INTAKE MATCH YES]', foundId, intakeId);
-
   var found = reports.find(function(x){ return String(x.id) === String(foundId); });
   var intake = reports.find(function(x){ return String(x.id) === String(intakeId); });
-
-  /* [DIAG] Toast 1 — confirm IDs and lookup results */
-  _matchToast(
-    'foundId=' + foundId + '\nintakeId=' + intakeId +
-    '\nfinder=' + (found ? (found.finder||'(none)') : 'NOT FOUND') +
-    '\nphone=' + (found ? (found.fphone||found.phone||'(none)') : 'NOT FOUND') +
-    '\nintakeFound=' + (!!intake)
-  );
-
-  console.log('[MATCH FOUND]', found);
-  console.log('[MATCH INTAKE BEFORE]', intake);
-
   var panel = document.getElementById('intake-found-match-panel');
   if (panel) panel.remove();
   var _ibd = document.getElementById('intake-found-match-bd');
   if (_ibd) _ibd.remove();
-
   if (!found) { console.warn('[INTAKE MATCH YES] found pin not found', foundId); return; }
-  if (!intake) {
-    _matchToast('FAIL: intake not found\nintakeId=' + intakeId, '#8b0000');
-    console.warn('[INTAKE CONTACT FAIL] intake not found', intakeId);
-    return;
-  }
-
-  /* Copy contact fields — set BOTH old and new field names */
+  if (!intake) { console.warn('[INTAKE CONTACT FAIL] intake not found', intakeId); return; }
   intake.finder                  = found.finder || intake.finder || '';
   intake.fphone                  = found.fphone || found.phone || intake.fphone || '';
   intake.foundReportContactName  = found.finder || '';
@@ -2489,26 +2396,11 @@ function resolveFoundPinFromIntake(foundId, intakeId) {
   intake.foundReportDate         = found.date || '';
   intake.linkedFoundReportId     = String(found.id);
   if (!intake.photo && found.photo) intake.photo = found.photo;
-
-  /* [DIAG] Toast 2 — confirm copy succeeded */
-  _matchToast(
-    'Contact copied:\nname=' + (intake.finder||'(empty)') +
-    '\nphone=' + (intake.fphone||'(empty)') +
-    '\nintakeId=' + intake.id,
-    '#0a3a0a'
-  );
-
-  console.log('[MATCH INTAKE AFTER]', intake);
-
-  /* Write intake first so contact fields persist */
   writeAnimalRecord(intake, 'staff');
-
-  /* Resolve found pin — removes from public map */
   found.reunited = true;
   found.resolvedByIntake = true;
   found.migratedTo = String(intake.id);
   writeAnimalRecord(found, 'staff');
-
   save();
   renderIncareView();
   selectIntake(intake.id);
@@ -2516,6 +2408,8 @@ function resolveFoundPinFromIntake(foundId, intakeId) {
   updateNavCounts();
   pushBannerEvent('📍 Found pin matched — contact info linked to intake', 'var(--found-g)');
 }
+
+
 function getIntakeEl(id) {
   /* Reads from intake modal body — prevents collision with toggleIntakeForm si-* IDs */
   var body = document.getElementById('intake-modal-body');
@@ -4324,16 +4218,14 @@ function cardHTML(r) {
   /* Contact actions — call/text only for lost animals with a phone number */
   var contact = '';
   var actionBtns = '';
-  /* AI match button — lost cards search shelter/found; found cards search lost pins */
+  /* AI match button */
   var matchBtn = '';
   if (lost && !reunited) {
     matchBtn = '<button onclick="searchMatchesFromCard(' + r.id + ', this)" style="width:100%;margin:8px 0 4px;padding:9px;font-family:var(--font-display);font-size:.82rem;font-weight:700;border:none;border-radius:8px;cursor:pointer;background:#f0f4ff;color:#2050a0;border:1.5px solid #a0baf0">🔍 Search Heartland &amp; Found Pins</button>';
-    /* 14-day warning */
     if (daysSince(r.date) >= 14) {
       matchBtn += '<div style="font-size:.68rem;color:var(--amber);text-align:center;margin-bottom:4px">⚠️ Missing ' + Math.floor(daysSince(r.date)) + ' days — no longer shown after 30 days</div>';
     }
   } else if (!lost && !reunited && !r.shelter) {
-    /* Found pin — search active lost reports to find owner */
     matchBtn = '<button onclick="searchMatchesFromFoundCard(' + r.id + ')" style="width:100%;margin:8px 0 4px;padding:9px;font-family:var(--font-display);font-size:.82rem;font-weight:700;border:none;border-radius:8px;cursor:pointer;background:#f0fff4;color:#1a6b3a;border:1.5px solid #a0d4b0">🔍 Search Lost Pins for Owner</button>';
   }
   if (lost && r.owner && r.intakeType !== 'hold') {
@@ -4443,7 +4335,7 @@ function cardHTML(r) {
     ? '<button onclick="migrateToIntake(' + r.id + ')" style="width:100%;margin-top:6px;padding:9px;font-family:var(--font-display);font-size:.82rem;font-weight:700;border:none;border-radius:8px;cursor:pointer;background:var(--forest);color:#fff;display:flex;align-items:center;justify-content:center;gap:6px">🏠 Populate Intake Form from This Report</button>'
     : '';
 
-  /* Adoption section — holds show days-remaining message; strays show adopt button */
+  /* Adoption section */
   var adoptSection = '';
   if (!lost && !reunited) {
     var _onHold      = r.intakeType === 'hold' || (r.holdType && r.holdType !== 'none');
@@ -4451,13 +4343,10 @@ function cardHTML(r) {
     var isAdoptPend  = r.adoptionStatus === 'pending';
     var isAdopted    = r.adoptionStatus === 'adopted';
     if (_onHold && isAdoptAvail) {
-      /* Hold active — calculate days remaining, block adopt button */
       var _hDays  = (r.holdType === 'bite' || r.holdType === 'dangerous') ? 10 : 5;
       var _hStart = r.shelterHoldStart || r.date;
       var _hLeft  = Math.max(0, _hDays - Math.floor(daysSince(_hStart)));
-      var _hMsg   = _hLeft > 0
-        ? 'On hold — ' + _hLeft + ' day' + (_hLeft !== 1 ? 's' : '') + ' remaining before adoptable'
-        : 'Hold period ending — check back soon';
+      var _hMsg   = _hLeft > 0 ? 'On hold — ' + _hLeft + ' day' + (_hLeft !== 1 ? 's' : '') + ' remaining before adoptable' : 'Hold period ending — check back soon';
       adoptSection = '<div class="pc-adopt" style="background:linear-gradient(135deg,#fff0e0,#fde8c8);border-color:#c07000;color:#7a4500">⏸ ' + _hMsg + '</div>';
     } else if (!_onHold) {
       if (isAdoptAvail) {
@@ -4496,7 +4385,6 @@ function cardHTML(r) {
     + daysInShelterHTML
     + comments
     + matchBtn
-    + (matchBtn ? '<div id="search-results-' + r.id + '" style="margin-top:2px;font-size:.76rem"></div>' : '')
     + adoptSection
     + foundNote
     + reuniteBtn
@@ -4759,14 +4647,16 @@ function migrateToIntake(id) {
   }, 350);
 }
 
-async function searchMatchesFromFoundCard(foundId) {
-  var found = reports.find(function(x){ return String(x.id)===String(foundId); });
-  if (!found) return;
+async function searchMatchesFromCard(lostId) {
+  var lost = reports.find(function(x){ return String(x.id)===String(lostId); });
+  if (!lost) return;
 
-  var resultsId = 'card-match-results-' + foundId;
+  /* Show results area inside the pin card */
+  var resultsId = 'card-match-results-' + lostId;
   var existingEl = document.getElementById(resultsId);
   if (!existingEl) {
-    var btn = document.querySelector('[onclick="searchMatchesFromFoundCard(' + foundId + ')"]');
+    /* Create results container below the match button */
+    var btn = document.querySelector('[onclick="searchMatchesFromCard(' + lostId + ')"]');
     if (!btn) return;
     var el = document.createElement('div');
     el.id = resultsId;
@@ -4775,38 +4665,54 @@ async function searchMatchesFromFoundCard(foundId) {
     existingEl = el;
   }
 
-  var btn = document.querySelector('[onclick="searchMatchesFromFoundCard(' + foundId + ')"]');
+  var btn = document.querySelector('[onclick="searchMatchesFromCard(' + lostId + ')"]');
   if (btn) { btn.disabled = true; btn.textContent = '🔍 Searching…'; }
-  existingEl.innerHTML = '<div style="color:var(--warm-mid);font-style:italic;padding:6px 0">Searching lost pins for a possible owner…</div>';
 
-  var lostPins = reports.filter(function(r) {
-    return r.type === 'lost' && !r.reunited && String(r.id) !== String(foundId);
+  existingEl.innerHTML = '<div style="color:var(--warm-mid);font-style:italic;padding:6px 0">Searching Heartland animals and found pins…</div>';
+
+  /* Search shelter intakes AND active found pins */
+  var shelterAnimals = getShelterData({ includeHolds: true });
+  var foundPins = reports.filter(function(r) {
+    return r.type === 'found' && !r.reunited && !r.shelter && String(r.id) !== String(lostId);
   });
-  if (!lostPins.length) {
-    existingEl.innerHTML = '<div style="color:var(--warm-mid);padding:6px 0">No active lost reports to compare against.</div>';
+  if (!shelterAnimals.length && !foundPins.length) {
+    existingEl.innerHTML = '<div style="color:var(--warm-mid);padding:6px 0">No animals at Heartland or active found pins to compare against.</div>';
     if (btn) { btn.disabled = false; btn.textContent = '🔍 Search Again'; }
     return;
   }
 
-  var foundDesc = [
-    found.species && 'Species: ' + found.species,
-    found.breed   && 'Breed: '   + found.breed,
-    found.color   && 'Color: '   + found.color,
-    found.desc    && 'Description: ' + found.desc,
-    found.address && 'Found near: ' + found.address
+  var lostDesc = [
+    lost.name    && 'Name: ' + lost.name,
+    lost.species && 'Species: ' + lost.species,
+    lost.breed   && 'Breed: ' + lost.breed,
+    lost.color   && 'Color: ' + lost.color,
+    lost.desc    && 'Description: ' + lost.desc,
+    lost.address && 'Last seen near: ' + lost.address
   ].filter(Boolean).join('. ');
 
-  var lostList = 'ACTIVE LOST REPORTS:\n' + lostPins.map(function(r, i) {
-    return (i+1) + '. ID:' + r.id
-      + (r.name    ? ' Name:'    + r.name    : ' (unnamed)')
-      + (r.species ? ' Species:' + r.species : '')
-      + (r.breed   ? ' Breed:'   + r.breed   : '')
-      + (r.color   ? ' Color:'   + r.color   : '')
-      + (r.desc    ? ' Desc:'    + r.desc    : '')
-      + (r.owner   ? ' Owner:'   + r.owner   : '')
-      + (r.phone   ? ' Phone:'   + r.phone   : '')
-      + (r.address ? ' Last seen:' + r.address : '');
-  }).join('\n');
+  var shelterList = shelterAnimals.length
+    ? 'HEARTLAND INTAKE:\n' + shelterAnimals.map(function(r, i) {
+        return (i+1) + '. ID:' + r.id
+          + (r.name    ? ' Name:'    + r.name    : ' (unnamed)')
+          + (r.species ? ' Species:' + r.species : '')
+          + (r.breed   ? ' Breed:'   + r.breed   : '')
+          + (r.color   ? ' Color:'   + r.color   : '')
+          + (r.desc    ? ' Desc:'    + r.desc    : '')
+          + (r.address ? ' Found near:' + r.address : '');
+      }).join('\n')
+    : '';
+  var foundList = foundPins.length
+    ? 'FOUND PINS ON MAP:\n' + foundPins.map(function(r, i) {
+        return (i+1) + '. ID:' + r.id
+          + (r.species ? ' Species:' + r.species : '')
+          + (r.breed   ? ' Breed:'   + r.breed   : '')
+          + (r.color   ? ' Color:'   + r.color   : '')
+          + (r.desc    ? ' Desc:'    + r.desc    : '')
+          + (r.finder  ? ' Finder:'  + r.finder  : '')
+          + (r.phone   ? ' Phone:'   + r.phone   : '')
+          + (r.address ? ' Found near:' + r.address : '');
+      }).join('\n')
+    : '';
 
   try {
     var _ctrl = new AbortController();
@@ -4818,13 +4724,15 @@ async function searchMatchesFromFoundCard(foundId) {
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 600,
-        messages: [{ role: 'user', content:
-          'You are helping someone who found a stray pet in Hastings, Nebraska locate the owner.\n\n'
-          + 'FOUND ANIMAL:\n' + foundDesc + '\n\n'
-          + lostList + '\n\n'
-          + 'Compare the found animal against ALL lost reports and identify possible matches. '
-          + 'Return ONLY valid JSON — an array of match objects with: id (number), confidence ("high", "medium", or "low"), reason (1-2 warm sentences explaining the possible match), phone (owner phone if available). '
-          + 'Only include genuine possible matches. If nothing matches, return [].'
+        messages: [{
+          role: 'user',
+          content: 'You are helping someone find their lost pet at Heartland Pet Connection shelter in Hastings, Nebraska.\n\n'
+            + 'LOST PET:\n' + lostDesc + '\n\n'
+            + (shelterList ? shelterList + '\n\n' : '')
+            + (foundList  ? foundList  + '\n\n' : '')
+            + 'Compare the lost pet against ALL animals above and identify possible matches. '
+            + 'Return ONLY valid JSON — an array of match objects with: id (number), source ("heartland" or "found_pin"), confidence ("high", "medium", or "low"), reason (1-2 warm sentences explaining the possible match), phone (contact phone if available from the data). '
+            + 'Only include genuine possible matches. If nothing matches, return [].'
         }]
       })
     });
@@ -4836,183 +4744,17 @@ async function searchMatchesFromFoundCard(foundId) {
 
     if (!matches.length) {
       existingEl.innerHTML = '<div style="background:#f5f8ff;border-radius:8px;padding:10px 12px">'
-        + '<div style="font-weight:600;color:var(--warm-dk);margin-bottom:4px">No matching lost reports found</div>'
-        + '<div style="color:var(--warm-mid);line-height:1.5">No active lost pins closely match this animal. The owner may not have filed a report yet.</div>'
+        + '<div style="font-weight:600;color:var(--warm-dk);margin-bottom:4px">No close matches found right now</div>'
+        + '<div style="color:var(--warm-mid);line-height:1.5">Nothing at Heartland or on the found pins map closely matches your pet\'s description. '
+        + 'Call Heartland directly — new animals arrive daily.</div>'
+        + '<a href="tel:4024627387" style="display:block;text-align:center;margin-top:8px;padding:7px;background:var(--forest);color:#fff;border-radius:7px;font-family:var(--font-display);font-size:.78rem;font-weight:700;text-decoration:none">📞 Call (402) 462-7387</a>'
         + '</div>';
     } else {
       var confColor = { high: 'var(--found-g)', medium: 'var(--amber)', low: '#a0a0a0' };
       var confBg    = { high: '#f0fff4', medium: '#fffbf0', low: '#f8f8f8' };
       existingEl.innerHTML = '<div style="font-weight:700;color:var(--warm-dk);margin-bottom:8px">'
-        + '🔍 ' + matches.length + ' possible owner' + (matches.length>1?'s':'') + ' — is one of these theirs?</div>'
+        + '🔍 ' + matches.length + ' possible match' + (matches.length>1?'es':'') + ' — is one of these your pet?</div>'
         + matches.map(function(m) {
-          var a = lostPins.find(function(x){ return String(x.id)===String(m.id); });
-          if (!a) return '';
-          var aName  = a.name || (a.species || 'Unknown animal');
-          var aMeta  = [a.breed, a.color, a.sex, a.age].filter(Boolean).join(' · ');
-          var aAddr  = a.address ? '📍 Last seen near ' + a.address : '';
-          var aDate  = a.date ? '📅 ' + new Date(a.date).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
-          var aPhone = m.phone || a.phone || '';
-          var aTel   = aPhone.replace(/[^0-9+]/g,'');
-          var aImg   = a.photo
-            ? '<img src="' + a.photo + '" style="width:100%;height:120px;object-fit:contain;background:var(--cream-2);border-radius:6px;margin-bottom:8px">'
-            : '<div style="width:100%;height:60px;background:var(--cream-2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin-bottom:8px">' + (a.species==='Dog'?'🐕':a.species==='Cat'?'🐈':'🐾') + '</div>';
-          var yesBtn = aPhone
-            ? '<a href="tel:' + aTel + '" style="flex:1;display:block;text-align:center;padding:9px;background:var(--found-g);color:#fff;border-radius:8px;font-family:var(--font-display);font-size:.78rem;font-weight:700;text-decoration:none">✅ Yes — Call Owner</a>'
-            : '<div style="flex:1;font-size:.72rem;color:var(--warm-mid);font-style:italic;padding:8px 0;text-align:center">No phone on file</div>';
-          /* noBtn: avoid single-quote-in-string by traversing DOM directly */
-          var noBtn = '<button onclick="this.parentNode.parentNode.remove()" style="flex:1;padding:9px;background:var(--cream-2);color:var(--warm-mid);border:1.5px solid var(--cream-3);border-radius:8px;font-family:var(--font-display);font-size:.78rem;font-weight:700;cursor:pointer">❌ No — Different</button>';
-          return '<div style="background:' + (confBg[m.confidence]||'#f8f8f8') + ';border:1.5px solid ' + (confColor[m.confidence]||'#ccc') + ';border-radius:10px;padding:12px;margin-bottom:8px">'
-            + aImg
-            + '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">'
-            + '<strong style="color:var(--warm-dk);font-size:.88rem">' + esc(aName) + '</strong>'
-            + '<span style="font-size:.65rem;font-weight:800;color:' + (confColor[m.confidence]||'#a0a0a0') + ';text-transform:uppercase;letter-spacing:.05em">' + m.confidence + ' match</span>'
-            + '</div>'
-            + (aMeta ? '<div style="font-size:.72rem;color:var(--warm-mid);margin-bottom:4px">' + esc(aMeta) + '</div>' : '')
-            + (aAddr ? '<div style="font-size:.7rem;color:var(--warm-mid)">' + esc(aAddr) + '</div>' : '')
-            + (aDate ? '<div style="font-size:.7rem;color:var(--warm-mid);margin-bottom:6px">' + aDate + '</div>' : '')
-            + (a.owner ? '<div style="font-size:.76rem;font-weight:600;color:var(--warm-dk);margin-bottom:6px">Owner: ' + esc(a.owner) + '</div>' : '')
-            + '<div style="font-size:.74rem;color:var(--warm-dk);line-height:1.45;font-style:italic;margin-bottom:8px">' + esc(m.reason) + '</div>'
-            + '<div style="display:flex;gap:8px">' + yesBtn + noBtn + '</div>'
-            + '</div>';
-        }).join('');
-    }
-  } catch(e) {
-    clearTimeout(_tout || 0);
-    if (e.name === 'AbortError') {
-      existingEl.innerHTML = '<div style="color:var(--warm-mid);padding:6px 0">Search timed out — please try again.</div>';
-      if (btn) { btn.disabled = false; btn.textContent = '🔍 Search Again'; }
-      return;
-    }
-    existingEl.innerHTML = '<div style="color:var(--warm-mid);padding:6px 0">Search failed — please try again.</div>';
-  }
-  if (btn) { btn.disabled = false; btn.textContent = '🔍 Search Again'; }
-}
-
-async function searchMatchesFromCard(lostId, btn) {
-  /* Write Searching text immediately — FIRST action, before any async */
-  var resultsId = 'search-results-' + lostId;
-  var existingEl = document.getElementById(resultsId);
-  if (!existingEl) {
-    existingEl = document.createElement('div');
-    existingEl.id = resultsId;
-    existingEl.style.cssText = 'margin-top:8px;font-size:.76rem';
-    if (btn && btn.parentNode) {
-      btn.parentNode.insertBefore(existingEl, btn.nextSibling);
-    } else {
-      var cardBody = document.getElementById('pin-card-body');
-      if (cardBody) cardBody.appendChild(existingEl);
-    }
-  }
-  existingEl.innerHTML = '<div style="padding:8px 10px;background:#f0f4ff;border-radius:8px;color:#2050a0;font-weight:600;margin-bottom:4px">&#x1F50D; Searching for possible matches...</div>';
-  if (btn) { btn.disabled = true; btn.textContent = '&#x1F50D; Searching…'; }
-
-  var lost = reports.find(function(x){ return String(x.id)===String(lostId); });
-  if (!lost) {
-    existingEl.innerHTML = '<div style="color:var(--warm-mid);padding:6px 0">Could not load report &#x2014; please tap the pin and try again.</div>';
-    if (btn) { btn.disabled = false; btn.textContent = '&#x1F50D; Search Again'; }
-    return;
-  }
-
-  var shelterAnimals = getShelterData({ includeHolds: true });
-  var foundPins = reports.filter(function(r) {
-    return r.type === 'found' && !r.reunited && !r.shelter && String(r.id) !== String(lostId);
-  });
-  var candidates = shelterAnimals.concat(foundPins);
-
-  console.log('[MATCH SEARCH START]', lostId, lost.type, lost.species, !!lost.photo);
-  console.log('[MATCH CANDIDATES]', candidates.length, candidates.map(function(x){ return {id:x.id,type:x.type,species:x.species,hasPhoto:!!x.photo}; }));
-
-  /* Show candidate count immediately */
-  existingEl.innerHTML = '<div style="color:var(--warm-mid);font-style:italic;padding:4px 0">🔍 Searching… Candidates found: ' + candidates.length + '</div>';
-
-  if (!candidates.length) {
-    existingEl.innerHTML = '<div style="background:#f5f8ff;border-radius:8px;padding:10px 12px">'
-      + '<div style="font-weight:600;color:var(--warm-dk);margin-bottom:4px">No possible records found to compare</div>'
-      + '<div style="color:var(--warm-mid);line-height:1.5">No animals at Heartland or active found pins to compare against.</div>'
-      + '</div>';
-    if (btn) { btn.disabled = false; btn.textContent = '🔍 Search Again'; }
-    return;
-  }
-
-  /* ── Deterministic photo match — runs immediately, no AI needed ── */
-  function photosMatch(a, b) {
-    if (!a || !b) return false;
-    if (a === b) return true;
-    return String(a).slice(0, 200) === String(b).slice(0, 200);
-  }
-  var photoMatches = [];
-  candidates.forEach(function(c) {
-    if (photosMatch(lost.photo, c.photo)) {
-      var isFoundPin = !c.shelter;
-      photoMatches.push({
-        id: c.id,
-        source: isFoundPin ? 'found_pin' : 'heartland',
-        confidence: 'high',
-        reason: 'Photo appears to match the lost pet report.',
-        phone: c.fphone || c.phone || (isFoundPin ? '' : '4024627387')
-      });
-    }
-  });
-
-  if (photoMatches.length) {
-    console.log('[MATCH PHOTO HIT]', photoMatches.length, 'direct photo match(es)');
-  }
-
-  /* Update status with photo match result */
-  existingEl.innerHTML = '<div style="color:var(--warm-mid);font-style:italic;padding:4px 0">🔍 Comparing… Candidates: ' + candidates.length + ' · Photo match: ' + (photoMatches.length ? 'YES' : 'checking…') + '</div>';
-
-  /* Build AI prompt */
-  var lostDesc = [
-    lost.name    && 'Name: ' + lost.name,
-    lost.species && 'Species: ' + lost.species,
-    lost.breed   && 'Breed: ' + lost.breed,
-    lost.color   && 'Color: ' + lost.color,
-    lost.desc    && 'Description: ' + lost.desc,
-    lost.address && 'Last seen near: ' + lost.address,
-    lost.photo   ? 'HasPhoto:YES' : 'HasPhoto:NO'
-  ].filter(Boolean).join('. ');
-
-  var shelterList = shelterAnimals.length
-    ? 'HEARTLAND INTAKE:\n' + shelterAnimals.map(function(r, i) {
-        return (i+1) + '. ID:' + r.id
-          + (r.name    ? ' Name:'    + r.name    : ' (unnamed)')
-          + (r.species ? ' Species:' + r.species : '')
-          + (r.breed   ? ' Breed:'   + r.breed   : '')
-          + (r.color   ? ' Color:'   + r.color   : '')
-          + (r.desc    ? ' Desc:'    + r.desc    : '')
-          + (r.address ? ' Found near:' + r.address : '')
-          + (r.photo   ? ' HasPhoto:YES' : ' HasPhoto:NO');
-      }).join('\n')
-    : '';
-  var foundList = foundPins.length
-    ? 'FOUND PINS ON MAP:\n' + foundPins.map(function(r, i) {
-        return (i+1) + '. ID:' + r.id
-          + (r.species ? ' Species:' + r.species : '')
-          + (r.breed   ? ' Breed:'   + r.breed   : '')
-          + (r.color   ? ' Color:'   + r.color   : '')
-          + (r.desc    ? ' Desc:'    + r.desc    : '')
-          + (r.finder  ? ' Finder:'  + r.finder  : '')
-          + (r.fphone  ? ' Phone:'   + r.fphone  : r.phone ? ' Phone:' + r.phone : '')
-          + (r.address ? ' Found near:' + r.address : '')
-          + (r.photo   ? ' HasPhoto:YES' : ' HasPhoto:NO');
-      }).join('\n')
-    : '';
-
-  var confColor = { high: 'var(--found-g)', medium: 'var(--amber)', low: '#a0a0a0' };
-  var confBg    = { high: '#f0fff4', medium: '#fffbf0', low: '#f8f8f8' };
-
-  function renderMatches(matches) {
-    if (!matches.length) {
-      existingEl.innerHTML = '<div style="background:#f5f8ff;border-radius:8px;padding:10px 12px">'
-        + '<div style="font-weight:600;color:var(--warm-dk);margin-bottom:4px">No close matches found right now</div>'
-        + '<div style="color:var(--warm-mid);line-height:1.5">Nothing at Heartland or on the found pins map closely matches your pet\u2019s description. Call Heartland directly \u2014 new animals arrive daily.</div>'
-        + '<a href="tel:4024627387" style="display:block;text-align:center;margin-top:8px;padding:7px;background:var(--forest);color:#fff;border-radius:7px;font-family:var(--font-display);font-size:.78rem;font-weight:700;text-decoration:none">📞 Call (402) 462-7387</a>'
-        + '</div>';
-      return;
-    }
-    existingEl.innerHTML = '<div style="font-weight:700;color:var(--warm-dk);margin-bottom:8px">'
-      + '🔍 ' + matches.length + ' possible match' + (matches.length>1?'es':'') + ' — is one of these your pet?</div>'
-      + matches.map(function(m) {
           var isFoundPin = m.source === 'found_pin';
           var a = isFoundPin
             ? foundPins.find(function(x){ return String(x.id)===String(m.id); })
@@ -5023,11 +4765,11 @@ async function searchMatchesFromCard(lostId, btn) {
           var aFound = a.address ? '📍 Found near ' + a.address : '';
           var aDate  = a.date ? '📅 ' + new Date(a.date).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
           var aLabel = isFoundPin ? '📍 Found Pin — ' + (a.finder || 'Finder') : '🏠 Heartland Pet Connection';
-          var aPhone = m.phone || a.fphone || a.phone || (isFoundPin ? '' : '4024627387');
+          var aPhone = m.phone || a.phone || (isFoundPin ? '' : '4024627387');
           var aAction = aPhone
             ? '<a href="tel:' + aPhone + '" style="display:block;text-align:center;padding:7px;background:' + (isFoundPin ? 'var(--found-g)' : 'var(--forest)') + ';color:#fff;border-radius:7px;font-family:var(--font-display);font-size:.78rem;font-weight:700;text-decoration:none;margin-top:8px">📞 Contact ' + (isFoundPin ? 'Finder' : 'Heartland') + '</a>'
             : '';
-          var aImg = a.photo
+          var aImg   = a.photo
             ? '<img src="' + a.photo + '" style="width:100%;height:120px;object-fit:contain;background:var(--cream-2);border-radius:6px;margin-bottom:8px">'
             : '<div style="width:100%;height:60px;background:var(--cream-2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin-bottom:8px">' + (a.species==='Dog'?'🐕':a.species==='Cat'?'🐈':'🐾') + '</div>';
           return '<div style="background:' + (confBg[m.confidence]||'#f8f8f8') + ';border:1.5px solid ' + (confColor[m.confidence]||'#ccc') + ';border-radius:10px;padding:12px;margin-bottom:8px">'
@@ -5044,67 +4786,10 @@ async function searchMatchesFromCard(lostId, btn) {
             + aAction
             + '</div>';
         }).join('');
-  }
-
-  try {
-    var _ctrl = new AbortController();
-    var _tout = setTimeout(function(){ _ctrl.abort(); }, 15000);
-    var resp = await fetch('/api/anthropic', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      signal: _ctrl.signal,
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 600,
-        messages: [{ role: 'user', content:
-          'You are helping someone find their lost pet at Heartland Pet Connection shelter in Hastings, Nebraska.\n\n'
-          + 'LOST PET:\n' + lostDesc + '\n\n'
-          + (shelterList ? shelterList + '\n\n' : '')
-          + (foundList  ? foundList  + '\n\n' : '')
-          + 'Compare the lost pet against ALL animals above and identify possible matches. '
-          + 'When both the lost pet AND a candidate have HasPhoto:YES, treat this as a strong signal and weight it heavily toward high confidence. '
-          + 'Return ONLY valid JSON — an array of match objects with: id (number), source ("heartland" or "found_pin"), confidence ("high", "medium", or "low"), reason (1-2 warm sentences explaining the possible match), phone (contact phone if available from the data). '
-          + 'Only include genuine possible matches. If nothing matches, return [].'
-        }]
-      })
-    });
-    clearTimeout(_tout);
-    var data = await resp.json();
-    if (data.error) throw new Error(data.error.message);
-    var text = (data.content||[]).map(function(b){ return b.text||''; }).join('').trim();
-    var matches = JSON.parse(text.replace(/```json|```/g,'').trim());
-
-    /* Merge deterministic photo matches — photo hits prepended, dedup by id */
-    photoMatches.forEach(function(pm) {
-      if (!matches.find(function(m){ return String(m.id) === String(pm.id); })) {
-        matches.unshift(pm);
-      }
-    });
-    console.log('[MATCH RESULTS]', matches);
-    renderMatches(matches);
-
+    }
   } catch(e) {
     clearTimeout(_tout || 0);
     if (e.name === 'AbortError') {
-      if (photoMatches.length) {
-        /* Photo match found — show even if AI timed out */
-        existingEl.innerHTML = '<div style="font-weight:700;color:var(--warm-dk);margin-bottom:8px">🔍 Photo match found</div>'
-          + photoMatches.map(function(pm){
-              var isFoundPin = pm.source === 'found_pin';
-              var a = isFoundPin ? foundPins.find(function(x){ return String(x.id)===String(pm.id); }) : shelterAnimals.find(function(x){ return String(x.id)===String(pm.id); });
-              if (!a) return '';
-              var aPhone = pm.phone || a.fphone || a.phone || (isFoundPin ? '' : '4024627387');
-              var aImg = a.photo ? '<img src="' + a.photo + '" style="width:100%;height:120px;object-fit:contain;background:var(--cream-2);border-radius:6px;margin-bottom:8px">' : '';
-              var aAction = aPhone ? '<a href="tel:' + aPhone + '" style="display:block;text-align:center;padding:7px;background:var(--found-g);color:#fff;border-radius:7px;font-family:var(--font-display);font-size:.78rem;font-weight:700;text-decoration:none;margin-top:8px">📞 Contact ' + (isFoundPin?'Finder':'Heartland') + '</a>' : '';
-              return '<div style="background:#f0fff4;border:1.5px solid var(--found-g);border-radius:10px;padding:12px;margin-bottom:8px">'
-                + aImg + '<strong style="color:var(--warm-dk);font-size:.88rem">' + esc(a.name||a.species||'Unknown') + '</strong>'
-                + '<span style="float:right;font-size:.65rem;font-weight:800;color:var(--found-g);text-transform:uppercase">HIGH MATCH</span>'
-                + '<div style="font-size:.74rem;color:var(--warm-dk);font-style:italic;margin:6px 0">' + esc(pm.reason) + '</div>'
-                + aAction + '</div>';
-            }).join('');
-        if (btn) { btn.disabled = false; btn.textContent = '🔍 Search Again'; }
-        return;
-      }
       existingEl.innerHTML = '<div style="color:var(--warm-mid);padding:6px 0">Search timed out — please try again.</div>';
       if (btn) { btn.disabled = false; btn.textContent = '🔍 Search Again'; }
       return;
@@ -5120,11 +4805,101 @@ async function searchMatchesFromCard(lostId, btn) {
         + '<a href="tel:4024627387" style="display:block;text-align:center;padding:7px;background:var(--forest);color:#fff;border-radius:7px;font-family:var(--font-display);font-size:.78rem;font-weight:700;text-decoration:none">📞 Call (402) 462-7387</a>'
         + '</div>';
     } else {
-      existingEl.innerHTML = '<div style="color:var(--warm-mid);padding:6px 0">No close matches found. Call Heartland directly: (402) 462-7387.</div>';
+      existingEl.innerHTML = '<div style="color:var(--warm-mid);padding:6px 0">No close matches found. Call Heartland directly at (402) 462-7387.</div>';
     }
   }
   if (btn) { btn.disabled = false; btn.textContent = '🔍 Search Again'; }
 }
+
+
+/* ── AUTO-MATCH ON INTAKE ─────────────────────────────────────────────── */
+/* ── MATCH FOUND PANEL ─────────────────────────────────────────────────────────────────────
+   Non-blocking panel — does NOT block map. Call prompt only after Yes.
+───────────────────────────────────────────────────────────────────────────── */
+function showMatchFoundPanel(lostPet, intake) {
+  var ep = document.getElementById('match-found-panel');
+  var eb = document.getElementById('match-found-bd');
+  if (ep) ep.remove();
+  if (eb) eb.remove();
+  var name = lostPet.name || (lostPet.species || 'pet');
+  var meta = [lostPet.species, lostPet.breed, lostPet.color].filter(Boolean).join(' · ');
+  var bd = document.createElement('div');
+  bd.id = 'match-found-bd';
+  bd.style.cssText = 'position:fixed;inset:0;z-index:5100;background:rgba(0,0,0,.5)';
+  var panel = document.createElement('div');
+  panel.id = 'match-found-panel';
+  panel.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:5101;background:var(--cream);border-radius:18px 18px 0 0;padding:22px 22px 32px;box-shadow:0 -8px 40px rgba(0,0,0,.3)';
+  panel.innerHTML =
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">'
+    + '<div style="font-family:var(--font-display);font-size:1.05rem;font-weight:700;color:var(--warm-dk)">Possible Owner Found</div>'
+    + '<button onclick="(function(){var p=document.getElementById(\'match-found-panel\');var b=document.getElementById(\'match-found-bd\');if(p)p.remove();if(b)b.remove();})()" style="background:var(--cream-2);border:none;border-radius:50%;width:32px;height:32px;font-size:1rem;cursor:pointer">&times;</button>'
+    + '</div>'
+    + '<div style="background:#e8f4e9;border:1.5px solid var(--found-g);border-radius:10px;padding:12px 14px;margin-bottom:16px">'
+    + '<div style="font-size:.74rem;color:#2d6a35;font-weight:600;margin-bottom:5px">AI found a possible match for this intake:</div>'
+    + '<div style="font-family:var(--font-display);font-size:.98rem;font-weight:700;color:var(--warm-dk);margin-bottom:2px">' + esc(name) + '</div>'
+    + (meta ? '<div style="font-size:.76rem;color:var(--warm-mid)">' + esc(meta) + '</div>' : '')
+    + (lostPet.owner ? '<div style="font-size:.76rem;color:var(--warm-mid);margin-top:3px">Owner: ' + esc(lostPet.owner) + '</div>' : '')
+    + (lostPet.address ? '<div style="font-size:.72rem;color:var(--warm-mid)">Last seen: ' + esc(lostPet.address) + '</div>' : '')
+    + '</div>'
+    + '<div style="display:flex;gap:10px">'
+    + '<button onclick="(function(){'  
+      + 'var p=document.getElementById(\'match-found-panel\');'
+      + 'var b=document.getElementById(\'match-found-bd\');'
+      + 'if(p)p.remove();if(b)b.remove();'
+      + 'setTimeout(function(){showCallOwnerPrompt(' + JSON.stringify({id:lostPet.id,name:lostPet.name||'',owner:lostPet.owner||'',phone:lostPet.phone||'',species:lostPet.species||'',breed:lostPet.breed||'',color:lostPet.color||''}) + ',null);},100);'
+      + '})()" style="flex:1;padding:12px;border:none;border-radius:10px;background:var(--found-g);color:#fff;font-family:var(--font-display);font-size:.9rem;font-weight:700;cursor:pointer">Yes — Contact Owner</button>'
+    + '<button onclick="(function(){var p=document.getElementById(\'match-found-panel\');var b=document.getElementById(\'match-found-bd\');if(p)p.remove();if(b)b.remove();})()" style="flex:1;padding:12px;border:1.5px solid var(--cream-3);border-radius:10px;background:#fff;font-family:var(--font-display);font-size:.9rem;font-weight:700;cursor:pointer;color:var(--warm-mid)">No — Different Animal</button>'
+    + '</div>';
+  bd.onclick = function() { panel.remove(); bd.remove(); };
+  document.body.appendChild(bd);
+  panel.style.transform = 'translateY(100%)';
+  panel.style.transition = 'transform .3s cubic-bezier(.34,1.2,.64,1)';
+  document.body.appendChild(panel);
+  requestAnimationFrame(function(){ requestAnimationFrame(function(){ panel.style.transform = 'translateY(0)'; }); });
+}
+
+function showCallOwnerPrompt(lostPet, intake) {
+  var ep = document.getElementById('call-owner-panel');
+  var eb = document.getElementById('call-owner-bd');
+  if (ep) ep.remove();
+  if (eb) eb.remove();
+  var name  = lostPet.name || (lostPet.species || 'pet');
+  var owner = lostPet.owner || 'Owner';
+  var phone = lostPet.phone || '';
+  var tel   = phone.replace(/[^0-9+]/g, '');
+  var meta  = [lostPet.species, lostPet.breed, lostPet.color].filter(Boolean).join(' · ');
+  var bd = document.createElement('div');
+  bd.id = 'call-owner-bd';
+  bd.style.cssText = 'position:fixed;inset:0;z-index:5200;background:rgba(0,0,0,.55)';
+  var panel = document.createElement('div');
+  panel.id = 'call-owner-panel';
+  panel.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:5201;background:var(--cream);border-radius:18px 18px 0 0;padding:22px 22px 32px;box-shadow:0 -8px 40px rgba(0,0,0,.3)';
+  var dis = "(function(){var p=document.getElementById('call-owner-panel');var b=document.getElementById('call-owner-bd');if(p)p.remove();if(b)b.remove();setView('incare',document.querySelector('.tab-btn[onclick*=incare]'));})()";
+  panel.innerHTML =
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">'
+    + '<div style="font-family:var(--font-display);font-size:1.05rem;font-weight:700;color:var(--warm-dk)">Call the Owner</div>'
+    + '<button onclick="' + dis + '" style="background:var(--cream-2);border:none;border-radius:50%;width:32px;height:32px;font-size:1rem;cursor:pointer">&times;</button>'
+    + '</div>'
+    + '<div style="background:#e8f4e9;border:1.5px solid var(--found-g);border-radius:10px;padding:12px 14px;margin-bottom:16px">'
+    + '<div style="font-size:.74rem;color:#2d6a35;font-weight:600;margin-bottom:4px">Possible match for this intake:</div>'
+    + '<div style="font-family:var(--font-display);font-size:.98rem;font-weight:700;color:var(--warm-dk);margin-bottom:2px">' + esc(name) + '</div>'
+    + (meta ? '<div style="font-size:.76rem;color:var(--warm-mid)">' + esc(meta) + '</div>' : '')
+    + '</div>'
+    + '<div style="font-size:.8rem;font-weight:600;color:var(--warm-mid);margin-bottom:4px">Owner</div>'
+    + '<div style="font-size:.96rem;font-weight:700;color:var(--warm-dk);margin-bottom:14px">' + esc(owner) + '</div>'
+    + (phone
+      ? '<a href="tel:' + tel + '" style="display:block;width:100%;padding:14px;text-align:center;background:var(--found-g);color:#fff;border-radius:12px;font-family:var(--font-display);font-size:1rem;font-weight:700;text-decoration:none;margin-bottom:10px;box-sizing:border-box">Call ' + esc(phone) + '</a>'
+        + '<a href="sms:' + tel + '" style="display:block;width:100%;padding:12px;text-align:center;background:#2050a0;color:#fff;border-radius:12px;font-family:var(--font-display);font-size:.9rem;font-weight:700;text-decoration:none;margin-bottom:12px;box-sizing:border-box">Text Owner</a>'
+      : '<div style="font-size:.82rem;color:var(--warm-mid);margin-bottom:12px;font-style:italic">No phone on file — check the lost report on the map.</div>')
+    + '<button onclick="' + dis + '" style="width:100%;padding:12px;background:var(--forest);color:#fff;border:none;border-radius:10px;font-family:var(--font-display);font-size:.9rem;font-weight:700;cursor:pointer">Done — Go to In Care</button>';
+  bd.onclick = function() { panel.remove(); bd.remove(); setView('incare',document.querySelector('.tab-btn[onclick*=incare]')); };
+  document.body.appendChild(bd);
+  panel.style.transform = 'translateY(100%)';
+  panel.style.transition = 'transform .3s cubic-bezier(.34,1.2,.64,1)';
+  document.body.appendChild(panel);
+  requestAnimationFrame(function(){ requestAnimationFrame(function(){ panel.style.transform = 'translateY(0)'; }); });
+}
+
 async function autoMatchOnIntake(intake) {
   var lostPets = reports.filter(function(r){
     return r.type === 'lost' && !r.reunited && !r.shelter;
@@ -5158,12 +4933,11 @@ async function autoMatchOnIntake(intake) {
     var best = matches[0];
     var lostPet = lostPets.find(function(r){return String(r.id)===String(best.id);});
     var petName = lostPet ? (lostPet.name || lostPet.species || 'pet') : 'a pet';
-    pushBannerEvent('\uD83D\uDD0D ' + matches.length + ' possible lost pet match' + (matches.length>1?'es':'') + ' for this intake \u2014 ' + petName + ' was reported missing nearby. Check the map.', '#2050a0');
+    pushBannerEvent('\uD83D\uDD0D ' + matches.length + ' possible lost pet match' + (matches.length>1?'es':'') + ' for this intake \u2014 ' + petName + ' was reported missing.', '#2050a0');
     intake.possibleMatchIds = matches.map(function(m){return m.id;});
     save();
-    if (USE_FIREBASE && _fbReady && db) {
-      writeAnimalRecord(intake, 'staff');
-    }
+    if (USE_FIREBASE && _fbReady && db) { writeAnimalRecord(intake, 'staff'); }
+    if (lostPet) setTimeout(function(){ showMatchFoundPanel(lostPet, intake); }, 400);
   } catch(e) { console.warn('Auto-match error:', e.message); }
 }
 
@@ -6133,13 +5907,11 @@ function writeAnimalRecord(r, source) {
         .catch(function(e) { console.error('[WRITE TO FIRESTORE FAILED]', { id: doc.id, error: e.message, code: e.code }); });
     };
     if (r.photo && r.photo.indexOf('data:') === 0) {
-      /* Compress first, then write ONCE with photo attached — no two-write race */
       compressDataUrl(r.photo, function(compressed) {
         var doc = Object.assign({}, r, { photo: compressed });
         _writeToFS(doc);
       });
     } else {
-      /* No photo — strip falsy photo field so merge never overwrites existing photo with null */
       var doc = Object.assign({}, r);
       if (!doc.photo) delete doc.photo;
       _writeToFS(doc);
@@ -6999,7 +6771,6 @@ function selectIntake(id) {
           + (r.foundReportAddress ? '<div style="color:var(--warm-mid);margin-top:2px">📍 ' + esc(r.foundReportAddress) + '</div>' : '')
           + '</div>';
       })()
-
     + '<div class="sh-sec">AI Match Search</div>'
     + '<button class="sh-btn primary" style="width:100%;margin-bottom:6px" onclick="searchMatches(' + r.id + ')">🔍 Search Lost Pets for Matches</button>'
     + '<div id="sh-match-results-' + r.id + '" class="sh-match-results"></div>'
