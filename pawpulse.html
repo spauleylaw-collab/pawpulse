@@ -2389,7 +2389,6 @@ function checkFoundPinsOnIntake(intakeRecord) {
 
   var panel = document.createElement('div');
   panel.id = 'intake-found-match-panel';
-  panel.dataset.intakeId = String(intakeRecord.id); /* link back to intake for field copy */
   panel.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:4000;background:#fff;border-radius:18px 18px 0 0;box-shadow:0 -8px 40px rgba(0,0,0,.25);padding:20px;max-height:70vh;overflow-y:auto;-webkit-overflow-scrolling:touch';
 
   var r = top.r;
@@ -2410,7 +2409,7 @@ function checkFoundPinsOnIntake(intakeRecord) {
     + atShelterNote
     + '</div>'
     + '<div style="display:flex;gap:10px">'
-    + '<button onclick="resolveFoundPinFromIntake(\'' + r.id + '\')" style="flex:1;padding:12px;border:none;border-radius:10px;background:var(--forest);color:#fff;font-family:var(--font-display);font-size:.9rem;font-weight:700;cursor:pointer">✅ Yes — Same Animal</button>'
+    + '<button onclick="resolveFoundPinFromIntake(\'' + r.id + '\',\'' + intakeRecord.id + '\')" style="flex:1;padding:12px;border:none;border-radius:10px;background:var(--forest);color:#fff;font-family:var(--font-display);font-size:.9rem;font-weight:700;cursor:pointer">✅ Yes — Same Animal</button>'
     + '<button onclick="var p=document.getElementById(\'intake-found-match-panel\');var bd2=document.getElementById(\\\'intake-found-match-bd\\\');if(bd2)bd2.remove();if(p)p.remove();" style="flex:1;padding:12px;border:1.5px solid var(--cream-3);border-radius:10px;background:#fff;font-family:var(--font-display);font-size:.9rem;font-weight:700;cursor:pointer;color:var(--warm-dk)">No — Different Animal</button>'
     + '</div>';
 
@@ -2431,39 +2430,37 @@ function checkFoundPinsOnIntake(intakeRecord) {
   });
 }
 
-function resolveFoundPinFromIntake(foundId) {
-  console.log('[INTAKE MATCH YES]', foundId);
+function resolveFoundPinFromIntake(foundId, intakeId) {
+  console.log('[INTAKE MATCH YES]', foundId, intakeId);
   var panel = document.getElementById('intake-found-match-panel');
   if (panel) panel.remove();
-  /* Remove backdrop by stable ID */
   var _ibd = document.getElementById('intake-found-match-bd');
   if (_ibd) _ibd.remove();
 
-  var r = reports.find(function(x){ return String(x.id) === String(foundId); });
-  if (!r) { console.warn('[INTAKE MATCH YES] record not found for id', foundId); return; }
-  r.reunited = true;
-  r.reunitedDate = new Date().toISOString();
-  r.resolvedByIntake = true;
+  var found = reports.find(function(x){ return String(x.id) === String(foundId); });
+  if (!found) { console.warn('[INTAKE MATCH YES] found pin not found', foundId); return; }
+  var intake = intakeId ? reports.find(function(x){ return String(x.id) === String(intakeId); }) : null;
 
-  /* Copy finder contact fields to the linked intake record */
-  var _panel = document.getElementById('intake-found-match-panel');
-  var _intakeId = _panel ? _panel.dataset.intakeId : null;
-  if (_intakeId) {
-    var intake = reports.find(function(x){ return String(x.id) === String(_intakeId); });
-    if (intake) {
-      intake.linkedFoundId      = r.id;
-      if (r.finder)  intake.foundContactName  = r.finder;
-      if (r.fphone)  intake.foundContactPhone = r.fphone;
-      if (r.address && !intake.address) intake.foundAddress = r.address;
-      if (r.date)    intake.foundDate         = r.date;
-      if (r.photo && !intake.photo) intake.photo = r.photo;
-      console.log('[INTAKE MATCH] linked found contact to intake', _intakeId);
-      writeAnimalRecord(intake, 'staff');
-    }
+  /* Mark found pin resolved — removes from public map */
+  found.reunited = true;
+  found.reunitedDate = new Date().toISOString();
+  found.resolvedByIntake = true;
+  if (intake) found.migratedTo = String(intake.id);
+
+  /* Copy contact fields from found pin onto intake record */
+  if (intake) {
+    intake.linkedFoundReportId       = String(found.id);
+    intake.foundReportContactName    = found.finder  || '';
+    intake.foundReportContactPhone   = found.fphone  || found.phone || '';
+    intake.foundReportAddress        = found.address || '';
+    intake.foundReportDate           = found.date    || '';
+    if (!intake.photo && found.photo) intake.photo = found.photo;
+    console.log('[INTAKE MATCH] contact linked to intake', intakeId);
   }
 
   save();
-  writeAnimalRecord(r, 'staff');
+  writeAnimalRecord(found, 'staff');
+  if (intake) writeAnimalRecord(intake, 'staff');
   refreshMapPins('intake-match-resolved');
   updateNavCounts();
   pushBannerEvent('📍 Found pin matched — contact info linked to intake', 'var(--found-g)');
@@ -6958,12 +6955,12 @@ function selectIntake(id) {
     + (r.desc ? '<div class="sh-panel-desc">' + esc(r.desc) + '</div>' : '')
     + (r.address ? '<div style="font-size:.78rem;color:var(--warm-mid);margin-bottom:12px">📍 Found near: ' + esc(r.address) + '</div>' : '')
     + (r.finder ? '<div style="font-size:.78rem;color:var(--warm-mid);margin-bottom:14px">📞 Reported by: ' + esc(r.finder) + (r.fphone?' · '+esc(r.fphone):'') + '</div>' : '')
-    + (r.foundContactName || r.foundContactPhone
+    + (r.foundReportContactName || r.foundReportContactPhone
         ? '<div style="background:#f0fff4;border:1.5px solid #a0d4b0;border-radius:8px;padding:8px 12px;margin-bottom:14px;font-size:.78rem">'
           + '<div style="font-size:.64rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--found-g);margin-bottom:3px">Found Report Contact</div>'
-          + (r.foundContactName ? '<span style="color:var(--warm-dk);font-weight:600">' + esc(r.foundContactName) + '</span>' : '')
-          + (r.foundContactPhone ? ' · <a href="tel:' + r.foundContactPhone.replace(/[^0-9+]/g,'') + '" style="color:var(--forest);font-weight:600;text-decoration:none">' + esc(r.foundContactPhone) + '</a>' : '')
-          + (r.foundAddress ? '<div style="color:var(--warm-mid);margin-top:2px">📍 ' + esc(r.foundAddress) + '</div>' : '')
+          + (r.foundReportContactName ? '<span style="color:var(--warm-dk);font-weight:600">' + esc(r.foundReportContactName) + '</span>' : '')
+          + (r.foundReportContactPhone ? ' · <a href="tel:' + r.foundReportContactPhone.replace(/[^0-9+]/g,'') + '" style="color:var(--forest);font-weight:600;text-decoration:none">' + esc(r.foundReportContactPhone) + '</a>' : '')
+          + (r.foundReportAddress ? '<div style="color:var(--warm-mid);margin-top:2px">📍 ' + esc(r.foundReportAddress) + '</div>' : '')
           + '</div>'
         : '')
     + '<div class="sh-sec">AI Match Search</div>'
