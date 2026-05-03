@@ -6080,14 +6080,17 @@ function writeAnimalRecord(r, source) {
         .then(function() { console.log('[WRITE TO FIRESTORE OK]', doc.id); })
         .catch(function(e) { console.error('[WRITE TO FIRESTORE FAILED]', { id: doc.id, error: e.message, code: e.code }); });
     };
-    if (r.photo) {
-      /* Compress then write — photo travels with the record, no local cache needed */
+    if (r.photo && r.photo.indexOf('data:') === 0) {
+      /* Compress first, then write ONCE with photo attached — no two-write race */
       compressDataUrl(r.photo, function(compressed) {
         var doc = Object.assign({}, r, { photo: compressed });
         _writeToFS(doc);
       });
     } else {
-      _writeToFS(Object.assign({}, r));
+      /* No photo — strip falsy photo field so merge never overwrites existing photo with null */
+      var doc = Object.assign({}, r);
+      if (!doc.photo) delete doc.photo;
+      _writeToFS(doc);
     }
   }
 }
