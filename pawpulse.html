@@ -2409,7 +2409,7 @@ function checkFoundPinsOnIntake(intakeRecord) {
     + atShelterNote
     + '</div>'
     + '<div style="display:flex;gap:10px">'
-    + '<button onclick="resolveFoundPinFromIntake(' + r.id + ')" style="flex:1;padding:12px;border:none;border-radius:10px;background:var(--forest);color:#fff;font-family:var(--font-display);font-size:.9rem;font-weight:700;cursor:pointer">✅ Yes — Same Animal</button>'
+    + '<button onclick="resolveFoundPinFromIntake(\'' + r.id + '\')" style="flex:1;padding:12px;border:none;border-radius:10px;background:var(--forest);color:#fff;font-family:var(--font-display);font-size:.9rem;font-weight:700;cursor:pointer">✅ Yes — Same Animal</button>'
     + '<button onclick="var p=document.getElementById(\'intake-found-match-panel\');var bd2=document.getElementById(\\\'intake-found-match-bd\\\');if(bd2)bd2.remove();if(p)p.remove();" style="flex:1;padding:12px;border:1.5px solid var(--cream-3);border-radius:10px;background:#fff;font-family:var(--font-display);font-size:.9rem;font-weight:700;cursor:pointer;color:var(--warm-dk)">No — Different Animal</button>'
     + '</div>';
 
@@ -2431,14 +2431,15 @@ function checkFoundPinsOnIntake(intakeRecord) {
 }
 
 function resolveFoundPinFromIntake(foundId) {
+  console.log('[INTAKE MATCH YES]', foundId);
   var panel = document.getElementById('intake-found-match-panel');
   if (panel) panel.remove();
   /* Remove backdrop by stable ID */
   var _ibd = document.getElementById('intake-found-match-bd');
   if (_ibd) _ibd.remove();
 
-  var r = reports.find(function(x){ return x.id == foundId; });
-  if (!r) return;
+  var r = reports.find(function(x){ return String(x.id) === String(foundId); });
+  if (!r) { console.warn('[INTAKE MATCH YES] record not found for id', foundId); return; }
   r.reunited = true;
   r.reunitedDate = new Date().toISOString();
   r.resolvedByIntake = true;
@@ -10163,5 +10164,4 @@ function maybeShowTutorial() {
   </div>
 </div>
 </body>
-</html>s
-  
+</html>
