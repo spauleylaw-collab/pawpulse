@@ -1512,7 +1512,7 @@ function startFirestoreListener() {
     return;
   }
   try {
-    var _fsUnsub = db.collection('reports').onSnapshot(function(snapshot) {
+    _fsUnsub = db.collection('reports').onSnapshot(function(snapshot) {
       console.log('[FIRESTORE SNAPSHOT]', { size: snapshot.size, changes: snapshot.docChanges().length });
       if (window._pauseFirestoreSync) {
         /* Demo load or major write in progress — skip listener */
@@ -1934,6 +1934,23 @@ function doGuestView() {
   setTimeout(_dismissOverlay, 300);
   /* Safety: re-attach if db was unavailable during direct call */
   setTimeout(function() { ensurePublicReportsListener('guest-boot-safety-1500'); }, 1500);
+  /* Hydration watchdog: if Firestore snapshot still hasn't fired, force reattach */
+  setTimeout(function() {
+    if (!_fbReady && USE_FIREBASE && db) {
+      console.warn('[PAWPULSE] hydration-watchdog-2500: no snapshot yet, reattaching');
+      window._firestoreListenerActive = false;
+      _fsUnsub = null;
+      startFirestoreListener();
+    }
+  }, 2500);
+  setTimeout(function() {
+    if (!_fbReady && USE_FIREBASE && db) {
+      console.warn('[PAWPULSE] hydration-watchdog-5000: no snapshot yet, reattaching');
+      window._firestoreListenerActive = false;
+      _fsUnsub = null;
+      startFirestoreListener();
+    }
+  }, 5000);
 }
 
 function doSignOut() {
