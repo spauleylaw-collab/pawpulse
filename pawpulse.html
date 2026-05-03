@@ -2439,48 +2439,54 @@ function checkFoundPinsOnIntake(intakeRecord) {
 
 function resolveFoundPinFromIntake(foundId, intakeId) {
   console.log('[INTAKE MATCH YES]', foundId, intakeId);
+
   var found = reports.find(function(x){ return String(x.id) === String(foundId); });
-  var intakePre = intakeId ? reports.find(function(x){ return String(x.id) === String(intakeId); }) : null;
-  console.log('[MATCH FOUND]', found ? {id:found.id,type:found.type,finder:found.finder,fphone:found.fphone} : null);
-  console.log('[MATCH INTAKE BEFORE]', intakePre ? {id:intakePre.id,foundRCN:intakePre.foundReportContactName} : null);
-  console.log('[MATCH CONTACT COPY]', { name: found&&found.finder, phone: found&&(found.fphone||found.phone), intakeId: intakePre&&intakePre.id });
+  var intake = reports.find(function(x){ return String(x.id) === String(intakeId); });
+
+  console.log('[MATCH FOUND]', found);
+  console.log('[MATCH INTAKE BEFORE]', intake);
+  console.log('[MATCH CONTACT COPY]', {
+    name:     found && found.finder,
+    phone:    found && (found.fphone || found.phone),
+    intakeId: intake && intake.id
+  });
+
   var panel = document.getElementById('intake-found-match-panel');
   if (panel) panel.remove();
   var _ibd = document.getElementById('intake-found-match-bd');
   if (_ibd) _ibd.remove();
 
   if (!found) { console.warn('[INTAKE MATCH YES] found pin not found', foundId); return; }
-  var intake = intakePre;
+  if (!intake) { console.warn('[INTAKE CONTACT FAIL] intake not found', intakeId); return; }
 
-  /* Mark found pin resolved — removes from public map */
+  /* Copy contact fields — set BOTH old and new field names so card always has something to read */
+  intake.finder                  = found.finder || intake.finder || '';
+  intake.fphone                  = found.fphone || found.phone || intake.fphone || '';
+  intake.foundReportContactName  = found.finder || '';
+  intake.foundReportContactPhone = found.fphone || found.phone || '';
+  intake.foundReportAddress      = found.address || '';
+  intake.foundReportDate         = found.date || '';
+  intake.linkedFoundReportId     = String(found.id);
+  if (!intake.photo && found.photo) intake.photo = found.photo;
+
+  console.log('[MATCH INTAKE AFTER]', intake);
+
+  /* Write intake first so contact fields persist */
+  writeAnimalRecord(intake, 'staff');
+
+  /* Resolve found pin — removes from public map */
   found.reunited = true;
-  found.reunitedDate = new Date().toISOString();
   found.resolvedByIntake = true;
-  if (intake) found.migratedTo = String(intake.id);
-
-  /* Copy contact fields from found pin onto intake record */
-  if (intake) {
-    intake.linkedFoundReportId       = String(found.id);
-    intake.foundReportContactName    = found.finder  || '';
-    intake.foundReportContactPhone   = found.fphone  || found.phone || '';
-    intake.foundReportAddress        = found.address || '';
-    intake.foundReportDate           = found.date    || '';
-    if (!intake.photo && found.photo) intake.photo = found.photo;
-    console.log('[INTAKE MATCH] contact linked to intake', intakeId);
-    console.log('[MATCH INTAKE AFTER]', { id:intake.id, foundRCN:intake.foundReportContactName, foundRCP:intake.foundReportContactPhone });
-  }
+  found.migratedTo = String(intake.id);
+  writeAnimalRecord(found, 'staff');
 
   save();
-  writeAnimalRecord(found, 'staff');
-  if (intake) writeAnimalRecord(intake, 'staff');
+  renderIncareView();
+  selectIntake(intake.id);
   refreshMapPins('intake-match-resolved');
-  /* Re-render in-care panel so contact pill appears immediately */
-  if (intake && typeof selectIntake === 'function') selectIntake(intake.id);
   updateNavCounts();
   pushBannerEvent('📍 Found pin matched — contact info linked to intake', 'var(--found-g)');
 }
-
-
 function getIntakeEl(id) {
   /* Reads from intake modal body — prevents collision with toggleIntakeForm si-* IDs */
   var body = document.getElementById('intake-modal-body');
@@ -6968,15 +6974,18 @@ function selectIntake(id) {
     + '<div class="sh-panel-name">' + esc(name) + '</div>'
     + (r.desc ? '<div class="sh-panel-desc">' + esc(r.desc) + '</div>' : '')
     + (r.address ? '<div style="font-size:.78rem;color:var(--warm-mid);margin-bottom:12px">📍 Found near: ' + esc(r.address) + '</div>' : '')
-    + (r.finder ? '<div style="font-size:.78rem;color:var(--warm-mid);margin-bottom:14px">📞 Reported by: ' + esc(r.finder) + (r.fphone?' · '+esc(r.fphone):'') + '</div>' : '')
-    + (r.foundReportContactName || r.foundReportContactPhone
-        ? '<div style="background:#f0fff4;border:1.5px solid #a0d4b0;border-radius:8px;padding:8px 12px;margin-bottom:14px;font-size:.78rem">'
+    + (function(){
+        var cName  = r.foundReportContactName  || r.finder  || '';
+        var cPhone = r.foundReportContactPhone || r.fphone  || '';
+        if (!cName && !cPhone) return '';
+        return '<div style="background:#f0fff4;border:1.5px solid #a0d4b0;border-radius:8px;padding:8px 12px;margin-bottom:14px;font-size:.78rem">'
           + '<div style="font-size:.64rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--found-g);margin-bottom:3px">Found Report Contact</div>'
-          + (r.foundReportContactName ? '<span style="color:var(--warm-dk);font-weight:600">' + esc(r.foundReportContactName) + '</span>' : '')
-          + (r.foundReportContactPhone ? ' · <a href="tel:' + r.foundReportContactPhone.replace(/[^0-9+]/g,'') + '" style="color:var(--forest);font-weight:600;text-decoration:none">' + esc(r.foundReportContactPhone) + '</a>' : '')
+          + (cName ? '<span style="color:var(--warm-dk);font-weight:600">' + esc(cName) + '</span>' : '')
+          + (cPhone ? ' · <a href="tel:' + cPhone.replace(/[^0-9+]/g,'') + '" style="color:var(--forest);font-weight:600;text-decoration:none">' + esc(cPhone) + '</a>' : '')
           + (r.foundReportAddress ? '<div style="color:var(--warm-mid);margin-top:2px">📍 ' + esc(r.foundReportAddress) + '</div>' : '')
-          + '</div>'
-        : '')
+          + '</div>';
+      })()
+
     + '<div class="sh-sec">AI Match Search</div>'
     + '<button class="sh-btn primary" style="width:100%;margin-bottom:6px" onclick="searchMatches(' + r.id + ')">🔍 Search Lost Pets for Matches</button>'
     + '<div id="sh-match-results-' + r.id + '" class="sh-match-results"></div>'
