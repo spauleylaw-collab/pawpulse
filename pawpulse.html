@@ -2548,6 +2548,7 @@ function submitIntakeFromModal() {
     renderIncareView();
     pushBannerEvent((isHold?'⚠️ Animal on hold logged at ':'🐾 New animal received at ') + activeShelter, isHold?'#d4843a':'var(--found-g)');
     if (!isHold) setTimeout(function(){ autoMatchOnIntake(r); }, 800);
+    setTimeout(function(){ checkFoundPinsOnIntake(r); }, 1200);
     window._migrateFromId = null;
   }, 300);
 }
@@ -10162,4 +10163,5 @@ function maybeShowTutorial() {
   </div>
 </div>
 </body>
-</html>
+</html>s
+  
