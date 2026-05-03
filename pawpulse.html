@@ -1270,7 +1270,7 @@ document.addEventListener("DOMContentLoaded", function() {
 })();
 
 /* Map init — synchronous. Script tag is at bottom of body so #map div exists. */
-window.PAWPULSE_BUILD = 'map-baseline-2026-05-04';
+window.PAWPULSE_BUILD = 'map-baseline-2026-05-05';
 console.log('[PAWPULSE BUILD]', window.PAWPULSE_BUILD);
 document.addEventListener('DOMContentLoaded', function(){
   document.body.insertAdjacentHTML('beforeend',
@@ -4490,6 +4490,7 @@ function cardHTML(r) {
     + daysInShelterHTML
     + comments
     + matchBtn
+    + (matchBtn ? '<div id="search-results-' + r.id + '" style="margin-top:2px;font-size:.76rem"></div>' : '')
     + adoptSection
     + foundNote
     + reuniteBtn
@@ -4882,33 +4883,30 @@ async function searchMatchesFromFoundCard(foundId) {
 }
 
 async function searchMatchesFromCard(lostId, btn) {
-  var lost = reports.find(function(x){ return String(x.id)===String(lostId); });
-  if (!lost) return;
-
-  /* Always find or create a results container — never exit silently */
-  var resultsId = 'card-match-results-' + lostId;
+  /* Write Searching text immediately — FIRST action, before any async */
+  var resultsId = 'search-results-' + lostId;
   var existingEl = document.getElementById(resultsId);
   if (!existingEl) {
-    /* Try to anchor below the clicked button first */
-    var anchor = btn || document.querySelector('[onclick*="searchMatchesFromCard"][onclick*="' + lostId + '"]');
-    var el = document.createElement('div');
-    el.id = resultsId;
-    el.style.cssText = 'margin-top:8px;font-size:.76rem';
-    if (anchor && anchor.parentNode) {
-      anchor.parentNode.insertBefore(el, anchor.nextSibling);
+    existingEl = document.createElement('div');
+    existingEl.id = resultsId;
+    existingEl.style.cssText = 'margin-top:8px;font-size:.76rem';
+    if (btn && btn.parentNode) {
+      btn.parentNode.insertBefore(existingEl, btn.nextSibling);
     } else {
-      /* Fallback: append to pin-card-body */
       var cardBody = document.getElementById('pin-card-body');
-      if (cardBody) cardBody.appendChild(el);
+      if (cardBody) cardBody.appendChild(existingEl);
     }
-    existingEl = el;
+  }
+  existingEl.innerHTML = '<div style="padding:8px 10px;background:#f0f4ff;border-radius:8px;color:#2050a0;font-weight:600;margin-bottom:4px">&#x1F50D; Searching for possible matches...</div>';
+  if (btn) { btn.disabled = true; btn.textContent = '&#x1F50D; Searching…'; }
+
+  var lost = reports.find(function(x){ return String(x.id)===String(lostId); });
+  if (!lost) {
+    existingEl.innerHTML = '<div style="color:var(--warm-mid);padding:6px 0">Could not load report &#x2014; please tap the pin and try again.</div>';
+    if (btn) { btn.disabled = false; btn.textContent = '&#x1F50D; Search Again'; }
+    return;
   }
 
-  /* Immediate visible status */
-  if (btn) { btn.disabled = true; btn.textContent = '🔍 Searching…'; }
-  existingEl.innerHTML = '<div style="color:var(--warm-mid);font-style:italic;padding:6px 0">🔍 Searching Heartland and found pins…</div>';
-
-  /* Search candidates */
   var shelterAnimals = getShelterData({ includeHolds: true });
   var foundPins = reports.filter(function(r) {
     return r.type === 'found' && !r.reunited && !r.shelter && String(r.id) !== String(lostId);
