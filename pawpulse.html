@@ -1270,7 +1270,7 @@ document.addEventListener("DOMContentLoaded", function() {
 })();
 
 /* Map init — synchronous. Script tag is at bottom of body so #map div exists. */
-window.PAWPULSE_BUILD = 'map-baseline-2026-05-05';
+window.PAWPULSE_BUILD = 'map-baseline-2026-05-06';
 console.log('[PAWPULSE BUILD]', window.PAWPULSE_BUILD);
 document.addEventListener('DOMContentLoaded', function(){
   document.body.insertAdjacentHTML('beforeend',
@@ -1360,18 +1360,24 @@ var _fsUnsub  = null;  /* Firestore unsubscribe fn — true source of truth for 
 var _isStaff  = false;
 
 /* ── SAVE / LOAD ──────────────────────────────────────────────────────── */
+/* Safe localStorage cache — never throws, never stores photos */
+function safeLocalCache(records) {
+  try {
+    var _s = records.map(function(r){
+      var s = Object.assign({}, r); delete s.photo; return s;
+    });
+    localStorage.setItem('pawpulse-v2', JSON.stringify(_s));
+  } catch(e) {
+    console.warn('[PAWPULSE] cache skipped:', e && e.name);
+  }
+}
+
 function save() {
   /* Update in-memory photo cache for this session */
   reports.forEach(function(r) {
     if (r.photo) _photoCache[String(r.id)] = r.photo;
   });
-  /* Strip photos from localStorage — Firestore is source of truth for photos now */
-  try {
-    var _stripped = reports.map(function(r) {
-      var s = Object.assign({}, r); delete s.photo; return s;
-    });
-    localStorage.setItem('pawpulse-v2', JSON.stringify(_stripped));
-  } catch(e) { console.error('localStorage write failed:', e.message); }
+  safeLocalCache(reports);
 }
 
 function syncReportsToFirestore() {
@@ -1546,7 +1552,7 @@ function startFirestoreListener() {
           });
           /* Re-add any local records not yet confirmed by Firestore (in-flight pins) */
           localOnly.forEach(function(lr){ reports.push(lr); });
-          localStorage.setItem('pawpulse-v2', JSON.stringify(reports));
+          safeLocalCache(reports);
         }
         /* If Firestore empty, reports already loaded from localStorage in bootApp — keep them */
         _fbReady = true;
@@ -1602,7 +1608,7 @@ function startFirestoreListener() {
       });
 
       if (changed) {
-        localStorage.setItem('pawpulse-v2', JSON.stringify(reports));
+        safeLocalCache(reports);
         _recordsReady = true;
         tryInitialRender('firestore-changed-ready');
         refreshMapPins('firestore-changed-full-render');
