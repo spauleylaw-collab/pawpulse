@@ -2401,13 +2401,20 @@ function checkFoundPinsOnIntake(intakeRecord) {
     + '</div>'
     + '<div style="font-size:.84rem;color:var(--warm-mid);margin-bottom:14px;line-height:1.5">A found pet report on the map may match this intake. Resolving it removes the pin and prevents duplicates.</div>'
     + '<div style="background:var(--cream-2);border-radius:10px;padding:12px;margin-bottom:14px">'
+    + '<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:6px">'
+    + (r.photo
+        ? '<img src="' + r.photo + '" style="width:64px;height:64px;object-fit:cover;border-radius:8px;flex-shrink:0;background:var(--cream-2)">'
+        : '<div style="width:64px;height:64px;border-radius:8px;background:var(--cream-2);display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0">'
+          + (r.species==='Dog'?'🐕':r.species==='Cat'?'🐈':'🐾') + '</div>'
+      )
+    + '<div style="flex:1">'
     + '<div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--warm-mid);margin-bottom:6px">Found Pin Report</div>'
     + '<div style="font-size:.86rem;font-weight:600;color:var(--warm-dk)">' + esc(r.species||'Unknown') + (r.color ? ' · ' + esc(r.color) : '') + '</div>'
     + (r.address ? '<div style="font-size:.76rem;color:var(--warm-mid);margin-top:2px">📍 ' + esc(r.address) + '</div>' : '')
     + (r.finder ? '<div style="font-size:.76rem;color:var(--warm-mid)">Found by: ' + esc(r.finder) + (r.fphone?' · '+esc(r.fphone):'') + '</div>' : '')
     + '<div style="font-size:.72rem;color:var(--warm-mid)">Reported ' + dateStr + '</div>'
     + atShelterNote
-    + '</div>'
+    + '</div></div>'  /* close flex:1 + photo row */
     + '<div style="display:flex;gap:10px">'
     + '<button onclick="resolveFoundPinFromIntake(\'' + r.id + '\',\'' + intakeRecord.id + '\')" style="flex:1;padding:12px;border:none;border-radius:10px;background:var(--forest);color:#fff;font-family:var(--font-display);font-size:.9rem;font-weight:700;cursor:pointer">✅ Yes — Same Animal</button>'
     + '<button onclick="var p=document.getElementById(\'intake-found-match-panel\');var bd2=document.getElementById(\\\'intake-found-match-bd\\\');if(bd2)bd2.remove();if(p)p.remove();" style="flex:1;padding:12px;border:1.5px solid var(--cream-3);border-radius:10px;background:#fff;font-family:var(--font-display);font-size:.9rem;font-weight:700;cursor:pointer;color:var(--warm-dk)">No — Different Animal</button>'
@@ -2432,14 +2439,18 @@ function checkFoundPinsOnIntake(intakeRecord) {
 
 function resolveFoundPinFromIntake(foundId, intakeId) {
   console.log('[INTAKE MATCH YES]', foundId, intakeId);
+  var found = reports.find(function(x){ return String(x.id) === String(foundId); });
+  var intakePre = intakeId ? reports.find(function(x){ return String(x.id) === String(intakeId); }) : null;
+  console.log('[MATCH FOUND]', found ? {id:found.id,type:found.type,finder:found.finder,fphone:found.fphone} : null);
+  console.log('[MATCH INTAKE BEFORE]', intakePre ? {id:intakePre.id,foundRCN:intakePre.foundReportContactName} : null);
+  console.log('[MATCH CONTACT COPY]', { name: found&&found.finder, phone: found&&(found.fphone||found.phone), intakeId: intakePre&&intakePre.id });
   var panel = document.getElementById('intake-found-match-panel');
   if (panel) panel.remove();
   var _ibd = document.getElementById('intake-found-match-bd');
   if (_ibd) _ibd.remove();
 
-  var found = reports.find(function(x){ return String(x.id) === String(foundId); });
   if (!found) { console.warn('[INTAKE MATCH YES] found pin not found', foundId); return; }
-  var intake = intakeId ? reports.find(function(x){ return String(x.id) === String(intakeId); }) : null;
+  var intake = intakePre;
 
   /* Mark found pin resolved — removes from public map */
   found.reunited = true;
@@ -2456,12 +2467,15 @@ function resolveFoundPinFromIntake(foundId, intakeId) {
     intake.foundReportDate           = found.date    || '';
     if (!intake.photo && found.photo) intake.photo = found.photo;
     console.log('[INTAKE MATCH] contact linked to intake', intakeId);
+    console.log('[MATCH INTAKE AFTER]', { id:intake.id, foundRCN:intake.foundReportContactName, foundRCP:intake.foundReportContactPhone });
   }
 
   save();
   writeAnimalRecord(found, 'staff');
   if (intake) writeAnimalRecord(intake, 'staff');
   refreshMapPins('intake-match-resolved');
+  /* Re-render in-care panel so contact pill appears immediately */
+  if (intake && typeof selectIntake === 'function') selectIntake(intake.id);
   updateNavCounts();
   pushBannerEvent('📍 Found pin matched — contact info linked to intake', 'var(--found-g)');
 }
