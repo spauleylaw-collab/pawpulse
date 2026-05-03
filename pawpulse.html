@@ -1270,7 +1270,7 @@ document.addEventListener("DOMContentLoaded", function() {
 })();
 
 /* Map init — synchronous. Script tag is at bottom of body so #map div exists. */
-window.PAWPULSE_BUILD = 'map-baseline-2026-05-07';
+window.PAWPULSE_BUILD = 'map-baseline-2026-05-08';
 console.log('[PAWPULSE BUILD]', window.PAWPULSE_BUILD);
 document.addEventListener('DOMContentLoaded', function(){
   document.body.insertAdjacentHTML('beforeend',
@@ -4819,43 +4819,49 @@ async function searchMatchesFromCard(lostId) {
 function showMatchFoundPanel(lostPet, intake) {
   var ep = document.getElementById('match-found-panel');
   var eb = document.getElementById('match-found-bd');
-  if (ep) ep.remove();
-  if (eb) eb.remove();
+  if (ep) ep.remove(); if (eb) eb.remove();
+  window._pendingMatchLostPet = lostPet;
   var name = lostPet.name || (lostPet.species || 'pet');
   var meta = [lostPet.species, lostPet.breed, lostPet.color].filter(Boolean).join(' · ');
+  var photo = lostPet.photo ? '<img src="' + lostPet.photo + '" style="width:100%;height:140px;object-fit:contain;background:var(--cream-2);border-radius:8px;margin-bottom:12px">' : '';
   var bd = document.createElement('div');
   bd.id = 'match-found-bd';
   bd.style.cssText = 'position:fixed;inset:0;z-index:5100;background:rgba(0,0,0,.5)';
   var panel = document.createElement('div');
   panel.id = 'match-found-panel';
-  panel.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:5101;background:var(--cream);border-radius:18px 18px 0 0;padding:22px 22px 32px;box-shadow:0 -8px 40px rgba(0,0,0,.3)';
+  panel.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:5101;background:var(--cream);border-radius:18px 18px 0 0;padding:22px 22px 32px;box-shadow:0 -8px 40px rgba(0,0,0,.3);max-height:80vh;overflow-y:auto';
   panel.innerHTML =
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">'
     + '<div style="font-family:var(--font-display);font-size:1.05rem;font-weight:700;color:var(--warm-dk)">Possible Owner Found</div>'
-    + '<button onclick="(function(){var p=document.getElementById(\'match-found-panel\');var b=document.getElementById(\'match-found-bd\');if(p)p.remove();if(b)b.remove();})()" style="background:var(--cream-2);border:none;border-radius:50%;width:32px;height:32px;font-size:1rem;cursor:pointer">&times;</button>'
+    + '<button onclick="_dismissMatchFoundPanel()" style="background:var(--cream-2);border:none;border-radius:50%;width:32px;height:32px;font-size:1rem;cursor:pointer">&times;</button>'
     + '</div>'
+    + photo
     + '<div style="background:#e8f4e9;border:1.5px solid var(--found-g);border-radius:10px;padding:12px 14px;margin-bottom:16px">'
-    + '<div style="font-size:.74rem;color:#2d6a35;font-weight:600;margin-bottom:5px">AI found a possible match for this intake:</div>'
+    + '<div style="font-size:.74rem;color:#2d6a35;font-weight:600;margin-bottom:5px">AI found a possible match:</div>'
     + '<div style="font-family:var(--font-display);font-size:.98rem;font-weight:700;color:var(--warm-dk);margin-bottom:2px">' + esc(name) + '</div>'
     + (meta ? '<div style="font-size:.76rem;color:var(--warm-mid)">' + esc(meta) + '</div>' : '')
     + (lostPet.owner ? '<div style="font-size:.76rem;color:var(--warm-mid);margin-top:3px">Owner: ' + esc(lostPet.owner) + '</div>' : '')
     + (lostPet.address ? '<div style="font-size:.72rem;color:var(--warm-mid)">Last seen: ' + esc(lostPet.address) + '</div>' : '')
     + '</div>'
     + '<div style="display:flex;gap:10px">'
-    + '<button onclick="(function(){'  
-      + 'var p=document.getElementById(\'match-found-panel\');'
-      + 'var b=document.getElementById(\'match-found-bd\');'
-      + 'if(p)p.remove();if(b)b.remove();'
-      + 'setTimeout(function(){showCallOwnerPrompt(' + JSON.stringify({id:lostPet.id,name:lostPet.name||'',owner:lostPet.owner||'',phone:lostPet.phone||'',species:lostPet.species||'',breed:lostPet.breed||'',color:lostPet.color||''}) + ',null);},100);'
-      + '})()" style="flex:1;padding:12px;border:none;border-radius:10px;background:var(--found-g);color:#fff;font-family:var(--font-display);font-size:.9rem;font-weight:700;cursor:pointer">Yes — Contact Owner</button>'
-    + '<button onclick="(function(){var p=document.getElementById(\'match-found-panel\');var b=document.getElementById(\'match-found-bd\');if(p)p.remove();if(b)b.remove();})()" style="flex:1;padding:12px;border:1.5px solid var(--cream-3);border-radius:10px;background:#fff;font-family:var(--font-display);font-size:.9rem;font-weight:700;cursor:pointer;color:var(--warm-mid)">No — Different Animal</button>'
+    + '<button onclick="_confirmMatchFoundPanel()" style="flex:1;padding:12px;border:none;border-radius:10px;background:var(--found-g);color:#fff;font-family:var(--font-display);font-size:.9rem;font-weight:700;cursor:pointer">Yes - Contact Owner</button>'
+    + '<button onclick="_dismissMatchFoundPanel()" style="flex:1;padding:12px;border:1.5px solid var(--cream-3);border-radius:10px;background:#fff;font-family:var(--font-display);font-size:.9rem;font-weight:700;cursor:pointer;color:var(--warm-mid)">No - Different Animal</button>'
     + '</div>';
-  bd.onclick = function() { panel.remove(); bd.remove(); };
+  bd.onclick = function() { _dismissMatchFoundPanel(); };
   document.body.appendChild(bd);
   panel.style.transform = 'translateY(100%)';
   panel.style.transition = 'transform .3s cubic-bezier(.34,1.2,.64,1)';
   document.body.appendChild(panel);
   requestAnimationFrame(function(){ requestAnimationFrame(function(){ panel.style.transform = 'translateY(0)'; }); });
+}
+function _dismissMatchFoundPanel() {
+  var p=document.getElementById('match-found-panel'), b=document.getElementById('match-found-bd');
+  if(p)p.remove(); if(b)b.remove(); window._pendingMatchLostPet=null;
+}
+function _confirmMatchFoundPanel() {
+  var lostPet=window._pendingMatchLostPet;
+  _dismissMatchFoundPanel();
+  if(lostPet) setTimeout(function(){ showCallOwnerPrompt(lostPet,null); },100);
 }
 
 function showCallOwnerPrompt(lostPet, intake) {
