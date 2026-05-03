@@ -4886,6 +4886,9 @@ async function searchMatchesFromCard(lostId) {
   var foundPins = reports.filter(function(r) {
     return r.type === 'found' && !r.reunited && !r.shelter && String(r.id) !== String(lostId);
   });
+  var candidates = shelterAnimals.concat(foundPins);
+  console.log('[MATCH SEARCH START]', lostId, lost.type, lost.species, !!lost.photo);
+  console.log('[MATCH CANDIDATES]', candidates.length, candidates.map(function(x){ return {id:x.id,type:x.type,species:x.species,hasPhoto:!!x.photo}; }));
   if (!shelterAnimals.length && !foundPins.length) {
     existingEl.innerHTML = '<div style="color:var(--warm-mid);padding:6px 0">No animals at Heartland or active found pins to compare against.</div>';
     if (btn) { btn.disabled = false; btn.textContent = '🔍 Search Again'; }
@@ -4898,7 +4901,8 @@ async function searchMatchesFromCard(lostId) {
     lost.breed   && 'Breed: ' + lost.breed,
     lost.color   && 'Color: ' + lost.color,
     lost.desc    && 'Description: ' + lost.desc,
-    lost.address && 'Last seen near: ' + lost.address
+    lost.address && 'Last seen near: ' + lost.address,
+    lost.photo   ? 'HasPhoto:YES' : 'HasPhoto:NO'
   ].filter(Boolean).join('. ');
 
   var shelterList = shelterAnimals.length
@@ -4909,7 +4913,8 @@ async function searchMatchesFromCard(lostId) {
           + (r.breed   ? ' Breed:'   + r.breed   : '')
           + (r.color   ? ' Color:'   + r.color   : '')
           + (r.desc    ? ' Desc:'    + r.desc    : '')
-          + (r.address ? ' Found near:' + r.address : '');
+          + (r.address ? ' Found near:' + r.address : '')
+          + (r.photo   ? ' HasPhoto:YES' : ' HasPhoto:NO');
       }).join('\n')
     : '';
   var foundList = foundPins.length
@@ -4921,9 +4926,33 @@ async function searchMatchesFromCard(lostId) {
           + (r.desc    ? ' Desc:'    + r.desc    : '')
           + (r.finder  ? ' Finder:'  + r.finder  : '')
           + (r.phone   ? ' Phone:'   + r.phone   : '')
-          + (r.address ? ' Found near:' + r.address : '');
+          + (r.address ? ' Found near:' + r.address : '')
+          + (r.photo   ? ' HasPhoto:YES' : ' HasPhoto:NO');
       }).join('\n')
     : '';
+
+  /* ── Deterministic photo match — runs before/alongside AI ── */
+  function photosMatch(a, b) {
+    if (!a || !b) return false;
+    if (a === b) return true;
+    return String(a).slice(0, 200) === String(b).slice(0, 200);
+  }
+  var photoMatches = [];
+  candidates.forEach(function(c) {
+    if (photosMatch(lost.photo, c.photo)) {
+      var isFoundPin = !c.shelter;
+      photoMatches.push({
+        id: c.id,
+        source: isFoundPin ? 'found_pin' : 'heartland',
+        confidence: 'high',
+        reason: 'Photo appears to match the lost pet report.',
+        phone: c.fphone || c.phone || (isFoundPin ? '' : '4024627387')
+      });
+    }
+  });
+  if (photoMatches.length) {
+    console.log('[MATCH PHOTO HIT]', photoMatches.length, 'direct photo match(es)');
+  }
 
   try {
     var _ctrl = new AbortController();
@@ -4942,6 +4971,7 @@ async function searchMatchesFromCard(lostId) {
             + (shelterList ? shelterList + '\n\n' : '')
             + (foundList  ? foundList  + '\n\n' : '')
             + 'Compare the lost pet against ALL animals above and identify possible matches. '
+            + 'When both the lost pet AND a candidate have HasPhoto:YES, treat this as a strong signal and weight it heavily toward high confidence. '
             + 'Return ONLY valid JSON — an array of match objects with: id (number), source ("heartland" or "found_pin"), confidence ("high", "medium", or "low"), reason (1-2 warm sentences explaining the possible match), phone (contact phone if available from the data). '
             + 'Only include genuine possible matches. If nothing matches, return [].'
         }]
@@ -4953,6 +4983,13 @@ async function searchMatchesFromCard(lostId) {
     var text = (data.content||[]).map(function(b){ return b.text||''; }).join('').trim();
     var matches = JSON.parse(text.replace(/```json|```/g,'').trim());
 
+    /* Merge deterministic photo matches — photo hits prepended, dedup by id */
+    photoMatches.forEach(function(pm) {
+      if (!matches.find(function(m){ return String(m.id) === String(pm.id); })) {
+        matches.unshift(pm);
+      }
+    });
+    console.log('[MATCH RESULTS]', matches);
     if (!matches.length) {
       existingEl.innerHTML = '<div style="background:#f5f8ff;border-radius:8px;padding:10px 12px">'
         + '<div style="font-weight:600;color:var(--warm-dk);margin-bottom:4px">No close matches found right now</div>'
@@ -4997,10 +5034,30 @@ async function searchMatchesFromCard(lostId) {
             + aAction
             + '</div>';
         }).join('');
+      console.log('[MATCH RESULTS]', matches);
     }
   } catch(e) {
     clearTimeout(_tout || 0);
     if (e.name === 'AbortError') {
+      if (photoMatches.length) {
+        /* Photo match found — show even if AI timed out */
+        existingEl.innerHTML = '<div style="font-weight:700;color:var(--warm-dk);margin-bottom:8px">🔍 Photo match found</div>'
+          + photoMatches.map(function(pm){
+              var isFoundPin = pm.source === 'found_pin';
+              var a = isFoundPin ? foundPins.find(function(x){ return String(x.id)===String(pm.id); }) : shelterAnimals.find(function(x){ return String(x.id)===String(pm.id); });
+              if (!a) return '';
+              var aPhone = pm.phone || a.phone || (isFoundPin ? '' : '4024627387');
+              var aImg = a.photo ? '<img src="' + a.photo + '" style="width:100%;height:120px;object-fit:contain;background:var(--cream-2);border-radius:6px;margin-bottom:8px">' : '';
+              var aAction = aPhone ? '<a href="tel:' + aPhone + '" style="display:block;text-align:center;padding:7px;background:var(--found-g);color:#fff;border-radius:7px;font-family:var(--font-display);font-size:.78rem;font-weight:700;text-decoration:none;margin-top:8px">📞 Contact ' + (isFoundPin?'Finder':'Heartland') + '</a>' : '';
+              return '<div style="background:#f0fff4;border:1.5px solid var(--found-g);border-radius:10px;padding:12px;margin-bottom:8px">'
+                + aImg + '<strong style="color:var(--warm-dk);font-size:.88rem">' + esc(a.name||a.species||'Unknown') + '</strong>'
+                + '<span style="float:right;font-size:.65rem;font-weight:800;color:var(--found-g);text-transform:uppercase">HIGH MATCH</span>'
+                + '<div style="font-size:.74rem;color:var(--warm-dk);font-style:italic;margin:6px 0">' + esc(pm.reason) + '</div>'
+                + aAction + '</div>';
+            }).join('');
+        if (btn) { btn.disabled = false; btn.textContent = '🔍 Search Again'; }
+        return;
+      }
       existingEl.innerHTML = '<div style="color:var(--warm-mid);padding:6px 0">Search timed out — please try again.</div>';
       if (btn) { btn.disabled = false; btn.textContent = '🔍 Search Again'; }
       return;
@@ -10211,4 +10268,5 @@ function maybeShowTutorial() {
   </div>
 </div>
 </body>
-</html>
+</html>s
+  
