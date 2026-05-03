@@ -1270,7 +1270,7 @@ document.addEventListener("DOMContentLoaded", function() {
 })();
 
 /* Map init — synchronous. Script tag is at bottom of body so #map div exists. */
-window.PAWPULSE_BUILD = 'map-baseline-2026-05-02';
+window.PAWPULSE_BUILD = 'map-baseline-2026-05-03';
 console.log('[PAWPULSE BUILD]', window.PAWPULSE_BUILD);
 document.addEventListener('DOMContentLoaded', function(){
   document.body.insertAdjacentHTML('beforeend',
@@ -2437,19 +2437,30 @@ function checkFoundPinsOnIntake(intakeRecord) {
   });
 }
 
+function _matchToast(msg, color) {
+  var t = document.createElement('div');
+  t.style.cssText = 'position:fixed;top:60px;left:10px;right:10px;z-index:99999;background:' + (color||'#1a3a1a') + ';color:#fff;font:12px/1.4 monospace;padding:10px 14px;border-radius:8px;white-space:pre-wrap;pointer-events:none';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(function(){ t.remove(); }, 6000);
+}
+
 function resolveFoundPinFromIntake(foundId, intakeId) {
   console.log('[INTAKE MATCH YES]', foundId, intakeId);
 
   var found = reports.find(function(x){ return String(x.id) === String(foundId); });
   var intake = reports.find(function(x){ return String(x.id) === String(intakeId); });
 
+  /* [DIAG] Toast 1 — confirm IDs and lookup results */
+  _matchToast(
+    'foundId=' + foundId + '\nintakeId=' + intakeId +
+    '\nfinder=' + (found ? (found.finder||'(none)') : 'NOT FOUND') +
+    '\nphone=' + (found ? (found.fphone||found.phone||'(none)') : 'NOT FOUND') +
+    '\nintakeFound=' + (!!intake)
+  );
+
   console.log('[MATCH FOUND]', found);
   console.log('[MATCH INTAKE BEFORE]', intake);
-  console.log('[MATCH CONTACT COPY]', {
-    name:     found && found.finder,
-    phone:    found && (found.fphone || found.phone),
-    intakeId: intake && intake.id
-  });
 
   var panel = document.getElementById('intake-found-match-panel');
   if (panel) panel.remove();
@@ -2457,9 +2468,13 @@ function resolveFoundPinFromIntake(foundId, intakeId) {
   if (_ibd) _ibd.remove();
 
   if (!found) { console.warn('[INTAKE MATCH YES] found pin not found', foundId); return; }
-  if (!intake) { console.warn('[INTAKE CONTACT FAIL] intake not found', intakeId); return; }
+  if (!intake) {
+    _matchToast('FAIL: intake not found\nintakeId=' + intakeId, '#8b0000');
+    console.warn('[INTAKE CONTACT FAIL] intake not found', intakeId);
+    return;
+  }
 
-  /* Copy contact fields — set BOTH old and new field names so card always has something to read */
+  /* Copy contact fields — set BOTH old and new field names */
   intake.finder                  = found.finder || intake.finder || '';
   intake.fphone                  = found.fphone || found.phone || intake.fphone || '';
   intake.foundReportContactName  = found.finder || '';
@@ -2468,6 +2483,14 @@ function resolveFoundPinFromIntake(foundId, intakeId) {
   intake.foundReportDate         = found.date || '';
   intake.linkedFoundReportId     = String(found.id);
   if (!intake.photo && found.photo) intake.photo = found.photo;
+
+  /* [DIAG] Toast 2 — confirm copy succeeded */
+  _matchToast(
+    'Contact copied:\nname=' + (intake.finder||'(empty)') +
+    '\nphone=' + (intake.fphone||'(empty)') +
+    '\nintakeId=' + intake.id,
+    '#0a3a0a'
+  );
 
   console.log('[MATCH INTAKE AFTER]', intake);
 
