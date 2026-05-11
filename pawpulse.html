@@ -1288,7 +1288,7 @@ document.addEventListener("DOMContentLoaded", function() {
 })();
 
 /* Map init — synchronous. Script tag is at bottom of body so #map div exists. */
-window.PAWPULSE_BUILD = 'map-baseline-2026-05-13';
+window.PAWPULSE_BUILD = 'map-baseline-2026-05-14';
 console.log('[PAWPULSE BUILD]', window.PAWPULSE_BUILD);
 document.addEventListener('DOMContentLoaded', function(){
   document.body.insertAdjacentHTML('beforeend',
@@ -1533,7 +1533,8 @@ function startFirestoreListener() {
         showShelterPicker();
         renderIncareView();
         updateNavCounts();
-        /* Single authoritative render — no competing paths */
+        /* Single authoritative render — mark done so tryInitialRender never fires again */
+        _initialRenderDone = true;
         refreshMapPins('firestore-authoritative-first-render');
         _dismissOverlay();
         return;
@@ -1574,7 +1575,6 @@ function startFirestoreListener() {
       if (changed) {
         safeLocalCache(reports);
         _recordsReady = true;
-        tryInitialRender('firestore-changed-ready');
         refreshMapPins('firestore-changed-full-render');
         /* Rebuild open card so photo appears without refresh */
         if (window._openPinId) {
