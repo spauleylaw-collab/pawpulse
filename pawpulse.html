@@ -7104,7 +7104,11 @@ function renderMatchResults(intakeId, matches, lostPets) {
         var lost = lostPets.find(function(r){ return r.id === m.id; });
         if (!lost) return '';
         var lname = lost.name ? lost.name : ((lost.species||'Unknown') + (lost.color?' · '+lost.color:''));
+        var _lPhoto = lost.photo
+          ? '<img src="' + lost.photo + '" style="width:100%;height:110px;object-fit:contain;object-position:center top;background:var(--cream-2);border-radius:7px;margin-bottom:8px">'
+          : '';
         return '<div class="sh-match-item ' + m.confidence + '" id="sh-match-' + m.id + '">'
+          + _lPhoto
           + '<span class="sh-match-conf ' + m.confidence + '">' + m.confidence + ' match</span>'
           + '<div class="sh-match-name">' + esc(lname) + '</div>'
           + '<div class="sh-match-reason">' + esc(m.reason) + '</div>'
