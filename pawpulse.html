@@ -1288,7 +1288,7 @@ document.addEventListener("DOMContentLoaded", function() {
 })();
 
 /* Map init — synchronous. Script tag is at bottom of body so #map div exists. */
-window.PAWPULSE_BUILD = 'map-baseline-2026-05-14';
+window.PAWPULSE_BUILD = 'map-baseline-2026-05-15-diag';
 console.log('[PAWPULSE BUILD]', window.PAWPULSE_BUILD);
 document.addEventListener('DOMContentLoaded', function(){
   document.body.insertAdjacentHTML('beforeend',
@@ -1331,6 +1331,68 @@ var _recordsReady = false; /* set when Firestore/localStorage data is in reports
 var curFilter = 'all';
 var curSpeciesFilter = 'all';
 var _lastSubmitTime = 0; /* ms timestamp of last public submit — gates onSnapshot re-render */
+
+/* ── [DIAG] Diagnostic overlay — remove after diagnosis ──────────────── */
+var _diagFS = { snapSize: null, snapPhotos: null, eligible: null, skipped: [] };
+function _diagUpdate(label) {
+  var box = document.getElementById('_pp_diag2');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = '_pp_diag2';
+    box.style.cssText = 'position:fixed;top:55px;right:4px;z-index:99999;'
+      + 'background:rgba(0,0,0,.9);color:#0f0;font:10px/1.35 monospace;'
+      + 'padding:6px 8px;border-radius:6px;max-width:200px;pointer-events:none;'
+      + 'white-space:pre-wrap;box-shadow:0 2px 10px rgba(0,0,0,.6);';
+    document.body.appendChild(box);
+  }
+  var el = function(lMarkers){ return Array.isArray(lMarkers) ? lMarkers.length : '?'; };
+  var eligCount = _diagFS.eligible !== null ? _diagFS.eligible : '?';
+  box.textContent =
+    'BUILD: ' + (window.PAWPULSE_BUILD||'?') + '\n'
+    + '[' + (label||'?') + ']\n'
+    + 'USE_FB:' + USE_FIREBASE + ' db:' + !!db + '\n'
+    + 'fsUnsub:' + (typeof _fsUnsub==='function') + '\n'
+    + 'listActive:' + !!window._firestoreListenerActive + '\n'
+    + 'fbRdy:' + _fbReady + ' recRdy:' + _recordsReady + '\n'
+    + 'mapRdy:' + _mapReady + '\n'
+    + 'rep:' + (Array.isArray(reports)?reports.length:'?') + '\n'
+    + 'FS sz:' + (_diagFS.snapSize===null?'?':_diagFS.snapSize) + '\n'
+    + 'eligible:' + eligCount + '\n'
+    + 'lM:' + el(lMarkers) + '\n'
+    + (_diagFS.skipped.length ? 'skip:' + _diagFS.skipped.slice(0,2).join(',') : '');
+}
+/* ── [/DIAG] ── */
+
+/* ── [DIAG] Diagnostic overlay — remove after diagnosis ──────────────── */
+var _diagFS = { snapSize: null, snapPhotos: null, eligible: null, skipped: [] };
+function _diagUpdate(label) {
+  var box = document.getElementById('_pp_diag2');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = '_pp_diag2';
+    box.style.cssText = 'position:fixed;top:55px;right:4px;z-index:99999;'
+      + 'background:rgba(0,0,0,.9);color:#0f0;font:10px/1.35 monospace;'
+      + 'padding:6px 8px;border-radius:6px;max-width:200px;pointer-events:none;'
+      + 'white-space:pre-wrap;box-shadow:0 2px 10px rgba(0,0,0,.6);';
+    document.body.appendChild(box);
+  }
+  var el = function(lMarkers){ return Array.isArray(lMarkers) ? lMarkers.length : '?'; };
+  var eligCount = _diagFS.eligible !== null ? _diagFS.eligible : '?';
+  box.textContent =
+    'BUILD: ' + (window.PAWPULSE_BUILD||'?') + '\n'
+    + '[' + (label||'?') + ']\n'
+    + 'USE_FB:' + USE_FIREBASE + ' db:' + !!db + '\n'
+    + 'fsUnsub:' + (typeof _fsUnsub==='function') + '\n'
+    + 'listActive:' + !!window._firestoreListenerActive + '\n'
+    + 'fbRdy:' + _fbReady + ' recRdy:' + _recordsReady + '\n'
+    + 'mapRdy:' + _mapReady + '\n'
+    + 'rep:' + (Array.isArray(reports)?reports.length:'?') + '\n'
+    + 'FS sz:' + (_diagFS.snapSize===null?'?':_diagFS.snapSize) + '\n'
+    + 'eligible:' + eligCount + '\n'
+    + 'lM:' + el(lMarkers) + '\n'
+    + (_diagFS.skipped.length ? 'skip:' + _diagFS.skipped.slice(0,2).join(',') : '');
+}
+/* ── [/DIAG] ── */
 var curSpeciesFilter = 'all';
 var placing   = null;
 var pLat = {}, pLng = {};
@@ -1510,6 +1572,11 @@ function startFirestoreListener() {
             snapshot.forEach(function(doc){ if (String(doc.data().id)===String(lr.id)) inFirestore=true; });
             return !inFirestore && lr._isNewPin;
           });
+          /* [DIAG] capture FS snapshot stats */
+          _diagFS.snapSize = snapshot.size;
+          _diagFS.snapPhotos = 0;
+          snapshot.forEach(function(d){ if(d.data().photo) _diagFS.snapPhotos++; });
+          _diagUpdate('FS-snap-arrived');
           reports = [];
           snapshot.forEach(function(doc) {
             var data = doc.data();
@@ -1533,9 +1600,18 @@ function startFirestoreListener() {
         showShelterPicker();
         renderIncareView();
         updateNavCounts();
+        /* [DIAG] compute eligible count before render */
+        _diagFS.eligible = reports.filter(function(r){
+          if (r.shelter) return false;
+          if (!r.lat || !r.lng) { _diagFS.skipped.push('no-latln'); return false; }
+          if (r.reunited) { _diagFS.skipped.push('reunited'); return false; }
+          return true;
+        }).length;
+        _diagUpdate('pre-render');
         /* Single authoritative render — mark done so tryInitialRender never fires again */
         _initialRenderDone = true;
         refreshMapPins('firestore-authoritative-first-render');
+        _diagUpdate('post-render');
         _dismissOverlay();
         return;
       }
@@ -2098,12 +2174,14 @@ function bootApp() {
     setTimeout(function(){ try { map.invalidateSize(); } catch(e){} }, 400);
   }
   if (reports.length > 0) {
+    _diagUpdate('boot-from-cache');
     tryInitialRender('boot-records-ready');
     refreshMapPins('bootApp');
     setTimeout(function(){ if (!_fbReady) refreshMapPins('boot-final-500');  }, 500);
     setTimeout(function(){ if (!_fbReady) refreshMapPins('boot-final-1500'); }, 1500);
   } else {
     console.log('[PAWPULSE] bootApp: no local cache — waiting for Firestore authoritative render');
+    _diagUpdate('boot-wait-FS');
   }
 }
 
