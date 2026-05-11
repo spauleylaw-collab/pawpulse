@@ -4074,6 +4074,8 @@ function removeAnimalHold(id) {
   r.intakeType       = 'stray';
   r.shelterHoldStart = null;
   r.masterStatus     = 'intake';
+  r.holdRemoved      = true;
+  delete r.holdUntil;
   save();
   writeAnimalRecord(r, 'staff');
   selectIntake(r.id);
