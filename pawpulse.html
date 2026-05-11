@@ -952,7 +952,7 @@ textarea{min-height:64px}
 
 
 <div id="view-reports" class="view">
-  <div class="mode-banner admin"><div class="mode-banner-dot" style="background:#c8841a"></div>Reports &amp; Admin</div>
+  <div class="mode-banner admin"><div class="mode-banner-dot" style="background:#c8841a"></div>Reports &amp; Admin<button onclick="showMapEligibilityAudit()" style="float:right;font-size:.65rem;padding:2px 7px;background:#2a3a2a;color:#8bc88b;border:1px solid #4caf50;border-radius:4px;cursor:pointer">Map Audit</button></div>
   <div id="activity-dashboard" style="background:#1a2a1a;color:#c8ffc8;padding:14px 16px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
       <div style="font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#4caf50">Live Activity</div>
@@ -1288,7 +1288,7 @@ document.addEventListener("DOMContentLoaded", function() {
 })();
 
 /* Map init — synchronous. Script tag is at bottom of body so #map div exists. */
-window.PAWPULSE_BUILD = 'map-baseline-2026-05-15-diag';
+window.PAWPULSE_BUILD = 'map-baseline-2026-05-15-diag2';
 console.log('[PAWPULSE BUILD]', window.PAWPULSE_BUILD);
 document.addEventListener('DOMContentLoaded', function(){
   document.body.insertAdjacentHTML('beforeend',
@@ -1333,7 +1333,7 @@ var curSpeciesFilter = 'all';
 var _lastSubmitTime = 0; /* ms timestamp of last public submit — gates onSnapshot re-render */
 
 /* ── [DIAG] Diagnostic overlay — remove after diagnosis ──────────────── */
-var _diagFS = { snapSize: null, snapPhotos: null, eligible: null, skipped: [] };
+var _diagFS = { snapSize: null, snapPhotos: null, eligible: null, skipCounts: {} };
 function _diagUpdate(label) {
   var box = document.getElementById('_pp_diag2');
   if (!box) {
@@ -1359,12 +1359,12 @@ function _diagUpdate(label) {
     + 'FS sz:' + (_diagFS.snapSize===null?'?':_diagFS.snapSize) + '\n'
     + 'eligible:' + eligCount + '\n'
     + 'lM:' + el(lMarkers) + '\n'
-    + (_diagFS.skipped.length ? 'skip:' + _diagFS.skipped.slice(0,2).join(',') : '');
+    + (_diagFS.skipped.length ? 'SKIP:\n' + _diagFS.skipped.join('\n') : '');
 }
 /* ── [/DIAG] ── */
 
 /* ── [DIAG] Diagnostic overlay — remove after diagnosis ──────────────── */
-var _diagFS = { snapSize: null, snapPhotos: null, eligible: null, skipped: [] };
+var _diagFS = { snapSize: null, snapPhotos: null, eligible: null, skipCounts: {} };
 function _diagUpdate(label) {
   var box = document.getElementById('_pp_diag2');
   if (!box) {
@@ -1390,9 +1390,44 @@ function _diagUpdate(label) {
     + 'FS sz:' + (_diagFS.snapSize===null?'?':_diagFS.snapSize) + '\n'
     + 'eligible:' + eligCount + '\n'
     + 'lM:' + el(lMarkers) + '\n'
-    + (_diagFS.skipped.length ? 'skip:' + _diagFS.skipped.slice(0,2).join(',') : '');
+    + (Object.keys(_diagFS.skipCounts).length ? 'skip: ' + Object.keys(_diagFS.skipCounts).map(function(k){ return k+':'+_diagFS.skipCounts[k]; }).join(' ') : '');
 }
 /* ── [/DIAG] ── */
+
+/* [DIAG] Staff-only map eligibility audit */
+function showMapEligibilityAudit() {
+  if (!_isStaff) return;
+  function _sr(r) {
+    if (r.shelter)   return 'shelter';
+    if (r.reunited)  return 'reunited';
+    if (r.euthanized) return 'euthanized';
+    if (r.intakeType==='hold' && r.adoptionStatus!=='available') return 'on-hold';
+    if (r.type==='lost' && daysSince(r.date)>=30) return '30d-expired';
+    if (!r.lat || !r.lng) return 'no-latlng';
+    return null;
+  }
+  var eligible=[], skipped={};
+  reports.forEach(function(r){
+    var reason=_sr(r), label=(r.name||r.species||'id:'+r.id)+'['+r.type+']';
+    if (reason){ skipped[reason]=skipped[reason]||[]; skipped[reason].push(label); }
+    else eligible.push(label);
+  });
+  var lines=['MAP ELIGIBILITY AUDIT','Total:'+reports.length,'',
+    'ELIGIBLE('+eligible.length+'):'].concat(eligible.map(function(l){return '+ '+l;}));
+  lines.push('');
+  Object.keys(skipped).forEach(function(k){
+    lines.push('SKIP-'+k+'('+skipped[k].length+'):');
+    skipped[k].slice(0,8).forEach(function(l){lines.push(' -'+l);});
+    if(skipped[k].length>8)lines.push(' +more:('+(skipped[k].length-8)+')');
+    lines.push('');
+  });
+  var box=document.getElementById('_audit_box');
+  if(!box){box=document.createElement('div');box.id='_audit_box';
+    box.style.cssText='position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,.93);'
+      +'color:#0f0;font:11px/1.5 monospace;padding:20px;overflow-y:auto;white-space:pre-wrap';
+    box.onclick=function(){box.remove();}; document.body.appendChild(box);}
+  box.textContent=lines.join('\n')+'\n\n(tap to close)';
+}
 var curSpeciesFilter = 'all';
 var placing   = null;
 var pLat = {}, pLng = {};
@@ -1600,13 +1635,21 @@ function startFirestoreListener() {
         showShelterPicker();
         renderIncareView();
         updateNavCounts();
-        /* [DIAG] compute eligible count before render */
-        _diagFS.eligible = reports.filter(function(r){
-          if (r.shelter) return false;
-          if (!r.lat || !r.lng) { _diagFS.skipped.push('no-latln'); return false; }
-          if (r.reunited) { _diagFS.skipped.push('reunited'); return false; }
-          return true;
-        }).length;
+        /* [DIAG] full eligibility audit */
+        _diagFS.skipCounts = {};
+        (function(){
+          function sc(k){ _diagFS.skipCounts[k]=(_diagFS.skipCounts[k]||0)+1; }
+          _diagFS.eligible = reports.filter(function(r){
+            if (r.shelter)  { sc('shelter'); return false; }
+            if (r.reunited) { sc('reunited'); return false; }
+            if (!r.lat||!r.lng) { sc('no-latln'); return false; }
+            if (r.euthanized) { sc('euth'); return false; }
+            if (r.type==='lost'&&daysSince(r.date)>=30) { sc('30day'); return false; }
+            if (r.intakeType==='hold'&&r.adoptionStatus!=='available') { sc('hold'); return false; }
+            if (r.type!=='lost'&&r.type!=='found') { sc('type?'); return false; }
+            return true;
+          }).length;
+        })();
         _diagUpdate('pre-render');
         /* Single authoritative render — mark done so tryInitialRender never fires again */
         _initialRenderDone = true;
@@ -4142,6 +4185,30 @@ function esc(s) {
 function daysSince(iso) {
   if (!iso) return 0;
   return (Date.now() - new Date(iso).getTime()) / 86400000;
+}
+
+function showMapEligibilityAudit() {
+  var lines=[];
+  var c={eligible:0,shelter:0,reunited:0,noLatLng:0,expired:0,hold:0,euth:0,other:0};
+  reports.forEach(function(r){
+    if(r.shelter){c.shelter++;return;}
+    if(r.reunited){c.reunited++;return;}
+    if(!r.lat||!r.lng){c.noLatLng++;lines.push('NO-LAT: '+r.id+' '+(r.name||r.species||''));return;}
+    if(r.euthanized){c.euth++;return;}
+    if(r.type==='lost'&&daysSince(r.date)>=30){c.expired++;lines.push('EXPIRED: '+r.id+' '+(r.name||r.species||'')+' '+Math.floor(daysSince(r.date))+'d');return;}
+    if(r.intakeType==='hold'&&r.adoptionStatus!=='available'){c.hold++;return;}
+    if(r.type!=='lost'&&r.type!=='found'){c.other++;return;}
+    c.eligible++;lines.push('OK: '+r.id+' '+r.type+' '+(r.name||r.species||'?'));
+  });
+  var sum='shelter:'+c.shelter+' reunited:'+c.reunited+' noLatLng:'+c.noLatLng+' expired:'+c.expired+' hold:'+c.hold+' euth:'+c.euth+' ELIGIBLE:'+c.eligible;
+  var box=document.createElement('div');
+  box.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.95);color:#0f0;font:11px/1.5 monospace;padding:16px 10px;overflow-y:auto;white-space:pre';
+  box.textContent='MAP ELIGIBILITY AUDIT\n'+sum+'\n\n'+lines.join('\n');
+  var btn=document.createElement('button');
+  btn.textContent='Close';
+  btn.style.cssText='position:fixed;top:10px;right:10px;z-index:100000;padding:8px 16px;background:#c00;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px';
+  btn.onclick=function(){box.remove();btn.remove();};
+  document.body.appendChild(box);document.body.appendChild(btn);
 }
 
 function removeAnimalHold(id) {
