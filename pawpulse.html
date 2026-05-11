@@ -1288,7 +1288,7 @@ document.addEventListener("DOMContentLoaded", function() {
 })();
 
 /* Map init — synchronous. Script tag is at bottom of body so #map div exists. */
-window.PAWPULSE_BUILD = 'map-baseline-2026-05-15-diag2';
+window.PAWPULSE_BUILD = 'map-baseline-2026-05-15-diag3';
 console.log('[PAWPULSE BUILD]', window.PAWPULSE_BUILD);
 document.addEventListener('DOMContentLoaded', function(){
   document.body.insertAdjacentHTML('beforeend',
@@ -1390,6 +1390,7 @@ function _diagUpdate(label) {
     + 'FS sz:' + (_diagFS.snapSize===null?'?':_diagFS.snapSize) + '\n'
     + 'eligible:' + eligCount + '\n'
     + 'lM:' + el(lMarkers) + '\n'
+    + 'expected lM:' + (_diagFS.eligible !== null ? (_diagFS.eligible + 1) : '?') + ' (+1 shelter)\n'
     + (Object.keys(_diagFS.skipCounts).length ? 'skip: ' + Object.keys(_diagFS.skipCounts).map(function(k){ return k+':'+_diagFS.skipCounts[k]; }).join(' ') : '');
 }
 /* ── [/DIAG] ── */
