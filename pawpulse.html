@@ -1320,7 +1320,10 @@ var _submissionCount = 0;  /* resets on page reload */
 var SUBMIT_COOLDOWN_MS = 1 * 60 * 1000;  /* 1 min between submissions (keep short for usability) */
 var SUBMIT_SESSION_MAX = 3;  /* max per session */
 var tmpMarker = null;
-var _fbReady  = false; /* true once Firestore listener is live */
+var _fbReady        = false; /* true once Firestore listener is live */
+var _fsAttachPending = false; /* set at onSnapshot call; cleared on callback or error */
+var _fsAttachTime    = 0;     /* timestamp of last onSnapshot call */
+var _fsUnsub         = null;  /* unsubscribe fn */
 var _isStaff  = false;
 
 /* ── SAVE / LOAD ──────────────────────────────────────────────────────── */
@@ -1426,10 +1429,8 @@ function refreshMapPins(reason) {
   });
   _mapReady = true;
   try { if (map && map.invalidateSize) map.invalidateSize(true); } catch(e) {}
-  lMarkers.forEach(function(m){ try { map.removeLayer(m); } catch(e){} });
-  lMarkers = [];
+  /* No pre-wipe: renderMarkers() uses oldMarkers-swap safely */
   renderMarkers();
-  /* Hide loading overlay once pins are on the map */
   if (lMarkers.length > 0) _dismissOverlay();
 }
 
@@ -1466,7 +1467,8 @@ function tryInitialRender(reason) {
 }
 
 function startFirestoreListener() {
-  if (window._firestoreListenerActive) return; /* already running */
+  if (window._firestoreListenerActive) return; /* confirmed active */
+  if (_fsAttachPending) return;                /* waiting for first snapshot */
   setTimeout(_dismissOverlay, 2000);
   if (!db) {
     console.warn('Firestore unavailable — using localStorage');
@@ -1475,7 +1477,11 @@ function startFirestoreListener() {
     return;
   }
   try {
-    db.collection('reports').onSnapshot(function(snapshot) {
+    _fsAttachPending = true;
+    _fsAttachTime    = Date.now();
+    console.log('[PAWPULSE] onSnapshot attach');
+    _fsUnsub = db.collection('reports').onSnapshot(function(snapshot) {
+      _fsAttachPending = false;
       window._firestoreListenerActive = true; /* confirmed receiving */
       console.log('[FIRESTORE SNAPSHOT]', { size: snapshot.size, changes: snapshot.docChanges().length });
       if (window._pauseFirestoreSync) {
@@ -1516,10 +1522,8 @@ function startFirestoreListener() {
         _recordsReady = true;
         tryInitialRender('first-firestore-ready');
         _bootAppDone = false;
-        lMarkers.forEach(function(m){ try { map.removeLayer(m); } catch(e){} });
-        lMarkers = [];
+        /* No manual lMarkers wipe — bootApp handles safely */
         showShelterPicker();
-        refreshMapPins('first-firestore-load');
         setTimeout(function(){ refreshMapPins('first-firestore-500'); }, 500);
         setTimeout(function(){ refreshMapPins('first-firestore-1500'); }, 1500);
         _dismissOverlay();
@@ -1576,14 +1580,14 @@ function startFirestoreListener() {
         updateNavCounts();
       }
     }, function(err) {
-      console.warn('Firestore listener error:', err);
-      _fbReady = true;
-      showShelterPicker();
+      console.warn('[PAWPULSE] listener error:', err);
+      _fsAttachPending = false;
+      if (_fsUnsub) { try { _fsUnsub(); } catch(ex){} _fsUnsub = null; }
     });
   } catch(e) {
-    console.warn('Firestore init error:', e.message);
-    _fbReady = true;
-    showShelterPicker();
+    console.warn('[PAWPULSE] Firestore init error:', e.message);
+    _fsAttachPending = false;
+    if (_fsUnsub) { try { _fsUnsub(); } catch(ex){} _fsUnsub = null; }
   }
 }
 
@@ -1874,11 +1878,31 @@ function doGuestView() {
   setTimeout(_dismissOverlay, 300);
   /* Firestore listener started by Firebase auth callback.
      Safety: if auth is slow or fails, start listener directly after 1.5s */
-  setTimeout(function() {
-    if (!window._firestoreListenerActive && USE_FIREBASE && db) {
-      startFirestoreListener();
-    }
-  }, 1500);
+  var STALL_MS = 5000;
+  (function scheduleRetry(delay) {
+    setTimeout(function() {
+      if (window._firestoreListenerActive) return;
+      if (!USE_FIREBASE || !db) return;
+      if (_fsAttachPending && _fsAttachTime > 0 && (Date.now()-_fsAttachTime) > STALL_MS) {
+        console.warn('[PAWPULSE] stalled ' + Math.round((Date.now()-_fsAttachTime)/1000) + 's reset');
+        _fsAttachPending = false; _fsAttachTime = 0;
+        if (_fsUnsub) { try { _fsUnsub(); } catch(ex){} _fsUnsub = null; }
+      }
+      if (!_fsAttachPending) { startFirestoreListener(); }
+      scheduleRetry(Math.min(delay * 1.6, 30000));
+    }, delay);
+  })(1500);
+  [3000, 6000, 10000, 20000].forEach(function(ms) {
+    setTimeout(function() {
+      if (Array.isArray(reports) && reports.length > 0 &&
+          Array.isArray(lMarkers) && lMarkers.length === 0) {
+        console.warn('[PAWPULSE WATCHDOG] ' + ms + 'ms');
+        _mapReady = true; _recordsReady = true;
+        try { map.invalidateSize(true); } catch(e) {}
+        renderMarkers();
+      }
+    }, ms);
+  });
 }
 
 function doSignOut() {
@@ -2049,7 +2073,7 @@ function bootApp() {
   /* Pre-set shelter filter */
   var sel = document.getElementById('rpt-filter-shelter');
   if (sel && activeShelter) sel.value = activeShelter;
-  _recordsReady = true;
+  if (reports.length > 0) { _recordsReady = true; }
   tryInitialRender('boot-records-ready');
   refreshMapPins('bootApp');
   initSpotlight();
@@ -4858,18 +4882,15 @@ function showCallOwnerPrompt(lostPet, intake) {
 }
 
 async function autoMatchOnIntake(intake) {
-  /* Search BOTH lost pins and public found pins for possible matches */
   var candidates = reports.filter(function(r){
     if (r.shelter || r.reunited || r.resolved) return false;
     if (r.type !== 'lost' && r.type !== 'found') return false;
-    /* Species filter — include if unknown on either side */
     if (intake.species && r.species) {
       return intake.species.toLowerCase() === r.species.toLowerCase();
     }
-    return true; /* include if species unknown on pin */
+    return true;
   });
   if (!candidates.length) return;
-
   try {
     var intakeDesc = [
       intake.species && 'Species: ' + intake.species,
@@ -4878,30 +4899,26 @@ async function autoMatchOnIntake(intake) {
       intake.sex     && 'Sex: '     + intake.sex,
       intake.address && 'Location: ' + intake.address
     ].filter(Boolean).join('. ');
-
     var candidateList = candidates.map(function(r, i){
-      var contact = r.type === 'lost'
-        ? (r.owner || '') + (r.phone ? ' ' + r.phone : '')
-        : (r.finder || '') + (r.fphone ? ' ' + r.fphone : '');
+      var contact = r.type==='lost'
+        ? (r.owner||'') + (r.phone ? ' ' + r.phone : '')
+        : (r.finder||'') + (r.fphone ? ' ' + r.fphone : '');
       return (i+1) + '. ID:' + r.id + ' Type:' + r.type
-        + (r.name    ? ' Name:'    + r.name    : '')
-        + (r.species ? ' Species:' + r.species : '')
-        + (r.breed   ? ' Breed:'   + r.breed   : '')
-        + (r.color   ? ' Color:'   + r.color   : '')
-        + (r.address ? ' Location:' + r.address : '')
-        + (contact   ? ' Contact:' + contact.trim() : '');
+        + (r.name    ? ' Name:'+r.name    : '')
+        + (r.species ? ' Species:'+r.species : '')
+        + (r.breed   ? ' Breed:'+r.breed   : '')
+        + (r.color   ? ' Color:'+r.color   : '')
+        + (r.address ? ' Location:'+r.address : '')
+        + (contact   ? ' Contact:'+contact.trim() : '');
     }).join('\n');
-
     var resp = await fetch('/api/anthropic', {
       method: 'POST', headers: {'Content-Type':'application/json'},
       body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:600,
         messages:[{role:'user',content:
           'A shelter just received this animal:\n' + intakeDesc +
-          '\n\nPublic lost AND found pins on the map:\n' + candidateList +
-          '\n\nReturn ONLY valid JSON array of matches: [{id,confidence,reason}]. ' +
-          'id = number from list. confidence = "high"|"medium"|"low". reason = 1 sentence. ' +
-          'Include both lost reports (possible owner searching) AND found reports (might be same animal). ' +
-          'Empty array [] if nothing matches.'}]
+          '\n\nPublic lost AND found pins:\n' + candidateList +
+          '\n\nReturn ONLY valid JSON array: [{id,confidence,reason}]. ' +
+          'confidence="high"|"medium"|"low". Empty array [] if none.'}]
       })
     });
     var data = await resp.json();
@@ -4909,107 +4926,78 @@ async function autoMatchOnIntake(intake) {
     var text = (data.content||[]).map(function(b){return b.text||'';}).join('').trim();
     var matches = JSON.parse(text.replace(/```json|```/g,'').trim());
     if (!matches.length) return;
-
-    /* Sort: confidence first, then photos-first within same tier */
-    var confOrder = {high:0, medium:1, low:2};
+    var confOrder = {high:0,medium:1,low:2};
     matches.sort(function(a,b){
-      var cd = (confOrder[a.confidence]||2) - (confOrder[b.confidence]||2);
-      if (cd !== 0) return cd;
-      var aR = candidates.find(function(r){return String(r.id)===String(a.id);});
-      var bR = candidates.find(function(r){return String(r.id)===String(b.id);});
-      return (aR&&aR.photo?0:1) - (bR&&bR.photo?0:1);
+      var cd = (confOrder[a.confidence]||2)-(confOrder[b.confidence]||2);
+      if (cd!==0) return cd;
+      var aR=candidates.find(function(r){return String(r.id)===String(a.id);});
+      var bR=candidates.find(function(r){return String(r.id)===String(b.id);});
+      return (aR&&aR.photo?0:1)-(bR&&bR.photo?0:1);
     });
-
-    /* Store match IDs on intake record (no state change) */
     intake.possibleMatchIds = matches.map(function(m){return m.id;});
     save();
     if (USE_FIREBASE && _fbReady && db) { writeAnimalRecord(intake, 'staff'); }
-
-    /* Build and show multi-match panel */
-    _showIntakeMatchPanel(matches, candidates, intake);
-
+    _showIntakeMatchPanel(matches, candidates);
   } catch(e) { console.warn('Auto-match error:', e.message); }
 }
 
-function _showIntakeMatchPanel(matches, candidates, intake) {
-  /* Remove any existing panel */
+function _showIntakeMatchPanel(matches, candidates) {
   ['_imp','_imp-bd'].forEach(function(id){var el=document.getElementById(id);if(el)el.remove();});
-
-  var bd = document.createElement('div');
-  bd.id = '_imp-bd';
-  bd.style.cssText = 'position:fixed;inset:0;z-index:5100;background:rgba(0,0,0,.5)';
-
-  var panel = document.createElement('div');
-  panel.id = '_imp';
-  panel.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:5101;'
-    + 'background:var(--cream);border-radius:18px 18px 0 0;'
-    + 'box-shadow:0 -8px 40px rgba(0,0,0,.3);max-height:82vh;'
-    + 'display:flex;flex-direction:column;overflow:hidden;'
-    + 'transform:translateY(100%);transition:transform .3s cubic-bezier(.34,1.2,.64,1)';
-
-  var dismiss = "var p=document.getElementById('_imp');var b=document.getElementById('_imp-bd');if(p)p.remove();if(b)b.remove();";
-
-  var confColor = {high:'var(--found-g)',medium:'var(--amber)',low:'#a0a0a0'};
-  var confBg    = {high:'#e8f4e9',medium:'#fffbf0',low:'#f8f8f8'};
-
-  var cardsHTML = matches.map(function(m) {
-    var r = candidates.find(function(x){return String(x.id)===String(m.id);});
-    if (!r) return '';
-    var isLost   = r.type === 'lost';
-    var rName    = r.name || (r.species || 'Unknown');
-    var rMeta    = [r.breed, r.color, r.sex].filter(Boolean).join(' · ');
-    var rAddr    = r.address || '';
-    var rContact = isLost
-      ? { label: r.owner || 'Owner', phone: r.phone || '', role: 'Owner' }
-      : { label: r.finder || 'Finder', phone: r.fphone || '', role: 'Finder' };
-    var tel      = (rContact.phone || '').replace(/[^0-9+]/g, '');
-    var typeTag  = isLost
-      ? '<span style="font-size:.62rem;font-weight:800;padding:2px 7px;border-radius:999px;background:#fde8e0;color:var(--lost-r)">🔴 Lost Report</span>'
-      : '<span style="font-size:.62rem;font-weight:800;padding:2px 7px;border-radius:999px;background:#e0f0e4;color:var(--found-g)">🟢 Found Report</span>';
-    var photoHTML = r.photo
-      ? '<img src="' + r.photo + '" style="width:100%;height:90px;object-fit:contain;background:var(--cream-2);border-radius:8px;margin-bottom:8px;display:block">'
-      : '<div style="width:100%;height:52px;background:var(--cream-2);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;margin-bottom:8px">'
-        + (r.species==='Dog'?'🐕':r.species==='Cat'?'🐈':'🐾') + '</div>';
-    var contactHTML = tel
-      ? '<div style="display:flex;gap:6px;margin-top:8px">'
-        + '<a href="tel:' + tel + '" style="flex:1;padding:9px;text-align:center;background:var(--found-g);color:#fff;border-radius:9px;font-family:var(--font-display);font-size:.8rem;font-weight:700;text-decoration:none">📞 Call ' + esc(rContact.role) + '</a>'
-        + '<a href="sms:' + tel + '" style="flex:1;padding:9px;text-align:center;background:#2050a0;color:#fff;border-radius:9px;font-family:var(--font-display);font-size:.8rem;font-weight:700;text-decoration:none">💬 Text</a>'
-        + '</div>'
-      : '<div style="font-size:.76rem;color:var(--warm-mid);margin-top:6px;font-style:italic">No phone on file</div>';
-
-    return '<div style="background:' + (confBg[m.confidence]||'#f8f8f8') + ';border:1.5px solid '
-      + (confColor[m.confidence]||'#ddd') + ';border-radius:12px;padding:12px 14px;margin-bottom:10px">'
-      + photoHTML
-      + '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap">'
-      + typeTag
-      + '<span style="font-size:.66rem;font-weight:800;padding:2px 8px;border-radius:999px;color:' + (confColor[m.confidence]||'#888') + ';background:rgba(255,255,255,.7)">' + m.confidence + ' match</span>'
-      + '</div>'
-      + '<div style="font-family:var(--font-display);font-size:.92rem;font-weight:700;color:var(--warm-dk);margin-bottom:2px">' + esc(rName) + '</div>'
-      + (rMeta ? '<div style="font-size:.74rem;color:var(--warm-mid);margin-bottom:2px">' + esc(rMeta) + '</div>' : '')
-      + (rAddr ? '<div style="font-size:.72rem;color:var(--warm-mid);margin-bottom:4px">📍 ' + esc(rAddr) + '</div>' : '')
-      + (rContact.label ? '<div style="font-size:.78rem;font-weight:600;color:var(--warm-dk)">' + esc(rContact.role) + ': ' + esc(rContact.label) + (rContact.phone ? ' · ' + esc(rContact.phone) : '') + '</div>' : '')
-      + '<div style="font-size:.76rem;color:var(--warm-mid);font-style:italic;margin-top:4px">' + esc(m.reason) + '</div>'
-      + contactHTML
-      + '</div>';
+  var bd=document.createElement('div');
+  bd.id='_imp-bd';
+  bd.style.cssText='position:fixed;inset:0;z-index:5100;background:rgba(0,0,0,.5)';
+  var panel=document.createElement('div');
+  panel.id='_imp';
+  panel.style.cssText='position:fixed;bottom:0;left:0;right:0;z-index:5101;'
+    +'background:var(--cream);border-radius:18px 18px 0 0;box-shadow:0 -8px 40px rgba(0,0,0,.3);'
+    +'max-height:82vh;display:flex;flex-direction:column;overflow:hidden;'
+    +'transform:translateY(100%);transition:transform .3s cubic-bezier(.34,1.2,.64,1)';
+  var dismiss="var p=document.getElementById('_imp');var b=document.getElementById('_imp-bd');if(p)p.remove();if(b)b.remove();";
+  var confColor={high:'var(--found-g)',medium:'var(--amber)',low:'#a0a0a0'};
+  var confBg={high:'#e8f4e9',medium:'#fffbf0',low:'#f8f8f8'};
+  var cards=matches.map(function(m){
+    var r=candidates.find(function(x){return String(x.id)===String(m.id);});
+    if(!r) return '';
+    var isLost=r.type==='lost';
+    var rPhone=isLost?(r.phone||''):(r.fphone||'');
+    var tel=(rPhone||'').replace(/[^0-9+]/g,'');
+    var rRole=isLost?'Owner':'Finder';
+    var rContactLabel=isLost?(r.owner||''):(r.finder||'');
+    var photoHTML=r.photo
+      ?'<img src="'+r.photo+'" style="width:100%;height:90px;object-fit:contain;background:var(--cream-2);border-radius:8px;margin-bottom:8px;display:block">'
+      :'<div style="width:100%;height:52px;background:var(--cream-2);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;margin-bottom:8px">'+(r.species==='Dog'?'&#x1F415;':r.species==='Cat'?'&#x1F408;':'&#x1F43E;')+'</div>';
+    var contactHTML=tel
+      ?'<div style="display:flex;gap:6px;margin-top:8px">'
+        +'<a href="tel:'+tel+'" style="flex:1;padding:9px;text-align:center;background:var(--found-g);color:#fff;border-radius:9px;font-family:var(--font-display);font-size:.8rem;font-weight:700;text-decoration:none">&#x1F4DE; Call '+esc(rRole)+'</a>'
+        +'<a href="sms:'+tel+'" style="flex:1;padding:9px;text-align:center;background:#2050a0;color:#fff;border-radius:9px;font-family:var(--font-display);font-size:.8rem;font-weight:700;text-decoration:none">&#x1F4AC; Text</a></div>'
+      :'<div style="font-size:.76rem;color:var(--warm-mid);margin-top:6px;font-style:italic">No phone on file</div>';
+    var typeTag=isLost
+      ?'<span style="font-size:.62rem;font-weight:800;padding:2px 7px;border-radius:999px;background:#fde8e0;color:var(--lost-r)">&#x1F534; Lost</span>'
+      :'<span style="font-size:.62rem;font-weight:800;padding:2px 7px;border-radius:999px;background:#e0f0e4;color:var(--found-g)">&#x1F7E2; Found</span>';
+    var rMeta=[r.breed,r.color,r.sex].filter(Boolean).join(' &middot; ');
+    return '<div style="background:'+(confBg[m.confidence]||'#f8f8f8')+';border:1.5px solid '+(confColor[m.confidence]||'#ddd')+';border-radius:12px;padding:12px 14px;margin-bottom:10px">'
+      +photoHTML
+      +'<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap">'+typeTag
+      +'<span style="font-size:.66rem;font-weight:800;padding:2px 8px;border-radius:999px;color:'+(confColor[m.confidence]||'#888')+';background:rgba(255,255,255,.7)">'+m.confidence+' match</span></div>'
+      +'<div style="font-family:var(--font-display);font-size:.92rem;font-weight:700;color:var(--warm-dk);margin-bottom:2px">'+esc(r.name||(r.species||'Unknown'))+'</div>'
+      +(rMeta?'<div style="font-size:.74rem;color:var(--warm-mid);margin-bottom:2px">'+rMeta+'</div>':'')
+      +(r.address?'<div style="font-size:.72rem;color:var(--warm-mid);margin-bottom:4px">&#x1F4CD; '+esc(r.address)+'</div>':'')
+      +(rContactLabel?'<div style="font-size:.78rem;font-weight:600;color:var(--warm-dk)">'+esc(rRole)+': '+esc(rContactLabel)+(rPhone?' &middot; '+esc(rPhone):'')+'</div>':'')
+      +'<div style="font-size:.76rem;color:var(--warm-mid);font-style:italic;margin-top:4px">'+esc(m.reason)+'</div>'
+      +contactHTML+'</div>';
   }).join('');
-
-  panel.innerHTML =
+  panel.innerHTML=
     '<div style="padding:14px 18px 10px;border-bottom:1px solid var(--cream-3);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">'
-    + '<div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--warm-dk)">🔍 ' + matches.length + ' Possible Match' + (matches.length>1?'es':'') + ' Found</div>'
-    + '<button onclick="' + dismiss + '" style="background:var(--cream-2);border:none;border-radius:50%;width:32px;height:32px;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>'
-    + '</div>'
-    + '<div style="padding:4px 18px 6px;font-size:.74rem;color:var(--warm-mid);flex-shrink:0">Intake stays In Care. Contact info only — you decide next steps.</div>'
-    + '<div style="flex:1;overflow-y:auto;padding:12px 18px 24px;-webkit-overflow-scrolling:touch">'
-    + cardsHTML
-    + '<button onclick="' + dismiss + '" style="width:100%;padding:11px;border:1.5px solid var(--cream-3);border-radius:10px;background:#fff;font-family:var(--font-display);font-size:.88rem;font-weight:600;cursor:pointer;color:var(--warm-mid)">Dismiss</button>'
-    + '</div>';
-
-  bd.onclick = function(){ panel.remove(); bd.remove(); };
+    +'<div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--warm-dk)">&#x1F50D; '+matches.length+' Possible Match'+(matches.length>1?'es':'')+' Found</div>'
+    +'<button onclick="'+dismiss+'" style="background:var(--cream-2);border:none;border-radius:50%;width:32px;height:32px;font-size:1rem;cursor:pointer">&#x2715;</button></div>'
+    +'<div style="padding:4px 18px 8px;font-size:.74rem;color:var(--warm-mid);flex-shrink:0">Intake stays In Care. Contact info only &mdash; you decide next steps.</div>'
+    +'<div style="flex:1;overflow-y:auto;padding:12px 18px 24px;-webkit-overflow-scrolling:touch">'
+    +cards
+    +'<button onclick="'+dismiss+'" style="width:100%;padding:11px;border:1.5px solid var(--cream-3);border-radius:10px;background:#fff;font-family:var(--font-display);font-size:.88rem;font-weight:600;cursor:pointer;color:var(--warm-mid)">Dismiss</button></div>';
+  bd.onclick=function(){panel.remove();bd.remove();};
   document.body.appendChild(bd);
   document.body.appendChild(panel);
-  requestAnimationFrame(function(){
-    requestAnimationFrame(function(){ panel.style.transform = 'translateY(0)'; });
-  });
+  requestAnimationFrame(function(){requestAnimationFrame(function(){panel.style.transform='translateY(0)';});});
 }
 
 /* ── CAGE CARD PRINT ──────────────────────────────────────────────────── */
