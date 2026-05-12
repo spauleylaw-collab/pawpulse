@@ -1322,6 +1322,7 @@ var SUBMIT_SESSION_MAX = 3;  /* max per session */
 var tmpMarker = null;
 var _fbReady  = false; /* true once Firestore listener is live */
 var _fsAttachPending = false; /* true from the moment onSnapshot is called until first callback or error */
+var _fsAttachTime   = 0;      /* timestamp of last onSnapshot call — detects stalled attach */
 var _fsUnsub  = null;         /* unsubscribe fn — clean up on retry after error */
 var _isStaff  = false;
 
@@ -1481,7 +1482,8 @@ function startFirestoreListener() {
     return;
   }
   try {
-    _fsAttachPending = true; /* mark as attached BEFORE callback fires */
+    _fsAttachPending = true;     /* mark as attached BEFORE callback fires */
+    _fsAttachTime = Date.now();  /* record when we attached — stall detector uses this */
     console.log('[PAWPULSE] onSnapshot attach attempt');
     _fsUnsub = db.collection('reports').onSnapshot(function(snapshot) {
       _fsAttachPending = false;              /* callback confirmed — no longer just pending */
@@ -1886,19 +1888,29 @@ function doGuestView() {
     if (!_bootAppDone) { bootApp(); }
   } catch(e) { console.error('bootApp threw:', e.message, e.stack); }
   setTimeout(_dismissOverlay, 300);
-  /* Firestore listener retries — covers slow auth AND slow mobile data connections.
-     Guard: only retry if not confirmed active AND not already pending (waiting for first snap).
-     Uses open-ended exponential retry so slow mobile connections are covered. */
+  /* Firestore listener retries — open-ended exponential backoff.
+     STALL DETECTION: if pending is true but no snapshot arrived within STALL_MS,
+     the original onSnapshot call is assumed stuck (network not ready at call time).
+     Force-reset state and retry with a fresh onSnapshot call. */
+  var STALL_MS = 5000; /* if pending for 5s with no snapshot, assume stalled */
   (function scheduleRetry(delay) {
     setTimeout(function() {
-      if (window._firestoreListenerActive) return; /* confirmed — stop retrying */
+      if (window._firestoreListenerActive) return; /* confirmed — stop */
       if (!USE_FIREBASE || !db) return;
+      /* Stall check: pending but no callback for STALL_MS → force reset and retry */
+      if (_fsAttachPending && _fsAttachTime > 0 && (Date.now() - _fsAttachTime) > STALL_MS) {
+        console.warn('[PAWPULSE] listener stalled at ' + Math.round((Date.now()-_fsAttachTime)/1000) + 's — force reset and retry');
+        _fsAttachPending = false;
+        _fsAttachTime = 0;
+        if (_fsUnsub) { try { _fsUnsub(); } catch(ex){} _fsUnsub = null; }
+        /* Fall through to startFirestoreListener below */
+      }
       if (!_fsAttachPending) {
-        console.warn('[PAWPULSE] listener retry at ' + delay + 'ms');
+        console.warn('[PAWPULSE] listener retry at ' + Math.round(delay/1000) + 's');
         startFirestoreListener();
       }
-      /* Keep retrying with capped backoff until listener is confirmed */
-      var next = Math.min(delay * 1.5, 30000);
+      /* Keep retrying with capped backoff */
+      var next = Math.min(delay * 1.6, 30000);
       scheduleRetry(next);
     }, delay);
   })(1500);
@@ -5202,7 +5214,8 @@ function _updatePhoneDiag(reason) {
       + 'mapRdy:' + _mapReady + ' recRdy:' + _recordsReady + '\n'
       + 'fbRdy:' + _fbReady + ' staff:' + _isStaff + '\n'
       + 'initDone:' + _initialRenderDone + ' att:' + _initialRenderAttempts + '\n'
-      + 'FSactive:' + !!window._firestoreListenerActive + ' pending:' + !!_fsAttachPending;
+      + 'FSactive:' + !!window._firestoreListenerActive + ' pending:' + !!_fsAttachPending + '\n'
+      + 'stallAge:' + (_fsAttachPending && _fsAttachTime ? Math.round((Date.now()-_fsAttachTime)/1000)+'s' : '-');
   } catch(e) {}
 }
 /* ── [/PHONE DIAGNOSTIC] ── */
