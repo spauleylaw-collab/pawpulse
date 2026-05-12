@@ -1877,31 +1877,30 @@ function doGuestView() {
     if (!_bootAppDone) { bootApp(); }
   } catch(e) { console.error('bootApp threw:', e.message, e.stack); }
   setTimeout(_dismissOverlay, 300);
-  /* Firestore listener started by Firebase auth callback.
-     Safety: if auth is slow or fails, start listener directly after 1.5s */
-  setTimeout(function() {
-    if (!window._firestoreListenerActive && USE_FIREBASE && db) {
-      startFirestoreListener();
-    }
-  }, 1500);
-  /* Phone safety watchdog: if data loaded but map shows zero markers, force one render.
-     Catches the case where all renders fired while map was not yet sized on device. */
-  setTimeout(function() {
-    if (Array.isArray(reports) && reports.length > 0 && Array.isArray(lMarkers) && lMarkers.length === 0) {
-      console.warn('[PAWPULSE WATCHDOG] reports exist but no markers — forcing render');
-      _mapReady = true;
-      renderMarkers();
-      _updatePhoneDiag('watchdog-3s');
-    }
-  }, 3000);
-  setTimeout(function() {
-    if (Array.isArray(reports) && reports.length > 0 && Array.isArray(lMarkers) && lMarkers.length === 0) {
-      console.warn('[PAWPULSE WATCHDOG] 6s retry');
-      try { map.invalidateSize(true); } catch(e) {}
-      renderMarkers();
-      _updatePhoneDiag('watchdog-6s');
-    }
-  }, 6000);
+  /* Firestore listener retries — covers slow auth AND slow mobile data connections.
+     Each retry only starts the listener if it isn't already running. */
+  [1500, 3000, 6000, 10000, 20000].forEach(function(ms) {
+    setTimeout(function() {
+      if (!window._firestoreListenerActive && USE_FIREBASE && db) {
+        console.warn('[PAWPULSE] listener retry at ' + ms + 'ms');
+        startFirestoreListener();
+      }
+    }, ms);
+  });
+  /* Render watchdogs: if Firestore already arrived and populated reports but markers
+     are missing (map wasn't sized yet), force a render. Extended window for slow mobile. */
+  [3000, 6000, 10000, 20000].forEach(function(ms) {
+    setTimeout(function() {
+      if (Array.isArray(reports) && reports.length > 0 && Array.isArray(lMarkers) && lMarkers.length === 0) {
+        console.warn('[PAWPULSE WATCHDOG] reports:' + reports.length + ' lM:0 at ' + ms + 'ms — forcing render');
+        _mapReady = true;
+        _recordsReady = true;
+        try { map.invalidateSize(true); } catch(e) {}
+        renderMarkers();
+        _updatePhoneDiag('watchdog-' + ms + 'ms');
+      }
+    }, ms);
+  });
 }
 
 function doSignOut() {
@@ -2072,7 +2071,13 @@ function bootApp() {
   /* Pre-set shelter filter */
   var sel = document.getElementById('rpt-filter-shelter');
   if (sel && activeShelter) sel.value = activeShelter;
-  _recordsReady = true;
+  /* Only mark records ready if we actually have data.
+     If cache is empty and Firestore hasn't arrived yet, keep _recordsReady=false
+     so tryInitialRender stays in pending state and fires correctly when data arrives.
+     Setting _recordsReady=true with reports=[] prematurely finalizes an empty state. */
+  if (reports.length > 0) {
+    _recordsReady = true;
+  }
   tryInitialRender('boot-records-ready');
   refreshMapPins('bootApp');
   initSpotlight();
@@ -5180,7 +5185,9 @@ function _updatePhoneDiag(reason) {
       + 'incare:' + incareCount + '\n'
       + 'lM:' + (Array.isArray(lMarkers)?lMarkers.length:'?') + '\n'
       + 'mapRdy:' + _mapReady + ' recRdy:' + _recordsReady + '\n'
-      + 'fbRdy:' + _fbReady + ' staff:' + _isStaff;
+      + 'fbRdy:' + _fbReady + ' staff:' + _isStaff + '\n'
+      + 'initDone:' + _initialRenderDone + ' att:' + _initialRenderAttempts + '\n'
+      + 'FSactive:' + !!window._firestoreListenerActive;
   } catch(e) {}
 }
 /* ── [/PHONE DIAGNOSTIC] ── */
