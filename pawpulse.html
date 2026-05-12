@@ -1321,6 +1321,8 @@ var SUBMIT_COOLDOWN_MS = 1 * 60 * 1000;  /* 1 min between submissions (keep shor
 var SUBMIT_SESSION_MAX = 3;  /* max per session */
 var tmpMarker = null;
 var _fbReady  = false; /* true once Firestore listener is live */
+var _fsAttachPending = false; /* true from the moment onSnapshot is called until first callback or error */
+var _fsUnsub  = null;         /* unsubscribe fn — clean up on retry after error */
 var _isStaff  = false;
 
 /* ── SAVE / LOAD ──────────────────────────────────────────────────────── */
@@ -1469,7 +1471,8 @@ function tryInitialRender(reason) {
 }
 
 function startFirestoreListener() {
-  if (window._firestoreListenerActive) return; /* already running */
+  if (window._firestoreListenerActive) return; /* confirmed working — snapshot arrived */
+  if (_fsAttachPending) return;                /* attached and waiting for first snapshot — don't duplicate */
   setTimeout(_dismissOverlay, 2000);
   if (!db) {
     console.warn('Firestore unavailable — using localStorage');
@@ -1478,7 +1481,10 @@ function startFirestoreListener() {
     return;
   }
   try {
-    db.collection('reports').onSnapshot(function(snapshot) {
+    _fsAttachPending = true; /* mark as attached BEFORE callback fires */
+    console.log('[PAWPULSE] onSnapshot attach attempt');
+    _fsUnsub = db.collection('reports').onSnapshot(function(snapshot) {
+      _fsAttachPending = false;              /* callback confirmed — no longer just pending */
       window._firestoreListenerActive = true; /* confirmed receiving */
       console.log('[FIRESTORE SNAPSHOT]', { size: snapshot.size, changes: snapshot.docChanges().length });
       if (window._pauseFirestoreSync) {
@@ -1581,14 +1587,17 @@ function startFirestoreListener() {
         updateNavCounts();
       }
     }, function(err) {
-      console.warn('Firestore listener error:', err);
-      _fbReady = true;
-      showShelterPicker();
+      console.warn('[PAWPULSE] Firestore listener error:', err);
+      _fsAttachPending = false; /* clear pending so retry is allowed */
+      if (_fsUnsub) { try { _fsUnsub(); } catch(ex){} _fsUnsub = null; }
+      /* Do NOT set _fbReady=true here — that would poison the first-boot path
+         for subsequent successful listener attach. Only fall back if truly no db. */
+      console.warn('[PAWPULSE] Will retry listener attach via scheduled retries');
     });
   } catch(e) {
-    console.warn('Firestore init error:', e.message);
-    _fbReady = true;
-    showShelterPicker();
+    console.warn('[PAWPULSE] Firestore init error:', e.message);
+    _fsAttachPending = false; /* allow retry */
+    if (_fsUnsub) { try { _fsUnsub(); } catch(ex){} _fsUnsub = null; }
   }
 }
 
@@ -1878,15 +1887,21 @@ function doGuestView() {
   } catch(e) { console.error('bootApp threw:', e.message, e.stack); }
   setTimeout(_dismissOverlay, 300);
   /* Firestore listener retries — covers slow auth AND slow mobile data connections.
-     Each retry only starts the listener if it isn't already running. */
-  [1500, 3000, 6000, 10000, 20000].forEach(function(ms) {
+     Guard: only retry if not confirmed active AND not already pending (waiting for first snap).
+     Uses open-ended exponential retry so slow mobile connections are covered. */
+  (function scheduleRetry(delay) {
     setTimeout(function() {
-      if (!window._firestoreListenerActive && USE_FIREBASE && db) {
-        console.warn('[PAWPULSE] listener retry at ' + ms + 'ms');
+      if (window._firestoreListenerActive) return; /* confirmed — stop retrying */
+      if (!USE_FIREBASE || !db) return;
+      if (!_fsAttachPending) {
+        console.warn('[PAWPULSE] listener retry at ' + delay + 'ms');
         startFirestoreListener();
       }
-    }, ms);
-  });
+      /* Keep retrying with capped backoff until listener is confirmed */
+      var next = Math.min(delay * 1.5, 30000);
+      scheduleRetry(next);
+    }, delay);
+  })(1500);
   /* Render watchdogs: if Firestore already arrived and populated reports but markers
      are missing (map wasn't sized yet), force a render. Extended window for slow mobile. */
   [3000, 6000, 10000, 20000].forEach(function(ms) {
@@ -5187,7 +5202,7 @@ function _updatePhoneDiag(reason) {
       + 'mapRdy:' + _mapReady + ' recRdy:' + _recordsReady + '\n'
       + 'fbRdy:' + _fbReady + ' staff:' + _isStaff + '\n'
       + 'initDone:' + _initialRenderDone + ' att:' + _initialRenderAttempts + '\n'
-      + 'FSactive:' + !!window._firestoreListenerActive;
+      + 'FSactive:' + !!window._firestoreListenerActive + ' pending:' + !!_fsAttachPending;
   } catch(e) {}
 }
 /* ── [/PHONE DIAGNOSTIC] ── */
