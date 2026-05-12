@@ -2457,17 +2457,17 @@ function submitIntakeFromModal() {
     window._migrateFromId = null;
   }
 
+  window._pauseFirestoreSync = true;
   reports.push(r); save();
   /* Write through doctrine pipeline — wrapped to prevent undefined-field Firebase error from freezing modal */
   try {
     if (USE_FIREBASE && _fbReady && db && _isStaff) {
-      window._pauseFirestoreSync = true;
       writeAnimalRecord(r, 'staff');
-      setTimeout(function(){ window._pauseFirestoreSync = false; }, 5000);
     }
   } catch(e) {
     console.warn('Intake write error (local save succeeded):', e.message);
   }
+  setTimeout(function(){ window._pauseFirestoreSync = false; }, 5000);
   /* Close modal FIRST so phone UI doesn't freeze while rendering */
   closeIntakeModal();
   /* Stagger heavy renders: markers first (fast), then incare grid (heavy) */
@@ -6837,6 +6837,17 @@ function renderMatchResults(intakeId, matches, lostPets) {
     el.innerHTML = '<div style="font-size:.78rem;color:var(--warm-mid);padding:8px 0;font-style:italic">No close matches found in current lost pet reports.</div>';
     return;
   }
+  /* Sort: confidence first, then photos-first within same confidence */
+  var confOrder = { high: 0, medium: 1, low: 2 };
+  matches = matches.slice().sort(function(a, b) {
+    var confDiff = (confOrder[a.confidence]||2) - (confOrder[b.confidence]||2);
+    if (confDiff !== 0) return confDiff;
+    var aLost = lostPets.find(function(r){ return r.id === a.id; });
+    var bLost = lostPets.find(function(r){ return r.id === b.id; });
+    var aHasPhoto = (aLost && aLost.photo) ? 0 : 1;
+    var bHasPhoto = (bLost && bLost.photo) ? 0 : 1;
+    return aHasPhoto - bHasPhoto;
+  });
   el.innerHTML = '<div style="font-size:.72rem;font-weight:700;color:var(--warm-mid);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">' + matches.length + ' possible match' + (matches.length>1?'es':'') + ' found</div>'
     + matches.map(function(m) {
         var lost = lostPets.find(function(r){ return r.id === m.id; });
