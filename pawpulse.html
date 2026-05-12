@@ -1321,9 +1321,6 @@ var SUBMIT_COOLDOWN_MS = 1 * 60 * 1000;  /* 1 min between submissions (keep shor
 var SUBMIT_SESSION_MAX = 3;  /* max per session */
 var tmpMarker = null;
 var _fbReady  = false; /* true once Firestore listener is live */
-var _fsAttachPending = false; /* true from the moment onSnapshot is called until first callback or error */
-var _fsAttachTime   = 0;      /* timestamp of last onSnapshot call — detects stalled attach */
-var _fsUnsub  = null;         /* unsubscribe fn — clean up on retry after error */
 var _isStaff  = false;
 
 /* ── SAVE / LOAD ──────────────────────────────────────────────────────── */
@@ -1429,14 +1426,11 @@ function refreshMapPins(reason) {
   });
   _mapReady = true;
   try { if (map && map.invalidateSize) map.invalidateSize(true); } catch(e) {}
-  /* Do NOT pre-wipe lMarkers here — renderMarkers() uses an oldMarkers-swap pattern
-     that removes old pins only AFTER new ones are placed. Pre-wiping caused a blank-map
-     regression on phones when the subsequent renderMarkers() produced zero markers
-     (map not yet sized). renderMarkers() handles the cleanup itself. */
+  lMarkers.forEach(function(m){ try { map.removeLayer(m); } catch(e){} });
+  lMarkers = [];
   renderMarkers();
   /* Hide loading overlay once pins are on the map */
   if (lMarkers.length > 0) _dismissOverlay();
-  _updatePhoneDiag(reason);
 }
 
 var _initialRenderDone = false;
@@ -1472,8 +1466,7 @@ function tryInitialRender(reason) {
 }
 
 function startFirestoreListener() {
-  if (window._firestoreListenerActive) return; /* confirmed working — snapshot arrived */
-  if (_fsAttachPending) return;                /* attached and waiting for first snapshot — don't duplicate */
+  if (window._firestoreListenerActive) return; /* already running */
   setTimeout(_dismissOverlay, 2000);
   if (!db) {
     console.warn('Firestore unavailable — using localStorage');
@@ -1482,11 +1475,7 @@ function startFirestoreListener() {
     return;
   }
   try {
-    _fsAttachPending = true;     /* mark as attached BEFORE callback fires */
-    _fsAttachTime = Date.now();  /* record when we attached — stall detector uses this */
-    console.log('[PAWPULSE] onSnapshot attach attempt');
-    _fsUnsub = db.collection('reports').onSnapshot(function(snapshot) {
-      _fsAttachPending = false;              /* callback confirmed — no longer just pending */
+    db.collection('reports').onSnapshot(function(snapshot) {
       window._firestoreListenerActive = true; /* confirmed receiving */
       console.log('[FIRESTORE SNAPSHOT]', { size: snapshot.size, changes: snapshot.docChanges().length });
       if (window._pauseFirestoreSync) {
@@ -1527,12 +1516,10 @@ function startFirestoreListener() {
         _recordsReady = true;
         tryInitialRender('first-firestore-ready');
         _bootAppDone = false;
-        /* Do NOT manually wipe lMarkers here — showShelterPicker→bootApp→refreshMapPins
-           will render with the safe swap pattern. An extra pre-wipe here caused a
-           race where the map went blank on phones. */
+        lMarkers.forEach(function(m){ try { map.removeLayer(m); } catch(e){} });
+        lMarkers = [];
         showShelterPicker();
-        /* bootApp() (called via showShelterPicker) already runs refreshMapPins('bootApp').
-           Only schedule safety retries — no immediate redundant wipe+render. */
+        refreshMapPins('first-firestore-load');
         setTimeout(function(){ refreshMapPins('first-firestore-500'); }, 500);
         setTimeout(function(){ refreshMapPins('first-firestore-1500'); }, 1500);
         _dismissOverlay();
@@ -1589,17 +1576,14 @@ function startFirestoreListener() {
         updateNavCounts();
       }
     }, function(err) {
-      console.warn('[PAWPULSE] Firestore listener error:', err);
-      _fsAttachPending = false; /* clear pending so retry is allowed */
-      if (_fsUnsub) { try { _fsUnsub(); } catch(ex){} _fsUnsub = null; }
-      /* Do NOT set _fbReady=true here — that would poison the first-boot path
-         for subsequent successful listener attach. Only fall back if truly no db. */
-      console.warn('[PAWPULSE] Will retry listener attach via scheduled retries');
+      console.warn('Firestore listener error:', err);
+      _fbReady = true;
+      showShelterPicker();
     });
   } catch(e) {
-    console.warn('[PAWPULSE] Firestore init error:', e.message);
-    _fsAttachPending = false; /* allow retry */
-    if (_fsUnsub) { try { _fsUnsub(); } catch(ex){} _fsUnsub = null; }
+    console.warn('Firestore init error:', e.message);
+    _fbReady = true;
+    showShelterPicker();
   }
 }
 
@@ -1888,46 +1872,13 @@ function doGuestView() {
     if (!_bootAppDone) { bootApp(); }
   } catch(e) { console.error('bootApp threw:', e.message, e.stack); }
   setTimeout(_dismissOverlay, 300);
-  /* Firestore listener retries — open-ended exponential backoff.
-     STALL DETECTION: if pending is true but no snapshot arrived within STALL_MS,
-     the original onSnapshot call is assumed stuck (network not ready at call time).
-     Force-reset state and retry with a fresh onSnapshot call. */
-  var STALL_MS = 5000; /* if pending for 5s with no snapshot, assume stalled */
-  (function scheduleRetry(delay) {
-    setTimeout(function() {
-      if (window._firestoreListenerActive) return; /* confirmed — stop */
-      if (!USE_FIREBASE || !db) return;
-      /* Stall check: pending but no callback for STALL_MS → force reset and retry */
-      if (_fsAttachPending && _fsAttachTime > 0 && (Date.now() - _fsAttachTime) > STALL_MS) {
-        console.warn('[PAWPULSE] listener stalled at ' + Math.round((Date.now()-_fsAttachTime)/1000) + 's — force reset and retry');
-        _fsAttachPending = false;
-        _fsAttachTime = 0;
-        if (_fsUnsub) { try { _fsUnsub(); } catch(ex){} _fsUnsub = null; }
-        /* Fall through to startFirestoreListener below */
-      }
-      if (!_fsAttachPending) {
-        console.warn('[PAWPULSE] listener retry at ' + Math.round(delay/1000) + 's');
-        startFirestoreListener();
-      }
-      /* Keep retrying with capped backoff */
-      var next = Math.min(delay * 1.6, 30000);
-      scheduleRetry(next);
-    }, delay);
-  })(1500);
-  /* Render watchdogs: if Firestore already arrived and populated reports but markers
-     are missing (map wasn't sized yet), force a render. Extended window for slow mobile. */
-  [3000, 6000, 10000, 20000].forEach(function(ms) {
-    setTimeout(function() {
-      if (Array.isArray(reports) && reports.length > 0 && Array.isArray(lMarkers) && lMarkers.length === 0) {
-        console.warn('[PAWPULSE WATCHDOG] reports:' + reports.length + ' lM:0 at ' + ms + 'ms — forcing render');
-        _mapReady = true;
-        _recordsReady = true;
-        try { map.invalidateSize(true); } catch(e) {}
-        renderMarkers();
-        _updatePhoneDiag('watchdog-' + ms + 'ms');
-      }
-    }, ms);
-  });
+  /* Firestore listener started by Firebase auth callback.
+     Safety: if auth is slow or fails, start listener directly after 1.5s */
+  setTimeout(function() {
+    if (!window._firestoreListenerActive && USE_FIREBASE && db) {
+      startFirestoreListener();
+    }
+  }, 1500);
 }
 
 function doSignOut() {
@@ -2098,13 +2049,7 @@ function bootApp() {
   /* Pre-set shelter filter */
   var sel = document.getElementById('rpt-filter-shelter');
   if (sel && activeShelter) sel.value = activeShelter;
-  /* Only mark records ready if we actually have data.
-     If cache is empty and Firestore hasn't arrived yet, keep _recordsReady=false
-     so tryInitialRender stays in pending state and fires correctly when data arrives.
-     Setting _recordsReady=true with reports=[] prematurely finalizes an empty state. */
-  if (reports.length > 0) {
-    _recordsReady = true;
-  }
+  _recordsReady = true;
   tryInitialRender('boot-records-ready');
   refreshMapPins('bootApp');
   initSpotlight();
@@ -4913,45 +4858,158 @@ function showCallOwnerPrompt(lostPet, intake) {
 }
 
 async function autoMatchOnIntake(intake) {
-  var lostPets = reports.filter(function(r){
-    return r.type === 'lost' && !r.reunited && !r.shelter;
+  /* Search BOTH lost pins and public found pins for possible matches */
+  var candidates = reports.filter(function(r){
+    if (r.shelter || r.reunited || r.resolved) return false;
+    if (r.type !== 'lost' && r.type !== 'found') return false;
+    /* Species filter — include if unknown on either side */
+    if (intake.species && r.species) {
+      return intake.species.toLowerCase() === r.species.toLowerCase();
+    }
+    return true; /* include if species unknown on pin */
   });
-  if (!lostPets.length) return;
-  var quickMatch = lostPets.filter(function(r){
-    return intake.species && r.species && intake.species.toLowerCase() === r.species.toLowerCase();
-  });
-  if (!quickMatch.length) return;
+  if (!candidates.length) return;
+
   try {
     var intakeDesc = [
       intake.species && 'Species: ' + intake.species,
       intake.breed   && 'Breed: '   + intake.breed,
       intake.color   && 'Color: '   + intake.color,
       intake.sex     && 'Sex: '     + intake.sex,
-      intake.address && 'Found near: ' + intake.address
+      intake.address && 'Location: ' + intake.address
     ].filter(Boolean).join('. ');
-    var lostList = quickMatch.map(function(r, i){
-      return (i+1) + '. ID:' + r.id + (r.name?' Name:'+r.name:'') + (r.species?' Species:'+r.species:'') + (r.breed?' Breed:'+r.breed:'') + (r.color?' Color:'+r.color:'') + (r.address?' Last seen:'+r.address:'');
+
+    var candidateList = candidates.map(function(r, i){
+      var contact = r.type === 'lost'
+        ? (r.owner || '') + (r.phone ? ' ' + r.phone : '')
+        : (r.finder || '') + (r.fphone ? ' ' + r.fphone : '');
+      return (i+1) + '. ID:' + r.id + ' Type:' + r.type
+        + (r.name    ? ' Name:'    + r.name    : '')
+        + (r.species ? ' Species:' + r.species : '')
+        + (r.breed   ? ' Breed:'   + r.breed   : '')
+        + (r.color   ? ' Color:'   + r.color   : '')
+        + (r.address ? ' Location:' + r.address : '')
+        + (contact   ? ' Contact:' + contact.trim() : '');
     }).join('\n');
+
     var resp = await fetch('/api/anthropic', {
       method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:400,
-        messages:[{role:'user',content:'A shelter just received this animal:\n' + intakeDesc + '\n\nActive lost pet reports:\n' + lostList + '\n\nReturn ONLY valid JSON array of matches with: id (number), confidence ("high","medium","low"), reason (1 sentence). Empty array if no matches.'}]
+      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:600,
+        messages:[{role:'user',content:
+          'A shelter just received this animal:\n' + intakeDesc +
+          '\n\nPublic lost AND found pins on the map:\n' + candidateList +
+          '\n\nReturn ONLY valid JSON array of matches: [{id,confidence,reason}]. ' +
+          'id = number from list. confidence = "high"|"medium"|"low". reason = 1 sentence. ' +
+          'Include both lost reports (possible owner searching) AND found reports (might be same animal). ' +
+          'Empty array [] if nothing matches.'}]
       })
     });
     var data = await resp.json();
+    if (data.error) throw new Error(data.error.message);
     var text = (data.content||[]).map(function(b){return b.text||'';}).join('').trim();
     var matches = JSON.parse(text.replace(/```json|```/g,'').trim());
     if (!matches.length) return;
-    var best = matches[0];
-    var lostPet = lostPets.find(function(r){return String(r.id)===String(best.id);});
-    var petName = lostPet ? (lostPet.name || lostPet.species || 'pet') : 'a pet';
-    pushBannerEvent('\uD83D\uDD0D ' + matches.length + ' possible lost pet match' + (matches.length>1?'es':'') + ' for this intake \u2014 ' + petName + ' was reported missing nearby. Check the map.', '#2050a0');
+
+    /* Sort: confidence first, then photos-first within same tier */
+    var confOrder = {high:0, medium:1, low:2};
+    matches.sort(function(a,b){
+      var cd = (confOrder[a.confidence]||2) - (confOrder[b.confidence]||2);
+      if (cd !== 0) return cd;
+      var aR = candidates.find(function(r){return String(r.id)===String(a.id);});
+      var bR = candidates.find(function(r){return String(r.id)===String(b.id);});
+      return (aR&&aR.photo?0:1) - (bR&&bR.photo?0:1);
+    });
+
+    /* Store match IDs on intake record (no state change) */
     intake.possibleMatchIds = matches.map(function(m){return m.id;});
     save();
-    if (USE_FIREBASE && _fbReady && db) {
-      writeAnimalRecord(intake, 'staff');
-    }
+    if (USE_FIREBASE && _fbReady && db) { writeAnimalRecord(intake, 'staff'); }
+
+    /* Build and show multi-match panel */
+    _showIntakeMatchPanel(matches, candidates, intake);
+
   } catch(e) { console.warn('Auto-match error:', e.message); }
+}
+
+function _showIntakeMatchPanel(matches, candidates, intake) {
+  /* Remove any existing panel */
+  ['_imp','_imp-bd'].forEach(function(id){var el=document.getElementById(id);if(el)el.remove();});
+
+  var bd = document.createElement('div');
+  bd.id = '_imp-bd';
+  bd.style.cssText = 'position:fixed;inset:0;z-index:5100;background:rgba(0,0,0,.5)';
+
+  var panel = document.createElement('div');
+  panel.id = '_imp';
+  panel.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:5101;'
+    + 'background:var(--cream);border-radius:18px 18px 0 0;'
+    + 'box-shadow:0 -8px 40px rgba(0,0,0,.3);max-height:82vh;'
+    + 'display:flex;flex-direction:column;overflow:hidden;'
+    + 'transform:translateY(100%);transition:transform .3s cubic-bezier(.34,1.2,.64,1)';
+
+  var dismiss = "var p=document.getElementById('_imp');var b=document.getElementById('_imp-bd');if(p)p.remove();if(b)b.remove();";
+
+  var confColor = {high:'var(--found-g)',medium:'var(--amber)',low:'#a0a0a0'};
+  var confBg    = {high:'#e8f4e9',medium:'#fffbf0',low:'#f8f8f8'};
+
+  var cardsHTML = matches.map(function(m) {
+    var r = candidates.find(function(x){return String(x.id)===String(m.id);});
+    if (!r) return '';
+    var isLost   = r.type === 'lost';
+    var rName    = r.name || (r.species || 'Unknown');
+    var rMeta    = [r.breed, r.color, r.sex].filter(Boolean).join(' · ');
+    var rAddr    = r.address || '';
+    var rContact = isLost
+      ? { label: r.owner || 'Owner', phone: r.phone || '', role: 'Owner' }
+      : { label: r.finder || 'Finder', phone: r.fphone || '', role: 'Finder' };
+    var tel      = (rContact.phone || '').replace(/[^0-9+]/g, '');
+    var typeTag  = isLost
+      ? '<span style="font-size:.62rem;font-weight:800;padding:2px 7px;border-radius:999px;background:#fde8e0;color:var(--lost-r)">🔴 Lost Report</span>'
+      : '<span style="font-size:.62rem;font-weight:800;padding:2px 7px;border-radius:999px;background:#e0f0e4;color:var(--found-g)">🟢 Found Report</span>';
+    var photoHTML = r.photo
+      ? '<img src="' + r.photo + '" style="width:100%;height:90px;object-fit:contain;background:var(--cream-2);border-radius:8px;margin-bottom:8px;display:block">'
+      : '<div style="width:100%;height:52px;background:var(--cream-2);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;margin-bottom:8px">'
+        + (r.species==='Dog'?'🐕':r.species==='Cat'?'🐈':'🐾') + '</div>';
+    var contactHTML = tel
+      ? '<div style="display:flex;gap:6px;margin-top:8px">'
+        + '<a href="tel:' + tel + '" style="flex:1;padding:9px;text-align:center;background:var(--found-g);color:#fff;border-radius:9px;font-family:var(--font-display);font-size:.8rem;font-weight:700;text-decoration:none">📞 Call ' + esc(rContact.role) + '</a>'
+        + '<a href="sms:' + tel + '" style="flex:1;padding:9px;text-align:center;background:#2050a0;color:#fff;border-radius:9px;font-family:var(--font-display);font-size:.8rem;font-weight:700;text-decoration:none">💬 Text</a>'
+        + '</div>'
+      : '<div style="font-size:.76rem;color:var(--warm-mid);margin-top:6px;font-style:italic">No phone on file</div>';
+
+    return '<div style="background:' + (confBg[m.confidence]||'#f8f8f8') + ';border:1.5px solid '
+      + (confColor[m.confidence]||'#ddd') + ';border-radius:12px;padding:12px 14px;margin-bottom:10px">'
+      + photoHTML
+      + '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap">'
+      + typeTag
+      + '<span style="font-size:.66rem;font-weight:800;padding:2px 8px;border-radius:999px;color:' + (confColor[m.confidence]||'#888') + ';background:rgba(255,255,255,.7)">' + m.confidence + ' match</span>'
+      + '</div>'
+      + '<div style="font-family:var(--font-display);font-size:.92rem;font-weight:700;color:var(--warm-dk);margin-bottom:2px">' + esc(rName) + '</div>'
+      + (rMeta ? '<div style="font-size:.74rem;color:var(--warm-mid);margin-bottom:2px">' + esc(rMeta) + '</div>' : '')
+      + (rAddr ? '<div style="font-size:.72rem;color:var(--warm-mid);margin-bottom:4px">📍 ' + esc(rAddr) + '</div>' : '')
+      + (rContact.label ? '<div style="font-size:.78rem;font-weight:600;color:var(--warm-dk)">' + esc(rContact.role) + ': ' + esc(rContact.label) + (rContact.phone ? ' · ' + esc(rContact.phone) : '') + '</div>' : '')
+      + '<div style="font-size:.76rem;color:var(--warm-mid);font-style:italic;margin-top:4px">' + esc(m.reason) + '</div>'
+      + contactHTML
+      + '</div>';
+  }).join('');
+
+  panel.innerHTML =
+    '<div style="padding:14px 18px 10px;border-bottom:1px solid var(--cream-3);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">'
+    + '<div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--warm-dk)">🔍 ' + matches.length + ' Possible Match' + (matches.length>1?'es':'') + ' Found</div>'
+    + '<button onclick="' + dismiss + '" style="background:var(--cream-2);border:none;border-radius:50%;width:32px;height:32px;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>'
+    + '</div>'
+    + '<div style="padding:4px 18px 6px;font-size:.74rem;color:var(--warm-mid);flex-shrink:0">Intake stays In Care. Contact info only — you decide next steps.</div>'
+    + '<div style="flex:1;overflow-y:auto;padding:12px 18px 24px;-webkit-overflow-scrolling:touch">'
+    + cardsHTML
+    + '<button onclick="' + dismiss + '" style="width:100%;padding:11px;border:1.5px solid var(--cream-3);border-radius:10px;background:#fff;font-family:var(--font-display);font-size:.88rem;font-weight:600;cursor:pointer;color:var(--warm-mid)">Dismiss</button>'
+    + '</div>';
+
+  bd.onclick = function(){ panel.remove(); bd.remove(); };
+  document.body.appendChild(bd);
+  document.body.appendChild(panel);
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){ panel.style.transform = 'translateY(0)'; });
+  });
 }
 
 /* ── CAGE CARD PRINT ──────────────────────────────────────────────────── */
@@ -5183,42 +5241,6 @@ function isPublicVisible(r) {
   if (r.type === 'lost' && !r.reunited && daysSince(r.date) >= 30) return false;
   return true;
 }
-
-/* ── PHONE DIAGNOSTIC OVERLAY ─────────────────────────────────────────
-   Visible on device for 12s then auto-removes. Shows render state.
-   Remove this block once pin reliability is confirmed stable.           */
-function _updatePhoneDiag(reason) {
-  try {
-    var box = document.getElementById('_pp_phone_diag');
-    if (!box) {
-      box = document.createElement('div');
-      box.id = '_pp_phone_diag';
-      box.style.cssText = 'position:fixed;bottom:80px;left:8px;z-index:99999;'
-        + 'background:rgba(0,0,0,.85);color:#0f0;font:10px/1.4 monospace;'
-        + 'padding:6px 8px;border-radius:6px;max-width:220px;pointer-events:none;'
-        + 'white-space:pre-wrap;box-shadow:0 2px 10px rgba(0,0,0,.6);';
-      document.body.appendChild(box);
-      setTimeout(function(){ if(box.parentNode) box.parentNode.removeChild(box); }, 12000);
-    }
-    var pubEligible = Array.isArray(reports) ? reports.filter(function(r){
-      return !r.shelter && !r.reunited && isPublicVisible(r) && r.lat && r.lng;
-    }).length : '?';
-    var incareCount = typeof getShelterData === 'function'
-      ? getShelterData({ includeHolds: true }).length : '?';
-    box.textContent =
-      '[' + (reason||'?').slice(0,18) + ']\n'
-      + 'reports:' + (Array.isArray(reports)?reports.length:'?') + '\n'
-      + 'pubPins:' + pubEligible + '\n'
-      + 'incare:' + incareCount + '\n'
-      + 'lM:' + (Array.isArray(lMarkers)?lMarkers.length:'?') + '\n'
-      + 'mapRdy:' + _mapReady + ' recRdy:' + _recordsReady + '\n'
-      + 'fbRdy:' + _fbReady + ' staff:' + _isStaff + '\n'
-      + 'initDone:' + _initialRenderDone + ' att:' + _initialRenderAttempts + '\n'
-      + 'FSactive:' + !!window._firestoreListenerActive + ' pending:' + !!_fsAttachPending + '\n'
-      + 'stallAge:' + (_fsAttachPending && _fsAttachTime ? Math.round((Date.now()-_fsAttachTime)/1000)+'s' : '-');
-  } catch(e) {}
-}
-/* ── [/PHONE DIAGNOSTIC] ── */
 
 var _renderMarkersDebounce = null;
 function renderMarkersDebounced() {
