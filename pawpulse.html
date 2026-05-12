@@ -1426,11 +1426,14 @@ function refreshMapPins(reason) {
   });
   _mapReady = true;
   try { if (map && map.invalidateSize) map.invalidateSize(true); } catch(e) {}
-  lMarkers.forEach(function(m){ try { map.removeLayer(m); } catch(e){} });
-  lMarkers = [];
+  /* Do NOT pre-wipe lMarkers here — renderMarkers() uses an oldMarkers-swap pattern
+     that removes old pins only AFTER new ones are placed. Pre-wiping caused a blank-map
+     regression on phones when the subsequent renderMarkers() produced zero markers
+     (map not yet sized). renderMarkers() handles the cleanup itself. */
   renderMarkers();
   /* Hide loading overlay once pins are on the map */
   if (lMarkers.length > 0) _dismissOverlay();
+  _updatePhoneDiag(reason);
 }
 
 var _initialRenderDone = false;
@@ -1516,10 +1519,12 @@ function startFirestoreListener() {
         _recordsReady = true;
         tryInitialRender('first-firestore-ready');
         _bootAppDone = false;
-        lMarkers.forEach(function(m){ try { map.removeLayer(m); } catch(e){} });
-        lMarkers = [];
+        /* Do NOT manually wipe lMarkers here — showShelterPicker→bootApp→refreshMapPins
+           will render with the safe swap pattern. An extra pre-wipe here caused a
+           race where the map went blank on phones. */
         showShelterPicker();
-        refreshMapPins('first-firestore-load');
+        /* bootApp() (called via showShelterPicker) already runs refreshMapPins('bootApp').
+           Only schedule safety retries — no immediate redundant wipe+render. */
         setTimeout(function(){ refreshMapPins('first-firestore-500'); }, 500);
         setTimeout(function(){ refreshMapPins('first-firestore-1500'); }, 1500);
         _dismissOverlay();
@@ -1879,6 +1884,24 @@ function doGuestView() {
       startFirestoreListener();
     }
   }, 1500);
+  /* Phone safety watchdog: if data loaded but map shows zero markers, force one render.
+     Catches the case where all renders fired while map was not yet sized on device. */
+  setTimeout(function() {
+    if (Array.isArray(reports) && reports.length > 0 && Array.isArray(lMarkers) && lMarkers.length === 0) {
+      console.warn('[PAWPULSE WATCHDOG] reports exist but no markers — forcing render');
+      _mapReady = true;
+      renderMarkers();
+      _updatePhoneDiag('watchdog-3s');
+    }
+  }, 3000);
+  setTimeout(function() {
+    if (Array.isArray(reports) && reports.length > 0 && Array.isArray(lMarkers) && lMarkers.length === 0) {
+      console.warn('[PAWPULSE WATCHDOG] 6s retry');
+      try { map.invalidateSize(true); } catch(e) {}
+      renderMarkers();
+      _updatePhoneDiag('watchdog-6s');
+    }
+  }, 6000);
 }
 
 function doSignOut() {
@@ -2476,7 +2499,6 @@ function submitIntakeFromModal() {
     renderIncareView();
     pushBannerEvent((isHold?'⚠️ Animal on hold logged at ':'🐾 New animal received at ') + activeShelter, isHold?'#d4843a':'var(--found-g)');
     if (!isHold) setTimeout(function(){ autoMatchOnIntake(r); }, 800);
-    setTimeout(function(){ checkFoundPinsOnIntake(r); }, 1200);
     window._migrateFromId = null;
   }, 300);
 }
@@ -5129,6 +5151,39 @@ function isPublicVisible(r) {
   if (r.type === 'lost' && !r.reunited && daysSince(r.date) >= 30) return false;
   return true;
 }
+
+/* ── PHONE DIAGNOSTIC OVERLAY ─────────────────────────────────────────
+   Visible on device for 12s then auto-removes. Shows render state.
+   Remove this block once pin reliability is confirmed stable.           */
+function _updatePhoneDiag(reason) {
+  try {
+    var box = document.getElementById('_pp_phone_diag');
+    if (!box) {
+      box = document.createElement('div');
+      box.id = '_pp_phone_diag';
+      box.style.cssText = 'position:fixed;bottom:80px;left:8px;z-index:99999;'
+        + 'background:rgba(0,0,0,.85);color:#0f0;font:10px/1.4 monospace;'
+        + 'padding:6px 8px;border-radius:6px;max-width:220px;pointer-events:none;'
+        + 'white-space:pre-wrap;box-shadow:0 2px 10px rgba(0,0,0,.6);';
+      document.body.appendChild(box);
+      setTimeout(function(){ if(box.parentNode) box.parentNode.removeChild(box); }, 12000);
+    }
+    var pubEligible = Array.isArray(reports) ? reports.filter(function(r){
+      return !r.shelter && !r.reunited && isPublicVisible(r) && r.lat && r.lng;
+    }).length : '?';
+    var incareCount = typeof getShelterData === 'function'
+      ? getShelterData({ includeHolds: true }).length : '?';
+    box.textContent =
+      '[' + (reason||'?').slice(0,18) + ']\n'
+      + 'reports:' + (Array.isArray(reports)?reports.length:'?') + '\n'
+      + 'pubPins:' + pubEligible + '\n'
+      + 'incare:' + incareCount + '\n'
+      + 'lM:' + (Array.isArray(lMarkers)?lMarkers.length:'?') + '\n'
+      + 'mapRdy:' + _mapReady + ' recRdy:' + _recordsReady + '\n'
+      + 'fbRdy:' + _fbReady + ' staff:' + _isStaff;
+  } catch(e) {}
+}
+/* ── [/PHONE DIAGNOSTIC] ── */
 
 var _renderMarkersDebounce = null;
 function renderMarkersDebounced() {
