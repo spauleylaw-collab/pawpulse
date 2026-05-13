@@ -1114,7 +1114,7 @@ textarea{min-height:64px}
       ✅ Pin placed — tap to continue →
     </div>
 
-    <button id="landscape-toggle" onclick="(function(){var btns=Array.from(document.querySelectorAll('#nav-tabs .tab-btn')).filter(function(b){return b.offsetParent!==null;});var cur=btns.findIndex(function(b){return b.classList.contains('active');});var next=btns[(cur+1)%btns.length];if(next)next.click();})();" title="Switch view">&#8644;</button>
+    <button id="landscape-toggle" onclick="(function(){var btns=Array.from(document.querySelectorAll('#nav-tabs .tab-btn')).filter(function(b){return getComputedStyle(b).display!=='none';});var cur=btns.findIndex(function(b){return b.classList.contains('active');});var next=btns[(cur+1)%btns.length];if(next)next.click();})();" title="Switch view">&#8644;</button>
     <div id="pin-card">
       <button class="pc-close" onclick="closeCard()">✕</button>
       <div id="pin-card-body" style="overflow-y:auto;max-height:calc(80vh - 40px);-webkit-overflow-scrolling:touch"></div>
