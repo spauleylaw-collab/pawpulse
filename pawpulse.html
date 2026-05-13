@@ -1134,12 +1134,15 @@ textarea{min-height:64px}
         <!-- LOST FORM -->
         <div id="form-lost">
           <div class="sl">🖼️ Photo <span style="font-size:.72rem;font-weight:400;color:var(--warm-mid)">— upload first to auto-fill fields with AI</span></div>
-          <div class="photo-drop">
-            <input type="file" id="l-photo" accept="image/*" capture="environment" onchange="previewPhoto(this,'l-prev','l-dicon','l-dtxt');showAIBtn('l')">
-            <div class="photo-drop-icon" id="l-dicon">📷</div>
-            <div class="photo-drop-txt"  id="l-dtxt">Tap to upload a photo</div>
-            <img id="l-prev" class="photo-prev" alt="preview">
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <button type="button" onclick="document.getElementById('l-photo-cam').click()" style="flex:1;padding:11px 6px;border:2px dashed var(--cream-3);border-radius:8px;background:#fff;cursor:pointer;font-family:var(--font-body);font-size:.78rem;font-weight:600;color:var(--warm-mid);display:flex;flex-direction:column;align-items:center;gap:4px;touch-action:manipulation">📷<span>Take Photo</span></button>
+            <button type="button" onclick="document.getElementById('l-photo-lib').click()" style="flex:1;padding:11px 6px;border:2px dashed var(--cream-3);border-radius:8px;background:#fff;cursor:pointer;font-family:var(--font-body);font-size:.78rem;font-weight:600;color:var(--warm-mid);display:flex;flex-direction:column;align-items:center;gap:4px;touch-action:manipulation">🖼️<span>Upload Photo</span></button>
           </div>
+          <input type="file" id="l-photo-cam" accept="image/*" capture="environment" style="display:none" onchange="previewPhoto(this,'l-prev','l-dicon','l-dtxt');showAIBtn('l')">
+          <input type="file" id="l-photo-lib" accept="image/*" style="display:none" onchange="previewPhoto(this,'l-prev','l-dicon','l-dtxt');showAIBtn('l')">
+          <div id="l-dicon" style="display:none"></div>
+          <div id="l-dtxt" style="display:none"></div>
+          <img id="l-prev" class="photo-prev" alt="preview">
           <div id="l-ai-wrap" style="display:none;margin-top:8px">
             <button class="ai-id-btn" id="l-ai-btn" onclick="applyAIIdentify('l')">✨ Identify breed &amp; color with AI</button>
             <div class="ai-id-result" id="l-ai-result"></div>
@@ -1180,12 +1183,15 @@ textarea{min-height:64px}
         <!-- FOUND FORM -->
         <div id="form-found" style="display:none">
           <div class="sl">🖼️ Photo <span style="font-size:.72rem;font-weight:400;color:var(--warm-mid)">— upload first to auto-fill fields with AI</span></div>
-          <div class="photo-drop">
-            <input type="file" id="f-photo" accept="image/*" capture="environment" onchange="previewPhoto(this,'f-prev','f-dicon','f-dtxt')">
-            <div class="photo-drop-icon" id="f-dicon">📷</div>
-            <div class="photo-drop-txt"  id="f-dtxt">Tap to upload a photo</div>
-            <img id="f-prev" class="photo-prev" alt="preview">
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <button type="button" onclick="document.getElementById('f-photo-cam').click()" style="flex:1;padding:11px 6px;border:2px dashed var(--cream-3);border-radius:8px;background:#fff;cursor:pointer;font-family:var(--font-body);font-size:.78rem;font-weight:600;color:var(--warm-mid);display:flex;flex-direction:column;align-items:center;gap:4px;touch-action:manipulation">📷<span>Take Photo</span></button>
+            <button type="button" onclick="document.getElementById('f-photo-lib').click()" style="flex:1;padding:11px 6px;border:2px dashed var(--cream-3);border-radius:8px;background:#fff;cursor:pointer;font-family:var(--font-body);font-size:.78rem;font-weight:600;color:var(--warm-mid);display:flex;flex-direction:column;align-items:center;gap:4px;touch-action:manipulation">🖼️<span>Upload Photo</span></button>
           </div>
+          <input type="file" id="f-photo-cam" accept="image/*" capture="environment" style="display:none" onchange="previewPhoto(this,'f-prev','f-dicon','f-dtxt')">
+          <input type="file" id="f-photo-lib" accept="image/*" style="display:none" onchange="previewPhoto(this,'f-prev','f-dicon','f-dtxt')">
+          <div id="f-dicon" style="display:none"></div>
+          <div id="f-dtxt" style="display:none"></div>
+          <img id="f-prev" class="photo-prev" alt="preview">
           <div id="f-ai-wrap" style="display:none;margin-top:8px">
             <button class="ai-id-btn" id="f-ai-btn" onclick="applyAIIdentify('f')">✨ Identify breed &amp; color with AI</button>
             <div class="ai-id-result" id="f-ai-result"></div>
