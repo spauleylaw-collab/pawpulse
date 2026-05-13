@@ -837,20 +837,40 @@ textarea{min-height:64px}
   /* ── Other ── */
   #pin-set-btn{bottom:calc(env(safe-area-inset-bottom,0px) + 52px)!important}
 
-  /* ── Adopt page scroll fix ──
-     overflow:hidden on parent captures iOS touch events, blocking child scroll.
-     .view inset already defines height — no explicit height needed.        */
+  /* ── Adopt page: compress header stack so card grid is reachable ── */
+
+  /* Hide non-essential rows entirely in landscape */
+  #adopt-legend{display:none!important}
+  #adopt-disclaimer{display:none!important}
+  #view-adopt .mode-banner{display:none!important}
+
+  /* Compress header */
+  #adopt-hdr{padding:5px 12px!important}
+  #adopt-hdr-title{font-size:.78rem!important}
+  #adopt-hdr-sub{font-size:.6rem!important;margin-top:0!important}
+
+  /* Compress search row */
+  #adopt-search-row{padding:4px 10px!important;flex-wrap:nowrap!important}
+  #adopt-search{padding:4px 8px!important;font-size:.72rem!important}
+  #adopt-sort{padding:4px 6px!important;font-size:.68rem!important}
+
+  /* Chips row: single scrollable line */
+  #adopt-chips-row{padding:3px 10px!important;flex-wrap:nowrap!important;
+    overflow-x:auto!important;gap:4px!important;
+    -webkit-overflow-scrolling:touch!important}
+
+  /* Scroll container fix: let adopt-body fill remaining height */
   #view-adopt{
-    overflow:visible!important;
+    overflow:hidden!important;
     display:flex!important;
     flex-direction:column!important
   }
   #adopt-body{
     flex:1!important;
-    overflow-y:scroll!important;
-    -webkit-overflow-scrolling:touch!important;
     min-height:0!important;
-    padding-bottom:calc(env(safe-area-inset-bottom,0px) + 60px)!important
+    overflow-y:auto!important;
+    -webkit-overflow-scrolling:touch!important;
+    padding:10px 10px calc(env(safe-area-inset-bottom,0px) + 60px)!important
   }
 }
 </style>
