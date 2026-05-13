@@ -5110,6 +5110,18 @@ function rotateBanner() {
 setInterval(rotateBanner, 5000);
 setTimeout(rotateBanner, 1500);
 
+/* Orientation change — invalidate map size so tiles fill correctly in landscape */
+window.addEventListener('orientationchange', function() {
+  setTimeout(function() { try { map.invalidateSize(true); } catch(e) {} }, 300);
+  setTimeout(function() { try { map.invalidateSize(true); } catch(e) {} }, 700);
+});
+window.addEventListener('resize', function() {
+  clearTimeout(window._resizeInvalidate);
+  window._resizeInvalidate = setTimeout(function() {
+    try { map.invalidateSize(true); } catch(e) {}
+  }, 250);
+});
+
 function dismissInquiry(id) {
   if (!confirm("Did you contact this inquirer?")) return;
   var r = reports.find(function(x){ return String(x.id)===String(id); });
