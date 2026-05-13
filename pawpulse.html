@@ -1920,6 +1920,21 @@ function doGuestView() {
       scheduleRetry(Math.min(delay * 1.6, 15000));
     }, delay);
   })(1500);
+  /* Early stall-detection timers — independent of the backoff schedule.
+     If pending:true and no snapshot at 5s or 10s, force-reset and retry.
+     This catches the 'stalled at 1s' case without waiting 15s for backoff. */
+  [5000, 10000, 18000].forEach(function(stallAt) {
+    setTimeout(function() {
+      if (window._firestoreListenerActive) return;
+      if (!_fsAttachPending) return; /* already reset by backoff loop */
+      console.warn('[PAWPULSE] early stall at ' + (stallAt/1000) + 's — force reset');
+      _fsAttachPending = false;
+      _fsAttachTime = 0;
+      if (_fsUnsub) { try { _fsUnsub(); } catch(ex){} _fsUnsub = null; }
+      _ppDiag('early-stall-' + (stallAt/1000) + 's');
+      startFirestoreListener();
+    }, stallAt);
+  });
   /* Render watchdogs: Firestore arrived but map not yet sized — force render */
   [3000, 6000, 12000, 25000].forEach(function(ms) {
     setTimeout(function() {
