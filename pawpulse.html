@@ -763,18 +763,19 @@ textarea{min-height:64px}
     z-index:680!important;overflow:hidden!important;
     border-radius:9px!important
   }
-  #shelter-spotlight img,
-  #shelter-spotlight [class*="img"],
-  #shelter-spotlight [style*="height:130"]{display:none!important}
-  #shelter-spotlight > div{padding:5px 7px!important}
-  #spotlight-name{font-size:.6rem!important;font-weight:700!important;margin-bottom:3px!important}
-  #spotlight-bio{display:none!important}
-  #shelter-spotlight button,
-  #shelter-spotlight a[role="button"],
-  #shelter-spotlight [onclick]{
-    font-size:.55rem!important;padding:3px 7px!important;
-    margin-top:3px!important
+  /* Image container: reduce from 75px to 48px */
+  #shelter-spotlight [style*="height:75px"]{
+    height:48px!important
   }
+  /* Body: remove min-height, tighter padding */
+  #shelter-spotlight [style*="min-height:90px"]{
+    min-height:0!important;padding:4px 7px 6px!important
+  }
+  /* AI bio has min-height:47px — hide it to save space */
+  #spotlight-ai-bio{display:none!important}
+  #spotlight-bio{display:none!important}
+  #spotlight-name{font-size:.62rem!important;margin-bottom:2px!important}
+  #spotlight-cta{font-size:.58rem!important;padding:4px 6px!important}
 
   /* ── Pin card ── */
   #pin-card{
