@@ -690,20 +690,51 @@ textarea{min-height:64px}
 }
 /* Issue 29: Phone landscape */
 @media(max-height:500px) and (orientation:landscape){
-  /* ── Nav bar: compact ── */
+  /* ── Nav bar: compact 36px ── */
   :root{--nav-h:36px}
   #nav{height:36px!important;padding:0 10px!important;gap:6px!important}
   #orientation-strip{display:none!important}
   #map-banner{display:none!important}
   #top-nav{padding:2px 10px!important;min-height:36px!important}
-  #right-rail{display:none!important}
   #pp-banner{top:40px!important}
 
-  /* ── Filters: upper-RIGHT corner, above spotlight, highest priority ──
-     z-index 820 beats spotlight (700) so filters are never covered.
-     Anchored clear of landscape-toggle (28px) + safe-area-right.      */
-  #map-filters{
+  /* ── RIGHT COLUMN: nav toggle → filters → FAB, all right-anchored ──
+     right-rail contains nav-tabs (moved by JS).
+     Stack: [Map|Adopt] row at top, then filter pills, then FAB.        */
+  #right-rail{
+    display:flex!important;
+    position:fixed!important;
     top:calc(36px + 5px)!important;
+    right:calc(env(safe-area-inset-right,0px) + 32px)!important;
+    left:auto!important;
+    transform:none!important;
+    flex-direction:row!important;
+    background:rgba(42,62,42,.82)!important;
+    border-radius:8px!important;
+    padding:2px!important;
+    min-width:0!important;
+    z-index:830!important
+  }
+  #nav-tabs{
+    flex-direction:row!important;
+    width:auto!important;
+    gap:2px!important
+  }
+  .tab-btn.tab-public{
+    display:flex!important;
+    flex-direction:row!important;
+    font-size:.58rem!important;
+    padding:4px 8px!important;
+    width:auto!important;
+    gap:3px!important;
+    border-radius:6px!important;
+    border-bottom:none!important
+  }
+  .tab-btn.tab-ops,.tab-btn.tab-admin,.nav-mode-sep{display:none!important}
+
+  /* ── Filters: right column, below nav toggle ── */
+  #map-filters{
+    top:calc(36px + 38px)!important;
     right:calc(env(safe-area-inset-right,0px) + 32px)!important;
     left:auto!important;
     flex-direction:column!important;
@@ -725,43 +756,7 @@ textarea{min-height:64px}
     text-align:center!important
   }
 
-  /* ── right-rail: show as compact horizontal nav bar in landscape ──
-     Must stay visible because nav-tabs is moved into it by JS.
-     Repositioned to top-left below nav bar.                        */
-  #right-rail{
-    display:flex!important;
-    position:fixed!important;
-    top:calc(36px + 5px)!important;
-    left:calc(env(safe-area-inset-left,0px) + 8px)!important;
-    right:auto!important;
-    transform:none!important;
-    flex-direction:row!important;
-    background:rgba(42,62,42,.82)!important;
-    border-radius:8px!important;
-    padding:2px!important;
-    min-width:0!important;
-    z-index:810!important
-  }
-  #nav-tabs{
-    flex-direction:row!important;
-    width:auto!important;
-    gap:2px!important
-  }
-  .tab-btn.tab-public{
-    display:flex!important;
-    flex-direction:row!important;
-    font-size:.58rem!important;
-    padding:4px 8px!important;
-    width:auto!important;
-    gap:3px!important;
-    border-radius:6px!important;
-    border-bottom:none!important
-  }
-  .tab-btn.tab-ops,.tab-btn.tab-admin,.nav-mode-sep{display:none!important}
-
-  /* ── Spotlight: bottom-left, compact, fully inside viewport ──
-     Inline style has bottom:100px which clips at landscape height.
-     Override to bottom:4px and reduce image so nothing clips.   */
+  /* ── Spotlight: bottom-LEFT, compact, never covered by right column ── */
   #shelter-spotlight{
     bottom:calc(env(safe-area-inset-bottom,0px) + 4px)!important;
     top:auto!important;
@@ -773,16 +768,13 @@ textarea{min-height:64px}
     overflow:hidden!important;
     border-radius:10px!important
   }
-  /* Shrink the spotlight image block */
   #shelter-spotlight img{
     height:48px!important;
     object-fit:cover!important;
     width:100%!important;
     display:block!important
   }
-  #shelter-spotlight > div{
-    padding:4px 6px!important
-  }
+  #shelter-spotlight > div{padding:4px 6px!important}
   #spotlight-name{font-size:.62rem!important}
   #spotlight-bio{display:none!important}
 
@@ -794,7 +786,7 @@ textarea{min-height:64px}
     z-index:1210!important
   }
 
-  /* ── FAB: bottom-right above home indicator, left of toggle ── */
+  /* ── FAB: bottom-right, clear of toggle + home indicator ── */
   #rail-fab{
     bottom:calc(env(safe-area-inset-bottom,0px) + 10px)!important;
     right:calc(env(safe-area-inset-right,0px) + 32px)!important;
@@ -803,7 +795,7 @@ textarea{min-height:64px}
     font-size:1.5rem!important
   }
 
-  /* ── Pin card: left side, shorter, scrollable ── */
+  /* ── Pin card: left/center, shorter ── */
   #pin-card{
     max-height:65vh!important;
     bottom:calc(env(safe-area-inset-bottom,0px) + 4px)!important;
@@ -824,7 +816,7 @@ textarea{min-height:64px}
     right:8px!important
   }
 
-  /* ── Side panel: nearly full height, all safe-area padding ── */
+  /* ── Side panel ── */
   #side-panel{
     max-height:90vh!important;
     padding-left:env(safe-area-inset-left,0px)!important;
@@ -832,7 +824,7 @@ textarea{min-height:64px}
     padding-bottom:env(safe-area-inset-bottom,0px)!important
   }
 
-  /* ── Leaflet controls: clear FAB + safe-areas ── */
+  /* ── Leaflet controls: left side, clear of nav bar ── */
   .leaflet-bottom.leaflet-right{
     bottom:calc(env(safe-area-inset-bottom,0px) + 10px)!important;
     right:calc(env(safe-area-inset-right,0px) + 78px)!important
