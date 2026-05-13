@@ -5218,7 +5218,7 @@ function _ppDiag(reason) {
       document.body.appendChild(box);
       setTimeout(function(){
         if (box.parentNode) box.parentNode.removeChild(box);
-      }, 30000);
+      }, 45000);
     }
     var pubElig = Array.isArray(reports) ? reports.filter(function(r){
       return !r.shelter && !r.reunited && r.lat && r.lng && isPublicVisible(r);
