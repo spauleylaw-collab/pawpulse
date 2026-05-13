@@ -1378,6 +1378,22 @@ var SUBMIT_SESSION_MAX = 3;  /* max per session */
 var tmpMarker = null;
 /* Production guard — debug overlay never renders on live site */
 var DEV_MODE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
+var BOOT_OVERLAY_DISMISSED = false;
+/* On production: immediately remove any cached/stale debug overlay from prior builds */
+if (!DEV_MODE) {
+  (function() {
+    var nuke = function() {
+      ['_ppd','_ppd2'].forEach(function(id) {
+        var el = document.getElementById(id); if (el) el.remove();
+      });
+      document.querySelectorAll('[data-debug-overlay]').forEach(function(el){ el.remove(); });
+    };
+    nuke();
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', nuke);
+    }
+  })();
+}
 var _fbReady        = false;
 var _fsAttachPending = false; /* true from onSnapshot call until callback/error */
 var _fsAttachTime    = 0;     /* Date.now() when onSnapshot was last called */
@@ -1491,7 +1507,10 @@ function refreshMapPins(reason) {
   /* No pre-wipe: renderMarkers() uses oldMarkers-swap pattern.
      Pre-wiping caused blank map when renderMarkers produced 0 markers on phone. */
   renderMarkers();
-  if (lMarkers.length > 0) _dismissOverlay();
+  if (lMarkers.length > 0) {
+    _dismissOverlay();
+    dismissBootOverlay('pins-rendered');
+  }
   _ppDiag(reason);
 }
 
@@ -5271,12 +5290,26 @@ function isPublicVisible(r) {
   return true;
 }
 
+/* ── BOOT OVERLAY DISMISSAL ─────────────────────────────────────────── */
+function dismissBootOverlay(reason) {
+  if (BOOT_OVERLAY_DISMISSED) return;
+  BOOT_OVERLAY_DISMISSED = true;
+  console.log('[PAWPULSE] boot overlay dismissed:', reason);
+  var el = document.getElementById('_ppd');
+  if (el) el.remove();
+  /* Also kill map-loading and app-loading overlays if still present */
+  var ml = document.getElementById('map-loading');
+  if (ml) { ml.style.opacity = '0'; setTimeout(function(){ ml.style.display = 'none'; }, 400); }
+  var al = document.getElementById('app-loading');
+  if (al) al.style.display = 'none';
+}
 /* ── PHONE DIAGNOSTIC OVERLAY ─────────────────────────────────────────
    Shows pin/hydration state on-device. Auto-removes after 30s.
    Remove this block once pin reliability is confirmed stable.
 ─────────────────────────────────────────────────────────────────────── */
 function _ppDiag(reason) {
   if (!DEV_MODE) return; /* never show debug overlay on production */
+  if (BOOT_OVERLAY_DISMISSED) return; /* dismissed after successful render */
   try {
     var box = document.getElementById('_ppd');
     if (!box) {
