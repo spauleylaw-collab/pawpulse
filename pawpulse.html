@@ -690,18 +690,67 @@ textarea{min-height:64px}
 }
 /* Issue 29: Phone landscape */
 @media(max-height:500px) and (orientation:landscape){
+  /* Nav */
   :root{--nav-h:36px}
+  #nav{height:36px!important;padding:0 8px!important}
   #orientation-strip{display:none!important}
   #map-banner{display:none!important}
   #top-nav{padding:2px 10px!important;min-height:36px!important}
   #right-rail{display:none!important}
-  #rail-fab{bottom:8px!important;right:8px!important}
   #pp-banner{top:40px!important}
-  #shelter-spotlight{bottom:8px!important}
-  #side-panel{max-height:96vh!important}
-  #pin-card{max-height:85vh!important;bottom:4px!important}
-  #pin-set-btn{bottom:50px!important}
-  .leaflet-bottom.leaflet-right{bottom:50px!important;right:8px!important}
+
+  /* Filter controls — horizontal row, compact */
+  #map-filters{
+    top:calc(36px + 6px)!important;
+    left:calc(env(safe-area-inset-left,0px) + 6px)!important;
+    flex-direction:row!important;
+    flex-wrap:wrap!important;
+    gap:4px!important;
+    max-width:calc(50vw - 12px)!important
+  }
+  .filter-btn{
+    font-size:.62rem!important;
+    padding:4px 9px!important;
+    line-height:1.2!important
+  }
+
+  /* FAB — clear of landscape-toggle (28px) + safe-area-right */
+  #rail-fab{
+    bottom:calc(env(safe-area-inset-bottom,0px) + 8px)!important;
+    right:calc(env(safe-area-inset-right,0px) + 40px)!important;
+    width:44px!important;height:44px!important;font-size:1.6rem!important
+  }
+
+  /* Shelter spotlight — tuck up */
+  #shelter-spotlight{bottom:8px!important;left:calc(env(safe-area-inset-left,0px) + 6px)!important}
+
+  /* Pin card — shorter, clear of home indicator + right notch */
+  #pin-card{
+    max-height:70vh!important;
+    bottom:calc(env(safe-area-inset-bottom,0px) + 4px)!important;
+    padding-left:env(safe-area-inset-left,0px)!important;
+    padding-right:env(safe-area-inset-right,0px)!important
+  }
+  #pin-card-body{max-height:calc(70vh - 50px)!important}
+  #pin-card .pc-img{height:120px!important}
+
+  /* Side panel — slide up from bottom, full height available */
+  #side-panel{max-height:92vh!important;padding-bottom:env(safe-area-inset-bottom,0px)!important}
+
+  /* Leaflet controls — avoid FAB and right safe-area */
+  .leaflet-bottom.leaflet-right{
+    bottom:calc(env(safe-area-inset-bottom,0px) + 10px)!important;
+    right:calc(env(safe-area-inset-right,0px) + 40px)!important
+  }
+  .leaflet-top.leaflet-left{
+    top:calc(36px + 8px)!important;
+    left:calc(env(safe-area-inset-left,0px) + 4px)!important
+  }
+
+  /* Other floating elements */
+  #pin-set-btn{bottom:calc(env(safe-area-inset-bottom,0px) + 50px)!important}
+  #landscape-toggle{right:env(safe-area-inset-right,0px)!important}
+  .pc-close{top:calc(env(safe-area-inset-top,0px) + 8px)!important;right:calc(env(safe-area-inset-right,0px) + 42px)!important}
 }
 </style>
 <script type="application/ld+json">
@@ -1327,6 +1376,8 @@ var _submissionCount = 0;  /* resets on page reload */
 var SUBMIT_COOLDOWN_MS = 1 * 60 * 1000;  /* 1 min between submissions (keep short for usability) */
 var SUBMIT_SESSION_MAX = 3;  /* max per session */
 var tmpMarker = null;
+/* Production guard — debug overlay never renders on live site */
+var DEV_MODE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
 var _fbReady        = false;
 var _fsAttachPending = false; /* true from onSnapshot call until callback/error */
 var _fsAttachTime    = 0;     /* Date.now() when onSnapshot was last called */
@@ -5225,6 +5276,7 @@ function isPublicVisible(r) {
    Remove this block once pin reliability is confirmed stable.
 ─────────────────────────────────────────────────────────────────────── */
 function _ppDiag(reason) {
+  if (!DEV_MODE) return; /* never show debug overlay on production */
   try {
     var box = document.getElementById('_ppd');
     if (!box) {
