@@ -9187,8 +9187,9 @@ function renderIncareView() {
 
   el.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px">'
     + filtered.map(function(r) {
-    var isHold  = r.intakeType === 'hold';
-    var isAdopt = r.adoptionStatus === 'available';
+    var isHold    = r.intakeType === 'hold';
+    var isAdopt   = r.adoptionStatus === 'available';
+    var noRabies  = !(getMed(r)||{}).rabiesStatus;
     var days    = Math.floor(daysSince(isHold ? r.shelterHoldStart||r.date : r.date));
     var urgencyColor = days >= 30 ? 'var(--lost-r)' : days >= 14 ? 'var(--amber)' : 'var(--found-g)';
     var daysDot = days >= 30 ? '🔴' : days >= 14 ? '🟠' : '🟢';
@@ -9217,7 +9218,7 @@ function renderIncareView() {
       + (isHold?'<span style="font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:999px;background:#fff8f0;color:#8a5010;border:1px solid #e8c090">⚠️ Hold</span>':'')
       + (isAdopt?'<span style="font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:999px;background:#e8f0ff;color:#2050a0">🌟 Adopt</span>':'')
       + (srcLabel?'<span style="font-size:.6rem;padding:2px 6px;border-radius:999px;background:var(--cream-2);color:var(--warm-mid)">' + srcLabel + '</span>':'')
-      + (!(getMed(r)||{}).rabiesStatus?'<span style="font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:999px;background:#fde8e0;color:#c94f2a;border:1px solid #f0a090">⚠️ No rabies</span>':'')
+      + (noRabies?'<span style="font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:999px;background:#fde8e0;color:#c94f2a;border:1px solid #f0a090">⚠️ No rabies</span>':'')
       + (r.inquiries && r.inquiries.length ? '<span title="View adoption inquiries" style="font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:999px;background:#fff3cd;color:#7a5010;border:1px solid #f0c040;cursor:pointer" onclick="event.stopPropagation();showInquiryPopup(' + r.id + ')">💬 ' + r.inquiries.length + ' inquiry' + (r.inquiries.length!==1?'s':'') + '</span>'
       + '<span onclick="event.stopPropagation();dismissInquiry(' + r.id + ')"' + ' title="Clear inquiries" style="font-size:.6rem;font-weight:700;padding:2px 5px;border-radius:999px;background:#fde8e0;color:#c94f2a;border:1px solid #f0a090;cursor:pointer;margin-left:2px">&times;</span>'
       : '')
