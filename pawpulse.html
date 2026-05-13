@@ -9187,9 +9187,8 @@ function renderIncareView() {
 
   el.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px">'
     + filtered.map(function(r) {
-    var isHold    = r.intakeType === 'hold';
-    var isAdopt   = r.adoptionStatus === 'available';
-    var noRabies  = !(getMed(r)||{}).rabiesStatus;
+    var isHold  = r.intakeType === 'hold';
+    var isAdopt = r.adoptionStatus === 'available';
     var days    = Math.floor(daysSince(isHold ? r.shelterHoldStart||r.date : r.date));
     var urgencyColor = days >= 30 ? 'var(--lost-r)' : days >= 14 ? 'var(--amber)' : 'var(--found-g)';
     var daysDot = days >= 30 ? '🔴' : days >= 14 ? '🟠' : '🟢';
@@ -9215,7 +9214,6 @@ function renderIncareView() {
       + (r.animalId?'<div style="font-size:.62rem;font-weight:700;color:var(--forest);margin-bottom:3px">🏷️ ' + esc(r.animalId) + '</div>':'')
       + '<div style="font-size:.68rem;color:var(--warm-mid);margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + ([r.species,r.breed,r.color].filter(Boolean).join(' · ')||'Unknown') + '</div>'
       + '<div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:5px">'
-      + (noRabies?'<span style="font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:999px;background:#fde8e0;color:#c94f2a;border:1px solid #f0a090">⚠️ No rabies</span>':'')
       + (isHold?'<span style="font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:999px;background:#fff8f0;color:#8a5010;border:1px solid #e8c090">⚠️ Hold</span>':'')
       + (isAdopt?'<span style="font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:999px;background:#e8f0ff;color:#2050a0">🌟 Adopt</span>':'')
       + (srcLabel?'<span style="font-size:.6rem;padding:2px 6px;border-radius:999px;background:var(--cream-2);color:var(--warm-mid)">' + srcLabel + '</span>':'')
