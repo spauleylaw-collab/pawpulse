@@ -838,21 +838,19 @@ textarea{min-height:64px}
   #pin-set-btn{bottom:calc(env(safe-area-inset-bottom,0px) + 52px)!important}
 
   /* ── Adopt page scroll fix ──
-     #view-adopt overflow:hidden blocks scroll in landscape.
-     flex:1 on #adopt-body needs parent to have defined height. */
+     overflow:hidden on parent captures iOS touch events, blocking child scroll.
+     .view inset already defines height — no explicit height needed.        */
   #view-adopt{
-    overflow:hidden!important;
+    overflow:visible!important;
     display:flex!important;
-    flex-direction:column!important;
-    height:calc(100vh - 36px)!important;
-    max-height:none!important
+    flex-direction:column!important
   }
   #adopt-body{
     flex:1!important;
-    overflow-y:auto!important;
+    overflow-y:scroll!important;
     -webkit-overflow-scrolling:touch!important;
     min-height:0!important;
-    padding-bottom:calc(env(safe-area-inset-bottom,0px) + 16px)!important
+    padding-bottom:calc(env(safe-area-inset-bottom,0px) + 60px)!important
   }
 }
 </style>
