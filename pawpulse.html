@@ -725,47 +725,66 @@ textarea{min-height:64px}
     text-align:center!important
   }
 
-  /* ── Public nav tabs (Map / Adopt): reposition as landscape overlay ──
-     Pulled out of right-rail and placed top-left below nav bar.
-     Only .tab-public visible; staff tabs hidden in landscape.        */
-  #nav-tabs{
+  /* ── right-rail: show as compact horizontal nav bar in landscape ──
+     Must stay visible because nav-tabs is moved into it by JS.
+     Repositioned to top-left below nav bar.                        */
+  #right-rail{
+    display:flex!important;
     position:fixed!important;
     top:calc(36px + 5px)!important;
     left:calc(env(safe-area-inset-left,0px) + 8px)!important;
+    right:auto!important;
+    transform:none!important;
+    flex-direction:row!important;
+    background:rgba(42,62,42,.82)!important;
+    border-radius:8px!important;
+    padding:2px!important;
+    min-width:0!important;
+    z-index:810!important
+  }
+  #nav-tabs{
     flex-direction:row!important;
     width:auto!important;
-    gap:4px!important;
-    z-index:810!important
+    gap:2px!important
   }
   .tab-btn.tab-public{
     display:flex!important;
     flex-direction:row!important;
     font-size:.58rem!important;
-    padding:4px 9px!important;
+    padding:4px 8px!important;
     width:auto!important;
-    gap:4px!important;
+    gap:3px!important;
     border-radius:6px!important;
-    border-bottom:none!important;
-    background:rgba(255,255,255,.12)!important;
-    color:rgba(255,255,255,.8)!important
+    border-bottom:none!important
   }
-  .tab-btn.tab-public.active{background:rgba(255,255,255,.28)!important;color:#fff!important}
   .tab-btn.tab-ops,.tab-btn.tab-admin,.nav-mode-sep{display:none!important}
 
-  /* ── Spotlight: lower-LEFT, fully inside viewport, compact ── */
+  /* ── Spotlight: bottom-left, compact, fully inside viewport ──
+     Inline style has bottom:100px which clips at landscape height.
+     Override to bottom:4px and reduce image so nothing clips.   */
   #shelter-spotlight{
-    bottom:calc(env(safe-area-inset-bottom,0px) + 6px)!important;
-    left:calc(env(safe-area-inset-left,0px) + 8px)!important;
+    bottom:calc(env(safe-area-inset-bottom,0px) + 4px)!important;
     top:auto!important;
+    left:calc(env(safe-area-inset-left,0px) + 8px)!important;
     right:auto!important;
-    width:100px!important;
-    max-width:100px!important;
+    width:90px!important;
+    max-width:90px!important;
     z-index:680!important;
-    overflow:hidden!important
+    overflow:hidden!important;
+    border-radius:10px!important
   }
-  #shelter-spotlight [style*="height:130px"]{
-    height:58px!important;object-fit:cover!important
+  /* Shrink the spotlight image block */
+  #shelter-spotlight img{
+    height:48px!important;
+    object-fit:cover!important;
+    width:100%!important;
+    display:block!important
   }
+  #shelter-spotlight > div{
+    padding:4px 6px!important
+  }
+  #spotlight-name{font-size:.62rem!important}
+  #spotlight-bio{display:none!important}
 
   /* ── Landscape toggle: right edge, vertically centered ── */
   #landscape-toggle{
