@@ -1320,10 +1320,11 @@ var _submissionCount = 0;  /* resets on page reload */
 var SUBMIT_COOLDOWN_MS = 1 * 60 * 1000;  /* 1 min between submissions (keep short for usability) */
 var SUBMIT_SESSION_MAX = 3;  /* max per session */
 var tmpMarker = null;
-var _fbReady        = false; /* true once Firestore listener is live */
-var _fsAttachPending = false; /* set at onSnapshot call; cleared on callback or error */
-var _fsAttachTime    = 0;     /* timestamp of last onSnapshot call */
-var _fsUnsub         = null;  /* unsubscribe fn */
+var _fbReady        = false;
+var _fsAttachPending = false; /* true from onSnapshot call until callback/error */
+var _fsAttachTime    = 0;     /* Date.now() when onSnapshot was last called */
+var _fsAttachAttempts = 0;    /* how many times we have called onSnapshot */
+var _fsUnsub         = null;  /* Firestore unsubscribe fn */
 var _isStaff  = false;
 
 /* ── SAVE / LOAD ──────────────────────────────────────────────────────── */
@@ -1429,9 +1430,11 @@ function refreshMapPins(reason) {
   });
   _mapReady = true;
   try { if (map && map.invalidateSize) map.invalidateSize(true); } catch(e) {}
-  /* No pre-wipe: renderMarkers() uses oldMarkers-swap safely */
+  /* No pre-wipe: renderMarkers() uses oldMarkers-swap pattern.
+     Pre-wiping caused blank map when renderMarkers produced 0 markers on phone. */
   renderMarkers();
   if (lMarkers.length > 0) _dismissOverlay();
+  _ppDiag(reason);
 }
 
 var _initialRenderDone = false;
@@ -1467,19 +1470,23 @@ function tryInitialRender(reason) {
 }
 
 function startFirestoreListener() {
-  if (window._firestoreListenerActive) return; /* confirmed active */
-  if (_fsAttachPending) return;                /* waiting for first snapshot */
+  if (window._firestoreListenerActive) return; /* snapshot confirmed active */
+  if (_fsAttachPending) return;                /* already attached, awaiting snapshot */
+  /* Try to recover db ref if it somehow became null */
+  if (!db && typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length) {
+    try { db = firebase.firestore(); } catch(ex) {}
+  }
   setTimeout(_dismissOverlay, 2000);
   if (!db) {
-    console.warn('Firestore unavailable — using localStorage');
-    _fbReady = true;
-    showShelterPicker();
-    return;
+    console.warn('[PAWPULSE] Firestore db unavailable');
+    return; /* do NOT poison _fbReady — allow retry when db becomes available */
   }
   try {
-    _fsAttachPending = true;
-    _fsAttachTime    = Date.now();
-    console.log('[PAWPULSE] onSnapshot attach');
+    _fsAttachPending  = true;
+    _fsAttachTime     = Date.now();
+    _fsAttachAttempts++;
+    console.log('[PAWPULSE] onSnapshot attach #' + _fsAttachAttempts);
+    _ppDiag('attach-' + _fsAttachAttempts);
     _fsUnsub = db.collection('reports').onSnapshot(function(snapshot) {
       _fsAttachPending = false;
       window._firestoreListenerActive = true; /* confirmed receiving */
@@ -1522,8 +1529,9 @@ function startFirestoreListener() {
         _recordsReady = true;
         tryInitialRender('first-firestore-ready');
         _bootAppDone = false;
-        /* No manual lMarkers wipe — bootApp handles safely */
+        /* No manual lMarkers wipe — bootApp→refreshMapPins handles with safe swap */
         showShelterPicker();
+        /* bootApp ran refreshMapPins('bootApp'); only safety retries needed */
         setTimeout(function(){ refreshMapPins('first-firestore-500'); }, 500);
         setTimeout(function(){ refreshMapPins('first-firestore-1500'); }, 1500);
         _dismissOverlay();
@@ -1580,14 +1588,17 @@ function startFirestoreListener() {
         updateNavCounts();
       }
     }, function(err) {
-      console.warn('[PAWPULSE] listener error:', err);
+      console.warn('[PAWPULSE] listener error — resetting for retry:', err);
       _fsAttachPending = false;
       if (_fsUnsub) { try { _fsUnsub(); } catch(ex){} _fsUnsub = null; }
+      /* Do NOT set _fbReady=true — that poisons the first-boot path */
+      _ppDiag('listener-err');
     });
   } catch(e) {
-    console.warn('[PAWPULSE] Firestore init error:', e.message);
+    console.warn('[PAWPULSE] Firestore attach threw:', e.message);
     _fsAttachPending = false;
     if (_fsUnsub) { try { _fsUnsub(); } catch(ex){} _fsUnsub = null; }
+    _ppDiag('attach-threw');
   }
 }
 
@@ -1878,28 +1889,47 @@ function doGuestView() {
   setTimeout(_dismissOverlay, 300);
   /* Firestore listener started by Firebase auth callback.
      Safety: if auth is slow or fails, start listener directly after 1.5s */
-  var STALL_MS = 5000;
+  /* Open-ended retry with stall detection.
+     STALL_MS: if _fsAttachPending for this long with no snapshot, force-reset.
+     Mobile data (no WiFi) can be slow — 10s gives a real connection time to succeed. */
+  var STALL_MS = 10000;
   (function scheduleRetry(delay) {
     setTimeout(function() {
-      if (window._firestoreListenerActive) return;
-      if (!USE_FIREBASE || !db) return;
-      if (_fsAttachPending && _fsAttachTime > 0 && (Date.now()-_fsAttachTime) > STALL_MS) {
-        console.warn('[PAWPULSE] stalled ' + Math.round((Date.now()-_fsAttachTime)/1000) + 's reset');
-        _fsAttachPending = false; _fsAttachTime = 0;
-        if (_fsUnsub) { try { _fsUnsub(); } catch(ex){} _fsUnsub = null; }
+      if (window._firestoreListenerActive) return; /* confirmed — stop */
+      if (!USE_FIREBASE) return;
+      /* Re-acquire db ref if needed (handles slow Firebase CDN load) */
+      if (!db && typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length) {
+        try { db = firebase.firestore(); } catch(ex) {}
       }
-      if (!_fsAttachPending) { startFirestoreListener(); }
-      scheduleRetry(Math.min(delay * 1.6, 30000));
+      if (!db) { scheduleRetry(Math.min(delay * 1.6, 15000)); return; }
+      /* Stall detection: pending for too long with no snapshot */
+      if (_fsAttachPending && _fsAttachTime > 0 &&
+          (Date.now() - _fsAttachTime) > STALL_MS) {
+        console.warn('[PAWPULSE] stalled ' +
+          Math.round((Date.now()-_fsAttachTime)/1000) + 's — force reset');
+        _fsAttachPending = false;
+        _fsAttachTime = 0;
+        if (_fsUnsub) { try { _fsUnsub(); } catch(ex){} _fsUnsub = null; }
+        _ppDiag('stall-reset');
+      }
+      if (!_fsAttachPending) {
+        console.warn('[PAWPULSE] listener retry at ' +
+          Math.round(delay/1000) + 's');
+        startFirestoreListener();
+      }
+      scheduleRetry(Math.min(delay * 1.6, 15000));
     }, delay);
   })(1500);
-  [3000, 6000, 10000, 20000].forEach(function(ms) {
+  /* Render watchdogs: Firestore arrived but map not yet sized — force render */
+  [3000, 6000, 12000, 25000].forEach(function(ms) {
     setTimeout(function() {
       if (Array.isArray(reports) && reports.length > 0 &&
           Array.isArray(lMarkers) && lMarkers.length === 0) {
-        console.warn('[PAWPULSE WATCHDOG] ' + ms + 'ms');
+        console.warn('[PAWPULSE WATCHDOG] ' + ms + 'ms: forcing render');
         _mapReady = true; _recordsReady = true;
         try { map.invalidateSize(true); } catch(e) {}
         renderMarkers();
+        _ppDiag('watchdog-' + ms);
       }
     }, ms);
   });
@@ -2073,6 +2103,9 @@ function bootApp() {
   /* Pre-set shelter filter */
   var sel = document.getElementById('rpt-filter-shelter');
   if (sel && activeShelter) sel.value = activeShelter;
+  /* Only mark ready when we have real data.
+     Empty cache + no Firestore yet = keep pending so tryInitialRender fires
+     correctly when snapshot arrives. */
   if (reports.length > 0) { _recordsReady = true; }
   tryInitialRender('boot-records-ready');
   refreshMapPins('bootApp');
@@ -5152,6 +5185,46 @@ function isPublicVisible(r) {
   if (r.type === 'lost' && !r.reunited && daysSince(r.date) >= 30) return false;
   return true;
 }
+
+/* ── PHONE DIAGNOSTIC OVERLAY ─────────────────────────────────────────
+   Shows pin/hydration state on-device. Auto-removes after 30s.
+   Remove this block once pin reliability is confirmed stable.
+─────────────────────────────────────────────────────────────────────── */
+function _ppDiag(reason) {
+  try {
+    var box = document.getElementById('_ppd');
+    if (!box) {
+      box = document.createElement('div');
+      box.id = '_ppd';
+      box.style.cssText = 'position:fixed;bottom:80px;left:8px;z-index:99999;'
+        + 'background:rgba(0,0,0,.88);color:#0f0;font:10px/1.45 monospace;'
+        + 'padding:7px 9px;border-radius:7px;max-width:230px;pointer-events:none;'
+        + 'white-space:pre-wrap;box-shadow:0 2px 12px rgba(0,0,0,.6);';
+      document.body.appendChild(box);
+      setTimeout(function(){
+        if (box.parentNode) box.parentNode.removeChild(box);
+      }, 30000);
+    }
+    var pubElig = Array.isArray(reports) ? reports.filter(function(r){
+      return !r.shelter && !r.reunited && r.lat && r.lng && isPublicVisible(r);
+    }).length : '?';
+    var inCareN = typeof getShelterData === 'function'
+      ? getShelterData({ includeHolds: true }).length : '?';
+    var stallS = (_fsAttachPending && _fsAttachTime)
+      ? Math.round((Date.now()-_fsAttachTime)/1000)+'s' : '-';
+    box.textContent =
+      '[' + (reason||'').slice(0,16) + ']\n'
+      + 'reports:' + (Array.isArray(reports)?reports.length:'?') + '\n'
+      + 'pubPins:' + pubElig + ' incare:' + inCareN + '\n'
+      + 'lM:' + (Array.isArray(lMarkers)?lMarkers.length:'?') + '\n'
+      + 'mapRdy:' + _mapReady + ' recRdy:' + _recordsReady + '\n'
+      + 'fbRdy:' + _fbReady + ' FSact:' + !!window._firestoreListenerActive + '\n'
+      + 'pending:' + _fsAttachPending + ' att:' + _fsAttachAttempts + '\n'
+      + 'stallAge:' + stallS + '\n'
+      + 'initDone:' + _initialRenderDone;
+  } catch(e) {}
+}
+/* ── [/PHONE DIAGNOSTIC] ── */
 
 var _renderMarkersDebounce = null;
 function renderMarkersDebounced() {
