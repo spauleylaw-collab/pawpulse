@@ -725,15 +725,46 @@ textarea{min-height:64px}
     text-align:center!important
   }
 
-  /* ── Spotlight / in-care card: lower-LEFT, lower z-index than filters ──
-     Width capped so it never reaches filter zone.                        */
+  /* ── Public nav tabs (Map / Adopt): reposition as landscape overlay ──
+     Pulled out of right-rail and placed top-left below nav bar.
+     Only .tab-public visible; staff tabs hidden in landscape.        */
+  #nav-tabs{
+    position:fixed!important;
+    top:calc(36px + 5px)!important;
+    left:calc(env(safe-area-inset-left,0px) + 8px)!important;
+    flex-direction:row!important;
+    width:auto!important;
+    gap:4px!important;
+    z-index:810!important
+  }
+  .tab-btn.tab-public{
+    display:flex!important;
+    flex-direction:row!important;
+    font-size:.58rem!important;
+    padding:4px 9px!important;
+    width:auto!important;
+    gap:4px!important;
+    border-radius:6px!important;
+    border-bottom:none!important;
+    background:rgba(255,255,255,.12)!important;
+    color:rgba(255,255,255,.8)!important
+  }
+  .tab-btn.tab-public.active{background:rgba(255,255,255,.28)!important;color:#fff!important}
+  .tab-btn.tab-ops,.tab-btn.tab-admin,.nav-mode-sep{display:none!important}
+
+  /* ── Spotlight: lower-LEFT, fully inside viewport, compact ── */
   #shelter-spotlight{
     bottom:calc(env(safe-area-inset-bottom,0px) + 6px)!important;
     left:calc(env(safe-area-inset-left,0px) + 8px)!important;
+    top:auto!important;
     right:auto!important;
-    width:110px!important;
-    max-width:110px!important;
-    z-index:680!important
+    width:100px!important;
+    max-width:100px!important;
+    z-index:680!important;
+    overflow:hidden!important
+  }
+  #shelter-spotlight [style*="height:130px"]{
+    height:58px!important;object-fit:cover!important
   }
 
   /* ── Landscape toggle: right edge, vertically centered ── */
