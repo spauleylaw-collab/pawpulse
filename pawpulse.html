@@ -698,6 +698,10 @@ textarea{min-height:64px}
   :root{--nav-h:32px}
   #nav{height:32px!important;padding:0 8px!important;gap:4px!important}
   #top-nav{padding:1px 8px!important;min-height:32px!important}
+  /* Staff badge: tighter to clear right safe-area */
+  #staff-badge{gap:2px!important;max-width:calc(50vw - env(safe-area-inset-right,0px) - 8px)!important}
+  #staff-name-badge{font-size:.56rem!important}
+  #staff-badge button{padding:2px 5px!important;font-size:.54rem!important;border-radius:4px!important}
   .mode-banner{display:none!important}
   #orientation-strip{display:none!important}
   #map-banner{display:none!important}
