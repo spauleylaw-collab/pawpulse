@@ -698,6 +698,11 @@ textarea{min-height:64px}
   :root{--nav-h:32px}
   #nav{height:32px!important;padding:0 8px!important;gap:4px!important}
   #top-nav{padding:1px 8px!important;min-height:32px!important}
+  /* In Care detail panel: first item clips behind nav — add top breathing room */
+  .sh-col-right.mobile-show > *:first-child{padding-top:calc(4px + env(safe-area-inset-top,0px))!important}
+  .sh-action-panel{padding-top:8px!important}
+  /* Password modal: keyboard pushes it low in landscape — shift up */
+  #change-pw-overlay > div{margin-top:4px!important;margin-bottom:4px!important;padding:14px!important;max-height:calc(100vh - 32px)!important;overflow-y:auto!important}
   /* Staff badge: tighter to clear right safe-area */
   #staff-badge{gap:2px!important;max-width:calc(50vw - env(safe-area-inset-right,0px) - 8px)!important}
   #staff-name-badge{font-size:.56rem!important}
@@ -1428,11 +1433,11 @@ document.addEventListener("DOMContentLoaded", function() {
 })();
 
 /* Map init — synchronous. Script tag is at bottom of body so #map div exists. */
-window.PAWPULSE_BUILD = 'map-baseline-2026-04-29-01';
+window.PAWPULSE_BUILD = 'pawpulse';
 console.log('[PAWPULSE BUILD]', window.PAWPULSE_BUILD);
 document.addEventListener('DOMContentLoaded', function(){
   document.body.insertAdjacentHTML('beforeend',
-    '<div id="build-stamp" style="position:fixed;bottom:10px;right:10px;background:#000;color:#fff;padding:6px 10px;font-size:12px;z-index:9999;border-radius:4px">map-baseline-2026-04-29-01</div>');
+    '<div id="build-stamp" style="position:fixed;bottom:10px;right:10px;background:#000;color:#fff;padding:6px 10px;font-size:12px;z-index:9999;border-radius:4px">pawpulse</div>');
   setTimeout(function(){ var el=document.getElementById('build-stamp'); if(el)el.remove(); }, 8000);
 });
 var _mapReady = !!window._leafletMapInstance;
