@@ -756,19 +756,24 @@ textarea{min-height:64px}
   }
 
   /* ── MAP VIEW ── */
+  /* Spotlight: wider, photo + CTA fully visible, constrained between nav and FAB */
   #shelter-spotlight{
     top:calc(32px + 6px)!important;
-    bottom:calc(env(safe-area-inset-bottom,0px) + 50px)!important;
-    left:calc(env(safe-area-inset-left,0px) + 56px)!important;
-    right:auto!important;width:96px!important;max-width:96px!important;
-    max-height:calc(100vh - 32px - 6px - env(safe-area-inset-bottom,0px) - 50px)!important;
+    bottom:calc(env(safe-area-inset-bottom,0px) + 48px)!important;
+    left:calc(env(safe-area-inset-left,0px) + 6px)!important;
+    right:auto!important;
+    width:120px!important;max-width:120px!important;
+    max-height:calc(100vh - 32px - 6px - env(safe-area-inset-bottom,0px) - 48px)!important;
     z-index:680!important;overflow:hidden!important;border-radius:8px!important
   }
-  #shelter-spotlight [style*="height:75px"]{height:44px!important}
-  #shelter-spotlight [style*="min-height:90px"]{min-height:0!important;padding:3px 6px 5px!important}
+  /* Photo: visible, compact */
+  #shelter-spotlight [style*="height:75px"]{height:52px!important}
+  /* Body: tight padding, no min-height */
+  #shelter-spotlight [style*="min-height:90px"]{min-height:0!important;padding:4px 7px 6px!important}
+  /* Hide AI bio only — keep name + badge + CTA */
   #spotlight-ai-bio{display:none!important}
-  #spotlight-name{font-size:.58rem!important;margin-bottom:1px!important}
-  #spotlight-cta{font-size:.54rem!important;padding:3px 5px!important}
+  #spotlight-name{font-size:.6rem!important;margin-bottom:2px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  #spotlight-cta{font-size:.56rem!important;padding:4px 6px!important;width:100%!important;box-sizing:border-box!important}
   #pin-card{
     max-height:62vh!important;
     bottom:calc(env(safe-area-inset-bottom,0px) + 4px)!important;
