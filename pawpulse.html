@@ -3166,6 +3166,11 @@ function saveAnimalEdit(id) {
   r.about = ((document.getElementById('ae-about')||{}).value||'').trim();
 
   save(); renderMarkers(); renderIncareView(); renderAdoptView(); updateNavCounts();
+  /* Re-open shelter panel if it was showing this animal — refreshes days-in-care display */
+  if (window._openShelterAnimalId === id) {
+    var _reo = reports.find(function(x){ return x.id === id; });
+    if (_reo) setTimeout(function(){ openShelterAnimal(_reo); }, 80);
+  }
   closeAnimalEdit();
   /* Write to Firestore — pause listener long enough for write to confirm */
   if (USE_FIREBASE && _fbReady && db && _isStaff) {
@@ -6998,6 +7003,7 @@ function selectIntake(id) {
   document.getElementById('sh-action-empty').style.display = 'none';
   var panel = document.getElementById('sh-action-panel');
   panel.style.display = 'flex';
+  window._openShelterAnimalId = r ? r.id : null; /* track for post-save refresh */
   /* On mobile, show right col as fullscreen overlay */
   var rightCol = document.querySelector('#view-shelters .sh-col-right');
   if (rightCol && window.innerWidth <= 700) rightCol.classList.add('mobile-show');
