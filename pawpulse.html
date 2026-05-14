@@ -8120,9 +8120,27 @@ function setCostField(id, field, value) {
   if (!r) return;
   r[field] = value;
   if (!r.shelterLog) r.shelterLog = [];
-  r.shelterLog.push({ body: 'Hold start date updated', time: 'Just now' });
+  r.shelterLog.push({ body: 'Hold start date updated to ' + (value ? value.slice(0,10) : '—'), time: 'Just now' });
+  /* Recalculate adoption eligibility whenever hold date changes */
+  if (field === 'shelterHoldStart') {
+    var daysLeft = daysUntilAdoptEligible(r);
+    if (daysLeft === 0) {
+      /* Hold period has cleared — ensure dateAvailable is set if not already */
+      if (!r.dateAvailable) r.dateAvailable = new Date().toISOString();
+      r.shelterLog.push({ body: 'Hold period complete — adoption eligibility recalculated', time: 'Just now' });
+    } else {
+      /* Still in hold — clear dateAvailable so adoption stays blocked */
+      r.dateAvailable = null;
+      r.shelterLog.push({ body: 'Hold still active — ' + daysLeft + ' day' + (daysLeft !== 1 ? 's' : '') + ' remaining', time: 'Just now' });
+    }
+  }
   save();
+  if (USE_FIREBASE && _fbReady && db && _isStaff) {
+    try { writeAnimalRecord(r, 'staff'); } catch(e) {}
+  }
   if (shelterTab === 'costs') renderShelterCosts();
+  renderIncareView();
+  updateNavCounts();
 }
 
 function saveEnf(id, updates) {
