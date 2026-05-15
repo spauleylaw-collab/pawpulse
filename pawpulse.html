@@ -136,6 +136,7 @@ body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);h
 #rail-fab{position:fixed;bottom:calc(80px + env(safe-area-inset-bottom,0px));right:12px;z-index:991;width:56px;height:56px;border-radius:50%;background:var(--amber);color:#fff;border:none;font-size:2rem;font-weight:300;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;touch-action:manipulation;transition:transform .15s}
 body:has(#view-reports.active) #rail-fab{display:none!important}
 body:has(#pin-card.open) #rail-fab{display:none!important}
+body:has(#pin-card.open) #right-rail{display:none!important}
 #rail-fab:hover{transform:scale(1.08)}
 .view{position:fixed;inset:var(--nav-h) 0 0 0;display:none}
 .view.active{display:flex}
@@ -6420,6 +6421,17 @@ function submitFound() {
   setTimeout(function(){ window._pauseFirestoreSync = false; }, 6000);
   /* Auto background match: compare new found pin against active lost pins */
   setTimeout(function(){ autoMatchFoundReport(r); }, 2000);
+}
+
+/* Phone masking for public display — keeps number functional but hides middle digits */
+function maskPhone(phone) {
+  if (!phone) return '';
+  var digits = phone.replace(/[^0-9]/g, '');
+  if (digits.length < 7) return phone; /* too short to mask safely */
+  /* Show area code + first digit + *** + last 4: 402-***-8822 */
+  var area = digits.slice(0, 3);
+  var last4 = digits.slice(-4);
+  return area + '-***-' + last4;
 }
 
 /* Background lost-pin matching triggered automatically on found report submit */
