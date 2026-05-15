@@ -4250,7 +4250,7 @@ function cardHTML(r) {
     }
   }
   if (lost && r.owner && r.intakeType !== 'hold') {
-    contact = '<div class="pc-contact">📞 Contact Owner</div>';
+    contact = '';
     if (r.phone && !reunited) {
       var tel = r.phone.replace(/[^0-9+]/g, '');
       actionBtns = '<div style="display:flex;gap:7px;margin:8px 0 4px">'
@@ -4259,7 +4259,7 @@ function cardHTML(r) {
         + '</div>';
     }
   } else if (!lost && r.finder && r.intakeType !== 'hold') {
-    contact = '<div class="pc-contact">📞 Contact Finder</div>';
+    contact = '';
   } else if (r.shelter && r.shelterName) {
     contact = '<div class="pc-contact">📞 Contact ' + esc(r.shelterName) + '</div>';
   }
