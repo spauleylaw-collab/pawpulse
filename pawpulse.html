@@ -2122,7 +2122,7 @@ function checkFoundPinMatch() {
 function confirmFoundPinMatch(foundId) {
   /* Link this intake to the found pin — populate form fields from pin data */
   window._migrateFromId = foundId;
-  var r = reports.find(function(x){ return x.id == foundId; });
+  var r = findById(foundId);
   if (!r) return;
   /* Populate intake form fields with found pin data */
   var fields = {
@@ -2365,7 +2365,7 @@ function resolveFoundPinFromIntake(foundId) {
   var _ibd = document.getElementById('intake-found-match-bd');
   if (_ibd) _ibd.remove();
 
-  var r = reports.find(function(x){ return x.id == foundId; });
+  var r = findById(foundId);
   if (!r) return;
   r.reunited = true;
   r.reunitedDate = new Date().toISOString();
@@ -2486,7 +2486,7 @@ function submitIntakeFromModal() {
    Lightweight popup showing adoption inquiries — no full edit modal.
 ──────────────────────────────────────────────────────────────────────── */
 function showInquiryPopup(id) {
-  var r = reports.find(function(x){ return x.id===id; });
+  var r = findById(id);
   if (!r || !r.inquiries || !r.inquiries.length) return;
 
   var existing = document.getElementById('inq-popup');
@@ -2553,7 +2553,7 @@ function renderInquiries(r, container) {
 
 
 function openAnimalEdit(id) {
-  var r = reports.find(function(x){ return x.id===id; });
+  var r = findById(id);
   if (!r) return;
   var overlay = document.getElementById('animal-edit-overlay');
   var body    = document.getElementById('animal-edit-body');
@@ -2797,7 +2797,7 @@ function updateEditSections() {
 
 
 function saveAnimalEdit(id) {
-  var r = reports.find(function(x){ return x.id===id; });
+  var r = findById(id);
   if (!r) return;
   /* Immediate feedback */
   var aesb = document.getElementById('ae-save-btn');
@@ -3972,21 +3972,6 @@ function esc(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-/* ── Match helpers ──────────────────────────────────────────────────────────
-   parseAIJSON     — extract and parse JSON from Anthropic API response
-   buildAnimalDesc — build plain-text animal description for AI prompts
-   ─────────────────────────────────────────────────────────────────────── */
-function parseAIJSON(data) {
-  var text = (data.content||[]).map(function(b){ return b.text||''; }).join('').trim();
-  return JSON.parse(text.replace(/```json|```/g,'').trim());
-}
-
-function buildAnimalDesc(fields) {
-  return fields.filter(function(f){ return f[1]; })
-    .map(function(f){ return f[0] + ': ' + f[1]; })
-    .join('. ');
-}
-
 /* ── Adoption helpers ───────────────────────── */
 function daysSince(iso) {
   if (!iso) return 0;
@@ -3994,7 +3979,7 @@ function daysSince(iso) {
 }
 
 function setAdoptionStatus(id, status) {
-  var r = reports.find(function(x){ return x.id===id; });
+  var r = findById(id);
   if (!r) return;
   r.adoptionStatus = status;
   if (status === 'available' && !r.dateAvailable) r.dateAvailable = new Date().toISOString();
@@ -4009,7 +3994,7 @@ var _inquiryReportId = null;
 
 function contactShelterForAdoption(id) {
   _inquiryReportId = id;
-  var r = reports.find(function(x){ return x.id===id; });
+  var r = findById(id);
   var name    = r ? (r.name || r.species || 'this pet') : 'this pet';
   var shelter = r ? (r.shelterName || r.finder || 'the shelter') : 'the shelter';
   var desc    = document.getElementById('inq-animal-desc');
@@ -4059,7 +4044,7 @@ function submitInquiry() {
   }
   /* Save inquiry to report record */
   if (_inquiryReportId) {
-    var r = reports.find(function(x){ return x.id===_inquiryReportId; });
+    var r = findById(_inquiryReportId);
     if (r) {
       if (!r.inquiries) r.inquiries = [];
       r.inquiries.push({ name:name, phone:phone, email:email, msg:msg, time:new Date().toISOString() });
@@ -4711,7 +4696,8 @@ async function searchMatchesFromCard(lostId) {
     clearTimeout(_tout);
     var data = await resp.json();
     if (data.error) throw new Error(data.error.message);
-    var matches = parseAIJSON(data);
+    var text = (data.content||[]).map(function(b){ return b.text||''; }).join('').trim();
+    var matches = JSON.parse(text.replace(/```json|```/g,'').trim());
 
     if (!matches.length) {
       existingEl.innerHTML = '<div style="background:#f5f8ff;border-radius:8px;padding:10px 12px">'
@@ -4881,13 +4867,13 @@ async function autoMatchOnIntake(intake) {
   });
   if (!quickMatch.length) return;
   try {
-    var intakeDesc = buildAnimalDesc([
-      ['Species', intake.species],
-      ['Breed',   intake.breed],
-      ['Color',   intake.color],
-      ['Sex',     intake.sex],
-      ['Found near', intake.address]
-    ]);
+    var intakeDesc = [
+      intake.species && 'Species: ' + intake.species,
+      intake.breed   && 'Breed: '   + intake.breed,
+      intake.color   && 'Color: '   + intake.color,
+      intake.sex     && 'Sex: '     + intake.sex,
+      intake.address && 'Found near: ' + intake.address
+    ].filter(Boolean).join('. ');
     var lostList = quickMatch.map(function(r, i){
       return (i+1) + '. ID:' + r.id + (r.name?' Name:'+r.name:'') + (r.species?' Species:'+r.species:'') + (r.breed?' Breed:'+r.breed:'') + (r.color?' Color:'+r.color:'') + (r.address?' Last seen:'+r.address:'');
     }).join('\n');
@@ -4898,7 +4884,8 @@ async function autoMatchOnIntake(intake) {
       })
     });
     var data = await resp.json();
-    var matches = parseAIJSON(data);
+    var text = (data.content||[]).map(function(b){return b.text||'';}).join('').trim();
+    var matches = JSON.parse(text.replace(/```json|```/g,'').trim());
     if (!matches.length) return;
     var best = matches[0];
     var lostPet = lostPets.find(function(r){return String(r.id)===String(best.id);});
@@ -5057,7 +5044,7 @@ function dismissInquiry(id) {
 }
 
 function markReunited(id) {
-  var r = reports.find(function(x){ return x.id == id; });
+  var r = findById(id);
   if (!r || r.reunited) return;
   if (!confirm('Mark this pet as reunited with its owner? This cannot be undone.')) return;
   /* Ensure required fields are set */
@@ -5603,7 +5590,8 @@ async function identifyPetFromPhoto(dataUrl) {
     })
   });
   var data = await resp.json();
-  return parseAIJSON(data);
+  var text = (data.content||[]).map(function(b){ return b.text||''; }).join('').trim();
+  return JSON.parse(text.replace(/```json|```/g,'').trim());
 }
 
 async function applyAIIdentify(prefix) {
@@ -6696,7 +6684,7 @@ function renderShelterQueue() {
 function selectIntake(id) {
   selectedIntakeId = id;
   renderShelterQueue();
-  var r = reports.find(function(x){ return x.id===id; });
+  var r = findById(id);
   if (!r) return;
   document.getElementById('sh-action-empty').style.display = 'none';
   var panel = document.getElementById('sh-action-panel');
@@ -6772,7 +6760,7 @@ function selectIntake(id) {
 }
 
 async function searchMatches(intakeId) {
-  var intake = reports.find(function(x){ return x.id===intakeId; });
+  var intake = findById(intakeId);
   if (!intake) return;
   var btn = document.querySelector('[onclick="searchMatches(' + intakeId + ')"]');
   var resultsEl = document.getElementById('sh-match-results-' + intakeId);
@@ -6825,7 +6813,8 @@ async function searchMatches(intakeId) {
       })
     });
     var data = await resp.json();
-    var matches = parseAIJSON(data);
+    var text = (data.content||[]).map(function(b){ return b.text||''; }).join('').trim();
+    var matches = JSON.parse(text.replace(/```json|```/g,'').trim());
     renderMatchResults(intakeId, matches, lostPets);
   } catch(e) {
     /* Fallback: simple keyword match if API unavailable */
@@ -6878,8 +6867,8 @@ function toggleMatchComment(lostId, intakeId) {
 function postMatchComment(lostId, intakeId) {
   var txt = document.getElementById('sh-comment-txt-' + lostId);
   if (!txt || !txt.value.trim()) return;
-  var lost   = reports.find(function(x){ return x.id===lostId; });
-  var intake = reports.find(function(x){ return x.id===intakeId; });
+  var lost   = findById(lostId);
+  var intake = findById(intakeId);
   if (!lost) return;
 
   /* Add comment to lost pet */
@@ -7211,7 +7200,7 @@ function confirmCloseHold(id) {
 }
 
 function closeHold(id, outcome) {
-  var r = reports.find(function(x){ return x.id===id; });
+  var r = findById(id);
   if (!r) return;
 
   /* Freeze cost */
@@ -7311,7 +7300,7 @@ function cancelInvForm() {
 
 
 async function postShelterUpdate(id) {
-  var r = reports.find(function(x){ return x.id===id; });
+  var r = findById(id);
   var txt = document.getElementById('sh-update-txt');
   if (!r || !txt || !txt.value.trim()) return;
   if (!r.shelterLog) r.shelterLog = [];
@@ -7422,7 +7411,7 @@ function renderReportsList() {
 function selectReport(id) {
   selectedRptId = id;
   renderReportsList();
-  var r = reports.find(function(x){ return x.id == id; });
+  var r = findById(id);
   if (!r) return;
 
   document.getElementById('rpt-detail-empty').style.display = 'none';
@@ -7565,7 +7554,7 @@ function markReunitedFromReport(id) {
 }
 
 function jumpToMap(id) {
-  var r = reports.find(function(x){ return x.id===id; });
+  var r = findById(id);
   if (!r) return;
   /* Switch to map, fly to pin, open card */
   var mapBtn = document.querySelector('.tab-btn[onclick*="\'map\'"]');
@@ -7581,7 +7570,7 @@ function jumpToMap(id) {
 
 /* ── Print ──────────────────────────────────── */
 function printReport(id) {
-  var r = reports.find(function(x){ return x.id===id; });
+  var r = findById(id);
   if (!r) return;
   var isLost = r.type === 'lost';
   var name   = isLost && r.name ? r.name : (r.species||'Unknown pet') + (isLost ? '' : ' found');
@@ -7706,8 +7695,13 @@ function setDailyRate() {
 /* ── Medical Care ───────────────────────────── */
 function getMed(r) { return r.medical || r.medicalCare || {}; }
 
+/* Find a report by id — handles string/number coercion (== not ===) */
+function findById(id) {
+  return reports.find(function(x){ return x.id == id; }) || null;
+}
+
 function saveMedical(id, updates) {
-  var r = reports.find(function(x){ return x.id===id; });
+  var r = findById(id);
   if (!r) return;
   if (!r.medicalCare) r.medicalCare = {};
   Object.assign(r.medicalCare, updates);
@@ -7778,7 +7772,7 @@ function toggleMedBody(id) {
 }
 
 function saveField(id, field, value) {
-  var r = reports.find(function(x){ return x.id===id; });
+  var r = findById(id);
   if (!r) return;
   r[field] = value;
   save();
@@ -7790,7 +7784,7 @@ function saveField(id, field, value) {
 }
 
 function addCostEntry(id) {
-  var r = reports.find(function(x){ return x.id===id; });
+  var r = findById(id);
   if (!r) return;
   var descEl = document.getElementById('ce-desc-' + id);
   var amtEl  = document.getElementById('ce-amt-'  + id);
@@ -7808,7 +7802,7 @@ function addCostEntry(id) {
 }
 
 function deleteCostEntry(reportId, entryId) {
-  var r = reports.find(function(x){ return x.id===reportId; });
+  var r = findById(reportId);
   if (!r || !r.costEntries) return;
   r.costEntries = r.costEntries.filter(function(e){ return e.id !== entryId; });
   save();
@@ -7818,7 +7812,7 @@ function deleteCostEntry(reportId, entryId) {
 function getEnf(r) { return r.enforcement || {}; }
 
 function setCostField(id, field, value) {
-  var r = reports.find(function(x){ return x.id===id; });
+  var r = findById(id);
   if (!r) return;
   r[field] = value;
   if (!r.shelterLog) r.shelterLog = [];
@@ -7828,7 +7822,7 @@ function setCostField(id, field, value) {
 }
 
 function saveEnf(id, updates) {
-  var r = reports.find(function(x){ return x.id===id; });
+  var r = findById(id);
   if (!r) return;
   if (!r.enforcement) r.enforcement = {};
   Object.assign(r.enforcement, updates);
@@ -7923,7 +7917,7 @@ function toggleEnfBody(id) {
 }
 
 function promptDailyCost(id) {
-  var r = reports.find(function(x){ return x.id===id; });
+  var r = findById(id);
   if (!r) return;
   var cur = (r.enforcement && r.enforcement.dailyCost != null) ? r.enforcement.dailyCost : DAILY_RATE;
   var val = prompt('Daily shelter cost for this animal ($):', cur);
@@ -8332,7 +8326,7 @@ function printCGOutput() {
 }
 
 function jumpToCase(id) {
-  var r = reports.find(function(x){ return x.id===id; });
+  var r = findById(id);
   if (!r) return;
   setView('incare', document.querySelector('.tab-btn[onclick*="incare"]'));
   setTimeout(function(){ openAnimalEdit(id); }, 200);
@@ -8664,7 +8658,7 @@ function restitTable(restit) {
 }
 
 function openAdoptDetail(id) {
-  var r = reports.find(function(x){ return x.id == id; });
+  var r = findById(id);
   if (!r) return;
   /* Block hold animals — intakeType=hold OR holdType set to bite/dangerous/standard */
   var _isHoldAnimal = r.intakeType === 'hold' || (r.holdType && r.holdType !== 'none');
@@ -9153,7 +9147,7 @@ function renderIncareView() {
 }
 
 function addCallLogEntry(id) {
-  var r = reports.find(function(x){ return x.id===id; });
+  var r = findById(id);
   if (!r) return;
   var name  = ((document.getElementById('ae-call-name')||{}).value||'').trim();
   var phone = ((document.getElementById('ae-call-phone')||{}).value||'').trim();
@@ -9254,7 +9248,7 @@ function printDischargeForm(id) {
 }
 
 function deleteAnimalPhoto(id) {
-  var r = reports.find(function(x){ return x.id == id; }); /* == handles string/number mismatch */
+  var r = findById(id); /* == handles string/number mismatch */
   if (!r) return;
   r.photo = null;
   save();
@@ -9278,7 +9272,7 @@ function deleteAnimalPhoto(id) {
 
 function previewEditPhoto(input, id) {
   if (!input.files || !input.files[0]) return;
-  var r = reports.find(function(x){ return x.id == id; });
+  var r = findById(id);
   if (!r) return;
   compressPhoto(input.files[0], function(dataUrl) {
     r.photo = dataUrl;
@@ -9317,7 +9311,7 @@ function triggerPhotoUpload(id) {
 
 function handleIncarePhotoUpload(input) {
   var id = parseInt(input.dataset.animalId);
-  var r = reports.find(function(x){ return x.id == id; });
+  var r = findById(id);
   if (!r || !input.files || !input.files[0]) return;
   compressPhoto(input.files[0], function(dataUrl) {
     r.photo = dataUrl;
@@ -9331,7 +9325,7 @@ function handleIncarePhotoUpload(input) {
 }
 
 function quickAdoptReady(id) {
-  var r = reports.find(function(x){ return x.id == id; }); /* == handles string/number */
+  var r = findById(id); /* == handles string/number */
   if (!r) return;
   var wait = daysUntilAdoptEligible(r);
   if (wait > 0) {
@@ -9459,7 +9453,8 @@ async function runBatchLostMatch() {
     });
 
     var data = await resp.json();
-    var matches = parseAIJSON(data);
+    var text = (data.content||[]).map(function(b){return b.text||'';}).join('').trim();
+    var matches = JSON.parse(text.replace(/```json|```/g,'').trim());
 
     if (!matches.length) {
       panel.innerHTML += '<div style="margin-top:16px;background:var(--cream-2);border-radius:10px;padding:16px;text-align:center">'
