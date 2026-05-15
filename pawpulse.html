@@ -4665,6 +4665,14 @@ async function generateWhatNext(r) {
   var lost        = r.type === 'lost';
   var found       = r.type === 'found' && !r.shelter; /* public found report — posted by citizen */
 
+  /* Lost public pin — static text, no AI needed */
+  if (lost) {
+    bodyEl.textContent = "We’ll continue comparing this report against found pet reports in the area. Keep this pin active and update it if new information becomes available. If your pet is found at Heartland Pet Connection, staff will check active lost reports and contact you.";
+    bodyEl.style.color = 'var(--warm-dk)';
+    bodyEl.style.fontStyle = 'normal';
+    return;
+  }
+
   /* Found public pin — always the same process, no AI needed */
   if (found) {
     var sp = (r.species || 'animal').toLowerCase();
@@ -4746,8 +4754,10 @@ async function generateWhatNext(r) {
   } catch(e) {
     console.error('What Happens Next error:', e.message);
     if (bodyEl) {
-      bodyEl.textContent = 'Unable to generate at this time.';
-      bodyEl.style.fontStyle = 'italic';
+      bodyEl.textContent = lost
+        ? 'We’ll continue comparing this report against found pet reports in the area. Keep this pin active and update it if new information becomes available.'
+        : 'PawPulse will compare this report with active lost pet reports. If a match is found, you’ll see contact options on the pin. Keep this report active until the pet is safely reunited.';
+      bodyEl.style.fontStyle = 'normal';
       bodyEl.style.color = 'var(--warm-mid)';
       bodyEl.style.display = 'block';
     }
