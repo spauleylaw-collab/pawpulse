@@ -4974,6 +4974,20 @@ async function autoMatchOnIntake(intake) {
           lostMatches = parsed.filter(function(m){
             return m.confidence === 'high' || m.confidence === 'medium';
           });
+          /* Sort: both have photos > candidate has photo > confidence */
+          var lostPhotoIds = {};
+          lostCandidates.forEach(function(r){ if (r.photo) lostPhotoIds[String(r.id)] = true; });
+          var intakeHasPhoto = !!intake.photo;
+          lostMatches.sort(function(a, b) {
+            var aBoth = (intakeHasPhoto && lostPhotoIds[String(a.id)]) ? 2 : 0;
+            var bBoth = (intakeHasPhoto && lostPhotoIds[String(b.id)]) ? 2 : 0;
+            if (bBoth !== aBoth) return bBoth - aBoth;
+            var ap = lostPhotoIds[String(a.id)] ? 1 : 0;
+            var bp = lostPhotoIds[String(b.id)] ? 1 : 0;
+            if (bp !== ap) return bp - ap;
+            var conf = { high: 2, medium: 1 };
+            return (conf[b.confidence] || 0) - (conf[a.confidence] || 0);
+          });
         }
       }
     } catch(e) { console.warn('[INTAKE MATCH lost]', e.message); }
@@ -4988,7 +5002,8 @@ async function autoMatchOnIntake(intake) {
       if (rw.filter(function(w){ return w.length > 2 && iw.indexOf(w) > -1; }).length) score += 2;
     }
     if (r.atShelter) score += 4;
-    if (r.photo)     score += 2;
+    if (r.photo)     score += 3; /* photo outweighs color alone */
+    if (intake.photo && r.photo) score += 2; /* both have photos — highest visual confidence */
     if (daysSince(r.date) <= 3) score += 1;
     return { r: r, score: score };
   }).filter(function(x){ return x.score >= 3; })
@@ -6369,13 +6384,20 @@ async function autoMatchFoundReport(foundRecord) {
     var matches = JSON.parse(text.replace(/```json|```/g, '').trim());
     if (!Array.isArray(matches) || !matches.length) return;
 
-    /* Sort: photo-supported first, then confidence */
+    /* Sort: both-have-photos first, then candidate-has-photo, then confidence */
     var photoIds = {};
     candidates.forEach(function(r) { if (r.photo) photoIds[String(r.id)] = true; });
+    var foundHasPhoto = !!foundRecord.photo;
     matches.sort(function(a, b) {
+      /* Tier 1: both records have photos */
+      var aBoth = (foundHasPhoto && photoIds[String(a.id)]) ? 2 : 0;
+      var bBoth = (foundHasPhoto && photoIds[String(b.id)]) ? 2 : 0;
+      if (bBoth !== aBoth) return bBoth - aBoth;
+      /* Tier 2: candidate has photo */
       var ap = photoIds[String(a.id)] ? 1 : 0;
       var bp = photoIds[String(b.id)] ? 1 : 0;
       if (bp !== ap) return bp - ap;
+      /* Tier 3: confidence */
       var conf = { high: 2, medium: 1 };
       return (conf[b.confidence] || 0) - (conf[a.confidence] || 0);
     });
