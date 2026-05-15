@@ -4951,7 +4951,7 @@ async function autoMatchOnIntake(intake) {
         + (r.color   ? ' Color:'   + r.color   : '')
         + (r.breed   ? ' Breed:'   + r.breed   : '')
         + (r.address ? ' Last seen near:' + r.address : '')
-        + (r.photo   ? ' [HAS PHOTO]' : '');
+        + ((r.photo || _photoCache[String(r.id)]) ? ' [HAS PHOTO]' : '');
     }).join('\n');
     try {
       var resp = await fetch('/api/anthropic', {
@@ -4976,8 +4976,8 @@ async function autoMatchOnIntake(intake) {
           });
           /* Sort: both have photos > candidate has photo > confidence */
           var lostPhotoIds = {};
-          lostCandidates.forEach(function(r){ if (r.photo) lostPhotoIds[String(r.id)] = true; });
-          var intakeHasPhoto = !!intake.photo;
+          lostCandidates.forEach(function(r){ if (r.photo || _photoCache[String(r.id)]) lostPhotoIds[String(r.id)] = true; });
+          var intakeHasPhoto = !!(intake.photo || _photoCache[String(intake.id)]);
           lostMatches.sort(function(a, b) {
             var aBoth = (intakeHasPhoto && lostPhotoIds[String(a.id)]) ? 2 : 0;
             var bBoth = (intakeHasPhoto && lostPhotoIds[String(b.id)]) ? 2 : 0;
@@ -5043,8 +5043,9 @@ function _showIntakeMatchSheet(intake, lostMatches, lostCandidates, foundMatches
     var lp = lostCandidates.find(function(r){ return String(r.id)===String(m.id); });
     if (!lp) return '';
     var tel = (lp.phone||'').replace(/[^0-9+]/g,'');
-    var photoHTML = lp.photo
-      ? '<img src="'+esc(lp.photo)+'" style="width:100%;height:80px;object-fit:contain;object-position:center center;background:var(--cream-2);border-radius:8px;display:block;margin-bottom:7px">'
+    var lpPhoto = lp.photo || _photoCache[String(lp.id)] || null;
+    var photoHTML = lpPhoto
+      ? '<img src="'+esc(lpPhoto)+'" style="width:100%;height:80px;object-fit:contain;object-position:center center;background:var(--cream-2);border-radius:8px;display:block;margin-bottom:7px">'
       : '<div style="width:100%;height:40px;background:var(--cream-2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;margin-bottom:7px">'
         + (lp.species==='Dog'?'\uD83D\uDC15':lp.species==='Cat'?'\uD83D\uDC08':'\uD83D\uDC3E')+'</div>';
     var contactHTML = tel
@@ -6359,7 +6360,7 @@ async function autoMatchFoundReport(foundRecord) {
       + (r.breed   ? ' Breed:'   + r.breed   : '')
       + (r.desc    ? ' Desc:'    + r.desc    : '')
       + (r.address ? ' Last seen near:' + r.address : '')
-      + (r.photo   ? ' [HAS PHOTO]' : '');
+      + ((r.photo || _photoCache[String(r.id)]) ? ' [HAS PHOTO]' : '');
   }).join('\n');
 
   var prompt = 'A finder just submitted this found pet:\n' + foundDesc
@@ -6386,8 +6387,8 @@ async function autoMatchFoundReport(foundRecord) {
 
     /* Sort: both-have-photos first, then candidate-has-photo, then confidence */
     var photoIds = {};
-    candidates.forEach(function(r) { if (r.photo) photoIds[String(r.id)] = true; });
-    var foundHasPhoto = !!foundRecord.photo;
+    candidates.forEach(function(r) { if (r.photo || _photoCache[String(r.id)]) photoIds[String(r.id)] = true; });
+    var foundHasPhoto = !!(foundRecord.photo || _photoCache[String(foundRecord.id)]);
     matches.sort(function(a, b) {
       /* Tier 1: both records have photos */
       var aBoth = (foundHasPhoto && photoIds[String(a.id)]) ? 2 : 0;
@@ -6439,8 +6440,9 @@ function _showFoundMatchPopup(matches, lostPins) {
     if (!lp) return '';
 
     var tel = (lp.phone || '').replace(/[^0-9+]/g, '');
-    var photoHTML = lp.photo
-      ? '<img src="' + esc(lp.photo) + '" style="width:100%;height:88px;object-fit:contain;object-position:center center;background:var(--cream-2);border-radius:8px;display:block;margin-bottom:7px">'
+    var lpPhoto = lp.photo || _photoCache[String(lp.id)] || null;
+    var photoHTML = lpPhoto
+      ? '<img src="' + esc(lpPhoto) + '" style="width:100%;height:88px;object-fit:contain;object-position:center center;background:var(--cream-2);border-radius:8px;display:block;margin-bottom:7px">'
       : '<div style="width:100%;height:44px;background:var(--cream-2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin-bottom:7px">'
         + (lp.species === 'Dog' ? '🐕' : lp.species === 'Cat' ? '🐈' : '🐾')
         + '</div>';
