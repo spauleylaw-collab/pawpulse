@@ -1320,7 +1320,11 @@ var _submissionCount = 0;  /* resets on page reload */
 var SUBMIT_COOLDOWN_MS = 1 * 60 * 1000;  /* 1 min between submissions (keep short for usability) */
 var SUBMIT_SESSION_MAX = 3;  /* max per session */
 var tmpMarker = null;
-var _fbReady  = false; /* true once Firestore listener is live */
+var _fbReady        = false; /* true once Firestore listener is live */
+var _fsAttachPending = false; /* set at onSnapshot call; cleared on callback or error */
+var _fsAttachTime    = 0;     /* timestamp of last onSnapshot call — stall detector */
+var _fsAttachAttempts = 0;    /* total attach attempts */
+var _fsUnsub         = null;  /* Firestore unsubscribe fn */
 var _isStaff  = false;
 
 /* ── SAVE / LOAD ──────────────────────────────────────────────────────── */
@@ -1426,10 +1430,9 @@ function refreshMapPins(reason) {
   });
   _mapReady = true;
   try { if (map && map.invalidateSize) map.invalidateSize(true); } catch(e) {}
-  lMarkers.forEach(function(m){ try { map.removeLayer(m); } catch(e){} });
-  lMarkers = [];
+  /* No pre-wipe: renderMarkers() uses oldMarkers-swap. Pre-wiping caused
+     blank map on phones when renderMarkers produced 0 markers. */
   renderMarkers();
-  /* Hide loading overlay once pins are on the map */
   if (lMarkers.length > 0) _dismissOverlay();
 }
 
@@ -1466,16 +1469,21 @@ function tryInitialRender(reason) {
 }
 
 function startFirestoreListener() {
-  if (window._firestoreListenerActive) return; /* already running */
-  setTimeout(_dismissOverlay, 2000);
-  if (!db) {
-    console.warn('Firestore unavailable — using localStorage');
-    _fbReady = true;
-    showShelterPicker();
-    return;
+  if (window._firestoreListenerActive) return; /* confirmed active */
+  if (_fsAttachPending) return;                /* waiting for first snapshot */
+  /* Re-acquire db ref if needed */
+  if (!db && typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length) {
+    try { db = firebase.firestore(); } catch(ex) {}
   }
+  setTimeout(_dismissOverlay, 2000);
+  if (!db) { console.warn('[PAWPULSE] db unavailable'); return; }
   try {
-    db.collection('reports').onSnapshot(function(snapshot) {
+    _fsAttachPending  = true;
+    _fsAttachTime     = Date.now();
+    _fsAttachAttempts++;
+    console.log('[PAWPULSE] onSnapshot attach #' + _fsAttachAttempts);
+    _fsUnsub = db.collection('reports').onSnapshot(function(snapshot) {
+      _fsAttachPending = false;
       window._firestoreListenerActive = true; /* confirmed receiving */
       console.log('[FIRESTORE SNAPSHOT]', { size: snapshot.size, changes: snapshot.docChanges().length });
       if (window._pauseFirestoreSync) {
@@ -1516,10 +1524,9 @@ function startFirestoreListener() {
         _recordsReady = true;
         tryInitialRender('first-firestore-ready');
         _bootAppDone = false;
-        lMarkers.forEach(function(m){ try { map.removeLayer(m); } catch(e){} });
-        lMarkers = [];
+        /* No manual lMarkers wipe — bootApp→refreshMapPins handles safely */
         showShelterPicker();
-        refreshMapPins('first-firestore-load');
+        /* bootApp already ran refreshMapPins; only safety retries needed */
         setTimeout(function(){ refreshMapPins('first-firestore-500'); }, 500);
         setTimeout(function(){ refreshMapPins('first-firestore-1500'); }, 1500);
         _dismissOverlay();
@@ -1576,14 +1583,15 @@ function startFirestoreListener() {
         updateNavCounts();
       }
     }, function(err) {
-      console.warn('Firestore listener error:', err);
-      _fbReady = true;
-      showShelterPicker();
+      console.warn('[PAWPULSE] listener error — resetting for retry:', err);
+      _fsAttachPending = false;
+      if (_fsUnsub) { try { _fsUnsub(); } catch(ex){} _fsUnsub = null; }
+      /* Do NOT set _fbReady=true — would poison first-boot path for retry */
     });
   } catch(e) {
-    console.warn('Firestore init error:', e.message);
-    _fbReady = true;
-    showShelterPicker();
+    console.warn('[PAWPULSE] Firestore init error:', e.message);
+    _fsAttachPending = false;
+    if (_fsUnsub) { try { _fsUnsub(); } catch(ex){} _fsUnsub = null; }
   }
 }
 
@@ -1874,11 +1882,51 @@ function doGuestView() {
   setTimeout(_dismissOverlay, 300);
   /* Firestore listener started by Firebase auth callback.
      Safety: if auth is slow or fails, start listener directly after 1.5s */
-  setTimeout(function() {
-    if (!window._firestoreListenerActive && USE_FIREBASE && db) {
+  /* Open-ended retry with stall detection.
+     STALL_MS: if _fsAttachPending > threshold with no snapshot, force-reset. */
+  var STALL_MS = 10000;
+  (function scheduleRetry(delay) {
+    setTimeout(function() {
+      if (window._firestoreListenerActive) return;
+      if (!USE_FIREBASE) return;
+      if (!db && typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length) {
+        try { db = firebase.firestore(); } catch(ex) {}
+      }
+      if (!db) { scheduleRetry(Math.min(delay * 1.6, 15000)); return; }
+      if (_fsAttachPending && _fsAttachTime > 0 &&
+          (Date.now() - _fsAttachTime) > STALL_MS) {
+        console.warn('[PAWPULSE] stalled ' +
+          Math.round((Date.now() - _fsAttachTime) / 1000) + 's — force reset');
+        _fsAttachPending = false; _fsAttachTime = 0;
+        if (_fsUnsub) { try { _fsUnsub(); } catch(ex){} _fsUnsub = null; }
+      }
+      if (!_fsAttachPending) { startFirestoreListener(); }
+      scheduleRetry(Math.min(delay * 1.6, 15000));
+    }, delay);
+  })(1500);
+  /* Early stall timers — bypass backoff schedule for fast stall recovery */
+  [5000, 10000, 18000].forEach(function(stallAt) {
+    setTimeout(function() {
+      if (window._firestoreListenerActive) return;
+      if (!_fsAttachPending) return;
+      console.warn('[PAWPULSE] early stall at ' + (stallAt/1000) + 's — force reset');
+      _fsAttachPending = false; _fsAttachTime = 0;
+      if (_fsUnsub) { try { _fsUnsub(); } catch(ex){} _fsUnsub = null; }
       startFirestoreListener();
-    }
-  }, 1500);
+    }, stallAt);
+  });
+  /* Render watchdogs: data arrived but map not yet sized — force render */
+  [3000, 6000, 12000, 25000].forEach(function(ms) {
+    setTimeout(function() {
+      if (Array.isArray(reports) && reports.length > 0 &&
+          Array.isArray(lMarkers) && lMarkers.length === 0) {
+        console.warn('[PAWPULSE WATCHDOG] ' + ms + 'ms — forcing render');
+        _mapReady = true; _recordsReady = true;
+        try { map.invalidateSize(true); } catch(e) {}
+        renderMarkers();
+      }
+    }, ms);
+  });
 }
 
 function doSignOut() {
@@ -2049,7 +2097,9 @@ function bootApp() {
   /* Pre-set shelter filter */
   var sel = document.getElementById('rpt-filter-shelter');
   if (sel && activeShelter) sel.value = activeShelter;
-  _recordsReady = true;
+  /* Only mark ready when we have data — empty cache + no Firestore yet must
+     stay pending so tryInitialRender fires correctly when data arrives */
+  if (reports.length > 0) { _recordsReady = true; }
   tryInitialRender('boot-records-ready');
   refreshMapPins('bootApp');
   initSpotlight();
@@ -2122,7 +2172,7 @@ function checkFoundPinMatch() {
 function confirmFoundPinMatch(foundId) {
   /* Link this intake to the found pin — populate form fields from pin data */
   window._migrateFromId = foundId;
-  var r = findById(foundId);
+  var r = reports.find(function(x){ return x.id == foundId; });
   if (!r) return;
   /* Populate intake form fields with found pin data */
   var fields = {
@@ -2365,7 +2415,7 @@ function resolveFoundPinFromIntake(foundId) {
   var _ibd = document.getElementById('intake-found-match-bd');
   if (_ibd) _ibd.remove();
 
-  var r = findById(foundId);
+  var r = reports.find(function(x){ return x.id == foundId; });
   if (!r) return;
   r.reunited = true;
   r.reunitedDate = new Date().toISOString();
@@ -2486,7 +2536,7 @@ function submitIntakeFromModal() {
    Lightweight popup showing adoption inquiries — no full edit modal.
 ──────────────────────────────────────────────────────────────────────── */
 function showInquiryPopup(id) {
-  var r = findById(id);
+  var r = reports.find(function(x){ return x.id===id; });
   if (!r || !r.inquiries || !r.inquiries.length) return;
 
   var existing = document.getElementById('inq-popup');
@@ -2553,7 +2603,7 @@ function renderInquiries(r, container) {
 
 
 function openAnimalEdit(id) {
-  var r = findById(id);
+  var r = reports.find(function(x){ return x.id===id; });
   if (!r) return;
   var overlay = document.getElementById('animal-edit-overlay');
   var body    = document.getElementById('animal-edit-body');
@@ -2797,7 +2847,7 @@ function updateEditSections() {
 
 
 function saveAnimalEdit(id) {
-  var r = findById(id);
+  var r = reports.find(function(x){ return x.id===id; });
   if (!r) return;
   /* Immediate feedback */
   var aesb = document.getElementById('ae-save-btn');
@@ -3979,7 +4029,7 @@ function daysSince(iso) {
 }
 
 function setAdoptionStatus(id, status) {
-  var r = findById(id);
+  var r = reports.find(function(x){ return x.id===id; });
   if (!r) return;
   r.adoptionStatus = status;
   if (status === 'available' && !r.dateAvailable) r.dateAvailable = new Date().toISOString();
@@ -3994,7 +4044,7 @@ var _inquiryReportId = null;
 
 function contactShelterForAdoption(id) {
   _inquiryReportId = id;
-  var r = findById(id);
+  var r = reports.find(function(x){ return x.id===id; });
   var name    = r ? (r.name || r.species || 'this pet') : 'this pet';
   var shelter = r ? (r.shelterName || r.finder || 'the shelter') : 'the shelter';
   var desc    = document.getElementById('inq-animal-desc');
@@ -4044,7 +4094,7 @@ function submitInquiry() {
   }
   /* Save inquiry to report record */
   if (_inquiryReportId) {
-    var r = findById(_inquiryReportId);
+    var r = reports.find(function(x){ return x.id===_inquiryReportId; });
     if (r) {
       if (!r.inquiries) r.inquiries = [];
       r.inquiries.push({ name:name, phone:phone, email:email, msg:msg, time:new Date().toISOString() });
@@ -5044,7 +5094,7 @@ function dismissInquiry(id) {
 }
 
 function markReunited(id) {
-  var r = findById(id);
+  var r = reports.find(function(x){ return x.id == id; });
   if (!r || r.reunited) return;
   if (!confirm('Mark this pet as reunited with its owner? This cannot be undone.')) return;
   /* Ensure required fields are set */
@@ -6684,7 +6734,7 @@ function renderShelterQueue() {
 function selectIntake(id) {
   selectedIntakeId = id;
   renderShelterQueue();
-  var r = findById(id);
+  var r = reports.find(function(x){ return x.id===id; });
   if (!r) return;
   document.getElementById('sh-action-empty').style.display = 'none';
   var panel = document.getElementById('sh-action-panel');
@@ -6760,7 +6810,7 @@ function selectIntake(id) {
 }
 
 async function searchMatches(intakeId) {
-  var intake = findById(intakeId);
+  var intake = reports.find(function(x){ return x.id===intakeId; });
   if (!intake) return;
   var btn = document.querySelector('[onclick="searchMatches(' + intakeId + ')"]');
   var resultsEl = document.getElementById('sh-match-results-' + intakeId);
@@ -6867,8 +6917,8 @@ function toggleMatchComment(lostId, intakeId) {
 function postMatchComment(lostId, intakeId) {
   var txt = document.getElementById('sh-comment-txt-' + lostId);
   if (!txt || !txt.value.trim()) return;
-  var lost   = findById(lostId);
-  var intake = findById(intakeId);
+  var lost   = reports.find(function(x){ return x.id===lostId; });
+  var intake = reports.find(function(x){ return x.id===intakeId; });
   if (!lost) return;
 
   /* Add comment to lost pet */
@@ -7200,7 +7250,7 @@ function confirmCloseHold(id) {
 }
 
 function closeHold(id, outcome) {
-  var r = findById(id);
+  var r = reports.find(function(x){ return x.id===id; });
   if (!r) return;
 
   /* Freeze cost */
@@ -7300,7 +7350,7 @@ function cancelInvForm() {
 
 
 async function postShelterUpdate(id) {
-  var r = findById(id);
+  var r = reports.find(function(x){ return x.id===id; });
   var txt = document.getElementById('sh-update-txt');
   if (!r || !txt || !txt.value.trim()) return;
   if (!r.shelterLog) r.shelterLog = [];
@@ -7411,7 +7461,7 @@ function renderReportsList() {
 function selectReport(id) {
   selectedRptId = id;
   renderReportsList();
-  var r = findById(id);
+  var r = reports.find(function(x){ return x.id == id; });
   if (!r) return;
 
   document.getElementById('rpt-detail-empty').style.display = 'none';
@@ -7554,7 +7604,7 @@ function markReunitedFromReport(id) {
 }
 
 function jumpToMap(id) {
-  var r = findById(id);
+  var r = reports.find(function(x){ return x.id===id; });
   if (!r) return;
   /* Switch to map, fly to pin, open card */
   var mapBtn = document.querySelector('.tab-btn[onclick*="\'map\'"]');
@@ -7570,7 +7620,7 @@ function jumpToMap(id) {
 
 /* ── Print ──────────────────────────────────── */
 function printReport(id) {
-  var r = findById(id);
+  var r = reports.find(function(x){ return x.id===id; });
   if (!r) return;
   var isLost = r.type === 'lost';
   var name   = isLost && r.name ? r.name : (r.species||'Unknown pet') + (isLost ? '' : ' found');
@@ -7695,13 +7745,8 @@ function setDailyRate() {
 /* ── Medical Care ───────────────────────────── */
 function getMed(r) { return r.medical || r.medicalCare || {}; }
 
-/* Find a report by id — handles string/number coercion (== not ===) */
-function findById(id) {
-  return reports.find(function(x){ return x.id == id; }) || null;
-}
-
 function saveMedical(id, updates) {
-  var r = findById(id);
+  var r = reports.find(function(x){ return x.id===id; });
   if (!r) return;
   if (!r.medicalCare) r.medicalCare = {};
   Object.assign(r.medicalCare, updates);
@@ -7772,7 +7817,7 @@ function toggleMedBody(id) {
 }
 
 function saveField(id, field, value) {
-  var r = findById(id);
+  var r = reports.find(function(x){ return x.id===id; });
   if (!r) return;
   r[field] = value;
   save();
@@ -7784,7 +7829,7 @@ function saveField(id, field, value) {
 }
 
 function addCostEntry(id) {
-  var r = findById(id);
+  var r = reports.find(function(x){ return x.id===id; });
   if (!r) return;
   var descEl = document.getElementById('ce-desc-' + id);
   var amtEl  = document.getElementById('ce-amt-'  + id);
@@ -7802,7 +7847,7 @@ function addCostEntry(id) {
 }
 
 function deleteCostEntry(reportId, entryId) {
-  var r = findById(reportId);
+  var r = reports.find(function(x){ return x.id===reportId; });
   if (!r || !r.costEntries) return;
   r.costEntries = r.costEntries.filter(function(e){ return e.id !== entryId; });
   save();
@@ -7812,7 +7857,7 @@ function deleteCostEntry(reportId, entryId) {
 function getEnf(r) { return r.enforcement || {}; }
 
 function setCostField(id, field, value) {
-  var r = findById(id);
+  var r = reports.find(function(x){ return x.id===id; });
   if (!r) return;
   r[field] = value;
   if (!r.shelterLog) r.shelterLog = [];
@@ -7822,7 +7867,7 @@ function setCostField(id, field, value) {
 }
 
 function saveEnf(id, updates) {
-  var r = findById(id);
+  var r = reports.find(function(x){ return x.id===id; });
   if (!r) return;
   if (!r.enforcement) r.enforcement = {};
   Object.assign(r.enforcement, updates);
@@ -7917,7 +7962,7 @@ function toggleEnfBody(id) {
 }
 
 function promptDailyCost(id) {
-  var r = findById(id);
+  var r = reports.find(function(x){ return x.id===id; });
   if (!r) return;
   var cur = (r.enforcement && r.enforcement.dailyCost != null) ? r.enforcement.dailyCost : DAILY_RATE;
   var val = prompt('Daily shelter cost for this animal ($):', cur);
@@ -8326,7 +8371,7 @@ function printCGOutput() {
 }
 
 function jumpToCase(id) {
-  var r = findById(id);
+  var r = reports.find(function(x){ return x.id===id; });
   if (!r) return;
   setView('incare', document.querySelector('.tab-btn[onclick*="incare"]'));
   setTimeout(function(){ openAnimalEdit(id); }, 200);
@@ -8658,7 +8703,7 @@ function restitTable(restit) {
 }
 
 function openAdoptDetail(id) {
-  var r = findById(id);
+  var r = reports.find(function(x){ return x.id == id; });
   if (!r) return;
   /* Block hold animals — intakeType=hold OR holdType set to bite/dangerous/standard */
   var _isHoldAnimal = r.intakeType === 'hold' || (r.holdType && r.holdType !== 'none');
@@ -9147,7 +9192,7 @@ function renderIncareView() {
 }
 
 function addCallLogEntry(id) {
-  var r = findById(id);
+  var r = reports.find(function(x){ return x.id===id; });
   if (!r) return;
   var name  = ((document.getElementById('ae-call-name')||{}).value||'').trim();
   var phone = ((document.getElementById('ae-call-phone')||{}).value||'').trim();
@@ -9248,7 +9293,7 @@ function printDischargeForm(id) {
 }
 
 function deleteAnimalPhoto(id) {
-  var r = findById(id); /* == handles string/number mismatch */
+  var r = reports.find(function(x){ return x.id == id; }); /* == handles string/number mismatch */
   if (!r) return;
   r.photo = null;
   save();
@@ -9272,7 +9317,7 @@ function deleteAnimalPhoto(id) {
 
 function previewEditPhoto(input, id) {
   if (!input.files || !input.files[0]) return;
-  var r = findById(id);
+  var r = reports.find(function(x){ return x.id == id; });
   if (!r) return;
   compressPhoto(input.files[0], function(dataUrl) {
     r.photo = dataUrl;
@@ -9311,7 +9356,7 @@ function triggerPhotoUpload(id) {
 
 function handleIncarePhotoUpload(input) {
   var id = parseInt(input.dataset.animalId);
-  var r = findById(id);
+  var r = reports.find(function(x){ return x.id == id; });
   if (!r || !input.files || !input.files[0]) return;
   compressPhoto(input.files[0], function(dataUrl) {
     r.photo = dataUrl;
@@ -9325,7 +9370,7 @@ function handleIncarePhotoUpload(input) {
 }
 
 function quickAdoptReady(id) {
-  var r = findById(id); /* == handles string/number */
+  var r = reports.find(function(x){ return x.id == id; }); /* == handles string/number */
   if (!r) return;
   var wait = daysUntilAdoptEligible(r);
   if (wait > 0) {
