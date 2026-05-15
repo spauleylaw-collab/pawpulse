@@ -3657,6 +3657,15 @@ function snap_pill(label, val) {
     + '<span style="color:var(--warm-mid)">' + label + ' </span><strong>' + val + '</strong></div>';
 }
 
+/* Compact status pill for in-care cards and other internal UI.
+   makePill(label, bg, color, border)
+   border is optional — omit or pass '' for no border. */
+function makePill(label, bg, color, border) {
+  var borderCSS = border ? ';border:1px solid ' + border : '';
+  return '<span style="font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:999px;background:'
+    + bg + ';color:' + color + borderCSS + '">' + label + '</span>';
+}
+
 function grantTab(id, label) {
   var active = _grantsTab === id;
   return '<button onclick="setGrantsTab(\'' + id + '\')" style="padding:6px 14px;font-size:.78rem;font-weight:' + (active?'700':'400') + ';border:none;background:none;cursor:pointer;color:' + (active?'var(--forest)':'var(--warm-mid)') + ';border-bottom:' + (active?'2px solid var(--forest)':'2px solid transparent') + ';margin-bottom:-12px;font-family:var(--font-body)">' + label + '</button>';
@@ -5459,21 +5468,28 @@ map.on('click', function(e) {
   setTimeout(function(){ injectMicButtons(document.getElementById('side-panel')); }, 380);
 });
 
-/* ── Photo helpers ─────────────────────────────────────────────────────────
-   compressImage  — core canvas resize/compress (configurable)
-   compressPhoto  — file → dataUrl via compressImage (1200px, 0.82 JPEG)
-   compressDataUrl — dataUrl → smaller dataUrl (900px, 0.72 JPEG, for Firestore)
-   previewPhoto   — shared preview handler for public forms
-   getPhoto       — read dataUrl from preview img element
-   ─────────────────────────────────────────────────────────────────────────── */
 function compressPhoto(file, callback) {
-  /* Compress to max 1200px, 0.82 quality — delegates to compressImage */
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    compressImage(e.target.result, 1200, 1200, 0.82, callback);
+  /* Compress to max 1200px wide, 0.82 quality JPEG — keeps under ~200KB */
+  var img = new Image();
+  var url = URL.createObjectURL(file);
+  img.onload = function() {
+    URL.revokeObjectURL(url);
+    var MAX = 1200;
+    var w = img.width, h = img.height;
+    if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+    if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
+    var canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+    callback(canvas.toDataURL('image/jpeg', 0.82));
   };
-  reader.onerror = function() { callback(null); };
-  reader.readAsDataURL(file);
+  img.onerror = function() {
+    /* Fallback: read raw if canvas fails */
+    var reader = new FileReader();
+    reader.onload = function(e){ callback(e.target.result); };
+    reader.readAsDataURL(file);
+  };
+  img.src = url;
 }
 
 function previewPhoto(input, imgId, iconId, txtId) {
@@ -7045,8 +7061,17 @@ function compressImage(dataUrl, maxWidth, maxHeight, quality, callback) {
 }
 
 function previewSIPhoto(input) {
-  /* Delegates to shared previewPhoto — consistent compression and preview handling */
-  previewPhoto(input, 'si-prev', 'si-photo-icon', 'si-photo-txt');
+  var file = input.files[0]; if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    compressImage(e.target.result, 1200, 1200, 0.82, function(compressed) {
+      var img = document.getElementById('si-prev');
+      img.src = compressed; img.style.display = 'block';
+      document.getElementById('si-photo-icon').style.display = 'none';
+      document.getElementById('si-photo-txt').style.display  = 'none';
+    });
+  };
+  reader.readAsDataURL(file);
 }
 
 function cancelShelterPanel() {
@@ -9080,9 +9105,9 @@ function renderIncareView() {
       + (r.animalId?'<div style="font-size:.62rem;font-weight:700;color:var(--forest);margin-bottom:3px">🏷️ ' + esc(r.animalId) + '</div>':'')
       + '<div style="font-size:.68rem;color:var(--warm-mid);margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + ([r.species,r.breed,r.color].filter(Boolean).join(' · ')||'Unknown') + '</div>'
       + '<div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:5px">'
-      + (isHold?'<span style="font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:999px;background:#fff8f0;color:#8a5010;border:1px solid #e8c090">⚠️ Hold</span>':'')
-      + (isAdopt?'<span style="font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:999px;background:#e8f0ff;color:#2050a0">🌟 Adopt</span>':'')
-      + (srcLabel?'<span style="font-size:.6rem;padding:2px 6px;border-radius:999px;background:var(--cream-2);color:var(--warm-mid)">' + srcLabel + '</span>':'')
+      + (isHold  ? makePill('⚠️ Hold',   '#fff8f0', '#8a5010', '#e8c090') : '')
+      + (isAdopt ? makePill('🌟 Adopt',  '#e8f0ff', '#2050a0', '')       : '')
+      + (srcLabel? makePill(srcLabel,  'var(--cream-2)', 'var(--warm-mid)', '') : '')
       + (r.inquiries && r.inquiries.length ? '<span title="View adoption inquiries" style="font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:999px;background:#fff3cd;color:#7a5010;border:1px solid #f0c040;cursor:pointer" onclick="event.stopPropagation();showInquiryPopup(' + r.id + ')">💬 ' + r.inquiries.length + ' inquiry' + (r.inquiries.length!==1?'s':'') + '</span>'
       + '<span onclick="event.stopPropagation();dismissInquiry(' + r.id + ')"' + ' title="Clear inquiries" style="font-size:.6rem;font-weight:700;padding:2px 5px;border-radius:999px;background:#fde8e0;color:#c94f2a;border:1px solid #f0a090;cursor:pointer;margin-left:2px">&times;</span>'
       : '')
