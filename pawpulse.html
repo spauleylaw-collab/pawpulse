@@ -4419,7 +4419,7 @@ function cardHTML(r) {
   /* Contact actions — call/text only for lost animals with a phone number */
   var contact = '';
   var actionBtns = '';
-  /* AI match button — on lost cards so owner can search shelter intakes */
+  /* AI match button — on lost cards only; found cards use auto-background matching */
   var matchBtn = '';
   if (lost && !reunited) {
     matchBtn = '<button onclick="searchMatchesFromCard(' + r.id + ')" style="width:100%;margin:8px 0 4px;padding:9px;font-family:var(--font-display);font-size:.82rem;font-weight:700;border:none;border-radius:8px;cursor:pointer;background:#f0f4ff;color:#2050a0;border:1.5px solid #a0baf0">🔍 Search Heartland &amp; Found Pins</button>';
@@ -4428,6 +4428,7 @@ function cardHTML(r) {
       matchBtn += '<div style="font-size:.68rem;color:var(--amber);text-align:center;margin-bottom:4px">⚠️ Missing ' + Math.floor(daysSince(r.date)) + ' days — no longer shown after 30 days</div>';
     }
   }
+  /* Found cards: no manual button — matching runs automatically on submit */
   if (lost && r.owner && r.intakeType !== 'hold') {
     contact = '';
     if (r.phone && !reunited) {
@@ -6409,6 +6410,112 @@ function submitFound() {
     renderIncareView();
   }, 1000);
   setTimeout(function(){ window._pauseFirestoreSync = false; }, 6000);
+  /* Auto background match: compare new found pin against active lost pins */
+  setTimeout(function(){ autoMatchFoundReport(r); }, 2000);
+}
+
+/* Background lost-pin matching triggered automatically on found report submit */
+async function autoMatchFoundReport(foundRecord) {
+  var lostPins = reports.filter(function(x) {
+    return x.type === 'lost' && !x.reunited && !x.shelter;
+  });
+  if (!lostPins.length) return;
+  /* Quick species pre-filter — skip if clearly incompatible */
+  var candidates = foundRecord.species
+    ? lostPins.filter(function(x) { return !x.species || x.species.toLowerCase() === foundRecord.species.toLowerCase(); })
+    : lostPins;
+  if (!candidates.length) return;
+
+  var foundDesc = [
+    foundRecord.species && 'Species: ' + foundRecord.species,
+    foundRecord.color   && 'Color: '   + foundRecord.color,
+    foundRecord.desc    && 'Description: ' + foundRecord.desc,
+    foundRecord.address && 'Found near: ' + foundRecord.address
+  ].filter(Boolean).join('. ');
+
+  var lostList = candidates.map(function(r, i) {
+    return (i+1) + '. ID:' + r.id
+      + (r.name    ? ' Name:'    + r.name    : '')
+      + (r.species ? ' Species:' + r.species : '')
+      + (r.breed   ? ' Breed:'   + r.breed   : '')
+      + (r.color   ? ' Color:'   + r.color   : '')
+      + (r.desc    ? ' Desc:'    + r.desc    : '')
+      + (r.address ? ' Last seen near:' + r.address : '');
+  }).join('\n');
+
+  try {
+    var resp = await fetch('/api/anthropic', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:400,
+        messages:[{role:'user',content:
+          'A finder just submitted this found pet report:\n' + foundDesc +
+          '\n\nActive lost pet reports:\n' + lostList +
+          '\n\nReturn ONLY valid JSON array of HIGH or MEDIUM confidence matches: ' +
+          '[{id,confidence,reason}]. Only include matches that are genuinely likely. ' +
+          'Empty array [] if none. No low-confidence guesses.'}]
+      })
+    });
+    var data = await resp.json();
+    if (data.error) return;
+    var text = (data.content||[]).map(function(b){return b.text||'';}).join('').trim();
+    var matches = JSON.parse(text.replace(/```json|```/g,'').trim());
+    if (!matches || !matches.length) return;
+    /* Show match popup */
+    _showFoundMatchPopup(matches, candidates, foundRecord);
+  } catch(e) { console.warn('autoMatchFoundReport error:', e.message); }
+}
+
+function _showFoundMatchPopup(matches, candidates, foundRecord) {
+  ['_fmp','_fmp-bd'].forEach(function(id){var el=document.getElementById(id);if(el)el.remove();});
+  var bd = document.createElement('div');
+  bd.id = '_fmp-bd';
+  bd.style.cssText = 'position:fixed;inset:0;z-index:5100;background:rgba(0,0,0,.5)';
+  var panel = document.createElement('div');
+  panel.id = '_fmp';
+  panel.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:5101;'
+    + 'background:var(--cream);border-radius:18px 18px 0 0;'
+    + 'box-shadow:0 -8px 40px rgba(0,0,0,.3);max-height:85vh;'
+    + 'display:flex;flex-direction:column;overflow:hidden;'
+    + 'transform:translateY(100%);transition:transform .3s cubic-bezier(.34,1.2,.64,1)';
+  var dismiss = "var p=document.getElementById('_fmp');var b=document.getElementById('_fmp-bd');if(p)p.remove();if(b)b.remove();";
+  var confColor = {high:'var(--found-g)',medium:'var(--amber)'};
+  var confBg    = {high:'#e8f4e9',medium:'#fffbf0'};
+  var cards = matches.map(function(m) {
+    var r = candidates.find(function(x){return String(x.id)===String(m.id);});
+    if (!r) return '';
+    var tel = (r.phone||'').replace(/[^0-9+]/g,'');
+    var photoHTML = r.photo
+      ? '<img src="' + r.photo + '" style="width:100%;height:80px;object-fit:contain;background:var(--cream-2);border-radius:7px;margin-bottom:7px;display:block">'
+      : '<div style="width:100%;height:44px;background:var(--cream-2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:7px">'+(r.species==='Dog'?'&#x1F415;':r.species==='Cat'?'&#x1F408;':'&#x1F43E;')+'</div>';
+    var contactHTML = tel
+      ? '<div style="display:flex;gap:6px;margin-top:8px">'
+        + '<a href="tel:' + tel + '" style="flex:1;padding:8px;text-align:center;background:var(--forest);color:#fff;border-radius:8px;font-family:var(--font-display);font-size:.78rem;font-weight:700;text-decoration:none">&#x1F4DE; Call Owner</a>'
+        + '<a href="sms:' + tel + '" style="flex:1;padding:8px;text-align:center;background:#2050a0;color:#fff;border-radius:8px;font-family:var(--font-display);font-size:.78rem;font-weight:700;text-decoration:none">&#x1F4AC; Text</a>'
+        + '</div>'
+      : '<div style="font-size:.73rem;color:var(--warm-mid);margin-top:5px;font-style:italic">No phone on file — visit Heartland Pet Connection</div>';
+    return '<div style="background:' + (confBg[m.confidence]||'#f8f8f8') + ';border:1.5px solid ' + (confColor[m.confidence]||'#ddd') + ';border-radius:11px;padding:11px 13px;margin-bottom:9px">'
+      + photoHTML
+      + '<span style="font-size:.62rem;font-weight:800;padding:2px 7px;border-radius:999px;background:' + (confBg[m.confidence]||'#f0f0f0') + ';color:' + (confColor[m.confidence]||'#888') + '">' + m.confidence + ' match</span>'
+      + '<div style="font-family:var(--font-display);font-size:.9rem;font-weight:700;color:var(--warm-dk);margin:4px 0 2px">' + esc(r.name||(r.species||'Unknown')) + '</div>'
+      + (r.color ? '<div style="font-size:.72rem;color:var(--warm-mid);margin-bottom:2px">' + esc(r.color) + '</div>' : '')
+      + (r.address ? '<div style="font-size:.7rem;color:var(--warm-mid);margin-bottom:4px">&#x1F4CD; ' + esc(r.address) + '</div>' : '')
+      + '<div style="font-size:.74rem;color:var(--warm-mid);font-style:italic">' + esc(m.reason) + '</div>'
+      + contactHTML + '</div>';
+  }).join('');
+  panel.innerHTML =
+    '<div style="padding:14px 18px 10px;border-bottom:1px solid var(--cream-3);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">'
+    + '<div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--warm-dk)">&#x1F4A1; ' + matches.length + ' Possible Lost Pet Match' + (matches.length>1?'es':'') + '</div>'
+    + '<button onclick="' + dismiss + '" style="background:var(--cream-2);border:none;border-radius:50%;width:32px;height:32px;font-size:1rem;cursor:pointer">&#x2715;</button>'
+    + '</div>'
+    + '<div style="padding:4px 18px 6px;font-size:.74rem;color:var(--warm-mid);flex-shrink:0">If this matches, contact the owner and tap Mark Reunited after the pet is safely returned.</div>'
+    + '<div style="flex:1;overflow-y:auto;padding:12px 18px 24px;-webkit-overflow-scrolling:touch">'
+    + cards
+    + '<button onclick="' + dismiss + '" style="width:100%;padding:10px;border:1.5px solid var(--cream-3);border-radius:9px;background:#fff;font-family:var(--font-display);font-size:.86rem;font-weight:600;cursor:pointer;color:var(--warm-mid)">Not a match — Dismiss</button>'
+    + '</div>';
+  bd.onclick = function(){panel.remove();bd.remove();};
+  document.body.appendChild(bd);
+  document.body.appendChild(panel);
+  requestAnimationFrame(function(){requestAnimationFrame(function(){panel.style.transform='translateY(0)';});});
 }
 
 function resetForm(type) {
