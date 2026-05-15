@@ -72,7 +72,7 @@ if (USE_FIREBASE) {
 body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);height:100vh;overflow:hidden;user-select:none}
 
 /* NAV */
-#nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;gap:8px;padding:0 12px;height:var(--nav-h);background:var(--forest);box-shadow:0 2px 16px rgba(0,0,0,.3);border-bottom:2px solid rgba(122,172,130,.5)}
+#nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;gap:8px;padding:0 12px;height:var(--nav-h);background:var(--forest);box-shadow:0 2px 16px rgba(0,0,0,.3);border-bottom:2px solid rgba(122,172,130,.5);border-bottom:2px solid rgba(122,172,130,.5)}
 .nav-logo{font-family:var(--font-display);font-size:1.05rem;font-weight:700;color:var(--cream);letter-spacing:-.02em;display:flex;align-items:center;gap:5px;flex-shrink:0}
 .nav-logo-wrap{display:flex;flex-direction:column}
 .nav-logo-sub{font-family:var(--font-body);font-size:.56rem;font-weight:600;color:var(--moss);letter-spacing:.09em;text-transform:uppercase}
@@ -93,13 +93,13 @@ body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);h
 /* Staff badge hidden by default — only shown via JS after auth confirms */
 #staff-badge { display: none !important; }
 #staff-badge.staff-active { display: inline-flex !important; }
-
-
-
-
-
-
-
+/* #pp-banner removed — spotlight is the story layer *//* map-container banner-margin override removed */
+/* mobile #pp-banner override removed */
+/* .banner-dot removed */
+/* @keyframes bdot removed */
+/* #banner-txt removed */
+/* #banner-txt.fade removed */
+/* #banner-dot-reunion removed */
 /* Floating filter pills on map — horizontal row at bottom center */
 #map-filters{position:absolute;top:120px;left:10px;transform:none;z-index:600;display:flex;flex-direction:column;gap:5px;pointer-events:none;white-space:nowrap}
 #map-filters .filter-btn{pointer-events:auto}
@@ -123,7 +123,13 @@ body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);h
 .mode-banner.admin{background:#fdf0e0;color:#7a4a10;border-bottom:1px solid #e8c890}
 .mode-banner-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 
-/* Map legend (rules removed) */
+/* Map legend */
+/* legend CSS removed */
+/* legend CSS removed */
+/* legend-item removed */
+/* legend-pin removed */
+/* print-btn removed */
+.print-btn:hover{border-color:var(--amber);color:var(--amber)}
 
 /* VIEW — position:fixed + inset, same as PublicPulse */
 #right-rail{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:990;background:rgba(42,62,42,.82);border-radius:12px;margin-right:4px;min-width:72px;box-shadow:-4px 0 20px rgba(0,0,0,.25)}
@@ -188,6 +194,7 @@ textarea{min-height:64px}
 
 /* MAP OVERLAYS */
 #stats-bar{display:none}
+#map-filters{display:flex}
 .stat-pill{background:rgba(255,255,255,.92);backdrop-filter:blur(8px);padding:5px 12px;border-radius:999px;font-size:.73rem;font-weight:600;box-shadow:0 2px 10px rgba(0,0,0,.12);display:flex;align-items:center;gap:5px;border:1px solid var(--cream-3)}
 .stat-dot{width:8px;height:8px;border-radius:50%}
 .stat-dot.lost{background:var(--lost-r)}
@@ -3965,6 +3972,25 @@ function esc(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
+/* Species emoji — single source of truth for pin/card/grid emoji */
+function speciesEmoji(species) {
+  if (!species) return '\uD83D\uDC3E';
+  var s = species.toLowerCase();
+  if (s === 'dog')    return '\uD83D\uDC15';
+  if (s === 'cat')    return '\uD83D\uDC08';
+  if (s === 'bird')   return '\uD83D\uDC26';
+  if (s === 'rabbit') return '\uD83D\uDC07';
+  return '\uD83D\uDC3E';
+}
+
+/* Phone masking for public display */
+function maskPhone(phone) {
+  if (!phone) return '';
+  var digits = phone.replace(/[^0-9]/g, '');
+  if (digits.length < 7) return phone;
+  return digits.slice(0, 3) + '-***-' + digits.slice(-4);
+}
+
 /* ── Adoption helpers ───────────────────────── */
 function daysSince(iso) {
   if (!iso) return 0;
@@ -4255,7 +4281,7 @@ function cardHTML(r) {
         var shelterAnimal = reports.find(function(x){ return String(x.id)===String(pm.matchId); });
         var photoHtml = (shelterAnimal && shelterAnimal.photo)
           ? '<img src="' + shelterAnimal.photo + '" style="width:100%;height:80px;object-fit:cover;object-position:top center;border-radius:5px;margin-bottom:6px;display:block">'
-          : (shelterAnimal ? '<div style="width:100%;height:48px;background:#e8f0ff;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin-bottom:6px">' + (shelterAnimal.species==='Dog'?'🐕':shelterAnimal.species==='Cat'?'🐈':'🐾') + '</div>' : '');
+          : (shelterAnimal ? '<div style="width:100%;height:48px;background:#e8f0ff;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin-bottom:6px">' + speciesEmoji(shelterAnimal.species) + '</div>' : '');
         var animalDesc = shelterAnimal ? [shelterAnimal.breed, shelterAnimal.color, shelterAnimal.sex].filter(Boolean).join(' · ') : '';
         return '<div class="pc-match-banner">' + photoHtml
           + '<div style="font-weight:700;margin-bottom:2px">🏠 Possible match at ' + esc(pm.shelterName) + '</div>'
@@ -4721,7 +4747,7 @@ async function searchMatchesFromCard(lostId) {
             : '';
           var aImg   = a.photo
             ? '<img src="' + a.photo + '" style="width:100%;height:120px;object-fit:contain;background:var(--cream-2);border-radius:6px;margin-bottom:8px">'
-            : '<div style="width:100%;height:60px;background:var(--cream-2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin-bottom:8px">' + (a.species==='Dog'?'🐕':a.species==='Cat'?'🐈':'🐾') + '</div>';
+            : '<div style="width:100%;height:60px;background:var(--cream-2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin-bottom:8px">' + speciesEmoji(a.species) + '</div>';
           return '<div style="background:' + (confBg[m.confidence]||'#f8f8f8') + ';border:1.5px solid ' + (confColor[m.confidence]||'#ccc') + ';border-radius:10px;padding:12px;margin-bottom:8px">'
             + aImg
             + '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">'
@@ -4907,7 +4933,7 @@ function printCageCard(id) {
     + '<div class="header"><div class="shelter">Heartland Pet Connection &middot; 1807 W J St, Hastings NE</div>'
     + '<div class="name">' + esc(r.name||'Unknown') + '</div>'
     + '<div class="species">' + [r.species,r.breed,r.sex].filter(Boolean).join(' &middot; ') + '</div></div>'
-    + (r.photo ? '<img class="photo" src="' + r.photo + '">' : '<div class="no-photo">' + (r.species==='Dog'?'&#128021;':r.species==='Cat'?'&#128008;':'&#128062;') + '</div>')
+    + (r.photo ? '<img class="photo" src="' + r.photo + '">' : '<div class="no-photo">' + speciesEmoji(r.species) + '</div>')
     + (holdWait > 0 ? '<div class="banner">STRAY HOLD &mdash; ' + holdWait + ' day' + (holdWait!==1?'s':'') + ' remaining</div>' : '')
     + (r.intakeType==='hold' ? '<div class="banner">LEGAL HOLD &mdash; ' + (r.holdType||'Standard').toUpperCase() + '</div>' : '')
     + '<div class="grid">'
@@ -8676,7 +8702,7 @@ function openAdoptDetail(id) {
     + '<button onclick="closeAdoptDetail()" style="background:var(--cream-2);border:none;border-radius:50%;width:32px;height:32px;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--warm-mid)">✕</button>'
     + '</div>'
     + '<div style="padding:16px 20px 32px">'
-    + (r.photo ? '<img src="' + esc(r.photo) + '" style="width:100%;max-height:320px;object-fit:contain;object-position:center center;background:#f4f1eb;border-radius:12px;margin-bottom:14px">' : '<div style="width:100%;height:160px;background:var(--cream-2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:3rem;margin-bottom:14px">' + (r.species==='Dog'?'🐕':r.species==='Cat'?'🐈':'🐾') + '</div>')
+    + (r.photo ? '<img src="' + esc(r.photo) + '" style="width:100%;max-height:320px;object-fit:contain;object-position:center center;background:#f4f1eb;border-radius:12px;margin-bottom:14px">' : '<div style="width:100%;height:160px;background:var(--cream-2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:3rem;margin-bottom:14px">' + speciesEmoji(r.species) + '</div>')
     + (meta ? '<div style="font-size:.82rem;color:var(--warm-mid);margin-bottom:10px">' + esc(meta) + '</div>' : '')
     + (fee ? '<div style="font-size:.82rem;font-weight:700;color:var(--forest);margin-bottom:12px">💚 ' + esc(fee) + '</div>' : '')
     + (r.adoptPersonality ? '<div style="font-size:.88rem;line-height:1.7;color:var(--warm-dk);margin-bottom:14px;padding:12px;background:var(--cream-2);border-radius:10px">' + esc(r.adoptPersonality) + '</div>' : '')
@@ -8741,7 +8767,7 @@ function renderAdoptView() {
     var meta         = [r.breed, r.color, r.sex, r.age].filter(Boolean).join(' · ');
     var imgHTML      = r.photo
       ? '<img class="adopt-card-img" src="' + r.photo + '" alt="' + esc(name) + '" style="width:100%;max-height:240px;object-fit:contain;background:var(--cream-2)">'
-      : '<div class="adopt-card-no-img" style="background:' + (days>30?'#fff5f5':days>14?'#fffbf0':'var(--cream-2)') + '">' + (r.species==='Dog'?'🐕':r.species==='Cat'?'🐈':'🐾') + '</div>';
+      : '<div class="adopt-card-no-img" style="background:' + (days>30?'#fff5f5':days>14?'#fffbf0':'var(--cream-2)') + '">' + speciesEmoji(r.species) + '</div>';
 
     /* Personality narrative — Claude-generated or placeholder */
     var narrative    = r.adoptPersonality || null;
@@ -9463,8 +9489,8 @@ async function runBatchLostMatch() {
       var lp = lostPins.find(function(x){ return String(x.id)===String(m.lostId); });
       if (!sa || !lp) return;
 
-      var saImg = sa.photo ? '<img src="' + sa.photo + '" style="width:56px;height:56px;object-fit:contain;background:var(--cream-2);border-radius:8px;flex-shrink:0">' : '<div style="width:56px;height:56px;border-radius:8px;background:var(--cream-2);display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0">' + (sa.species==='Dog'?'🐕':sa.species==='Cat'?'🐈':'🐾') + '</div>';
-      var lpImg = lp.photo ? '<img src="' + lp.photo + '" style="width:56px;height:56px;object-fit:contain;background:var(--cream-2);border-radius:8px;flex-shrink:0">' : '<div style="width:56px;height:56px;border-radius:8px;background:#fff0ee;display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0">' + (lp.species==='Dog'?'🐕':lp.species==='Cat'?'🐈':'🐾') + '</div>';
+      var saImg = sa.photo ? '<img src="' + sa.photo + '" style="width:56px;height:56px;object-fit:contain;background:var(--cream-2);border-radius:8px;flex-shrink:0">' : '<div style="width:56px;height:56px;border-radius:8px;background:var(--cream-2);display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0">' + speciesEmoji(sa.species) + '</div>';
+      var lpImg = lp.photo ? '<img src="' + lp.photo + '" style="width:56px;height:56px;object-fit:contain;background:var(--cream-2);border-radius:8px;flex-shrink:0">' : '<div style="width:56px;height:56px;border-radius:8px;background:#fff0ee;display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0">' + speciesEmoji(lp.species) + '</div>';
 
       html += '<div style="background:' + (confBg[m.confidence]||'#f8f8f8') + ';border:1.5px solid ' + (confColor[m.confidence]||'#ddd') + ';border-radius:10px;padding:12px;margin-bottom:10px">'
         + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'
