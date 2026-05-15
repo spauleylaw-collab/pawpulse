@@ -4710,7 +4710,8 @@ async function searchMatchesFromCard(lostId) {
           + (r.breed   ? ' Breed:'   + r.breed   : '')
           + (r.color   ? ' Color:'   + r.color   : '')
           + (r.desc    ? ' Desc:'    + r.desc    : '')
-          + (r.address ? ' Found near:' + r.address : '');
+          + (r.address ? ' Found near:' + r.address : '')
+          + ((r.photo || _photoCache[String(r.id)]) ? ' [HAS PHOTO]' : '');
       }).join('\n')
     : '';
   var foundList = foundPins.length
@@ -4722,7 +4723,8 @@ async function searchMatchesFromCard(lostId) {
           + (r.desc    ? ' Desc:'    + r.desc    : '')
           + (r.finder  ? ' Finder:'  + r.finder  : '')
           + (r.phone   ? ' Phone:'   + r.phone   : '')
-          + (r.address ? ' Found near:' + r.address : '');
+          + (r.address ? ' Found near:' + r.address : '')
+          + ((r.photo || _photoCache[String(r.id)]) ? ' [HAS PHOTO]' : '');
       }).join('\n')
     : '';
 
@@ -4754,6 +4756,23 @@ async function searchMatchesFromCard(lostId) {
     var text = (data.content||[]).map(function(b){ return b.text||''; }).join('').trim();
     var matches = JSON.parse(text.replace(/```json|```/g,'').trim());
 
+    /* Sort: both records have photos > candidate has photo > confidence */
+    var _allCandidates = shelterAnimals.concat(foundPins);
+    var _candPhotoIds = {};
+    _allCandidates.forEach(function(r) {
+      if (r.photo || _photoCache[String(r.id)]) _candPhotoIds[String(r.id)] = true;
+    });
+    var _lostHasPhoto = !!(lost.photo || _photoCache[String(lost.id)]);
+    matches.sort(function(a, b) {
+      var aBoth = (_lostHasPhoto && _candPhotoIds[String(a.id)]) ? 2 : 0;
+      var bBoth = (_lostHasPhoto && _candPhotoIds[String(b.id)]) ? 2 : 0;
+      if (bBoth !== aBoth) return bBoth - aBoth;
+      var ap = _candPhotoIds[String(a.id)] ? 1 : 0;
+      var bp = _candPhotoIds[String(b.id)] ? 1 : 0;
+      if (bp !== ap) return bp - ap;
+      var conf = { high: 3, medium: 2, low: 1 };
+      return (conf[b.confidence] || 0) - (conf[a.confidence] || 0);
+    });
     if (!matches.length) {
       existingEl.innerHTML = '<div style="background:#f5f8ff;border-radius:8px;padding:10px 12px">'
         + '<div style="font-weight:600;color:var(--warm-dk);margin-bottom:4px">No close matches found right now</div>'
@@ -4781,8 +4800,9 @@ async function searchMatchesFromCard(lostId) {
           var aAction = aPhone
             ? '<a href="tel:' + aPhone + '" style="display:block;text-align:center;padding:7px;background:' + (isFoundPin ? 'var(--found-g)' : 'var(--forest)') + ';color:#fff;border-radius:7px;font-family:var(--font-display);font-size:.78rem;font-weight:700;text-decoration:none;margin-top:8px">📞 Contact ' + (isFoundPin ? 'Finder' : 'Heartland') + '</a>'
             : '';
-          var aImg   = a.photo
-            ? '<img src="' + a.photo + '" style="width:100%;height:120px;object-fit:contain;background:var(--cream-2);border-radius:6px;margin-bottom:8px">'
+          var _aPhoto = a.photo || _photoCache[String(a.id)] || null;
+          var aImg   = _aPhoto
+            ? '<img src="' + _aPhoto + '" style="width:100%;height:120px;object-fit:contain;background:var(--cream-2);border-radius:6px;margin-bottom:8px">'
             : '<div style="width:100%;height:60px;background:var(--cream-2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin-bottom:8px">' + (a.species==='Dog'?'🐕':a.species==='Cat'?'🐈':'🐾') + '</div>';
           return '<div style="background:' + (confBg[m.confidence]||'#f8f8f8') + ';border:1.5px solid ' + (confColor[m.confidence]||'#ccc') + ';border-radius:10px;padding:12px;margin-bottom:8px">'
             + aImg
