@@ -8077,8 +8077,15 @@ function daysUntilAdoptEligible(r) {
     var remaining = Math.ceil(10 - elapsed);
     return remaining > 0 ? remaining : 0;
   }
-  /* Other legal holds — must fully resolve before adoption */
-  if (r.intakeType === 'hold') return 0;
+  /* Standard hold: 5-day mandatory hold from shelterHoldStart */
+  if (r.intakeType === 'hold' && (r.holdType === 'standard' || !r.holdType)) {
+    var holdStart = r.shelterHoldStart || r.date;
+    var elapsed = daysSince(holdStart);
+    var remaining = Math.ceil(5 - elapsed);
+    return remaining > 0 ? remaining : 0;
+  }
+  /* Dangerous/court-order/other legal holds — blocked until staff explicitly resolves */
+  if (r.intakeType === 'hold') return 999;
   /* Standard stray hold */
   var required = HOLD_DAYS_BY_SOURCE[r.intakeSource] || 0;
   if (required === 0) return 0;
