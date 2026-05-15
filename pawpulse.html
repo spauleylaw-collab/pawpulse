@@ -72,7 +72,7 @@ if (USE_FIREBASE) {
 body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);height:100vh;overflow:hidden;user-select:none}
 
 /* NAV */
-#nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;gap:8px;padding:0 12px;height:var(--nav-h);background:var(--forest);box-shadow:0 2px 16px rgba(0,0,0,.3);border-bottom:2px solid rgba(122,172,130,.5);border-bottom:2px solid rgba(122,172,130,.5)}
+#nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;gap:8px;padding:0 12px;height:var(--nav-h);background:var(--forest);box-shadow:0 2px 16px rgba(0,0,0,.3);border-bottom:2px solid rgba(122,172,130,.5)}
 .nav-logo{font-family:var(--font-display);font-size:1.05rem;font-weight:700;color:var(--cream);letter-spacing:-.02em;display:flex;align-items:center;gap:5px;flex-shrink:0}
 .nav-logo-wrap{display:flex;flex-direction:column}
 .nav-logo-sub{font-family:var(--font-body);font-size:.56rem;font-weight:600;color:var(--moss);letter-spacing:.09em;text-transform:uppercase}
@@ -93,13 +93,13 @@ body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);h
 /* Staff badge hidden by default — only shown via JS after auth confirms */
 #staff-badge { display: none !important; }
 #staff-badge.staff-active { display: inline-flex !important; }
-/* #pp-banner removed — spotlight is the story layer *//* map-container banner-margin override removed */
-/* mobile #pp-banner override removed */
-/* .banner-dot removed */
-/* @keyframes bdot removed */
-/* #banner-txt removed */
-/* #banner-txt.fade removed */
-/* #banner-dot-reunion removed */
+
+
+
+
+
+
+
 /* Floating filter pills on map — horizontal row at bottom center */
 #map-filters{position:absolute;top:120px;left:10px;transform:none;z-index:600;display:flex;flex-direction:column;gap:5px;pointer-events:none;white-space:nowrap}
 #map-filters .filter-btn{pointer-events:auto}
@@ -123,20 +123,11 @@ body{font-family:var(--font-body);background:var(--cream);color:var(--warm-dk);h
 .mode-banner.admin{background:#fdf0e0;color:#7a4a10;border-bottom:1px solid #e8c890}
 .mode-banner-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 
-/* Map legend */
-/* legend CSS removed */
-/* legend CSS removed */
-/* legend-item removed */
-/* legend-pin removed */
-/* print-btn removed */
-.print-btn:hover{border-color:var(--amber);color:var(--amber)}
+/* Map legend (rules removed) */
 
 /* VIEW — position:fixed + inset, same as PublicPulse */
 #right-rail{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:990;background:rgba(42,62,42,.82);border-radius:12px;margin-right:4px;min-width:72px;box-shadow:-4px 0 20px rgba(0,0,0,.25)}
 #rail-fab{position:fixed;bottom:calc(80px + env(safe-area-inset-bottom,0px));right:12px;z-index:991;width:56px;height:56px;border-radius:50%;background:var(--amber);color:#fff;border:none;font-size:2rem;font-weight:300;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;touch-action:manipulation;transition:transform .15s}
-body:has(#view-reports.active) #rail-fab{display:none!important}
-body:has(#pin-card.open) #rail-fab{display:none!important}
-body:has(#pin-card.open) #right-rail{display:none!important}
 #rail-fab:hover{transform:scale(1.08)}
 .view{position:fixed;inset:var(--nav-h) 0 0 0;display:none}
 .view.active{display:flex}
@@ -197,7 +188,6 @@ textarea{min-height:64px}
 
 /* MAP OVERLAYS */
 #stats-bar{display:none}
-#map-filters{display:flex}
 .stat-pill{background:rgba(255,255,255,.92);backdrop-filter:blur(8px);padding:5px 12px;border-radius:999px;font-size:.73rem;font-weight:600;box-shadow:0 2px 10px rgba(0,0,0,.12);display:flex;align-items:center;gap:5px;border:1px solid var(--cream-3)}
 .stat-dot{width:8px;height:8px;border-radius:50%}
 .stat-dot.lost{background:var(--lost-r)}
@@ -215,7 +205,7 @@ textarea{min-height:64px}
 #pin-card.open{display:flex;flex-direction:column;animation:cpop .2s cubic-bezier(.34,1.56,.64,1)}
 #pin-card.fading{opacity:0;transform:translateY(-10px) scale(.97);pointer-events:none}
 @keyframes cpop{from{opacity:0;transform:scale(.9) translateY(6px)}to{opacity:1;transform:scale(1) translateY(0)}}
-.pc-close{position:absolute;top:6px;right:6px;background:rgba(42,31,18,.55);color:#fff;border:none;cursor:pointer;width:44px;height:44px;border-radius:50%;font-size:.95rem;line-height:44px;text-align:center;z-index:1900;display:flex;align-items:center;justify-content:center;touch-action:manipulation}
+.pc-close{position:absolute;top:6px;right:6px;background:rgba(42,31,18,.55);color:#fff;border:none;cursor:pointer;width:44px;height:44px;border-radius:50%;font-size:.95rem;line-height:44px;text-align:center;z-index:1;display:flex;align-items:center;justify-content:center;touch-action:manipulation}
 .pc-img{width:100%;height:190px;object-fit:contain;object-position:center center;display:block;background:var(--cream-2)}
 .pc-no-img{width:100%;height:62px;display:flex;align-items:center;justify-content:center;font-size:2rem}
 .pc-body{padding:11px 13px 13px}
@@ -467,7 +457,7 @@ textarea{min-height:64px}
 #rpt-detail-panel{flex:1;min-height:0;overflow-y:auto;padding:22px;background:var(--cream);display:none}
 #rpt-detail-panel::-webkit-scrollbar{width:3px}
 #rpt-detail-panel::-webkit-scrollbar-thumb{background:var(--cream-3);border-radius:99px}
-@media(max-width:640px){#side-panel{position:fixed!important;bottom:16px!important;top:auto!important;right:0!important;left:0!important;width:100%!important;max-width:100%!important;height:auto!important;max-height:80vh!important;border-radius:18px 18px 0 0!important;transform:translateY(calc(100% + 16px))!important;transition:transform .3s cubic-bezier(.34,1.2,.64,1)!important;overflow:hidden!important;display:flex!important;flex-direction:column!important}#side-panel.open{transform:translateY(0)!important}}@media(max-width:640px){#pin-card{position:fixed!important;bottom:18px!important;left:0!important;right:0!important;top:auto!important;width:100%!important;max-width:100%!important;max-height:72vh!important;border-radius:18px 18px 0 0!important;z-index:1800!important}#pin-card .pc-img{height:220px!important}#pin-card-body{overflow-y:auto;-webkit-overflow-scrolling:touch;max-height:calc(72vh - 60px)}#rpt-left{width:100%;flex:1;min-height:0}#rpt-row{flex-direction:column}#rpt-right{display:none}#rpt-right.show{display:flex;flex-direction:column;position:fixed;inset:var(--nav-h) 0 0 0;z-index:900;background:var(--cream);overflow:hidden}.mobile-back-btn{display:block!important}.desktop-close-btn{display:none!important}}@media(max-width:640px){.pc-close{top:calc(env(safe-area-inset-top,0px) + 10px)!important;right:calc(env(safe-area-inset-right,0px) + 10px)!important;width:48px!important;height:48px!important;z-index:1900!important}}
+@media(max-width:640px){#side-panel{position:fixed!important;bottom:16px!important;top:auto!important;right:0!important;left:0!important;width:100%!important;max-width:100%!important;height:auto!important;max-height:80vh!important;border-radius:18px 18px 0 0!important;transform:translateY(calc(100% + 16px))!important;transition:transform .3s cubic-bezier(.34,1.2,.64,1)!important;overflow:hidden!important;display:flex!important;flex-direction:column!important}#side-panel.open{transform:translateY(0)!important}}@media(max-width:640px){#pin-card{position:fixed!important;bottom:18px!important;left:0!important;right:0!important;top:auto!important;width:100%!important;max-width:100%!important;max-height:72vh!important;border-radius:18px 18px 0 0!important;z-index:1800!important}#pin-card .pc-img{height:220px!important}#pin-card-body{overflow-y:auto;-webkit-overflow-scrolling:touch;max-height:calc(72vh - 60px)}#rpt-left{width:100%;flex:1;min-height:0}#rpt-row{flex-direction:column}#rpt-right{display:none}#rpt-right.show{display:flex;flex-direction:column;position:fixed;inset:var(--nav-h) 0 0 0;z-index:900;background:var(--cream);overflow:hidden}.mobile-back-btn{display:block!important}.desktop-close-btn{display:none!important}}
 /* Adopt view */
 #view-adopt{background:var(--cream-2);flex-direction:column;overflow:hidden;max-width:100vw;box-sizing:border-box}
 #adopt-hdr{background:var(--cream);border-bottom:1px solid var(--cream-3);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
@@ -521,7 +511,7 @@ textarea{min-height:64px}
 #adopt-inquiry-inner{background:var(--cream);border-radius:18px 18px 0 0;width:100%;max-width:520px;max-height:85vh;overflow-y:auto;padding:22px 22px 32px;animation:slide-up .28s cubic-bezier(.34,1.56,.64,1)}
 
 /* ── SHELTER SPOTLIGHT ── */
-@media(max-width:640px){#shelter-spotlight{bottom:52px!important;right:auto!important;left:8px!important;width:min(165px,46vw)!important}#spotlight-name{font-size:.78rem!important}#spotlight-bio{font-size:.6rem!important;display:-webkit-box!important;-webkit-line-clamp:2!important;-webkit-box-orient:vertical!important;overflow:hidden!important}#shelter-spotlight [style*="height:130px"]{height:90px!important}#spotlight-cta{width:100%!important;box-sizing:border-box!important}}
+@media(max-width:640px){#shelter-spotlight{bottom:52px!important;right:auto!important;left:8px!important;width:min(150px,44vw)!important}#spotlight-name{font-size:.78rem!important}#spotlight-bio{font-size:.6rem!important}#shelter-spotlight [style*="height:130px"]{height:100px!important}}
 
 /* ── NEW PIN PULSE — briefly animates pins added after initial load ── */
 @keyframes pinPulse {
@@ -691,181 +681,20 @@ textarea{min-height:64px}
     padding-bottom:0!important;
   }
 }
-#landscape-toggle{display:none;position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:1200;background:var(--forest);color:#fff;border:none;border-radius:10px 0 0 10px;width:28px;height:56px;cursor:pointer;font-size:.9rem;align-items:center;justify-content:center;box-shadow:-2px 0 12px rgba(0,0,0,.25);touch-action:manipulation}
-@media(max-width:640px) and (orientation:landscape){#landscape-toggle{display:flex}}
-/* Issue 29: Phone landscape — compact productivity mode */
+/* Issue 29: Phone landscape */
 @media(max-height:500px) and (orientation:landscape){
-
-  /* ── GLOBAL ── */
-  :root{--nav-h:32px}
-  #nav{height:32px!important;padding:0 8px!important;gap:4px!important}
-  #top-nav{padding:1px 8px!important;min-height:32px!important}
-  /* In Care detail panel: push top down so tab row clears the nav bar */
-  .sh-col-right.mobile-show{inset:calc(var(--nav-h) + 8px) 0 0 0!important}
-  .sh-action-panel{padding-top:4px!important}
-  /* Password modal: keyboard pushes it low in landscape — shift up */
-  #change-pw-overlay > div{margin-top:4px!important;margin-bottom:4px!important;padding:14px!important;max-height:calc(100vh - 32px)!important;overflow-y:auto!important}
-  /* Staff badge: tighter to clear right safe-area */
-  #staff-badge{gap:2px!important;max-width:calc(50vw - env(safe-area-inset-right,0px) - 8px)!important}
-  #staff-name-badge{font-size:.56rem!important}
-  #staff-badge button{padding:2px 5px!important;font-size:.54rem!important;border-radius:4px!important}
-  .mode-banner{display:none!important}
+  :root{--nav-h:36px}
   #orientation-strip{display:none!important}
   #map-banner{display:none!important}
-  #pp-banner{top:36px!important}
-  .view.active{flex-direction:column!important}
-
-  /* ── NAV TOGGLE ── */
-  #right-rail{
-    display:flex!important;position:fixed!important;
-    top:calc(32px + 6px)!important;
-    right:calc(env(safe-area-inset-right,0px) + 4px)!important;
-    left:auto!important;transform:none!important;flex-direction:column!important;
-    background:rgba(42,62,42,.9)!important;border-radius:8px!important;
-    padding:3px!important;min-width:0!important;z-index:830!important
-  }
-  #nav-tabs{flex-direction:row!important;width:auto!important;gap:1px!important}
-  .tab-btn{font-size:.66rem!important;padding:6px 10px!important;gap:3px!important;border-bottom:none!important}
-  .tab-btn.tab-public{display:flex!important;flex-direction:column!important;width:auto!important;border-radius:5px!important;min-width:44px!important;justify-content:center!important;align-items:center!important}
-  .nav-mode-sep{display:none!important}
-  .tab-lbl{font-size:.5rem!important}
-
-  /* ── MAP FILTERS ── */
-  #map-filters{
-    top:calc(32px + 38px)!important;
-    right:calc(env(safe-area-inset-right,0px) + 58px)!important;
-    left:auto!important;flex-direction:column!important;flex-wrap:nowrap!important;
-    gap:2px!important;max-width:96px!important;padding:0!important;
-    background:transparent!important;box-shadow:none!important;z-index:820!important
-  }
-  .filter-btn{
-    font-size:.52rem!important;padding:2px 5px!important;line-height:1.2!important;
-    border-radius:999px!important;min-height:19px!important;
-    white-space:nowrap!important;text-align:center!important
-  }
-
-  /* ── FAB ── */
-  #rail-fab{
-    bottom:calc(env(safe-area-inset-bottom,0px) + 6px)!important;
-    left:calc(env(safe-area-inset-left,0px) + 6px)!important;
-    right:auto!important;width:38px!important;height:38px!important;font-size:1.3rem!important
-  }
-
-  /* ── LANDSCAPE CYCLE TOGGLE ── */
-  #landscape-toggle{
-    right:env(safe-area-inset-right,0px)!important;top:50%!important;
-    transform:translateY(-50%)!important;z-index:1210!important
-  }
-
-  /* ── MAP VIEW ── */
-  /* Spotlight: wider, photo + CTA fully visible, constrained between nav and FAB */
-  #shelter-spotlight{
-    top:calc(32px + 6px)!important;
-    bottom:calc(env(safe-area-inset-bottom,0px) + 48px)!important;
-    left:calc(env(safe-area-inset-left,0px) + 6px)!important;
-    right:auto!important;
-    width:130px!important;max-width:130px!important;
-    max-height:calc(100vh - 32px - 6px - env(safe-area-inset-bottom,0px) - 48px)!important;
-    z-index:680!important;overflow:hidden!important;border-radius:8px!important
-  }
-  /* Photo: visible, compact */
-  #shelter-spotlight [style*="height:75px"]{height:48px!important}
-  /* Body: tight padding, no min-height */
-  #shelter-spotlight [style*="min-height:90px"]{min-height:0!important;padding:4px 8px 6px!important}
-  /* Hide AI bio only — keep name + bio (clamped) + CTA */
-  #spotlight-ai-bio{display:none!important}
-  #spotlight-name{font-size:.62rem!important;margin-bottom:2px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
-  #spotlight-bio{font-size:.58rem!important;display:-webkit-box!important;-webkit-line-clamp:2!important;-webkit-box-orient:vertical!important;overflow:hidden!important;margin-bottom:4px!important}
-  #spotlight-cta{font-size:.58rem!important;padding:5px 7px!important;width:100%!important;box-sizing:border-box!important}
-  #pin-card{
-    max-height:62vh!important;
-    bottom:calc(env(safe-area-inset-bottom,0px) + 4px)!important;
-    left:calc(env(safe-area-inset-left,0px) + 4px)!important;
-    right:calc(env(safe-area-inset-right,0px) + 30px)!important;width:auto!important
-  }
-  #pin-card-body{max-height:calc(62vh - 42px)!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important}
-  #pin-card .pc-img{height:72px!important}
-  #pin-card .pc-no-img{height:30px!important}
-  .pc-body{padding:5px 9px 7px!important}
-  .pc-close{top:calc(env(safe-area-inset-top,0px) + 5px)!important;right:calc(env(safe-area-inset-right,0px) + 7px)!important;width:44px!important;height:44px!important;z-index:1900!important}
-  #side-panel{
-    max-height:90vh!important;
-    padding-left:env(safe-area-inset-left,0px)!important;
-    padding-right:env(safe-area-inset-right,0px)!important;
-    padding-bottom:env(safe-area-inset-bottom,0px)!important
-  }
-  .leaflet-bottom.leaflet-right{
-    bottom:calc(env(safe-area-inset-bottom,0px) + 6px)!important;
-    right:calc(env(safe-area-inset-right,0px) + 72px)!important
-  }
-  .leaflet-top.leaflet-left{
-    top:calc(32px + 5px)!important;
-    left:calc(env(safe-area-inset-left,0px) + 3px)!important
-  }
-  #pin-set-btn{bottom:calc(env(safe-area-inset-bottom,0px) + 46px)!important}
-
-  /* ── ADOPT ── */
-  #view-adopt{overflow:hidden!important;display:flex!important;flex-direction:column!important}
-  #adopt-legend{display:none!important}
-  #adopt-disclaimer{display:none!important}
-  #adopt-hdr-sub{display:none!important}
-  #adopt-hdr{padding:2px 8px!important;flex-shrink:0!important}
-  #adopt-hdr-title{font-size:.65rem!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
-  #adopt-search-row{padding:2px 7px!important;flex-wrap:nowrap!important;flex-shrink:0!important;gap:3px!important;padding-right:calc(env(safe-area-inset-right,0px) + 116px)!important}
-  #adopt-search{padding:2px 6px!important;font-size:.65rem!important}
-  #adopt-sort{padding:2px 4px!important;font-size:.62rem!important;max-width:26vw!important}
-  #adopt-chips-row{
-    padding:2px 7px 2px!important;flex-wrap:nowrap!important;flex-shrink:0!important;
-    overflow-x:auto!important;-webkit-overflow-scrolling:touch!important;gap:3px!important
-  }
-  #adopt-chips-row .rpt-chip{font-size:.57rem!important;padding:1px 6px!important;white-space:nowrap!important}
-  #adopt-body{
-    flex:1!important;min-height:0!important;
-    overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;
-    padding:6px 6px calc(env(safe-area-inset-bottom,0px) + 14px)!important
-  }
-  .adopt-grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))!important;gap:6px!important}
-
-  /* ── IN CARE ── */
-  #view-incare > div:nth-child(2){padding:2px 8px!important}
-  #incare-shelter-label{font-size:.64rem!important}
-  #view-incare > div:nth-child(2) > div:nth-child(2){display:none!important}
-  #incare-stats-bar{display:none!important}
-  body.ls-filters-open #incare-stats-bar{display:flex!important;margin-top:2px!important;gap:2px!important}
-  #incare-stats-bar > span{font-size:.52rem!important;padding:1px 4px!important}
-  #view-incare > div:nth-child(3){padding:2px 8px!important;gap:3px!important;flex-shrink:0!important}
-  #incare-search{padding:2px 7px 2px 24px!important;font-size:.66rem!important}
-  #_ls_filter_btn{
-    display:flex!important;align-items:center!important;
-    font-size:.56rem!important;padding:2px 7px!important;
-    border:1.5px solid var(--cream-3)!important;border-radius:999px!important;
-    background:#fff!important;cursor:pointer!important;
-    font-family:var(--font-body)!important;white-space:nowrap!important;
-    flex-shrink:0!important;touch-action:manipulation!important
-  }
-  #incare-filter-row{display:none!important}
-  body.ls-filters-open #incare-filter-row{
-    display:flex!important;padding:2px 8px!important;flex-wrap:nowrap!important;
-    overflow-x:auto!important;-webkit-overflow-scrolling:touch!important;gap:3px!important
-  }
-  #incare-filter-row .rpt-chip{font-size:.52rem!important;padding:1px 5px!important;white-space:nowrap!important}
-  #incare-legend{display:none!important}
-  #incare-list{
-    flex:1!important;min-height:0!important;overflow-y:auto!important;
-    -webkit-overflow-scrolling:touch!important;
-    padding:5px 7px calc(env(safe-area-inset-bottom,0px) + 14px)!important
-  }
-
-  /* ── REPORTS ── */
-  #rpt-left{
-    width:185px!important;flex-shrink:0!important;
-    overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;
-    padding-left:calc(env(safe-area-inset-left,0px) + 2px)!important
-  }
-  #rpt-left > *:first-child{padding:3px 7px!important;font-size:.62rem!important}
-  .rpt-type-item{padding:4px 9px!important;font-size:.65rem!important}
-  #rpt-right{padding-right:30px!important}
-  #rpt-right > div:first-child{padding:3px 8px!important;font-size:.62rem!important}
+  #top-nav{padding:2px 10px!important;min-height:36px!important}
+  #right-rail{display:none!important}
+  #rail-fab{bottom:8px!important;right:8px!important}
+  #pp-banner{top:40px!important}
+  #shelter-spotlight{bottom:8px!important}
+  #side-panel{max-height:96vh!important}
+  #pin-card{max-height:85vh!important;bottom:4px!important}
+  #pin-set-btn{bottom:50px!important}
+  .leaflet-bottom.leaflet-right{bottom:50px!important;right:8px!important}
 }
 </style>
 <script type="application/ld+json">
@@ -995,7 +824,7 @@ textarea{min-height:64px}
   title="Report a pet / Log intake">+</button>
 
 <!-- Orientation strip -->
-<div id="orientation-strip" style="display:none;position:fixed;top:var(--nav-h);left:0;right:0;z-index:999;background:rgba(30,55,38,.97);border-bottom:1px solid rgba(122,172,130,.25);border-bottom:1px solid rgba(122,172,130,.3);color:rgba(255,255,255,.78);text-align:center;font-size:.8rem;font-family:var(--font-body);padding:4px 14px;letter-spacing:.01em;pointer-events:none"><div style="font-size:.78rem;font-weight:600;color:rgba(255,255,255,.95);margin-bottom:1px">See lost pets, found pets, and adoptable pets — all in real time.</div><div style="font-size:.68rem;color:rgba(255,255,255,.75)">Tap a pin to help, or tap <strong style="font-weight:700">+</strong> to post a report. <span style="opacity:.7;font-style:italic">You might reunite a pet today.</span></div></div>
+<div id="orientation-strip" style="display:none;position:fixed;top:var(--nav-h);left:0;right:0;z-index:999;background:rgba(30,55,38,.97);border-bottom:1px solid rgba(122,172,130,.25);border-bottom:1px solid rgba(122,172,130,.3);color:rgba(255,255,255,.78);text-align:center;font-size:.8rem;font-family:var(--font-body);padding:4px 14px;letter-spacing:.01em;pointer-events:none"><div style="font-size:.78rem;font-weight:600;color:rgba(255,255,255,.95);margin-bottom:1px">See lost pets, found animals, and pets in care — all in real time.</div><div style="font-size:.68rem;color:rgba(255,255,255,.75)">Tap a pin to help, or tap <strong style="font-weight:700">+</strong> to post a report. <span style="opacity:.7;font-style:italic">You might reunite a pet today.</span></div></div>
 
 <!-- ADOPT VIEW -->
 <div id="view-adopt" class="view">
@@ -1278,7 +1107,6 @@ textarea{min-height:64px}
       ✅ Pin placed — tap to continue →
     </div>
 
-    <button id="landscape-toggle" onclick="(function(){var btns=Array.from(document.querySelectorAll('#nav-tabs .tab-btn')).filter(function(b){return getComputedStyle(b).display!=='none';});var cur=btns.findIndex(function(b){return b.classList.contains('active');});var next=btns[(cur+1)%btns.length];if(next)next.click();})();" title="Switch view">&#8644;</button>
     <div id="pin-card">
       <button class="pc-close" onclick="closeCard()">✕</button>
       <div id="pin-card-body" style="overflow-y:auto;max-height:calc(80vh - 40px);-webkit-overflow-scrolling:touch"></div>
@@ -1299,15 +1127,12 @@ textarea{min-height:64px}
         <!-- LOST FORM -->
         <div id="form-lost">
           <div class="sl">🖼️ Photo <span style="font-size:.72rem;font-weight:400;color:var(--warm-mid)">— upload first to auto-fill fields with AI</span></div>
-          <div style="display:flex;gap:8px;margin-bottom:8px">
-            <button type="button" onclick="document.getElementById('l-photo-cam').click()" style="flex:1;padding:11px 6px;border:2px dashed var(--cream-3);border-radius:8px;background:#fff;cursor:pointer;font-family:var(--font-body);font-size:.78rem;font-weight:600;color:var(--warm-mid);display:flex;flex-direction:column;align-items:center;gap:4px;touch-action:manipulation">📷<span>Take Photo</span></button>
-            <button type="button" onclick="document.getElementById('l-photo-lib').click()" style="flex:1;padding:11px 6px;border:2px dashed var(--cream-3);border-radius:8px;background:#fff;cursor:pointer;font-family:var(--font-body);font-size:.78rem;font-weight:600;color:var(--warm-mid);display:flex;flex-direction:column;align-items:center;gap:4px;touch-action:manipulation">🖼️<span>Upload Photo</span></button>
+          <div class="photo-drop">
+            <input type="file" id="l-photo" accept="image/*" capture="environment" onchange="previewPhoto(this,'l-prev','l-dicon','l-dtxt');showAIBtn('l')">
+            <div class="photo-drop-icon" id="l-dicon">📷</div>
+            <div class="photo-drop-txt"  id="l-dtxt">Tap to upload a photo</div>
+            <img id="l-prev" class="photo-prev" alt="preview">
           </div>
-          <input type="file" id="l-photo-cam" accept="image/*" capture="environment" style="display:none" onchange="previewPhoto(this,'l-prev','l-dicon','l-dtxt');showAIBtn('l')">
-          <input type="file" id="l-photo-lib" accept="image/*" style="display:none" onchange="previewPhoto(this,'l-prev','l-dicon','l-dtxt');showAIBtn('l')">
-          <div id="l-dicon" style="display:none"></div>
-          <div id="l-dtxt" style="display:none"></div>
-          <img id="l-prev" class="photo-prev" alt="preview">
           <div id="l-ai-wrap" style="display:none;margin-top:8px">
             <button class="ai-id-btn" id="l-ai-btn" onclick="applyAIIdentify('l')">✨ Identify breed &amp; color with AI</button>
             <div class="ai-id-result" id="l-ai-result"></div>
@@ -1348,15 +1173,12 @@ textarea{min-height:64px}
         <!-- FOUND FORM -->
         <div id="form-found" style="display:none">
           <div class="sl">🖼️ Photo <span style="font-size:.72rem;font-weight:400;color:var(--warm-mid)">— upload first to auto-fill fields with AI</span></div>
-          <div style="display:flex;gap:8px;margin-bottom:8px">
-            <button type="button" onclick="document.getElementById('f-photo-cam').click()" style="flex:1;padding:11px 6px;border:2px dashed var(--cream-3);border-radius:8px;background:#fff;cursor:pointer;font-family:var(--font-body);font-size:.78rem;font-weight:600;color:var(--warm-mid);display:flex;flex-direction:column;align-items:center;gap:4px;touch-action:manipulation">📷<span>Take Photo</span></button>
-            <button type="button" onclick="document.getElementById('f-photo-lib').click()" style="flex:1;padding:11px 6px;border:2px dashed var(--cream-3);border-radius:8px;background:#fff;cursor:pointer;font-family:var(--font-body);font-size:.78rem;font-weight:600;color:var(--warm-mid);display:flex;flex-direction:column;align-items:center;gap:4px;touch-action:manipulation">🖼️<span>Upload Photo</span></button>
+          <div class="photo-drop">
+            <input type="file" id="f-photo" accept="image/*" capture="environment" onchange="previewPhoto(this,'f-prev','f-dicon','f-dtxt')">
+            <div class="photo-drop-icon" id="f-dicon">📷</div>
+            <div class="photo-drop-txt"  id="f-dtxt">Tap to upload a photo</div>
+            <img id="f-prev" class="photo-prev" alt="preview">
           </div>
-          <input type="file" id="f-photo-cam" accept="image/*" capture="environment" style="display:none" onchange="previewPhoto(this,'f-prev','f-dicon','f-dtxt')">
-          <input type="file" id="f-photo-lib" accept="image/*" style="display:none" onchange="previewPhoto(this,'f-prev','f-dicon','f-dtxt')">
-          <div id="f-dicon" style="display:none"></div>
-          <div id="f-dtxt" style="display:none"></div>
-          <img id="f-prev" class="photo-prev" alt="preview">
           <div id="f-ai-wrap" style="display:none;margin-top:8px">
             <button class="ai-id-btn" id="f-ai-btn" onclick="applyAIIdentify('f')">✨ Identify breed &amp; color with AI</button>
             <div class="ai-id-result" id="f-ai-result"></div>
@@ -1441,9 +1263,13 @@ document.addEventListener("DOMContentLoaded", function() {
 })();
 
 /* Map init — synchronous. Script tag is at bottom of body so #map div exists. */
-window.PAWPULSE_BUILD = 'pawpulse';
+window.PAWPULSE_BUILD = 'map-baseline-2026-04-29-01';
 console.log('[PAWPULSE BUILD]', window.PAWPULSE_BUILD);
-
+document.addEventListener('DOMContentLoaded', function(){
+  document.body.insertAdjacentHTML('beforeend',
+    '<div id="build-stamp" style="position:fixed;bottom:10px;right:10px;background:#000;color:#fff;padding:6px 10px;font-size:12px;z-index:9999;border-radius:4px">map-baseline-2026-04-29-01</div>');
+  setTimeout(function(){ var el=document.getElementById('build-stamp'); if(el)el.remove(); }, 8000);
+});
 var _mapReady = !!window._leafletMapInstance;
 var map;
 try {
@@ -1487,26 +1313,7 @@ var _submissionCount = 0;  /* resets on page reload */
 var SUBMIT_COOLDOWN_MS = 1 * 60 * 1000;  /* 1 min between submissions (keep short for usability) */
 var SUBMIT_SESSION_MAX = 3;  /* max per session */
 var tmpMarker = null;
-var DEV_MODE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
-var BOOT_OVERLAY_DISMISSED = false;
-if (!DEV_MODE) {
-  (function() {
-    var nuke = function() {
-      ['_ppd','_ppd2'].forEach(function(id) {
-        var el = document.getElementById(id); if (el) el.remove();
-      });
-    };
-    nuke();
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', nuke);
-    }
-  })();
-}
-var _fbReady        = false;
-var _fsAttachPending = false;
-var _fsAttachTime    = 0;
-var _fsAttachAttempts = 0;
-var _fsUnsub         = null;
+var _fbReady  = false; /* true once Firestore listener is live */
 var _isStaff  = false;
 
 /* ── SAVE / LOAD ──────────────────────────────────────────────────────── */
@@ -1612,13 +1419,11 @@ function refreshMapPins(reason) {
   });
   _mapReady = true;
   try { if (map && map.invalidateSize) map.invalidateSize(true); } catch(e) {}
-  /* No pre-wipe: renderMarkers() uses oldMarkers-swap */
+  lMarkers.forEach(function(m){ try { map.removeLayer(m); } catch(e){} });
+  lMarkers = [];
   renderMarkers();
-  if (lMarkers.length > 0) {
-    _dismissOverlay();
-    dismissBootOverlay('pins-rendered');
-  }
-  _ppDiag(reason);
+  /* Hide loading overlay once pins are on the map */
+  if (lMarkers.length > 0) _dismissOverlay();
 }
 
 var _initialRenderDone = false;
@@ -1654,21 +1459,17 @@ function tryInitialRender(reason) {
 }
 
 function startFirestoreListener() {
-  if (window._firestoreListenerActive) return;
-  if (_fsAttachPending) return;
-  if (!db && typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length) {
-    try { db = firebase.firestore(); } catch(ex) {}
-  }
+  if (window._firestoreListenerActive) return; /* already running */
   setTimeout(_dismissOverlay, 2000);
-  if (!db) { console.warn('[PAWPULSE] db unavailable'); return; }
+  if (!db) {
+    console.warn('Firestore unavailable — using localStorage');
+    _fbReady = true;
+    showShelterPicker();
+    return;
+  }
   try {
-    _fsAttachPending = true;
-    _fsAttachTime = Date.now();
-    _fsAttachAttempts++;
-    _ppDiag('attach-' + _fsAttachAttempts);
-    _fsUnsub = db.collection('reports').onSnapshot(function(snapshot) {
-      _fsAttachPending = false;
-      window._firestoreListenerActive = true;
+    db.collection('reports').onSnapshot(function(snapshot) {
+      window._firestoreListenerActive = true; /* confirmed receiving */
       console.log('[FIRESTORE SNAPSHOT]', { size: snapshot.size, changes: snapshot.docChanges().length });
       if (window._pauseFirestoreSync) {
         /* Demo load or major write in progress — skip listener */
@@ -1708,7 +1509,10 @@ function startFirestoreListener() {
         _recordsReady = true;
         tryInitialRender('first-firestore-ready');
         _bootAppDone = false;
+        lMarkers.forEach(function(m){ try { map.removeLayer(m); } catch(e){} });
+        lMarkers = [];
         showShelterPicker();
+        refreshMapPins('first-firestore-load');
         setTimeout(function(){ refreshMapPins('first-firestore-500'); }, 500);
         setTimeout(function(){ refreshMapPins('first-firestore-1500'); }, 1500);
         _dismissOverlay();
@@ -1765,15 +1569,14 @@ function startFirestoreListener() {
         updateNavCounts();
       }
     }, function(err) {
-      console.warn('[PAWPULSE] listener error:', err);
-      _fsAttachPending = false;
-      if (_fsUnsub) { try { _fsUnsub(); } catch(ex){} _fsUnsub = null; }
-      _ppDiag('listener-err');
+      console.warn('Firestore listener error:', err);
+      _fbReady = true;
+      showShelterPicker();
     });
   } catch(e) {
-    console.warn('[PAWPULSE] Firestore init error:', e.message);
-    _fsAttachPending = false;
-    if (_fsUnsub) { try { _fsUnsub(); } catch(ex){} _fsUnsub = null; }
+    console.warn('Firestore init error:', e.message);
+    _fbReady = true;
+    showShelterPicker();
   }
 }
 
@@ -2064,48 +1867,11 @@ function doGuestView() {
   setTimeout(_dismissOverlay, 300);
   /* Firestore listener started by Firebase auth callback.
      Safety: if auth is slow or fails, start listener directly after 1.5s */
-  var STALL_MS = 10000;
-  (function scheduleRetry(delay) {
-    setTimeout(function() {
-      if (window._firestoreListenerActive) return;
-      if (!USE_FIREBASE) return;
-      if (!db && typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length) {
-        try { db = firebase.firestore(); } catch(ex) {}
-      }
-      if (!db) { scheduleRetry(Math.min(delay * 1.6, 15000)); return; }
-      if (_fsAttachPending && _fsAttachTime > 0 && (Date.now()-_fsAttachTime) > STALL_MS) {
-        console.warn('[PAWPULSE] stalled reset');
-        _fsAttachPending = false; _fsAttachTime = 0;
-        if (_fsUnsub) { try { _fsUnsub(); } catch(ex){} _fsUnsub = null; }
-        _ppDiag('stall-reset');
-      }
-      if (!_fsAttachPending) { startFirestoreListener(); }
-      scheduleRetry(Math.min(delay * 1.6, 15000));
-    }, delay);
-  })(1500);
-  [5000, 10000, 18000].forEach(function(stallAt) {
-    setTimeout(function() {
-      if (window._firestoreListenerActive) return;
-      if (!_fsAttachPending) return;
-      console.warn('[PAWPULSE] early stall at ' + (stallAt/1000) + 's');
-      _fsAttachPending = false; _fsAttachTime = 0;
-      if (_fsUnsub) { try { _fsUnsub(); } catch(ex){} _fsUnsub = null; }
-      _ppDiag('early-stall-' + (stallAt/1000) + 's');
+  setTimeout(function() {
+    if (!window._firestoreListenerActive && USE_FIREBASE && db) {
       startFirestoreListener();
-    }, stallAt);
-  });
-  [3000, 6000, 12000, 25000].forEach(function(ms) {
-    setTimeout(function() {
-      if (Array.isArray(reports) && reports.length > 0 &&
-          Array.isArray(lMarkers) && lMarkers.length === 0) {
-        console.warn('[PAWPULSE WATCHDOG] ' + ms + 'ms');
-        _mapReady = true; _recordsReady = true;
-        try { map.invalidateSize(true); } catch(e) {}
-        renderMarkers();
-        _ppDiag('watchdog-' + ms);
-      }
-    }, ms);
-  });
+    }
+  }, 1500);
 }
 
 function doSignOut() {
@@ -2276,7 +2042,7 @@ function bootApp() {
   /* Pre-set shelter filter */
   var sel = document.getElementById('rpt-filter-shelter');
   if (sel && activeShelter) sel.value = activeShelter;
-  if (reports.length > 0) { _recordsReady = true; }
+  _recordsReady = true;
   tryInitialRender('boot-records-ready');
   refreshMapPins('bootApp');
   initSpotlight();
@@ -2684,17 +2450,17 @@ function submitIntakeFromModal() {
     window._migrateFromId = null;
   }
 
-  window._pauseFirestoreSync = true;
   reports.push(r); save();
-  /* Write through doctrine pipeline */
+  /* Write through doctrine pipeline — wrapped to prevent undefined-field Firebase error from freezing modal */
   try {
     if (USE_FIREBASE && _fbReady && db && _isStaff) {
+      window._pauseFirestoreSync = true;
       writeAnimalRecord(r, 'staff');
+      setTimeout(function(){ window._pauseFirestoreSync = false; }, 5000);
     }
   } catch(e) {
     console.warn('Intake write error (local save succeeded):', e.message);
   }
-  setTimeout(function(){ window._pauseFirestoreSync = false; }, 5000);
   /* Close modal FIRST so phone UI doesn't freeze while rendering */
   closeIntakeModal();
   /* Stagger heavy renders: markers first (fast), then incare grid (heavy) */
@@ -2703,7 +2469,6 @@ function submitIntakeFromModal() {
     renderIncareView();
     pushBannerEvent((isHold?'⚠️ Animal on hold logged at ':'🐾 New animal received at ') + activeShelter, isHold?'#d4843a':'var(--found-g)');
     if (!isHold) setTimeout(function(){ autoMatchOnIntake(r); }, 800);
-    setTimeout(function(){ checkFoundPinsOnIntake(r); }, 1200);
     window._migrateFromId = null;
   }, 300);
 }
@@ -3165,11 +2930,6 @@ function saveAnimalEdit(id) {
   r.about = ((document.getElementById('ae-about')||{}).value||'').trim();
 
   save(); renderMarkers(); renderIncareView(); renderAdoptView(); updateNavCounts();
-  /* Re-open shelter panel if it was showing this animal — refreshes days-in-care display */
-  if (window._openShelterAnimalId === id) {
-    var _reo = reports.find(function(x){ return x.id === id; });
-    if (_reo) setTimeout(function(){ openShelterAnimal(_reo); }, 80);
-  }
   closeAnimalEdit();
   /* Write to Firestore — pause listener long enough for write to confirm */
   if (USE_FIREBASE && _fbReady && db && _isStaff) {
@@ -4418,7 +4178,7 @@ function cardHTML(r) {
   /* Contact actions — call/text only for lost animals with a phone number */
   var contact = '';
   var actionBtns = '';
-  /* AI match button — on lost cards only; found cards use auto-background matching */
+  /* AI match button — on lost cards so owner can search shelter intakes */
   var matchBtn = '';
   if (lost && !reunited) {
     matchBtn = '<button onclick="searchMatchesFromCard(' + r.id + ')" style="width:100%;margin:8px 0 4px;padding:9px;font-family:var(--font-display);font-size:.82rem;font-weight:700;border:none;border-radius:8px;cursor:pointer;background:#f0f4ff;color:#2050a0;border:1.5px solid #a0baf0">🔍 Search Heartland &amp; Found Pins</button>';
@@ -4427,9 +4187,8 @@ function cardHTML(r) {
       matchBtn += '<div style="font-size:.68rem;color:var(--amber);text-align:center;margin-bottom:4px">⚠️ Missing ' + Math.floor(daysSince(r.date)) + ' days — no longer shown after 30 days</div>';
     }
   }
-  /* Found cards: no manual button — matching runs automatically on submit */
   if (lost && r.owner && r.intakeType !== 'hold') {
-    contact = '';
+    contact = '<div class="pc-contact">📞 ' + esc(r.owner) + (r.phone ? ' · ' + esc(r.phone) : '') + '</div>';
     if (r.phone && !reunited) {
       var tel = r.phone.replace(/[^0-9+]/g, '');
       actionBtns = '<div style="display:flex;gap:7px;margin:8px 0 4px">'
@@ -4438,7 +4197,7 @@ function cardHTML(r) {
         + '</div>';
     }
   } else if (!lost && r.finder && r.intakeType !== 'hold') {
-    contact = '<div class="pc-contact">📞 Contact Finder</div>';
+    contact = '<div class="pc-contact">📞 ' + esc(r.finder) + (r.fphone ? ' · ' + esc(r.fphone) : '') + '</div>';
   } else if (r.shelter && r.shelterName) {
     contact = '<div class="pc-contact">📞 Contact ' + esc(r.shelterName) + '</div>';
   }
@@ -4664,18 +4423,10 @@ async function generateWhatNext(r) {
   var lost        = r.type === 'lost';
   var found       = r.type === 'found' && !r.shelter; /* public found report — posted by citizen */
 
-  /* Lost public pin — static text, no AI needed */
-  if (lost) {
-    bodyEl.textContent = "We’ll continue comparing this report against found pet reports in the area. Keep this pin active and update it if new information becomes available. If your pet is found at Heartland Pet Connection, staff will check active lost reports and contact you.";
-    bodyEl.style.color = 'var(--warm-dk)';
-    bodyEl.style.fontStyle = 'normal';
-    return;
-  }
-
   /* Found public pin — always the same process, no AI needed */
   if (found) {
     var sp = (r.species || 'animal').toLowerCase();
-    bodyEl.textContent = 'Thanks for helping. Please keep the pet safe if you can. PawPulse will compare this found report with lost pet reports. If a possible match appears, contact the owner directly. Keep this pin active until the pet is safely reunited, then tap Mark Reunited.';
+    bodyEl.textContent = 'If this is your missing ' + sp + ', contact the finder directly or visit Heartland Pet Connection at 1807 W J St, Hastings — (402) 462-7387. Staff can check if a lost report matches this description.<br><br><em style="font-size:.72rem;color:var(--warm-mid)">📍 Pin stays on the map until reunited or confirmed at a shelter.</em>';
     bodyEl.style.color = 'var(--warm-dk)';
     bodyEl.style.fontStyle = 'normal';
     return;
@@ -4753,10 +4504,8 @@ async function generateWhatNext(r) {
   } catch(e) {
     console.error('What Happens Next error:', e.message);
     if (bodyEl) {
-      bodyEl.textContent = lost
-        ? 'We’ll continue comparing this report against found pet reports in the area. Keep this pin active and update it if new information becomes available.'
-        : 'PawPulse will compare this report with active lost pet reports. If a match is found, you’ll see contact options on the pin. Keep this report active until the pet is safely reunited.';
-      bodyEl.style.fontStyle = 'normal';
+      bodyEl.textContent = 'Unable to generate at this time.';
+      bodyEl.style.fontStyle = 'italic';
       bodyEl.style.color = 'var(--warm-mid)';
       bodyEl.style.display = 'block';
     }
@@ -5276,49 +5025,6 @@ function rotateBanner() {
 setInterval(rotateBanner, 5000);
 setTimeout(rotateBanner, 1500);
 
-/* Orientation change — invalidate map size */
-window.addEventListener('orientationchange', function() {
-  setTimeout(function() { try { map.invalidateSize(true); } catch(e) {} }, 300);
-  setTimeout(function() { try { map.invalidateSize(true); } catch(e) {} }, 700);
-});
-window.addEventListener('resize', function() {
-  clearTimeout(window._resizeInvalidate);
-  window._resizeInvalidate = setTimeout(function() {
-    try { map.invalidateSize(true); } catch(e) {}
-  }, 250);
-});
-
-/* Landscape compact mode — collapsible filter toggle for In Care */
-(function() {
-  function isLandscape() { return window.innerHeight < 500 && window.innerWidth > window.innerHeight; }
-  function initBtn() {
-    if (document.getElementById('_ls_filter_btn')) return;
-    var row = document.querySelector('#view-incare > div:nth-child(3)');
-    if (!row) return;
-    var btn = document.createElement('button');
-    btn.id = '_ls_filter_btn';
-    btn.type = 'button';
-    btn.textContent = 'Filters \u25be';
-    btn.onclick = function() {
-      var open = document.body.classList.toggle('ls-filters-open');
-      btn.textContent = open ? 'Filters \u25b4' : 'Filters \u25be';
-    };
-    row.insertBefore(btn, row.firstChild);
-  }
-  function update() {
-    var btn = document.getElementById('_ls_filter_btn');
-    if (!btn) { initBtn(); btn = document.getElementById('_ls_filter_btn'); }
-    if (!btn) return;
-    if (!isLandscape()) {
-      document.body.classList.remove('ls-filters-open');
-      btn.textContent = 'Filters \u25be';
-    }
-  }
-  document.addEventListener('DOMContentLoaded', initBtn);
-  window.addEventListener('orientationchange', function(){ setTimeout(update, 350); });
-  window.addEventListener('resize', function(){ setTimeout(update, 150); });
-})();
-
 function dismissInquiry(id) {
   if (!confirm("Did you contact this inquirer?")) return;
   var r = reports.find(function(x){ return String(x.id)===String(id); });
@@ -5414,43 +5120,6 @@ function isPublicVisible(r) {
   /* Lost pins auto-archive after 30 days with no status change */
   if (r.type === 'lost' && !r.reunited && daysSince(r.date) >= 30) return false;
   return true;
-}
-
-function dismissBootOverlay(reason) {
-  if (BOOT_OVERLAY_DISMISSED) return;
-  BOOT_OVERLAY_DISMISSED = true;
-  var el = document.getElementById('_ppd'); if (el) el.remove();
-}
-function _ppDiag(reason) {
-  if (!DEV_MODE) return;
-  if (BOOT_OVERLAY_DISMISSED) return;
-  try {
-    var box = document.getElementById('_ppd');
-    if (!box) {
-      box = document.createElement('div');
-      box.id = '_ppd';
-      box.style.cssText = 'position:fixed;bottom:80px;left:8px;z-index:99999;'
-        + 'background:rgba(0,0,0,.88);color:#0f0;font:10px/1.45 monospace;'
-        + 'padding:7px 9px;border-radius:7px;max-width:230px;pointer-events:none;'
-        + 'white-space:pre-wrap;box-shadow:0 2px 12px rgba(0,0,0,.6);';
-      document.body.appendChild(box);
-      setTimeout(function(){ if(box.parentNode) box.parentNode.removeChild(box); }, 45000);
-    }
-    var pubElig = Array.isArray(reports) ? reports.filter(function(r){
-      return !r.shelter && !r.reunited && r.lat && r.lng && isPublicVisible(r);
-    }).length : '?';
-    var inCareN = typeof getShelterData === 'function' ? getShelterData({ includeHolds: true }).length : '?';
-    var stallS = (_fsAttachPending && _fsAttachTime) ? Math.round((Date.now()-_fsAttachTime)/1000)+'s' : '-';
-    box.textContent =
-      '[' + (reason||'').slice(0,16) + ']\n'
-      + 'reports:' + (Array.isArray(reports)?reports.length:'?') + '\n'
-      + 'pubPins:' + pubElig + ' incare:' + inCareN + '\n'
-      + 'lM:' + (Array.isArray(lMarkers)?lMarkers.length:'?') + '\n'
-      + 'mapRdy:' + _mapReady + ' recRdy:' + _recordsReady + '\n'
-      + 'fbRdy:' + _fbReady + ' FSact:' + !!window._firestoreListenerActive + '\n'
-      + 'pending:' + _fsAttachPending + ' att:' + _fsAttachAttempts + '\n'
-      + 'stallAge:' + stallS + ' initDone:' + _initialRenderDone;
-  } catch(e) {}
 }
 
 var _renderMarkersDebounce = null;
@@ -6419,123 +6088,6 @@ function submitFound() {
     renderIncareView();
   }, 1000);
   setTimeout(function(){ window._pauseFirestoreSync = false; }, 6000);
-  /* Auto background match: compare new found pin against active lost pins */
-  setTimeout(function(){ autoMatchFoundReport(r); }, 2000);
-}
-
-/* Phone masking for public display — keeps number functional but hides middle digits */
-function maskPhone(phone) {
-  if (!phone) return '';
-  var digits = phone.replace(/[^0-9]/g, '');
-  if (digits.length < 7) return phone; /* too short to mask safely */
-  /* Show area code + first digit + *** + last 4: 402-***-8822 */
-  var area = digits.slice(0, 3);
-  var last4 = digits.slice(-4);
-  return area + '-***-' + last4;
-}
-
-/* Background lost-pin matching triggered automatically on found report submit */
-async function autoMatchFoundReport(foundRecord) {
-  var lostPins = reports.filter(function(x) {
-    return x.type === 'lost' && !x.reunited && !x.shelter;
-  });
-  if (!lostPins.length) return;
-  /* Quick species pre-filter — skip if clearly incompatible */
-  var candidates = foundRecord.species
-    ? lostPins.filter(function(x) { return !x.species || x.species.toLowerCase() === foundRecord.species.toLowerCase(); })
-    : lostPins;
-  if (!candidates.length) return;
-
-  var foundDesc = [
-    foundRecord.species && 'Species: ' + foundRecord.species,
-    foundRecord.color   && 'Color: '   + foundRecord.color,
-    foundRecord.desc    && 'Description: ' + foundRecord.desc,
-    foundRecord.address && 'Found near: ' + foundRecord.address
-  ].filter(Boolean).join('. ');
-
-  var lostList = candidates.map(function(r, i) {
-    return (i+1) + '. ID:' + r.id
-      + (r.name    ? ' Name:'    + r.name    : '')
-      + (r.species ? ' Species:' + r.species : '')
-      + (r.breed   ? ' Breed:'   + r.breed   : '')
-      + (r.color   ? ' Color:'   + r.color   : '')
-      + (r.desc    ? ' Desc:'    + r.desc    : '')
-      + (r.address ? ' Last seen near:' + r.address : '');
-  }).join('\n');
-
-  try {
-    var resp = await fetch('/api/anthropic', {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:400,
-        messages:[{role:'user',content:
-          'A finder just submitted this found pet report:\n' + foundDesc +
-          '\n\nActive lost pet reports:\n' + lostList +
-          '\n\nReturn ONLY valid JSON array of HIGH or MEDIUM confidence matches: ' +
-          '[{id,confidence,reason}]. Only include matches that are genuinely likely. ' +
-          'Empty array [] if none. No low-confidence guesses.'}]
-      })
-    });
-    var data = await resp.json();
-    if (data.error) return;
-    var text = (data.content||[]).map(function(b){return b.text||'';}).join('').trim();
-    var matches = JSON.parse(text.replace(/```json|```/g,'').trim());
-    if (!matches || !matches.length) return;
-    /* Show match popup */
-    _showFoundMatchPopup(matches, candidates, foundRecord);
-  } catch(e) { console.warn('autoMatchFoundReport error:', e.message); }
-}
-
-function _showFoundMatchPopup(matches, candidates, foundRecord) {
-  ['_fmp','_fmp-bd'].forEach(function(id){var el=document.getElementById(id);if(el)el.remove();});
-  var bd = document.createElement('div');
-  bd.id = '_fmp-bd';
-  bd.style.cssText = 'position:fixed;inset:0;z-index:5100;background:rgba(0,0,0,.5)';
-  var panel = document.createElement('div');
-  panel.id = '_fmp';
-  panel.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:5101;'
-    + 'background:var(--cream);border-radius:18px 18px 0 0;'
-    + 'box-shadow:0 -8px 40px rgba(0,0,0,.3);max-height:85vh;'
-    + 'display:flex;flex-direction:column;overflow:hidden;'
-    + 'transform:translateY(100%);transition:transform .3s cubic-bezier(.34,1.2,.64,1)';
-  var dismiss = "var p=document.getElementById('_fmp');var b=document.getElementById('_fmp-bd');if(p)p.remove();if(b)b.remove();";
-  var confColor = {high:'var(--found-g)',medium:'var(--amber)'};
-  var confBg    = {high:'#e8f4e9',medium:'#fffbf0'};
-  var cards = matches.map(function(m) {
-    var r = candidates.find(function(x){return String(x.id)===String(m.id);});
-    if (!r) return '';
-    var tel = (r.phone||'').replace(/[^0-9+]/g,'');
-    var photoHTML = r.photo
-      ? '<img src="' + r.photo + '" style="width:100%;height:80px;object-fit:contain;background:var(--cream-2);border-radius:7px;margin-bottom:7px;display:block">'
-      : '<div style="width:100%;height:44px;background:var(--cream-2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:7px">'+(r.species==='Dog'?'&#x1F415;':r.species==='Cat'?'&#x1F408;':'&#x1F43E;')+'</div>';
-    var contactHTML = tel
-      ? '<div style="display:flex;gap:6px;margin-top:8px">'
-        + '<a href="tel:' + tel + '" style="flex:1;padding:8px;text-align:center;background:var(--forest);color:#fff;border-radius:8px;font-family:var(--font-display);font-size:.78rem;font-weight:700;text-decoration:none">&#x1F4DE; Call Owner</a>'
-        + '<a href="sms:' + tel + '" style="flex:1;padding:8px;text-align:center;background:#2050a0;color:#fff;border-radius:8px;font-family:var(--font-display);font-size:.78rem;font-weight:700;text-decoration:none">&#x1F4AC; Text</a>'
-        + '</div>'
-      : '<div style="font-size:.73rem;color:var(--warm-mid);margin-top:5px;font-style:italic">No phone on file — visit Heartland Pet Connection</div>';
-    return '<div style="background:' + (confBg[m.confidence]||'#f8f8f8') + ';border:1.5px solid ' + (confColor[m.confidence]||'#ddd') + ';border-radius:11px;padding:11px 13px;margin-bottom:9px">'
-      + photoHTML
-      + '<span style="font-size:.62rem;font-weight:800;padding:2px 7px;border-radius:999px;background:' + (confBg[m.confidence]||'#f0f0f0') + ';color:' + (confColor[m.confidence]||'#888') + '">' + m.confidence + ' match</span>'
-      + '<div style="font-family:var(--font-display);font-size:.9rem;font-weight:700;color:var(--warm-dk);margin:4px 0 2px">' + esc(r.name||(r.species||'Unknown')) + '</div>'
-      + (r.color ? '<div style="font-size:.72rem;color:var(--warm-mid);margin-bottom:2px">' + esc(r.color) + '</div>' : '')
-      + (r.address ? '<div style="font-size:.7rem;color:var(--warm-mid);margin-bottom:4px">&#x1F4CD; ' + esc(r.address) + '</div>' : '')
-      + '<div style="font-size:.74rem;color:var(--warm-mid);font-style:italic">' + esc(m.reason) + '</div>'
-      + contactHTML + '</div>';
-  }).join('');
-  panel.innerHTML =
-    '<div style="padding:14px 18px 10px;border-bottom:1px solid var(--cream-3);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">'
-    + '<div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--warm-dk)">&#x1F4A1; ' + matches.length + ' Possible Lost Pet Match' + (matches.length>1?'es':'') + '</div>'
-    + '<button onclick="' + dismiss + '" style="background:var(--cream-2);border:none;border-radius:50%;width:32px;height:32px;font-size:1rem;cursor:pointer">&#x2715;</button>'
-    + '</div>'
-    + '<div style="padding:4px 18px 6px;font-size:.74rem;color:var(--warm-mid);flex-shrink:0">If this matches, contact the owner and tap Mark Reunited after the pet is safely returned.</div>'
-    + '<div style="flex:1;overflow-y:auto;padding:12px 18px 24px;-webkit-overflow-scrolling:touch">'
-    + cards
-    + '<button onclick="' + dismiss + '" style="width:100%;padding:10px;border:1.5px solid var(--cream-3);border-radius:9px;background:#fff;font-family:var(--font-display);font-size:.86rem;font-weight:600;cursor:pointer;color:var(--warm-mid)">Not a match — Dismiss</button>'
-    + '</div>';
-  bd.onclick = function(){panel.remove();bd.remove();};
-  document.body.appendChild(bd);
-  document.body.appendChild(panel);
-  requestAnimationFrame(function(){requestAnimationFrame(function(){panel.style.transform='translateY(0)';});});
 }
 
 function resetForm(type) {
@@ -7130,7 +6682,6 @@ function selectIntake(id) {
   document.getElementById('sh-action-empty').style.display = 'none';
   var panel = document.getElementById('sh-action-panel');
   panel.style.display = 'flex';
-  window._openShelterAnimalId = r ? r.id : null; /* track for post-save refresh */
   /* On mobile, show right col as fullscreen overlay */
   var rightCol = document.querySelector('#view-shelters .sh-col-right');
   if (rightCol && window.innerWidth <= 700) rightCol.classList.add('mobile-show');
@@ -8106,15 +7657,8 @@ function daysUntilAdoptEligible(r) {
     var remaining = Math.ceil(10 - elapsed);
     return remaining > 0 ? remaining : 0;
   }
-  /* Standard hold: 5-day mandatory hold from shelterHoldStart */
-  if (r.intakeType === 'hold' && (r.holdType === 'standard' || !r.holdType)) {
-    var holdStart = r.shelterHoldStart || r.date;
-    var elapsed = daysSince(holdStart);
-    var remaining = Math.ceil(5 - elapsed);
-    return remaining > 0 ? remaining : 0;
-  }
-  /* Other legal/dangerous holds — blocked until staff manually releases */
-  if (r.intakeType === 'hold') return 999;
+  /* Other legal holds — must fully resolve before adoption */
+  if (r.intakeType === 'hold') return 0;
   /* Standard stray hold */
   var required = HOLD_DAYS_BY_SOURCE[r.intakeSource] || 0;
   if (required === 0) return 0;
@@ -8260,27 +7804,9 @@ function setCostField(id, field, value) {
   if (!r) return;
   r[field] = value;
   if (!r.shelterLog) r.shelterLog = [];
-  r.shelterLog.push({ body: 'Hold start date updated to ' + (value ? value.slice(0,10) : '—'), time: 'Just now' });
-  /* Recalculate adoption eligibility whenever hold date changes */
-  if (field === 'shelterHoldStart') {
-    var daysLeft = daysUntilAdoptEligible(r);
-    if (daysLeft === 0) {
-      /* Hold period has cleared — ensure dateAvailable is set if not already */
-      if (!r.dateAvailable) r.dateAvailable = new Date().toISOString();
-      r.shelterLog.push({ body: 'Hold period complete — adoption eligibility recalculated', time: 'Just now' });
-    } else {
-      /* Still in hold — clear dateAvailable so adoption stays blocked */
-      r.dateAvailable = null;
-      r.shelterLog.push({ body: 'Hold still active — ' + daysLeft + ' day' + (daysLeft !== 1 ? 's' : '') + ' remaining', time: 'Just now' });
-    }
-  }
+  r.shelterLog.push({ body: 'Hold start date updated', time: 'Just now' });
   save();
-  if (USE_FIREBASE && _fbReady && db && _isStaff) {
-    try { writeAnimalRecord(r, 'staff'); } catch(e) {}
-  }
   if (shelterTab === 'costs') renderShelterCosts();
-  renderIncareView();
-  updateNavCounts();
 }
 
 function saveEnf(id, updates) {
