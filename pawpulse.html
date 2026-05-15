@@ -6145,7 +6145,190 @@ function submitFound() {
     renderIncareView();
   }, 1000);
   setTimeout(function(){ window._pauseFirestoreSync = false; }, 6000);
+  /* Auto-match: background search against lost pins, 2s after pin saves */
+  setTimeout(function(){ autoMatchFoundReport(r); }, 2000);
 }
+
+/* ── FOUND → LOST AUTO-MATCH ─────────────────────────────────────────────────
+   Runs automatically 2s after a found pin is submitted.
+   Searches active lost pins, ranks photo-supported matches first.
+   DISPLAY ONLY — does not change any pin state.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* Reveal contact info inside a match card — called by "This might be the pet" button */
+function _fmpRevealContact(id) {
+  var wrap = document.getElementById('_fmp-cw-' + id);
+  var contact = document.getElementById('_fmp-cc-' + id);
+  if (wrap && contact) {
+    wrap.innerHTML = contact.innerHTML;
+  }
+}
+
+async function autoMatchFoundReport(foundRecord) {
+  var lostPins = reports.filter(function(r) {
+    return r.type === 'lost' && !r.reunited && !r.shelter;
+  });
+  if (!lostPins.length) return;
+
+  /* Pre-filter by species */
+  var candidates = foundRecord.species
+    ? lostPins.filter(function(r) {
+        return !r.species || r.species.toLowerCase() === foundRecord.species.toLowerCase();
+      })
+    : lostPins;
+  if (!candidates.length) return;
+
+  var foundDesc = [
+    foundRecord.species && ('Species: ' + foundRecord.species),
+    foundRecord.color   && ('Color: '   + foundRecord.color),
+    foundRecord.desc    && ('Description: ' + foundRecord.desc),
+    foundRecord.address && ('Found near: '  + foundRecord.address)
+  ].filter(Boolean).join('. ');
+
+  var lostList = candidates.map(function(r, i) {
+    return (i + 1) + '. ID:' + r.id
+      + (r.name    ? ' Name:'    + r.name    : '')
+      + (r.species ? ' Species:' + r.species : '')
+      + (r.color   ? ' Color:'   + r.color   : '')
+      + (r.breed   ? ' Breed:'   + r.breed   : '')
+      + (r.desc    ? ' Desc:'    + r.desc    : '')
+      + (r.address ? ' Last seen near:' + r.address : '')
+      + (r.photo   ? ' [HAS PHOTO]' : '');
+  }).join('\n');
+
+  var prompt = 'A finder just submitted this found pet:\n' + foundDesc
+    + '\n\nActive lost pet reports:\n' + lostList
+    + '\n\nReturn ONLY a valid JSON array of high or medium confidence matches: '
+    + '[{"id":number,"confidence":"high"|"medium","reason":"1 sentence"}]. '
+    + 'Prioritize records marked [HAS PHOTO]. Return [] if no genuine matches.';
+
+  try {
+    var resp = await fetch('/api/anthropic', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 400,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    var data = await resp.json();
+    if (data.error) return;
+    var text = (data.content || []).map(function(b) { return b.text || ''; }).join('').trim();
+    var matches = JSON.parse(text.replace(/```json|```/g, '').trim());
+    if (!Array.isArray(matches) || !matches.length) return;
+
+    /* Sort: photo-supported first, then confidence */
+    var photoIds = {};
+    candidates.forEach(function(r) { if (r.photo) photoIds[String(r.id)] = true; });
+    matches.sort(function(a, b) {
+      var ap = photoIds[String(a.id)] ? 1 : 0;
+      var bp = photoIds[String(b.id)] ? 1 : 0;
+      if (bp !== ap) return bp - ap;
+      var conf = { high: 2, medium: 1 };
+      return (conf[b.confidence] || 0) - (conf[a.confidence] || 0);
+    });
+
+    _showFoundMatchPopup(matches, candidates);
+  } catch(e) {
+    console.warn('[AUTOMATCH] error:', e.message);
+  }
+}
+
+function _showFoundMatchPopup(matches, lostPins) {
+  ['_fmp','_fmp-bd'].forEach(function(id) {
+    var el = document.getElementById(id); if (el) el.remove();
+  });
+
+  var bd = document.createElement('div');
+  bd.id = '_fmp-bd';
+  bd.style.cssText = 'position:fixed;inset:0;z-index:5100;background:rgba(0,0,0,.48)';
+
+  var panel = document.createElement('div');
+  panel.id = '_fmp';
+  panel.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:5101;'
+    + 'background:var(--cream);border-radius:18px 18px 0 0;'
+    + 'box-shadow:0 -8px 40px rgba(0,0,0,.28);'
+    + 'max-height:88vh;display:flex;flex-direction:column;overflow:hidden;'
+    + 'transform:translateY(100%);transition:transform .32s cubic-bezier(.34,1.2,.64,1)';
+
+  bd.onclick = function() {
+    var p = document.getElementById('_fmp');
+    var b = document.getElementById('_fmp-bd');
+    if (p) p.remove(); if (b) b.remove();
+  };
+
+  var confBg    = { high: '#e8f4e9', medium: '#fffbf0' };
+  var confColor = { high: 'var(--found-g)', medium: 'var(--amber)' };
+
+  var cards = matches.map(function(m) {
+    var lp = lostPins.find(function(r) { return String(r.id) === String(m.id); });
+    if (!lp) return '';
+
+    var tel = (lp.phone || '').replace(/[^0-9+]/g, '');
+    var photoHTML = lp.photo
+      ? '<img src="' + esc(lp.photo) + '" style="width:100%;height:88px;object-fit:contain;object-position:center center;background:var(--cream-2);border-radius:8px;display:block;margin-bottom:7px">'
+      : '<div style="width:100%;height:44px;background:var(--cream-2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin-bottom:7px">'
+        + (lp.species === 'Dog' ? '🐕' : lp.species === 'Cat' ? '🐈' : '🐾')
+        + '</div>';
+
+    var bg    = confBg[m.confidence]    || '#f8f8f8';
+    var color = confColor[m.confidence] || '#888';
+
+    /* Contact section — hidden until confirmed */
+    var contactInner = tel
+      ? '<div style="display:flex;gap:6px;margin-top:8px">'
+          + '<a href="tel:' + tel + '" style="flex:1;padding:9px;text-align:center;background:var(--forest);color:#fff;border-radius:9px;font-family:var(--font-display);font-size:.82rem;font-weight:700;text-decoration:none">📞 Call Owner</a>'
+          + '<a href="sms:' + tel + '" style="flex:1;padding:9px;text-align:center;background:#2050a0;color:#fff;border-radius:9px;font-family:var(--font-display);font-size:.82rem;font-weight:700;text-decoration:none">💬 Text</a>'
+          + '</div>'
+          + '<div style="font-size:.7rem;color:var(--warm-mid);margin-top:6px">⚡ After reunion, tap <strong>Mark Reunited</strong> on the pin.</div>'
+      : '<div style="font-size:.73rem;color:var(--warm-mid);margin-top:6px;font-style:italic">No phone on file — visit Heartland Pet Connection to compare records.</div>';
+
+    return '<div style="border:1.5px solid ' + color + ';border-radius:12px;padding:12px 13px;margin-bottom:10px;background:' + bg + '">'
+      + photoHTML
+      + '<span style="font-size:.6rem;font-weight:800;padding:2px 8px;border-radius:999px;background:' + bg + ';color:' + color + '">' + m.confidence + ' match</span>'
+      + '<div style="font-family:var(--font-display);font-size:.95rem;font-weight:700;color:var(--warm-dk);margin:5px 0 2px">' + esc(lp.name || (lp.species || 'Unknown')) + '</div>'
+      + (lp.color   ? '<div style="font-size:.73rem;color:var(--warm-mid);margin-bottom:2px">' + esc(lp.color) + '</div>' : '')
+      + (lp.address ? '<div style="font-size:.72rem;color:var(--warm-mid);margin-bottom:4px">📍 ' + esc(lp.address) + '</div>' : '')
+      + '<div style="font-size:.74rem;color:var(--warm-mid);font-style:italic;margin-bottom:8px">' + esc(m.reason) + '</div>'
+      /* Hidden contact — revealed by confirm button */
+      + '<div id="_fmp-cc-' + lp.id + '" style="display:none">' + contactInner + '</div>'
+      + '<div id="_fmp-cw-' + lp.id + '">'
+      + '<button onclick="_fmpRevealContact(' + lp.id + ')" '
+      + 'style="width:100%;padding:9px;border:1.5px solid var(--found-g);border-radius:9px;background:#fff;font-family:var(--font-display);font-size:.86rem;font-weight:700;cursor:pointer;color:var(--found-g)">✅ This might be the pet</button>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+
+  panel.innerHTML = '<div style="padding:15px 18px 10px;border-bottom:1px solid var(--cream-3);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">'
+    + '<div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--warm-dk)">💡 ' + matches.length + ' Possible Lost Pet Match' + (matches.length > 1 ? 'es' : '') + '</div>'
+    + '<button id="_fmp-close" style="background:var(--cream-2);border:none;border-radius:50%;width:32px;height:32px;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>'
+    + '</div>'
+    + '<div style="padding:5px 18px 7px;font-size:.74rem;color:var(--warm-mid);flex-shrink:0">A lost pet report may match what you found. If it matches, contact the owner and tap <strong>Mark Reunited</strong> when the pet is safely home.</div>'
+    + '<div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px 18px 28px">'
+    + cards
+    + '<button id="_fmp-dismiss" style="width:100%;padding:10px;border:1.5px solid var(--cream-3);border-radius:9px;background:#fff;font-family:var(--font-display);font-size:.86rem;font-weight:600;cursor:pointer;color:var(--warm-mid)">Not a match — Dismiss</button>'
+    + '</div>';
+
+  document.body.appendChild(bd);
+  document.body.appendChild(panel);
+
+  /* Wire close/dismiss after panel is in DOM */
+  function _dismissFmp() {
+    var p = document.getElementById('_fmp');
+    var b = document.getElementById('_fmp-bd');
+    if (p) p.remove(); if (b) b.remove();
+  }
+  var closeBtn   = document.getElementById('_fmp-close');
+  var dismissBtn = document.getElementById('_fmp-dismiss');
+  if (closeBtn)   closeBtn.onclick   = _dismissFmp;
+  if (dismissBtn) dismissBtn.onclick = _dismissFmp;
+
+  requestAnimationFrame(function() {
+    requestAnimationFrame(function() { panel.style.transform = 'translateY(0)'; });
+  });
+}
+
 
 function resetForm(type) {
   /* Clear footer error messages */
