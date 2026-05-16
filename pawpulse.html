@@ -1404,6 +1404,15 @@ function _ppDiag(reason) {
       + 'rUnited:' + (Array.isArray(reports)?reports.filter(function(r){return r.reunited;}).length:'?') + '\n'
       + 'rUnitedVisible:' + (Array.isArray(reports)?reports.filter(function(r){return r.reunited&&isPublicVisible(r);}).length:'?') + '\n'
       + 'rUnitedInLM:' + (Array.isArray(lMarkers)?lMarkers.filter(function(m){var r=reports.find(function(x){return String(x.id)===m._pawpulseId;});return r&&r.reunited;}).length:'?') + '\n'
+      + (function(){
+          var _aM=[];try{map.eachLayer(function(l){if(l instanceof L.Marker)_aM.push(l);});}catch(e){}
+          var _orph=_aM.filter(function(m){return !lMarkers.includes(m);});
+          var _oIds=_orph.map(function(m){return m._pawpulseId||'NOID';}).join(',');
+          var _tmp=!!(window.tmpMarker&&map.hasLayer(window.tmpMarker));
+          return 'mapM:'+_aM.length+' lM:'+lMarkers.length+'\n'
+            +'orphans:'+_orph.length+(_orph.length?' ['+_oIds+']':'')+'\n'
+            +'tmp:'+_tmp+'\n';
+        })()
       + '--- timing ---\n'
       + 'snap:' + (_tFirstSnap ? '+'+Math.round((_tFirstSnap-_t0)/1000)+'s' : 'none') + '\n'
       + 'marker:' + (_tFirstMarker ? '+'+Math.round((_tFirstMarker-_t0)/1000)+'s' : 'none') + '\n'
