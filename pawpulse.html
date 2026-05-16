@@ -1425,7 +1425,14 @@ function _ppDiag(reason) {
             +'--- DOM audit ---\n'
             +'icons:'+_icons+' pane:'+_paneChildren+'\n'
             +'popups:'+_popups+'\n'
-            +'spotlight:'+_spotVis+' card:'+_cardOpen+'\n';
+            +'spotlight:'+_spotVis+' card:'+_cardOpen+'\n'
+          +(function(){
+            if(!_spotVis)return'';
+            var _sn=document.getElementById('spotlight-name');
+            var _sl=document.getElementById('spotlight-label');
+            return 'spName:'+(_sn?_sn.textContent.slice(0,16):'?')+'\n'
+              +'spLabel:'+(_sl?_sl.textContent.slice(0,22):'?')+'\n';
+          })();
         })()
       + '--- timing ---\n'
       + 'snap:' + (_tFirstSnap ? '+'+Math.round((_tFirstSnap-_t0)/1000)+'s' : 'none') + '\n'
