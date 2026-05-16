@@ -5056,6 +5056,8 @@ function showCallOwnerPrompt(lostPet, intake) {
    FOUND match: staff can confirm to suppress duplicate green pin.
    ─────────────────────────────────────────────────────────────────────────── */
 async function autoMatchOnIntake(intake) {
+  /* Guard: if a match sheet is already showing for this session, skip */
+  if (document.getElementById('_ims') || document.getElementById('intake-found-match-panel')) return;
   var intakeDesc = [
     intake.species && ('Species: ' + intake.species),
     intake.breed   && ('Breed: '   + intake.breed),
@@ -7718,7 +7720,7 @@ function submitIntake() {
   /* Banner announcement */
   pushBannerEvent((isHold ? '⚠️ Animal on hold logged at ' : '🐾 Stray animal received at ') + activeShelter, isHold ? '#d4843a' : 'var(--found-g)');
   if (!isHold) setTimeout(function(){ autoMatchOnIntake(r); }, 800);
-  setTimeout(function(){ checkFoundPinsOnIntake(r); }, 1200);
+  /* checkFoundPinsOnIntake removed — autoMatchOnIntake covers found pins */
   window._migrateFromId = null;
 }
 
