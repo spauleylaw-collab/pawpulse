@@ -1276,7 +1276,7 @@ document.addEventListener("DOMContentLoaded", function() {
 })();
 
 /* Map init — synchronous. Script tag is at bottom of body so #map div exists. */
-window.PAWPULSE_BUILD = 'map-baseline-2026-04-29-01';
+window.PAWPULSE_BUILD = 'pawpulse-debug-2026-05-16';
 console.log('[PAWPULSE BUILD]', window.PAWPULSE_BUILD);
 var _mapReady = !!window._leafletMapInstance;
 var map;
@@ -1324,8 +1324,10 @@ var tmpMarker = null;
 var _fbReady        = false; /* true once Firestore listener is live */
 
 /* ── Diagnostic overlay — localhost only, never production ── */
-var DEV_MODE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
+var DEV_MODE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.search.indexOf('debug=1') !== -1);
 var BOOT_OVERLAY_DISMISSED = false;
+var _lastSnapshotTime = 0;   /* ms since epoch of last Firestore snapshot */
+var _wdTicks = 0;             /* slow-network watchdog poll count */
 if (!DEV_MODE) {
   (function() {
     var nuke = function() { var el = document.getElementById('_ppd'); if (el) el.remove(); };
@@ -1351,7 +1353,7 @@ function _ppDiag(reason) {
         + 'padding:7px 9px;border-radius:7px;max-width:230px;pointer-events:none;'
         + 'white-space:pre-wrap;';
       document.body.appendChild(box);
-      setTimeout(function(){ if (box.parentNode) box.remove(); }, 30000);
+      setTimeout(function(){ if (box.parentNode) box.remove(); }, 90000);
     }
     var pubElig = Array.isArray(reports) ? reports.filter(function(r){
       return !r.shelter && !r.reunited && isPublicVisible(r);
@@ -1362,14 +1364,26 @@ function _ppDiag(reason) {
     var foundV = Array.isArray(reports) ? reports.filter(function(r){
       return r.type==='found' && !r.reunited && !r.shelter && isPublicVisible(r);
     }).length : '?';
+    var _snapAge = _lastSnapshotTime
+      ? Math.round((Date.now()-_lastSnapshotTime)/1000)+'s ago'
+      : 'never';
+    var _lsLen = 0;
+    try { var _ls=localStorage.getItem('pawpulse-v2'); _lsLen=_ls?JSON.parse(_ls).length:0; } catch(e2){}
     box.textContent =
-      '[' + (reason||'').slice(0,14) + ']\n'
-      + 'reports:' + (Array.isArray(reports)?reports.length:'?') + '\n'
+      'BUILD:' + (window.PAWPULSE_BUILD||'?') + '\n'
+      + '[' + (reason||'').slice(0,12) + ']\n'
+      + 'reports:' + (Array.isArray(reports)?reports.length:'?')
+      + ' ls:' + _lsLen + '\n'
       + 'pubPins:' + pubElig + ' lost:' + lostV + ' found:' + foundV + '\n'
       + 'lM:' + (Array.isArray(lMarkers)?lMarkers.length:'?') + '\n'
       + 'mapRdy:' + _mapReady + ' recRdy:' + _recordsReady + '\n'
-      + 'fbRdy:' + _fbReady + ' FSact:' + !!window._firestoreListenerActive + '\n'
-      + 'pending:' + _fsAttachPending + ' initDone:' + _initialRenderDone + '\n'
+      + 'fbRdy:' + _fbReady
+      + ' FSact:' + !!window._firestoreListenerActive + '\n'
+      + 'snap:' + _snapAge + '\n'
+      + 'pending:' + _fsAttachPending
+      + ' att:' + _fsAttachAttempts + '\n'
+      + 'initDone:' + _initialRenderDone
+      + ' wdTick:' + _wdTicks + '\n'
       + 'filter:' + curFilter + '/' + curSpeciesFilter;
   } catch(e) {}
 }
@@ -1541,6 +1555,7 @@ function startFirestoreListener() {
     _fsUnsub = db.collection('reports').onSnapshot(function(snapshot) {
       _fsAttachPending = false;
       window._firestoreListenerActive = true; /* confirmed receiving */
+      _lastSnapshotTime = Date.now();
       console.log('[FIRESTORE SNAPSHOT]', { size: snapshot.size, changes: snapshot.docChanges().length });
       if (window._pauseFirestoreSync) {
         /* Demo load or major write in progress — skip listener */
@@ -1989,6 +2004,7 @@ function doGuestView() {
     if (elapsed > 90000) return;                         /* give up at 90s */
     if (Array.isArray(lMarkers) && lMarkers.length > 0) return; /* already rendered */
     setTimeout(function() {
+      _wdTicks++;
       if (Array.isArray(lMarkers) && lMarkers.length > 0) return;
       if (Array.isArray(reports) && reports.length > 0) {
         console.warn('[PAWPULSE SLOW-NET WATCHDOG] ' + elapsed + 'ms — has data, forcing render');
