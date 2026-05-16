@@ -1400,6 +1400,10 @@ function _ppDiag(reason) {
       + 'initDone:' + _initialRenderDone
       + ' wdTick:' + _wdTicks + '\n'
       + 'filter:' + curFilter + '/' + curSpeciesFilter + '\n'
+      + '--- reunited audit ---\n'
+      + 'rUnited:' + (Array.isArray(reports)?reports.filter(function(r){return r.reunited;}).length:'?') + '\n'
+      + 'rUnitedVisible:' + (Array.isArray(reports)?reports.filter(function(r){return r.reunited&&isPublicVisible(r);}).length:'?') + '\n'
+      + 'rUnitedInLM:' + (Array.isArray(lMarkers)?lMarkers.filter(function(m){var r=reports.find(function(x){return String(x.id)===m._pawpulseId;});return r&&r.reunited;}).length:'?') + '\n'
       + '--- timing ---\n'
       + 'snap:' + (_tFirstSnap ? '+'+Math.round((_tFirstSnap-_t0)/1000)+'s' : 'none') + '\n'
       + 'marker:' + (_tFirstMarker ? '+'+Math.round((_tFirstMarker-_t0)/1000)+'s' : 'none') + '\n'
@@ -1613,9 +1617,12 @@ function startFirestoreListener() {
           });
           /* Re-add any local records not yet confirmed by Firestore (in-flight pins) */
           localOnly.forEach(function(lr){ reports.push(lr); });
-          localStorage.setItem('pawpulse-v2', JSON.stringify(reports));
+          /* save() strips photos + has try/catch — prevents QuotaExceededError
+             on mobile Safari from silently blocking _fbReady from being set. */
+          save();
         }
         /* If Firestore empty, reports already loaded from localStorage in bootApp — keep them */
+        /* Always set _fbReady — even if merge threw, app must progress */
         _fbReady = true;
         installBypassDetection();
         setTimeout(function(){ assertNoInvalidStates(reports); }, 800);
