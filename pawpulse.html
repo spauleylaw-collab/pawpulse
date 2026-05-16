@@ -4495,10 +4495,13 @@ function cardHTML(r) {
   var animalFirstName = (lost && r.name) ? r.name.split(' ')[0]
     : (r.name ? r.name.split(' ')[0] : 'our friend');
 
+  var _whnText = lost
+    ? 'We’ll keep this lost pet report active and compare it against found pet reports and shelter intake records. If a possible match appears, you or shelter staff may be contacted. Keep this report updated if the pet is found or new information becomes available.'
+    : 'We’ll compare this found pet report against active lost pet reports. If a possible match appears, you can contact the owner through the match prompt. Keep this pin active until the pet is safely reunited, then tap Mark Reunited.';
   var whatNextSection = !reunited
     ? '<div style="margin-top:10px;border-top:1px solid var(--cream-3);padding-top:10px">'
       + '<div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--amber);margin-bottom:6px">What happens next?</div>'
-      + '<div id="whn-body-' + r.id + '" style="font-size:.78rem;color:var(--warm-mid);line-height:1.6;font-style:italic">Loading…</div>'
+      + '<div style="font-size:.78rem;color:var(--warm-mid);line-height:1.6">' + esc(_whnText) + '</div>'
       + '</div>'
     : '';
 
@@ -4588,8 +4591,7 @@ function openCard(r, cp) {
     card.style.top  = top  + 'px';
     card.style.visibility = '';
   });
-  /* Auto-generate What Happens Next — no tap required */
-  if (!r.reunited) setTimeout(function(){ generateWhatNext(r); }, 300);
+  /* What Happens Next text is now static — rendered inline in cardHTML */
 }
 
 async function generateWhatNext(r) {
