@@ -5478,7 +5478,10 @@ function fireBurst(lat, lng) {
 var ADAMS_BOUNDS = { n:40.700, s:40.348, e:-98.046, w:-98.605 };
 function inBounds(r) {
   if (!r.lat || !r.lng) return true;
-  return r.lat <= ADAMS_BOUNDS.n && r.lat >= ADAMS_BOUNDS.s && r.lng <= ADAMS_BOUNDS.e && r.lng >= ADAMS_BOUNDS.w;
+  /* 0.05deg buffer (~5.5km) protects against GPS drift at county edges */
+  var BUF = 0.05;
+  return r.lat <= ADAMS_BOUNDS.n + BUF && r.lat >= ADAMS_BOUNDS.s - BUF
+      && r.lng <= ADAMS_BOUNDS.e + BUF && r.lng >= ADAMS_BOUNDS.w - BUF;
 }
 
 function isPublicVisible(r) {
@@ -5524,16 +5527,18 @@ function renderMarkers() {
   var oldMarkers = lMarkers.slice(); /* keep reference to old markers */
   lMarkers = [];
 
-  /* Adams County bounds — silently drop any out-of-bounds records */
+  /* Adams County bounds — flag suspicious coordinates but never auto-archive.
+     GPS drift can place valid edge-county records outside bounds. Records are
+     preserved and flagged for staff review only; no data is destroyed. */
   var oob = reports.filter(function(r){ return !r.shelter && !inBounds(r); });
   if (oob.length > 0) {
     oob.forEach(function(r){
-      reports.splice(reports.indexOf(r), 1);
-      /* Doctrine: no deletes — mark archived instead */
-      r.archivedFromMap = true; r.resolved = true; r.resolvedReason = 'archived';
-      writeAnimalRecord(r, 'staff');
+      if (!r._oobFlagged) {
+        r._oobFlagged = true;
+        console.warn('[PAWPULSE OOB] Suspicious coordinates — flagged for review, NOT archived:', r.id, r.lat, r.lng);
+      }
     });
-    save();
+    /* Do NOT splice, archive, or write — preserve records intact */
   }
 
   /* Only show lost and found public reports as individual pins — not shelter animals */
