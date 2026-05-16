@@ -1328,6 +1328,12 @@ var DEV_MODE = (location.hostname === 'localhost' || location.hostname === '127.
 var BOOT_OVERLAY_DISMISSED = false;
 var _lastSnapshotTime = 0;   /* ms since epoch of last Firestore snapshot */
 var _wdTicks = 0;             /* slow-network watchdog poll count */
+var _t0 = Date.now();         /* page load timestamp */
+var _tFirstMarker = 0;        /* when first public marker was added */
+var _tFirstSnap = 0;          /* when first Firestore snapshot arrived */
+var _tReportsChange = 0;      /* when reports.length last changed */
+var _lastReportsLen = 0;      /* previous reports.length for change detection */
+var _wdExitReason = '';       /* why slowNetWatchdog stopped */
 if (!DEV_MODE) {
   (function() {
     var nuke = function() { var el = document.getElementById('_ppd'); if (el) el.remove(); };
@@ -1343,6 +1349,8 @@ function dismissBootOverlay(reason) {
 function _ppDiag(reason) {
   if (!DEV_MODE) return;
   if (BOOT_OVERLAY_DISMISSED) return;
+  var _curLen = Array.isArray(reports) ? reports.length : 0;
+  if (_curLen !== _lastReportsLen) { _tReportsChange = Date.now(); _lastReportsLen = _curLen; }
   try {
     var box = document.getElementById('_ppd');
     if (!box) {
@@ -1354,6 +1362,13 @@ function _ppDiag(reason) {
         + 'white-space:pre-wrap;';
       document.body.appendChild(box);
       setTimeout(function(){ if (box.parentNode) box.remove(); }, 90000);
+      if (!box._ppInterval) {
+        box._ppInterval = setInterval(function(){
+          if (document.getElementById('_ppd')) _ppDiag('tick');
+          else clearInterval(box._ppInterval);
+        }, 1000);
+        setTimeout(function(){ clearInterval(box._ppInterval); }, 90000);
+      }
     }
     var pubElig = Array.isArray(reports) ? reports.filter(function(r){
       return !r.shelter && !r.reunited && isPublicVisible(r);
@@ -1384,7 +1399,13 @@ function _ppDiag(reason) {
       + ' att:' + _fsAttachAttempts + '\n'
       + 'initDone:' + _initialRenderDone
       + ' wdTick:' + _wdTicks + '\n'
-      + 'filter:' + curFilter + '/' + curSpeciesFilter;
+      + 'filter:' + curFilter + '/' + curSpeciesFilter + '\n'
+      + '--- timing ---\n'
+      + 'snap:' + (_tFirstSnap ? '+'+Math.round((_tFirstSnap-_t0)/1000)+'s' : 'none') + '\n'
+      + 'marker:' + (_tFirstMarker ? '+'+Math.round((_tFirstMarker-_t0)/1000)+'s' : 'none') + '\n'
+      + 'rptChg:' + (_tReportsChange ? '+'+Math.round((_tReportsChange-_t0)/1000)+'s' : 'none') + '\n'
+      + 'wdExit:' + (_wdExitReason||'running') + '\n'
+      + 'now:+' + Math.round((Date.now()-_t0)/1000) + 's';
   } catch(e) {}
 }
 var _fsAttachPending = false; /* set at onSnapshot call; cleared on callback or error */
@@ -1556,6 +1577,7 @@ function startFirestoreListener() {
       _fsAttachPending = false;
       window._firestoreListenerActive = true; /* confirmed receiving */
       _lastSnapshotTime = Date.now();
+      if (!_tFirstSnap) _tFirstSnap = _lastSnapshotTime;
       console.log('[FIRESTORE SNAPSHOT]', { size: snapshot.size, changes: snapshot.docChanges().length });
       if (window._pauseFirestoreSync) {
         /* Demo load or major write in progress — skip listener */
@@ -2001,11 +2023,11 @@ function doGuestView() {
   /* Slow-network watchdog: polls every 4s for up to 90s.
      Covers the case where Firestore snapshot arrives after all fixed watchdogs. */
   (function slowNetWatchdog(elapsed) {
-    if (elapsed > 90000) return;                         /* give up at 90s */
-    if (Array.isArray(lMarkers) && lMarkers.length > 0) return; /* already rendered */
+    if (elapsed > 90000) { _wdExitReason = 'timeout-90s'; return; }
+    if (Array.isArray(lMarkers) && lMarkers.length > 0) { _wdExitReason = 'markers-ok'; return; }
     setTimeout(function() {
       _wdTicks++;
-      if (Array.isArray(lMarkers) && lMarkers.length > 0) return;
+      if (Array.isArray(lMarkers) && lMarkers.length > 0) { _wdExitReason = 'markers-ok'; return; }
       if (Array.isArray(reports) && reports.length > 0) {
         console.warn('[PAWPULSE SLOW-NET WATCHDOG] ' + elapsed + 'ms — has data, forcing render');
         _mapReady = true; _recordsReady = true;
@@ -5514,6 +5536,7 @@ function renderMarkers() {
     m._pawpulseId = String(r.id);
     m.on('click', function(e){ closeCard(); var _cur=reports.find(function(x){return String(x.id)===String(r.id);}); openCard(_cur||r,e.containerPoint); L.DomEvent.stopPropagation(e); });
     lMarkers.push(m);
+    if (!_tFirstMarker) _tFirstMarker = Date.now();
   });
   /* Remove old markers after new ones placed — eliminates blank-map flash */
   oldMarkers.forEach(function(m){ map.removeLayer(m); });
