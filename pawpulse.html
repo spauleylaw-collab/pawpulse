@@ -5415,14 +5415,26 @@ function markReunited(id) {
   r.reunitedDate = new Date().toISOString();
   if (!r.source) r.source = 'public';
   if (r.resolved === undefined) r.resolved = false;
-  /* Sync to Firestore */
+  /* Sync to Firestore — two-step:
+     Step 1: immediate minimal merge of reunited flag only (no photo compression delay)
+     Step 2: full record sync via writeAnimalRecord (handles photo + schema) */
   if (USE_FIREBASE && _fbReady && db) {
+    /* Step 1: instant reunited flag — arrives on other devices within ~1s */
+    db.collection('reports').doc(String(r.id)).set(
+      { reunited: true, reunitedDate: r.reunitedDate, updatedAt: r.reunitedDate },
+      { merge: true }
+    ).then(function(){
+      console.log('[REUNITED SYNC] instant flag written to Firestore:', r.id);
+    }).catch(function(e){
+      console.warn('[REUNITED SYNC] instant flag failed:', e.message);
+    });
+    /* Step 2: full record sync */
     window._pauseFirestoreSync = true;
     writeAnimalRecord(r, r.source);
     setTimeout(function(){
       window._pauseFirestoreSync = false;
-      refreshMapPins('reunited-sync-clear'); /* ensure pin gone after pause */
-    }, 2000);
+      refreshMapPins('reunited-sync-clear');
+    }, 3000);
   }
   save();
   /* Defer heavy renders so UI thread stays responsive */
