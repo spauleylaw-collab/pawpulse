@@ -1653,6 +1653,9 @@ function startFirestoreListener() {
             if (!data.photo) {
               data.photo = (reports[idx] && reports[idx].photo) || _photoCache[String(data.id)] || null;
             }
+            /* Preserve reunited/resolved — local write may not yet be in this snapshot */
+            if (!data.reunited && reports[idx] && reports[idx].reunited) data.reunited = true;
+            if (!data.resolved && reports[idx] && reports[idx].resolved) data.resolved = true;
             reports[idx] = data;
           } else {
             if (!data.photo && _photoCache[String(data.id)]) {
