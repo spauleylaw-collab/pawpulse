@@ -1594,14 +1594,21 @@ function startFirestoreListener() {
             snapshot.forEach(function(doc){ if (String(doc.data().id)===String(lr.id)) inFirestore=true; });
             return !inFirestore && lr._isNewPin;
           });
+          /* Index localStorage snapshot by id for fast lookup */
+          var _localById = {};
+          localSnapshot.forEach(function(lr){ _localById[String(lr.id)] = lr; });
           reports = [];
           snapshot.forEach(function(doc) {
             var data = doc.data();
-            /* Photo now stored in Firestore — use it directly.
-               Fall back to in-memory cache for photos not yet synced. */
+            var local = _localById[String(data.id)] || {};
+            /* Photo: Firestore first, then cache */
             if (!data.photo && _photoCache[String(data.id)]) {
               data.photo = _photoCache[String(data.id)];
             }
+            /* Preserve reunited/resolved flags from localStorage if Firestore
+               write hasn't confirmed yet (async write + immediate refresh race) */
+            if (!data.reunited && local.reunited) data.reunited = true;
+            if (!data.resolved && local.resolved) data.resolved = true;
             reports.push(data);
           });
           /* Re-add any local records not yet confirmed by Firestore (in-flight pins) */
