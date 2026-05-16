@@ -5405,7 +5405,10 @@ function markReunited(id) {
   if (USE_FIREBASE && _fbReady && db) {
     window._pauseFirestoreSync = true;
     writeAnimalRecord(r, r.source);
-    setTimeout(function(){ window._pauseFirestoreSync = false; }, 2000);
+    setTimeout(function(){
+      window._pauseFirestoreSync = false;
+      refreshMapPins('reunited-sync-clear'); /* ensure pin gone after pause */
+    }, 2000);
   }
   save();
   /* Defer heavy renders so UI thread stays responsive */
@@ -5470,6 +5473,7 @@ function inBounds(r) {
 }
 
 function isPublicVisible(r) {
+  if (r.reunited) return false;  /* reunited — never show publicly */
   if (r.euthanized) return false;
   if (r.intakeType === 'hold' && r.adoptionStatus !== 'available') return false;
   if (r.enforcement && r.enforcement.holdOutcome && r.enforcement.holdOutcome !== 'adoption') return false;
