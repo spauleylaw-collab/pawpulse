@@ -1409,9 +1409,23 @@ function _ppDiag(reason) {
           var _orph=_aM.filter(function(m){return !lMarkers.includes(m);});
           var _oIds=_orph.map(function(m){return m._pawpulseId||'NOID';}).join(',');
           var _tmp=!!(window.tmpMarker&&map.hasLayer(window.tmpMarker));
+          /* DOM-level audit */
+          var _icons=document.querySelectorAll('.leaflet-marker-icon').length;
+          var _popups=document.querySelectorAll('.leaflet-popup').length;
+          var _spotVis=!!(document.getElementById('shelter-spotlight')&&
+            document.getElementById('shelter-spotlight').style.display!=='none'&&
+            document.getElementById('shelter-spotlight').style.opacity!=='0');
+          var _cardOpen=!!(document.getElementById('pin-card')&&
+            document.getElementById('pin-card').classList.contains('open'));
+          var _pane=document.querySelector('.leaflet-marker-pane');
+          var _paneChildren=_pane?_pane.children.length:0;
           return 'mapM:'+_aM.length+' lM:'+lMarkers.length+'\n'
             +'orphans:'+_orph.length+(_orph.length?' ['+_oIds+']':'')+'\n'
-            +'tmp:'+_tmp+'\n';
+            +'tmp:'+_tmp+'\n'
+            +'--- DOM audit ---\n'
+            +'icons:'+_icons+' pane:'+_paneChildren+'\n'
+            +'popups:'+_popups+'\n'
+            +'spotlight:'+_spotVis+' card:'+_cardOpen+'\n';
         })()
       + '--- timing ---\n'
       + 'snap:' + (_tFirstSnap ? '+'+Math.round((_tFirstSnap-_t0)/1000)+'s' : 'none') + '\n'
