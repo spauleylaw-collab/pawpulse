@@ -1348,7 +1348,7 @@ function dismissBootOverlay(reason) {
 }
 function _ppDiag(reason) {
   if (!DEV_MODE) return;
-  if (BOOT_OVERLAY_DISMISSED) return;
+  /* In debug mode, overlay persists even after boot — ignore dismiss flag */
   var _curLen = Array.isArray(reports) ? reports.length : 0;
   if (_curLen !== _lastReportsLen) { _tReportsChange = Date.now(); _lastReportsLen = _curLen; }
   try {
