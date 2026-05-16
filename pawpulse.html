@@ -10206,9 +10206,12 @@ function getSpotlightAnimals() {
     eligible.push({ r:r, label:'Good news — found a home', cta:'See who is available →' });
   });
 
-  /* Priority 4: Recently reunited */
+  /* Priority 4: Recently reunited — shelter animals only.
+     Public lost/found pins (r.shelter=false) are excluded: showing them here
+     causes confusion because users mistake the spotlight card for a live map pin. */
   var reunited = (reports || []).filter(function(r){
-    return r.reunited === true
+    return r.shelter === true
+        && r.reunited === true
         && daysSince(r.reunitedDate || r.date) <= 60;
   }).slice(0, 3);
   reunited.forEach(function(r){
@@ -10263,6 +10266,10 @@ async function renderSpotlightCard(item) {
 function rotateSpotlight() {
   if (window._spotlightDismissed) return;
   var animals = getSpotlightAnimals();
+  /* Filter out any items whose record is now reunited/resolved (stale cache guard) */
+  animals = animals.filter(function(item){
+    return item.r && !item.r.reunited && !item.r.euthanized;
+  });
   var strip = document.getElementById('shelter-spotlight');
   if (!strip) return;
 
