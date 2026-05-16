@@ -1322,6 +1322,57 @@ var SUBMIT_COOLDOWN_MS = 1 * 60 * 1000;  /* 1 min between submissions (keep shor
 var SUBMIT_SESSION_MAX = 3;  /* max per session */
 var tmpMarker = null;
 var _fbReady        = false; /* true once Firestore listener is live */
+
+/* ── Diagnostic overlay — localhost only, never production ── */
+var DEV_MODE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
+var BOOT_OVERLAY_DISMISSED = false;
+if (!DEV_MODE) {
+  (function() {
+    var nuke = function() { var el = document.getElementById('_ppd'); if (el) el.remove(); };
+    nuke();
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', nuke);
+  })();
+}
+function dismissBootOverlay(reason) {
+  if (BOOT_OVERLAY_DISMISSED) return;
+  BOOT_OVERLAY_DISMISSED = true;
+  var el = document.getElementById('_ppd'); if (el) el.remove();
+}
+function _ppDiag(reason) {
+  if (!DEV_MODE) return;
+  if (BOOT_OVERLAY_DISMISSED) return;
+  try {
+    var box = document.getElementById('_ppd');
+    if (!box) {
+      box = document.createElement('div');
+      box.id = '_ppd';
+      box.style.cssText = 'position:fixed;bottom:80px;left:8px;z-index:99999;'
+        + 'background:rgba(0,0,0,.88);color:#0f0;font:10px/1.45 monospace;'
+        + 'padding:7px 9px;border-radius:7px;max-width:230px;pointer-events:none;'
+        + 'white-space:pre-wrap;';
+      document.body.appendChild(box);
+      setTimeout(function(){ if (box.parentNode) box.remove(); }, 30000);
+    }
+    var pubElig = Array.isArray(reports) ? reports.filter(function(r){
+      return !r.shelter && !r.reunited && isPublicVisible(r);
+    }).length : '?';
+    var lostV = Array.isArray(reports) ? reports.filter(function(r){
+      return r.type==='lost' && !r.reunited && !r.shelter && isPublicVisible(r);
+    }).length : '?';
+    var foundV = Array.isArray(reports) ? reports.filter(function(r){
+      return r.type==='found' && !r.reunited && !r.shelter && isPublicVisible(r);
+    }).length : '?';
+    box.textContent =
+      '[' + (reason||'').slice(0,14) + ']\n'
+      + 'reports:' + (Array.isArray(reports)?reports.length:'?') + '\n'
+      + 'pubPins:' + pubElig + ' lost:' + lostV + ' found:' + foundV + '\n'
+      + 'lM:' + (Array.isArray(lMarkers)?lMarkers.length:'?') + '\n'
+      + 'mapRdy:' + _mapReady + ' recRdy:' + _recordsReady + '\n'
+      + 'fbRdy:' + _fbReady + ' FSact:' + !!window._firestoreListenerActive + '\n'
+      + 'pending:' + _fsAttachPending + ' initDone:' + _initialRenderDone + '\n'
+      + 'filter:' + curFilter + '/' + curSpeciesFilter;
+  } catch(e) {}
+}
 var _fsAttachPending = false; /* set at onSnapshot call; cleared on callback or error */
 var _fsAttachTime    = 0;     /* timestamp of last onSnapshot call — stall detector */
 var _fsAttachAttempts = 0;    /* total attach attempts */
@@ -1434,7 +1485,11 @@ function refreshMapPins(reason) {
   /* No pre-wipe: renderMarkers() uses oldMarkers-swap. Pre-wiping caused
      blank map on phones when renderMarkers produced 0 markers. */
   renderMarkers();
-  if (lMarkers.length > 0) _dismissOverlay();
+  if (lMarkers.length > 0) {
+    _dismissOverlay();
+    dismissBootOverlay('pins-rendered');
+  }
+  _ppDiag(reason);
 }
 
 var _initialRenderDone = false;
@@ -1928,6 +1983,24 @@ function doGuestView() {
       }
     }, ms);
   });
+  /* Slow-network watchdog: polls every 4s for up to 90s.
+     Covers the case where Firestore snapshot arrives after all fixed watchdogs. */
+  (function slowNetWatchdog(elapsed) {
+    if (elapsed > 90000) return;                         /* give up at 90s */
+    if (Array.isArray(lMarkers) && lMarkers.length > 0) return; /* already rendered */
+    setTimeout(function() {
+      if (Array.isArray(lMarkers) && lMarkers.length > 0) return;
+      if (Array.isArray(reports) && reports.length > 0) {
+        console.warn('[PAWPULSE SLOW-NET WATCHDOG] ' + elapsed + 'ms — has data, forcing render');
+        _mapReady = true; _recordsReady = true;
+        try { map.invalidateSize(true); } catch(e) {}
+        renderMarkers();
+        _ppDiag('slow-net-wd-' + elapsed);
+        if (Array.isArray(lMarkers) && lMarkers.length > 0) return;
+      }
+      slowNetWatchdog(elapsed + 4000);
+    }, 4000);
+  })(0);
 }
 
 function doSignOut() {
