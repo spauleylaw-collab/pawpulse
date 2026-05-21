@@ -1431,10 +1431,28 @@ function _ppDiag(reason) {
             var _sn=document.getElementById('spotlight-name');
             var _sl=document.getElementById('spotlight-label');
             return 'spName:'+(_sn?_sn.textContent.slice(0,16):'?')+'\n'
-              +'spLabel:'+(_sl?_sl.textContent.slice(0,22):'?')+'\n';
+              +'spLabel:'+(_sl?_sl.textContent.slice(0,22):'?')+'\n'
+            +(function(){
+              /* Identify the actual record in spotlight */
+              if (!window._currentSpotlight) return '';
+              var _sr = window._currentSpotlight.r;
+              if (!_sr) return '';
+              return 'spId:'+_sr.id+'\n'
+                +'spReunited:'+_sr.reunited+'\n'
+                +'spShelter:'+_sr.shelter+'\n';
+            })();
           })();
         })()
-      + '--- timing ---\n'
+      + '--- marker IDs ---\n'
+      + (function(){
+          /* Dump each tracked marker: ID, type, reunited status */
+          return lMarkers.map(function(m){
+            var pid = m._pawpulseId;
+            var r = Array.isArray(reports) ? reports.find(function(x){return String(x.id)===pid;}) : null;
+            return pid + ':' + (r ? r.type[0] + (r.reunited?'R':'') : '?');
+          }).join(' ');
+        })()
+      + '\n--- timing ---\n'
       + 'snap:' + (_tFirstSnap ? '+'+Math.round((_tFirstSnap-_t0)/1000)+'s' : 'none') + '\n'
       + 'marker:' + (_tFirstMarker ? '+'+Math.round((_tFirstMarker-_t0)/1000)+'s' : 'none') + '\n'
       + 'rptChg:' + (_tReportsChange ? '+'+Math.round((_tReportsChange-_t0)/1000)+'s' : 'none') + '\n'
@@ -1698,6 +1716,16 @@ function startFirestoreListener() {
             if (!data.photo && _photoCache[String(data.id)]) {
               data.photo = _photoCache[String(data.id)];
             }
+            /* Preserve reunited/resolved from localStorage on 'added' —
+               listener reconnects re-send all docs as 'added', which can
+               push reunited:false before the write propagates */
+            var _lsAdd = (function(){
+              try { var _ls=JSON.parse(localStorage.getItem('pawpulse-v2')||'[]');
+              return _ls.find(function(x){return String(x.id)===String(data.id);}) || {}; }
+              catch(e){ return {}; }
+            })();
+            if (!data.reunited && _lsAdd.reunited) data.reunited = true;
+            if (!data.resolved && _lsAdd.resolved) data.resolved = true;
             reports.push(data);
           }
           changed = true;
@@ -1707,7 +1735,7 @@ function startFirestoreListener() {
       });
 
       if (changed) {
-        localStorage.setItem('pawpulse-v2', JSON.stringify(reports));
+        save(); /* strips photos + try/catch — prevents QuotaExceededError */
         _recordsReady = true;
         tryInitialRender('firestore-changed-ready');
         refreshMapPins('firestore-changed-full-render');
@@ -2071,17 +2099,48 @@ function doGuestView() {
      Covers the case where Firestore snapshot arrives after all fixed watchdogs. */
   (function slowNetWatchdog(elapsed) {
     if (elapsed > 90000) { _wdExitReason = 'timeout-90s'; return; }
-    if (Array.isArray(lMarkers) && lMarkers.length > 0) { _wdExitReason = 'markers-ok'; return; }
+    /* Exit only when BOTH conditions met:
+       1. Firestore confirmed (_fbReady) — ensures full dataset arrived
+       2. Marker count stable for 3s — ensures partial snapshot didn't stop us early
+       If markers exist but Firestore not yet ready, keep watching. */
+    var _hasMarkers = Array.isArray(lMarkers) && lMarkers.length > 0;
+    if (_hasMarkers && _fbReady) {
+      /* Stability check: snapshot the count now, re-check in 3s */
+      var _countNow = lMarkers.length;
+      setTimeout(function() {
+        var _countAfter = Array.isArray(lMarkers) ? lMarkers.length : 0;
+        if (_countAfter >= _countNow && _countAfter > 0) {
+          /* Stable — done */
+          _wdExitReason = 'markers-stable';
+          console.log('[PAWPULSE WATCHDOG] stable at ' + _countAfter + ' markers after ' + elapsed + 'ms');
+        } else {
+          /* Count changed — Firestore still delivering, keep watching */
+          console.warn('[PAWPULSE WATCHDOG] count changed ' + _countNow + '->' + _countAfter + ' — continuing');
+          refreshMapPins('wd-stability-rerender');
+          slowNetWatchdog(elapsed + 3000);
+        }
+      }, 3000);
+      return;
+    }
+    /* Markers exist but Firestore not ready — keep polling */
+    if (_hasMarkers && !_fbReady) {
+      _wdExitReason = 'waiting-fbReady';
+    }
     setTimeout(function() {
       _wdTicks++;
-      if (Array.isArray(lMarkers) && lMarkers.length > 0) { _wdExitReason = 'markers-ok'; return; }
+      var _mLen = Array.isArray(lMarkers) ? lMarkers.length : 0;
+      if (_mLen > 0 && _fbReady) {
+        /* Firestore now ready with markers — run stability check via recursion */
+        slowNetWatchdog(elapsed + 4000);
+        return;
+      }
       if (Array.isArray(reports) && reports.length > 0) {
         console.warn('[PAWPULSE SLOW-NET WATCHDOG] ' + elapsed + 'ms — has data, forcing render');
         _mapReady = true; _recordsReady = true;
         try { map.invalidateSize(true); } catch(e) {}
         renderMarkers();
         _ppDiag('slow-net-wd-' + elapsed);
-        if (Array.isArray(lMarkers) && lMarkers.length > 0) return;
+        if (Array.isArray(lMarkers) && lMarkers.length > 0 && _fbReady) return;
       }
       slowNetWatchdog(elapsed + 4000);
     }, 4000);
@@ -4568,6 +4627,34 @@ function cardHTML(r) {
 }
 
 function openCard(r, cp) {
+  /* DEV_MODE: tap trace panel — bottom-right, 15s */
+  if (DEV_MODE && r) {
+    var _et = document.getElementById('_pp_trace');
+    if (_et) _et.remove();
+    var _tb = document.createElement('div');
+    _tb.id = '_pp_trace';
+    _tb.style.cssText = 'position:fixed;bottom:10px;right:10px;background:#000;color:#0f0;font:10px monospace;padding:8px;z-index:99999;white-space:pre;max-width:260px;border-radius:4px;max-height:260px;overflow:auto';
+    var _vis = isPublicVisible(r);
+    var _inLM = lMarkers.some(function(m){return m._pawpulseId===String(r.id);});
+    var _lsR = (function(){
+      try{var _ls=JSON.parse(localStorage.getItem('pawpulse-v2')||'[]');
+      var _x=_ls.find(function(x){return String(x.id)===String(r.id);});
+      return _x?('yes r='+_x.reunited):'no';}catch(e){return 'err';}
+    })();
+    _tb.textContent = 'TAPPED RECORD\n'
+      + 'id:' + r.id + '\n'
+      + 'type:' + r.type + '\n'
+      + 'reunited:' + r.reunited + '\n'
+      + 'resolved:' + r.resolved + '\n'
+      + 'shelter:' + r.shelter + '\n'
+      + 'source:' + r.source + '\n'
+      + 'updatedAt:' + (r.updatedAt||r.reunitedDate||'none') + '\n'
+      + 'isPublicVisible:' + _vis + '\n'
+      + 'inLMarkers:' + _inLM + '\n'
+      + 'lsHasIt:' + _lsR;
+    document.body.appendChild(_tb);
+    setTimeout(function(){if(_tb.parentNode)_tb.remove();},15000);
+  }
   /* Guard against rapid tapping — cancel any closing animation */
   var card = document.getElementById('pin-card');
   card.classList.remove('closing');
@@ -10229,6 +10316,7 @@ function getSpotlightAnimals() {
 }
 
 function renderSpotlightCardSync(item) {
+  window._currentSpotlight = item; /* expose for debug overlay */
   /* Synchronous fields only — photo, name, label, factual bio tag */
   renderSpotlightCard(item);
 }
