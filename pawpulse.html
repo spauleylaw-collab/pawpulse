@@ -6181,8 +6181,15 @@ var _micActive = null, _micBtn = null, _micRec = null;
 function toggleMic(targetId, btnEl) {
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) {
-    var t = document.getElementById(targetId);
-    if (t) { t.placeholder = 'Voice input not supported in this browser'; t.focus(); }
+    /* SpeechRecognition not available — show visible message, don't leave broken button */
+    if (btnEl) { btnEl.textContent = '🚫'; setTimeout(function(){ btnEl.textContent = '🎤'; }, 2000); }
+    var _tEl = document.getElementById('toast-msg');
+    var _toast = document.getElementById('toast');
+    if (_tEl && _toast) {
+      _tEl.textContent = 'Voice input is not supported in this browser';
+      _toast.classList.add('show');
+      setTimeout(function(){ _toast.classList.remove('show'); }, 3500);
+    }
     return;
   }
   if (_micActive === targetId) { stopMic(); return; }
@@ -6216,8 +6223,13 @@ function toggleMic(targetId, btnEl) {
     var msg = (e.error === 'not-allowed') ? 'Mic permission denied — check browser settings'
       : (e.error === 'no-speech') ? 'No speech detected — try again'
       : 'Voice input unavailable on this browser';
-    var t = document.getElementById(targetId);
-    if (t) { t.placeholder = msg; }
+    var _tEl = document.getElementById('toast-msg');
+    var _toast = document.getElementById('toast');
+    if (_tEl && _toast) {
+      _tEl.textContent = msg;
+      _toast.classList.add('show');
+      setTimeout(function(){ _toast.classList.remove('show'); }, 4000);
+    }
     stopMic();
   };
   _micRec.onend   = function() { stopMic(); };
@@ -6233,6 +6245,8 @@ function stopMic() {
 /* Auto-inject mic buttons into any textarea or text input that doesn't have one yet.
    Call this after any form opens or panel renders. */
 function injectMicButtons(scopeEl) {
+  /* Don't inject mic buttons if SpeechRecognition is not supported (iOS Safari) */
+  if (!window.SpeechRecognition && !window.webkitSpeechRecognition) return;
   var root = scopeEl || document;
   /* Only add mic to textareas (description/notes fields) — not name, ID, color, address etc */
   root.querySelectorAll('textarea:not([data-has-mic])').forEach(function(el) {
