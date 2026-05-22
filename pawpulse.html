@@ -5204,6 +5204,7 @@ async function autoMatchOnIntake(intake) {
   /* Candidate pools */
   var lostCandidates = reports.filter(function(r) {
     if (r.type !== 'lost' || r.reunited || r.shelter) return false;
+    if (!isPublicVisible(r)) return false; /* exclude expired/invisible pins */
     if (!intake.species || !r.species) return true;
     return r.species.toLowerCase() === intake.species.toLowerCase();
   });
@@ -6644,7 +6645,7 @@ function _fmpRevealContact(id) {
 
 async function autoMatchFoundReport(foundRecord) {
   var lostPins = reports.filter(function(r) {
-    return r.type === 'lost' && !r.reunited && !r.shelter;
+    return r.type === 'lost' && !r.reunited && !r.shelter && isPublicVisible(r);
   });
   if (!lostPins.length) return;
 
@@ -10141,7 +10142,7 @@ async function runBatchLostMatch() {
 
   var shelterAnimals = getShelterData({ includeHolds: false });
   var lostPins = reports.filter(function(r){
-    return r.type === 'lost' && !r.reunited && !r.resolved;
+    return r.type === 'lost' && !r.reunited && !r.resolved && isPublicVisible(r);
   });
 
   if (!shelterAnimals.length) {
