@@ -763,13 +763,14 @@ body:has(#view-reports.active) #rail-fab{display:none!important}
     overflow:visible!important
   }
 
-  /* Spotlight: bottom-LEFT, inset 44px to clear phone speaker */
+  /* Spotlight: top-LEFT under nav, inset 44px — first thing seen on map */
   #shelter-spotlight{
-    bottom:40px!important;
+    top:40px!important;
+    bottom:auto!important;
     left:44px!important;
     right:auto!important;
     width:min(160px,36vw)!important;
-    max-height:calc(100vh - 80px)!important
+    max-height:calc(100vh - 90px)!important
   }
 
   /* FAB: bottom-RIGHT, above rail */
@@ -805,12 +806,13 @@ body:has(#view-reports.active) #rail-fab{display:none!important}
   }
   #adopt-search{font-size:.72rem!important}
   #adopt-sort{font-size:.68rem!important;padding:4px 6px!important;max-width:110px!important}
-  /* Pull species chips up beside the search row */
+  /* Pull species chips up beside the search row — collapse flow gap */
   #adopt-chips-row{
     padding:3px 8px!important;
     width:45%!important;
     flex-shrink:0!important;
     margin-top:-38px!important;
+    margin-bottom:-38px!important;
     margin-left:55%!important;
     border-bottom:none!important;
     gap:4px!important;
@@ -835,6 +837,7 @@ body:has(#view-reports.active) #rail-fab{display:none!important}
     flex-shrink:0!important;
     padding:3px 8px!important;
     margin-top:-38px!important;
+    margin-bottom:-38px!important;
     margin-left:50%!important;
     border-bottom:none!important;
     flex-wrap:nowrap!important;
