@@ -850,16 +850,19 @@ body:has(#view-reports.active) #rail-fab{display:none!important}
     box-sizing:border-box!important
   }
   #adopt-chips-row .rpt-chip{padding:3px 8px!important;font-size:.6rem!important}
-  /* Card grid spans full width on next row, restores scroll */
+  /* Card grid: explicit height so iOS can scroll it */
   #adopt-body{
     width:100%!important;
-    min-width:0!important;
-    flex:1 1 auto!important;
+    height:calc(100vh - 120px)!important;
     overflow-y:auto!important;
     -webkit-overflow-scrolling:touch!important;
-    min-height:0!important
+    flex:none!important
   }
-  #view-adopt{overflow:visible!important;max-height:calc(100vh - 78px)!important}
+  #view-adopt{
+    overflow:hidden!important;
+    height:calc(100vh - 78px)!important;
+    max-height:none!important
+  }
   /* Incare: hide all chrome above search */
   #incare-stats-bar{display:none!important}
   /* Hide the entire header block (shelter label + subtitle) */
@@ -901,16 +904,19 @@ body:has(#view-reports.active) #rail-fab{display:none!important}
     background:var(--cream)!important;
     box-sizing:border-box!important
   }
-  /* Incare grid spans full width, restores scroll */
+  /* Incare grid: explicit height so iOS can scroll it */
   #view-incare > div:last-child{
     width:100%!important;
-    min-width:0!important;
-    flex:1 1 auto!important;
+    height:calc(100vh - 120px)!important;
     overflow-y:auto!important;
     -webkit-overflow-scrolling:touch!important;
-    min-height:0!important
+    flex:none!important
   }
-  #view-incare{overflow:visible!important;max-height:calc(100vh - 78px)!important}
+  #view-incare{
+    overflow:hidden!important;
+    height:calc(100vh - 78px)!important;
+    max-height:none!important
+  }
   #incare-filter-row .filter-chip,
   #incare-filter-row button{
     font-size:.56rem!important;padding:2px 6px!important;white-space:nowrap!important
