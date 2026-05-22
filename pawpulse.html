@@ -213,7 +213,6 @@ textarea{min-height:64px}
 body:has(#pin-card.open) #right-rail{display:none!important}
 /* Hide FAB on non-map views — irrelevant on Adopt/InCare/Reports */
 body:has(#view-adopt.active) #rail-fab{display:none!important}
-body:has(#view-incare.active) #rail-fab{display:none!important}
 body:has(#view-reports.active) #rail-fab{display:none!important}
 #pin-card.fading{opacity:0;transform:translateY(-10px) scale(.97);pointer-events:none}
 @keyframes cpop{from{opacity:0;transform:scale(.9) translateY(6px)}to{opacity:1;transform:scale(1) translateY(0)}}
@@ -764,11 +763,11 @@ body:has(#view-reports.active) #rail-fab{display:none!important}
     overflow:visible!important
   }
 
-  /* Spotlight: bottom-LEFT, above rail, compact */
+  /* Spotlight: bottom-RIGHT, above rail — away from phone speaker */
   #shelter-spotlight{
     bottom:40px!important;
-    left:8px!important;
-    right:auto!important;
+    right:60px!important;
+    left:auto!important;
     width:min(160px,36vw)!important;
     max-height:calc(100vh - 80px)!important
   }
@@ -791,23 +790,25 @@ body:has(#view-reports.active) #rail-fab{display:none!important}
   #pin-set-btn{bottom:40px!important}
   .leaflet-bottom.leaflet-right{bottom:40px!important;right:60px!important}
 
-  /* Collapse adopt/incare/reports headers — hide non-essential rows */
+  /* Collapse adopt/incare/reports headers — maximum space recovery */
   .mode-banner{display:none!important}
-  /* Adopt: hide disclaimer + legend, compress header */
+  /* Adopt: hide ALL chrome above search */
+  #adopt-hdr{display:none!important}
   #adopt-disclaimer{display:none!important}
   #adopt-legend{display:none!important}
-  #adopt-hdr{padding:4px 12px 3px!important}
-  #adopt-hdr-title{font-size:.92rem!important}
-  #adopt-hdr-sub{font-size:.68rem!important;margin-top:1px!important}
   #adopt-search-row{padding:4px 10px!important}
-  /* Adopt species row — need to find it; target adopt-species parent */
-  #adopt-species{padding:3px 10px 4px!important}
-  /* Incare: hide stats bar, compress header */
+  #adopt-species{padding:2px 10px 3px!important}
+  /* Incare: hide all chrome above search */
   #incare-stats-bar{display:none!important}
-  #incare-shelter-label{font-size:.82rem!important}
+  #incare-shelter-label{display:none!important}
+  /* hide the subtitle+count div (parent of incare-shelter-label) */
+  #view-incare > div:nth-child(2){padding:0!important;border-bottom:none!important}
   #incare-filter-row{padding:3px 12px!important}
   /* Reports: prevent left panel from being covered */
-  #rpt-left{padding-bottom:40px!important}
+  #rpt-left{
+    padding-bottom:40px!important;
+    padding-left:44px!important
+  }
   /* Compact filter buttons so column clears FAB at bottom-right */
   #map-filters .filter-btn{
     font-size:.6rem!important;
