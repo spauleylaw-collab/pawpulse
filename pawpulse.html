@@ -763,11 +763,11 @@ body:has(#view-reports.active) #rail-fab{display:none!important}
     overflow:visible!important
   }
 
-  /* Spotlight: bottom-RIGHT, above rail — away from phone speaker */
+  /* Spotlight: bottom-LEFT, inset 44px to clear phone speaker */
   #shelter-spotlight{
     bottom:40px!important;
-    right:60px!important;
-    left:auto!important;
+    left:44px!important;
+    right:auto!important;
     width:min(160px,36vw)!important;
     max-height:calc(100vh - 80px)!important
   }
@@ -800,9 +800,10 @@ body:has(#view-reports.active) #rail-fab{display:none!important}
   #adopt-species{padding:2px 10px 3px!important}
   /* Incare: hide all chrome above search */
   #incare-stats-bar{display:none!important}
-  #incare-shelter-label{display:none!important}
-  /* hide the subtitle+count div (parent of incare-shelter-label) */
-  #view-incare > div:nth-child(2){padding:0!important;border-bottom:none!important}
+  /* Hide the entire header block (shelter label + subtitle) */
+  #view-incare > div:nth-child(2){display:none!important}
+  /* Hide card border legend */
+  #incare-legend{display:none!important}
   #incare-filter-row{padding:3px 12px!important}
   /* Reports: prevent left panel from being covered */
   #rpt-left{
