@@ -5192,6 +5192,10 @@ function showCallOwnerPrompt(lostPet, intake) {
 async function autoMatchOnIntake(intake) {
   /* Guard: if a match sheet is already showing for this session, skip */
   if (document.getElementById('_ims') || document.getElementById('intake-found-match-panel')) return;
+  /* Concurrency lock: prevent duplicate in-flight calls for same intake */
+  var _matchKey = String(intake.id || intake.date || Date.now());
+  if (_autoMatchInFlight[_matchKey]) return;
+  _autoMatchInFlight[_matchKey] = true;
   var intakeDesc = [
     intake.species && ('Species: ' + intake.species),
     intake.breed   && ('Breed: '   + intake.breed),
@@ -5199,7 +5203,7 @@ async function autoMatchOnIntake(intake) {
     intake.sex     && ('Sex: '     + intake.sex),
     intake.address && ('Found near: ' + intake.address)
   ].filter(Boolean).join('. ');
-  if (!intakeDesc) return;
+  if (!intakeDesc) { delete _autoMatchInFlight[_matchKey]; return; }
 
   /* Candidate pools */
   var lostCandidates = reports.filter(function(r) {
@@ -5215,7 +5219,10 @@ async function autoMatchOnIntake(intake) {
     return Math.abs(daysSince(r.date) - daysSince(intake.date)) <= 14;
   });
 
-  if (!lostCandidates.length && !foundCandidates.length) return;
+  if (!lostCandidates.length && !foundCandidates.length) {
+    delete _autoMatchInFlight[_matchKey]; /* clear lock — no candidates */
+    return;
+  }
 
   /* AI match for lost pins */
   var lostMatches = [];
@@ -5286,7 +5293,11 @@ async function autoMatchOnIntake(intake) {
     .sort(function(a,b){ return b.score - a.score; })
     .map(function(x){ return x.r; });
 
-  if (!lostMatches.length && !foundMatches.length) return;
+  if (!lostMatches.length && !foundMatches.length) {
+    delete _autoMatchInFlight[_matchKey]; /* clear lock — no sheet shown */
+    return;
+  }
+  delete _autoMatchInFlight[_matchKey]; /* clear lock before showing sheet */
   _showIntakeMatchSheet(intake, lostMatches, lostCandidates, foundMatches);
 }
 
@@ -6178,6 +6189,7 @@ function getPhoto(id) {
 
 /* ── Mic system ─────────────────────────────── */
 var _micActive = null, _micBtn = null, _micRec = null;
+var _autoMatchInFlight = {}; /* keyed by intake id — prevents duplicate concurrent calls */
 
 function toggleMic(targetId, btnEl) {
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
