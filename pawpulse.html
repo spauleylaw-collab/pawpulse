@@ -766,11 +766,12 @@ body:has(#view-reports.active) #rail-fab{display:none!important}
   /* Spotlight: top-LEFT under nav, inset 44px — first thing seen on map */
   #shelter-spotlight{
     top:40px!important;
-    bottom:auto!important;
+    bottom:80px!important;
     left:44px!important;
     right:auto!important;
     width:min(160px,36vw)!important;
-    max-height:calc(100vh - 90px)!important
+    max-height:none!important;
+    overflow-y:auto!important
   }
   /* 'Adoptable Pets' label above spotlight on map */
   #shelter-spotlight::before{
