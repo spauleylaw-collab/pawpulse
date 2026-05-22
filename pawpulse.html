@@ -767,13 +767,21 @@ body:has(#view-reports.active) #rail-fab{display:none!important}
     max-height:calc(100vh - 80px)!important
   }
 
-  /* FAB: bottom-RIGHT, above rail */
+  /* FAB: bottom-RIGHT, offset from filter column */
   #rail-fab{
     bottom:40px!important;
     right:8px!important;
     left:auto!important;
     transform:none!important;
     width:44px!important;height:44px!important;font-size:1.5rem!important
+  }
+  /* Push filters up so FAB doesn't clip bottom filter */
+  #map-filters{
+    top:50%!important;
+    transform:translateY(calc(-50% - 30px))!important;
+    bottom:auto!important;
+    left:auto!important;
+    right:8px!important
   }
 
   /* Banner: just below compressed nav */
@@ -785,22 +793,23 @@ body:has(#view-reports.active) #rail-fab{display:none!important}
   #pin-set-btn{bottom:40px!important}
   .leaflet-bottom.leaflet-right{bottom:40px!important;right:60px!important}
 
-  /* Collapse adopt/incare/reports headers to maximise content area */
-  .mode-banner{padding:2px 10px!important;font-size:.52rem!important}
-  #adopt-hdr{padding:6px 12px 4px!important}
-  #adopt-hdr-title{font-size:1rem!important;margin-bottom:2px!important}
-  #adopt-hdr-sub{font-size:.7rem!important;margin-bottom:2px!important}
-  .adopt-disclaimer{padding:3px 12px!important;font-size:.62rem!important}
-  #adopt-legend{padding:3px 12px!important;font-size:.62rem!important}
-  #adopt-controls{padding:6px 12px!important;gap:6px!important}
-  #adopt-species-row{padding:4px 12px!important;gap:6px!important}
-  #incare-shelter-label{font-size:.95rem!important;padding:4px 12px 2px!important}
-  .incare-subtitle{font-size:.7rem!important;padding:0 12px 4px!important}
-  .incare-stats-row{padding:4px 12px!important;gap:4px!important}
-  .incare-stat-pill{padding:2px 8px!important;font-size:.62rem!important}
-  #incare-search-row{padding:4px 12px!important}
+  /* Collapse adopt/incare/reports headers — hide non-essential rows */
+  .mode-banner{display:none!important}
+  /* Adopt: hide disclaimer + legend, compress header */
+  #adopt-disclaimer{display:none!important}
+  #adopt-legend{display:none!important}
+  #adopt-hdr{padding:4px 12px 3px!important}
+  #adopt-hdr-title{font-size:.92rem!important}
+  #adopt-hdr-sub{font-size:.68rem!important;margin-top:1px!important}
+  #adopt-search-row{padding:4px 10px!important}
+  /* Adopt species row — need to find it; target adopt-species parent */
+  #adopt-species{padding:3px 10px 4px!important}
+  /* Incare: hide stats bar, compress header */
+  #incare-stats-bar{display:none!important}
+  #incare-shelter-label{font-size:.82rem!important}
   #incare-filter-row{padding:3px 12px!important}
-  #incare-legend{padding:3px 12px 4px!important;font-size:.62rem!important}
+  /* Reports: prevent left panel from being covered */
+  #rpt-left{padding-bottom:40px!important}
 }
 </style>
 <script type="application/ld+json">
