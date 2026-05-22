@@ -796,15 +796,54 @@ body:has(#view-reports.active) #rail-fab{display:none!important}
   #adopt-hdr{display:none!important}
   #adopt-disclaimer{display:none!important}
   #adopt-legend{display:none!important}
-  #adopt-search-row{padding:4px 10px!important}
-  #adopt-species{padding:2px 10px 3px!important}
+  /* Adopt: shrink search row so species chips fit on same line */
+  #adopt-search-row{
+    padding:3px 10px!important;
+    width:55%!important;
+    flex-shrink:0!important;
+    border-bottom:none!important
+  }
+  #adopt-search{font-size:.72rem!important}
+  #adopt-sort{font-size:.68rem!important;padding:4px 6px!important;max-width:110px!important}
+  /* Pull species chips up beside the search row */
+  #adopt-chips-row{
+    padding:3px 8px!important;
+    width:45%!important;
+    flex-shrink:0!important;
+    margin-top:-38px!important;
+    margin-left:55%!important;
+    border-bottom:none!important;
+    gap:4px!important;
+    flex-wrap:nowrap!important
+  }
+  #adopt-chips-row .rpt-chip{padding:3px 8px!important;font-size:.6rem!important}
   /* Incare: hide all chrome above search */
   #incare-stats-bar{display:none!important}
   /* Hide the entire header block (shelter label + subtitle) */
   #view-incare > div:nth-child(2){display:none!important}
   /* Hide card border legend */
   #incare-legend{display:none!important}
-  #incare-filter-row{padding:3px 12px!important}
+  /* Incare: shrink search row + pull filter row to same line */
+  #view-incare > div:nth-child(3){
+    width:50%!important;
+    flex-shrink:0!important;
+    padding:3px 10px!important;
+    border-bottom:none!important
+  }
+  #incare-filter-row{
+    width:50%!important;
+    flex-shrink:0!important;
+    padding:3px 8px!important;
+    margin-top:-38px!important;
+    margin-left:50%!important;
+    border-bottom:none!important;
+    flex-wrap:nowrap!important;
+    overflow:hidden!important
+  }
+  #incare-filter-row .filter-chip,
+  #incare-filter-row button{
+    font-size:.56rem!important;padding:2px 6px!important;white-space:nowrap!important
+  }
   /* Reports: prevent left panel from being covered */
   #rpt-left{
     padding-bottom:40px!important;
