@@ -771,8 +771,15 @@ body:has(#view-reports.active) #rail-fab{display:none!important}
     right:auto!important;
     width:min(160px,36vw)!important;
     max-height:none!important;
-    overflow-y:auto!important
+    overflow-y:hidden!important
   }
+  /* Compress spotlight image so Find Me a Home button is always visible */
+  #shelter-spotlight [style*="height:130px"]{
+    height:60px!important;object-fit:cover!important
+  }
+  #spotlight-name{font-size:.72rem!important;margin-bottom:0!important}
+  #spotlight-bio{font-size:.58rem!important;margin-bottom:4px!important}
+  #shelter-spotlight [style*="padding"]{padding:6px 8px!important}
   /* 'Adoptable Pets' label above spotlight on map */
   #shelter-spotlight::before{
     content:'\1F31F Adoptable Pets';
