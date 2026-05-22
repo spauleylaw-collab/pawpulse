@@ -772,6 +772,21 @@ body:has(#view-reports.active) #rail-fab{display:none!important}
     width:min(160px,36vw)!important;
     max-height:calc(100vh - 90px)!important
   }
+  /* 'Adoptable Pets' label above spotlight on map */
+  #shelter-spotlight::before{
+    content:'\1F31F Adoptable Pets';
+    display:block!important;
+    font-family:var(--font-body);
+    font-size:.58rem!important;
+    font-weight:700!important;
+    letter-spacing:.06em!important;
+    text-transform:uppercase!important;
+    color:var(--amber)!important;
+    background:var(--forest)!important;
+    padding:3px 8px!important;
+    border-radius:6px 6px 0 0!important;
+    margin:-1px -1px 0!important
+  }
 
   /* FAB: bottom-RIGHT, above rail */
   #rail-fab{
@@ -797,42 +812,58 @@ body:has(#view-reports.active) #rail-fab{display:none!important}
   #adopt-hdr{display:none!important}
   #adopt-disclaimer{display:none!important}
   #adopt-legend{display:none!important}
-  /* Adopt: shrink search row so species chips fit on same line */
+  /* Adopt: true flex-row header — search + chips on same line, perfectly level */
+  #view-adopt{
+    flex-direction:row!important;
+    flex-wrap:wrap!important;
+    align-content:flex-start!important
+  }
   #adopt-search-row{
-    padding:3px 10px!important;
     width:55%!important;
     flex-shrink:0!important;
+    padding:3px 10px!important;
     border-bottom:none!important;
     position:sticky!important;
     top:0!important;
     z-index:50!important;
-    background:var(--cream)!important
+    background:var(--cream)!important;
+    align-items:center!important;
+    box-sizing:border-box!important
   }
   #adopt-search{font-size:.72rem!important}
   #adopt-sort{font-size:.68rem!important;padding:4px 6px!important;max-width:110px!important}
-  /* Pull species chips up beside the search row — collapse flow gap */
   #adopt-chips-row{
-    padding:3px 8px!important;
     width:45%!important;
     flex-shrink:0!important;
-    margin-top:-38px!important;
-    margin-bottom:-38px!important;
-    margin-left:55%!important;
+    padding:3px 8px!important;
+    margin-top:0!important;
+    margin-bottom:0!important;
+    margin-left:0!important;
     border-bottom:none!important;
     gap:4px!important;
     flex-wrap:nowrap!important;
+    align-items:center!important;
     position:sticky!important;
     top:0!important;
-    z-index:51!important
+    z-index:51!important;
+    background:var(--cream)!important;
+    box-sizing:border-box!important
   }
   #adopt-chips-row .rpt-chip{padding:3px 8px!important;font-size:.6rem!important}
+  /* Card grid spans full width on next row */
+  #adopt-body{width:100%!important;min-width:0!important}
   /* Incare: hide all chrome above search */
   #incare-stats-bar{display:none!important}
   /* Hide the entire header block (shelter label + subtitle) */
   #view-incare > div:nth-child(2){display:none!important}
   /* Hide card border legend */
   #incare-legend{display:none!important}
-  /* Incare: shrink search row + pull filter row to same line */
+  /* Incare: true flex-row header */
+  #view-incare{
+    flex-direction:row!important;
+    flex-wrap:wrap!important;
+    align-content:flex-start!important
+  }
   #view-incare > div:nth-child(3){
     width:50%!important;
     flex-shrink:0!important;
@@ -841,22 +872,29 @@ body:has(#view-reports.active) #rail-fab{display:none!important}
     position:sticky!important;
     top:0!important;
     z-index:50!important;
-    background:var(--cream)!important
+    background:var(--cream)!important;
+    align-items:center!important;
+    box-sizing:border-box!important
   }
   #incare-filter-row{
     width:50%!important;
     flex-shrink:0!important;
     padding:3px 8px!important;
-    margin-top:-38px!important;
-    margin-bottom:-38px!important;
-    margin-left:50%!important;
+    margin-top:0!important;
+    margin-bottom:0!important;
+    margin-left:0!important;
     border-bottom:none!important;
     flex-wrap:nowrap!important;
     overflow:hidden!important;
+    align-items:center!important;
     position:sticky!important;
     top:0!important;
-    z-index:51!important
+    z-index:51!important;
+    background:var(--cream)!important;
+    box-sizing:border-box!important
   }
+  /* Incare grid spans full width */
+  #view-incare > div:last-child{width:100%!important;min-width:0!important}
   #incare-filter-row .filter-chip,
   #incare-filter-row button{
     font-size:.56rem!important;padding:2px 6px!important;white-space:nowrap!important
