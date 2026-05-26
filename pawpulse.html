@@ -888,16 +888,21 @@ body:has(#view-reports.active) #rail-fab{display:none!important}
   }
   #view-incare > div:nth-child(3){
     width:50%!important;
+    max-width:50%!important;
     flex-shrink:0!important;
-    padding:3px 10px!important;
+    padding:3px 10px 3px 8px!important;
     border-bottom:none!important;
     position:sticky!important;
     top:0!important;
     z-index:50!important;
     background:var(--cream)!important;
     align-items:center!important;
-    box-sizing:border-box!important
+    box-sizing:border-box!important;
+    overflow:hidden!important
   }
+  /* Cap search input so sort dropdown stays visible */
+  #incare-search{max-width:120px!important;min-width:0!important}
+  #incare-sort{max-width:100px!important;font-size:.65rem!important;flex-shrink:0!important}
   #incare-filter-row{
     width:50%!important;
     flex-shrink:0!important;
