@@ -912,7 +912,10 @@ body:has(#view-reports.active) #rail-fab{display:none!important}
     margin-left:0!important;
     border-bottom:none!important;
     flex-wrap:nowrap!important;
-    overflow:hidden!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    -webkit-overflow-scrolling:touch!important;
+    scrollbar-width:none!important;
     align-items:center!important;
     position:sticky!important;
     top:0!important;
@@ -920,6 +923,7 @@ body:has(#view-reports.active) #rail-fab{display:none!important}
     background:var(--cream)!important;
     box-sizing:border-box!important
   }
+  #incare-filter-row::-webkit-scrollbar{display:none!important}
   /* Incare grid: explicit height so iOS can scroll it */
   #view-incare > div:last-child{
     width:100%!important;
