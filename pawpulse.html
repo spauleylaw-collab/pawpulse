@@ -4963,6 +4963,7 @@ function cardHTML(r) {
     + migrateBtn
     + whatNextSection
     + '<div style="text-align:center;margin-top:4px;display:flex;justify-content:center;gap:16px"><button onclick="printReport(' + r.id + ')" style="background:none;border:none;cursor:pointer;font-size:.7rem;color:var(--warm-mid);text-decoration:underline">Print report</button>'
+    + (!reunited ? '<button onclick="shareRecord(' + r.id + ')" style="background:none;border:none;cursor:pointer;font-size:.7rem;color:var(--amber);font-weight:600;text-decoration:underline">📤 Share</button>' : '')
     + '</div>'
     + '</div>';
 }
