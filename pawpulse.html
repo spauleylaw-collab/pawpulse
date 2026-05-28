@@ -1061,7 +1061,7 @@ body:has(#inq-modal.open) #rail-fab{display:none!important}
     <button class="tab-btn tab-public"        onclick="setView('adopt',this)" title="Adoption">🏠 <span class="tab-lbl">Adopt</span></button>
     <!-- STAFF MODE -->
     <div class="nav-mode-sep"></div>
-    <button class="tab-btn tab-ops" onclick="setView('incare',this)"   title="In Care">🐾 <span class="tab-lbl">Adoptable</span> <span id="nav-incare-count" style="display:none;background:var(--found-g);color:#fff;border-radius:999px;font-size:.6rem;padding:1px 5px;margin-left:2px"></span></button>
+    <button class="tab-btn tab-ops" onclick="setView('incare',this)"   title="In Care">🐾 <span class="tab-lbl">In Care</span> <span id="nav-incare-count" style="display:none;background:var(--found-g);color:#fff;border-radius:999px;font-size:.6rem;padding:1px 5px;margin-left:2px"></span></button>
     <!-- ADMIN MODE -->
     <div class="nav-mode-sep"></div>
     <button class="tab-btn tab-admin" onclick="setView('reports',this)" title="Reports & Admin">📊 <span class="tab-lbl">Reports</span></button>
@@ -4894,8 +4894,44 @@ function cardHTML(r) {
     + reuniteBtn
     + migrateBtn
     + whatNextSection
-    + '<div style="text-align:center;margin-top:4px"><button onclick="printReport(' + r.id + ')" style="background:none;border:none;cursor:pointer;font-size:.7rem;color:var(--warm-mid);text-decoration:underline">Print report</button></div>'
+    + '<div style="text-align:center;margin-top:4px;display:flex;justify-content:center;gap:16px"><button onclick="printReport(' + r.id + ')" style="background:none;border:none;cursor:pointer;font-size:.7rem;color:var(--warm-mid);text-decoration:underline">Print report</button>'
+    + (!reunited ? '<button onclick="shareRecord(' + r.id + ')" style="background:none;border:none;cursor:pointer;font-size:.7rem;color:var(--amber);font-weight:600;text-decoration:underline">📤 Share</button>' : '')
+    + '</div>'
     + '</div>';
+}
+
+function shareRecord(id) {
+  var r = reports.find(function(x){ return String(x.id) === String(id); });
+  if (!r) return;
+  var status = r.type === 'lost' ? '🔴 LOST PET' : '🟢 FOUND PET';
+  var name   = r.name ? r.name : (r.species || 'Pet');
+  var desc   = [];
+  if (r.species) desc.push(r.species);
+  if (r.breed)   desc.push(r.breed);
+  if (r.color)   desc.push(r.color);
+  if (r.sex)     desc.push(r.sex);
+  var area = r.address || (r.lat && r.lng ? 'Hastings, NE area' : 'Adams County, NE');
+  var url  = 'https://pawpulse.net';
+  var text = status + ' — ' + name + '\n'
+    + (desc.length ? desc.join(' · ') + '\n' : '')
+    + 'Last seen near: ' + area + '\n'
+    + (r.notes ? r.notes.slice(0, 120) + (r.notes.length > 120 ? '…' : '') + '\n' : '')
+    + '\nView live report → ' + url
+    + '\n(Posted on PawPulse — Adams County, NE)';
+  if (navigator.share) {
+    navigator.share({ title: status + ' — ' + name, text: text, url: url })
+      .catch(function(e){ if (e.name !== 'AbortError') console.warn('Share error:', e); });
+  } else {
+    navigator.clipboard ? navigator.clipboard.writeText(text).then(function(){
+      showToast('✅ Copied to clipboard — paste to share');
+    }) : (function(){
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+      showToast('✅ Copied to clipboard — paste to share');
+    })();
+  }
 }
 
 function openCard(r, cp) {
