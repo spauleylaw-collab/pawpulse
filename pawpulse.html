@@ -708,6 +708,9 @@ body:has(#inq-modal.open) #rail-fab{display:none!important}
   #staff-badge{padding:2px 7px!important;font-size:.6rem!important}
   #map-banner{display:none!important}
   #orientation-strip{display:none!important}
+  /* Hide report print/share action bar in landscape — saves vertical space */
+  #rpt-action-bar{display:none!important}
+
   /* Reports: narrow left column so right panel dominates */
   #rpt-left{
     width:160px!important;
@@ -1314,7 +1317,7 @@ body:has(#inq-modal.open) #rail-fab{display:none!important}
           <button onclick="closeReportPanel()" style="padding:6px 9px;font-size:.8rem;border-radius:7px;border:none;background:var(--cream-2);cursor:pointer;flex-shrink:0;margin-left:8px" class="desktop-close-btn">✕</button>
         </div>
         <!-- Action buttons — lean, right-aligned -->
-        <div style="display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;flex-shrink:0">
+        <div id="rpt-action-bar" style="display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;flex-shrink:0">
           <button onclick="printActiveReport()" title="Print" style="padding:5px 8px;font-size:.68rem;border-radius:6px;border:1px solid var(--cream-3);background:var(--cream);cursor:pointer;touch-action:manipulation;color:var(--warm-dk)">🖨️</button>
           <button onclick="exportReportWord()" title="Export Word" style="padding:5px 8px;font-size:.68rem;border-radius:6px;border:1px solid #2050a0;background:var(--cream);cursor:pointer;touch-action:manipulation;color:#2050a0">📄</button>
           <button onclick="emailActiveReport()" title="Email" style="padding:5px 8px;font-size:.68rem;border-radius:6px;border:1px solid #059669;background:var(--cream);cursor:pointer;touch-action:manipulation;color:#059669">✉️</button>
