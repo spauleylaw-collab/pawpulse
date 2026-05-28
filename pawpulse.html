@@ -4745,7 +4745,8 @@ function cardHTML(r) {
       actionBtns = '<div style="display:flex;gap:7px;margin:8px 0 4px">'
         + '<a href="tel:' + tel + '" style="flex:1;display:block;padding:9px;text-align:center;background:var(--forest);color:#fff;border-radius:8px;font-family:var(--font-display);font-size:.8rem;font-weight:700;text-decoration:none">📞 Call Owner</a>'
         + '<a href="sms:' + tel + '" style="flex:1;display:block;padding:9px;text-align:center;background:#2050a0;color:#fff;border-radius:8px;font-family:var(--font-display);font-size:.8rem;font-weight:700;text-decoration:none">💬 Text Owner</a>'
-        + '</div>';
+        + '</div>'
+        + '<button onclick="shareRecord(' + r.id + ')" style="width:100%;margin:6px 0 0;padding:9px;font-family:var(--font-display);font-size:.8rem;font-weight:700;border:1.5px solid var(--amber);border-radius:8px;cursor:pointer;background:rgba(201,132,26,.1);color:var(--amber);touch-action:manipulation">📤 Share This Pet</button>';
     }
   } else if (!lost && r.finder && r.intakeType !== 'hold') {
     contact = '';
@@ -4895,7 +4896,6 @@ function cardHTML(r) {
     + migrateBtn
     + whatNextSection
     + '<div style="text-align:center;margin-top:4px;display:flex;justify-content:center;gap:16px"><button onclick="printReport(' + r.id + ')" style="background:none;border:none;cursor:pointer;font-size:.7rem;color:var(--warm-mid);text-decoration:underline">Print report</button>'
-    + (!reunited ? '<button onclick="shareRecord(' + r.id + ')" style="background:none;border:none;cursor:pointer;font-size:.7rem;color:var(--amber);font-weight:600;text-decoration:underline">📤 Share</button>' : '')
     + '</div>'
     + '</div>';
 }
