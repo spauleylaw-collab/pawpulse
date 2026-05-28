@@ -1054,7 +1054,7 @@ body:has(#view-reports.active) #rail-fab{display:none!important}
     <button class="tab-btn tab-public"        onclick="setView('adopt',this)" title="Adoption">🏠 <span class="tab-lbl">Adopt</span></button>
     <!-- STAFF MODE -->
     <div class="nav-mode-sep"></div>
-    <button class="tab-btn tab-ops" onclick="setView('incare',this)"   title="In Care">🐾 <span class="tab-lbl">At Heartland</span> <span id="nav-incare-count" style="display:none;background:var(--found-g);color:#fff;border-radius:999px;font-size:.6rem;padding:1px 5px;margin-left:2px"></span></button>
+    <button class="tab-btn tab-ops" onclick="setView('incare',this)"   title="In Care">🐾 <span class="tab-lbl">Adoptable</span> <span id="nav-incare-count" style="display:none;background:var(--found-g);color:#fff;border-radius:999px;font-size:.6rem;padding:1px 5px;margin-left:2px"></span></button>
     <!-- ADMIN MODE -->
     <div class="nav-mode-sep"></div>
     <button class="tab-btn tab-admin" onclick="setView('reports',this)" title="Reports & Admin">📊 <span class="tab-lbl">Reports</span></button>
@@ -1081,7 +1081,7 @@ body:has(#view-reports.active) #rail-fab{display:none!important}
   title="Report a pet / Log intake">+</button>
 
 <!-- Orientation strip -->
-<div id="orientation-strip" style="display:none;position:fixed;top:var(--nav-h);left:0;right:0;z-index:999;background:rgba(30,55,38,.97);border-bottom:1px solid rgba(122,172,130,.25);border-bottom:1px solid rgba(122,172,130,.3);color:rgba(255,255,255,.78);text-align:center;font-size:.8rem;font-family:var(--font-body);padding:4px 14px;letter-spacing:.01em;pointer-events:none"><div style="font-size:.78rem;font-weight:600;color:rgba(255,255,255,.95);margin-bottom:1px">See lost pets, found animals, and pets in care — all in real time.</div><div style="font-size:.68rem;color:rgba(255,255,255,.75)">Tap a pin to help, or tap <strong style="font-weight:700">+</strong> to post a report. <span style="opacity:.7;font-style:italic">You might reunite a pet today.</span></div></div>
+<div id="orientation-strip" style="display:none;position:fixed;top:var(--nav-h);left:0;right:0;z-index:999;background:rgba(30,55,38,.97);border-bottom:1px solid rgba(122,172,130,.25);border-bottom:1px solid rgba(122,172,130,.3);color:rgba(255,255,255,.78);text-align:center;font-size:.8rem;font-family:var(--font-body);padding:4px 14px;letter-spacing:.01em;pointer-events:none"><div style="font-size:.78rem;font-weight:600;color:rgba(255,255,255,.95);margin-bottom:1px">Lost, found, and adoptable pets near you — updated live.</div><div style="font-size:.68rem;color:rgba(255,255,255,.75)">Tap a pin to help, or tap <strong style="font-weight:700">+</strong> to post a lost or found report. <span style="opacity:.7;font-style:italic">You might reunite a pet today.</span></div></div>
 
 <!-- ADOPT VIEW -->
 <div id="view-adopt" class="view">
@@ -10957,7 +10957,7 @@ function maybeShowTutorial() {
   <span>·</span>
   <a href="/found-pets-hastings-ne" style="color:rgba(255,255,255,.5);text-decoration:none">Found pets in Hastings</a>
   <span>·</span>
-  <a href="/pets-in-care-hastings-ne" style="color:rgba(255,255,255,.5);text-decoration:none">Pets in care at Heartland</a>
+  <a href="/pets-in-care-hastings-ne" style="color:rgba(255,255,255,.5);text-decoration:none">Adoptable pets at Heartland</a>
   <span>·</span>
   <span>Hastings &amp; Adams County, NE</span>
 </footer>
