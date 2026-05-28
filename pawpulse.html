@@ -4511,6 +4511,51 @@ function daysSince(iso) {
   return (Date.now() - new Date(iso).getTime()) / 86400000;
 }
 
+function copyAdoptBio(id) {
+  var r = reports.find(function(x){ return x.id === id; });
+  if (!r) return;
+  var name = r.name || r.species || 'This pet';
+  var desc = [r.species, r.breed, r.sex, r.color].filter(Boolean).join(' · ');
+  var days = r.dateAvailable ? Math.floor(daysSince(r.dateAvailable)) : 0;
+  var bio = r.bio || r.notes || '';
+  var text = '🌟 Meet ' + name + '! 🐾\n'
+    + (desc ? desc + '\n' : '')
+    + (days > 0 ? 'Waiting ' + days + ' day' + (days!==1?'s':'') + ' for a forever home.\n' : '')
+    + (bio ? '\n' + bio.slice(0, 300) + (bio.length > 300 ? '…' : '') + '\n' : '')
+    + '\n📍 ' + (r.shelterName || activeShelter) + ' — Hastings, NE'
+    + '\n📲 View profile → https://pawpulse.net'
+    + '\n\n#AdoptDontShop #' + (r.species||'Pet') + 'sOfInstagram #HeartlandPetConnection #HastingsNE';
+  navigator.clipboard ? navigator.clipboard.writeText(text).then(function(){
+    showToast('✅ Adoption bio copied — paste to Facebook, Instagram, or anywhere');
+  }) : (function(){
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    showToast('✅ Adoption bio copied!');
+  })();
+}
+
+function shareShelterAnimal(id) {
+  var r = reports.find(function(x){ return x.id === id; });
+  if (!r) return;
+  var name = r.name || r.species || 'This pet';
+  var title = '🌟 ' + name + ' is looking for a forever home!';
+  var url = 'https://pawpulse.net';
+  var text = title + '\n'
+    + [r.species, r.breed, r.color, r.sex].filter(Boolean).join(' · ') + '\n'
+    + (r.shelterName || activeShelter) + ' — Hastings, NE\n'
+    + 'View profile → ' + url;
+  if (navigator.share) {
+    navigator.share({ title: title, text: text, url: url })
+      .catch(function(e){ if (e.name !== 'AbortError') console.warn('Share error:', e); });
+  } else {
+    navigator.clipboard.writeText(text).then(function(){
+      showToast('✅ Copied — paste to Facebook, Nextdoor, or social media');
+    });
+  }
+}
+
 function setAdoptionStatus(id, status) {
   var r = reports.find(function(x){ return x.id===id; });
   if (!r) return;
@@ -7804,6 +7849,15 @@ function selectIntake(id) {
           ? '<div style="font-size:.74rem;color:#3060c0;margin-bottom:10px">🏠 Visible on map as adoption-ready · Blue pin</div>'
           : '<div style="font-size:.74rem;color:var(--warm-mid);margin-bottom:10px">Mark "Adoptable" to surface on the public map</div>')
       : '')
+    + (r.adoptionStatus === 'available' ? (
+      '<div class="sh-sec">📤 Share &amp; Post</div>'
+      + '<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px">'
+      + '<button class="sh-btn" onclick="copyAdoptBio(' + r.id + ')" style="width:100%">📋 Copy Adoption Bio</button>'
+      + '<a href="https://www.petfinder.com/add-your-pets/" target="_blank" class="sh-btn" style="display:block;text-align:center;text-decoration:none">🐾 Open Petfinder</a>'
+      + '<a href="https://www.adoptapet.com/add-pet" target="_blank" class="sh-btn" style="display:block;text-align:center;text-decoration:none">🏠 Open Adopt-a-Pet</a>'
+      + '<button class="sh-btn" onclick="shareShelterAnimal(' + r.id + ')" style="width:100%">📤 Share on Social</button>'
+      + '</div>'
+    ) : '')
     + '<div class="sh-sec">Activity Log</div>'
     + '<div class="sh-log">' + log + '</div>'
     + (r.inquiries && r.inquiries.length ? (
