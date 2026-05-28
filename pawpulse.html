@@ -214,6 +214,13 @@ body:has(#pin-card.open) #right-rail{display:none!important}
 /* Hide FAB on non-map views — irrelevant on Adopt/InCare/Reports */
 body:has(#view-adopt.active) #rail-fab{display:none!important}
 body:has(#view-reports.active) #rail-fab{display:none!important}
+/* FAB hidden when card/form/sheet is open */
+body:has(#pin-card.open) #rail-fab{display:none!important}
+body:has(#side-panel.open) #rail-fab{display:none!important}
+body:has(#intake-modal.open) #rail-fab{display:none!important}
+body:has(#_ims) #rail-fab{display:none!important}
+body:has(#report-picker[style*='flex']) #rail-fab{display:none!important}
+body:has(#inq-modal.open) #rail-fab{display:none!important}
 #pin-card.fading{opacity:0;transform:translateY(-10px) scale(.97);pointer-events:none}
 @keyframes cpop{from{opacity:0;transform:scale(.9) translateY(6px)}to{opacity:1;transform:scale(1) translateY(0)}}
 .pc-close{position:absolute;top:6px;right:6px;background:rgba(42,31,18,.55);color:#fff;border:none;cursor:pointer;width:44px;height:44px;border-radius:50%;font-size:.95rem;line-height:44px;text-align:center;z-index:1900;display:flex;align-items:center;justify-content:center;touch-action:manipulation}@media(max-width:640px){.pc-close{top:calc(env(safe-area-inset-top,0px) + 10px)!important;right:10px!important;z-index:1900!important}}
