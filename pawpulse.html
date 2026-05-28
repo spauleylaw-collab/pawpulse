@@ -708,10 +708,18 @@ body:has(#inq-modal.open) #rail-fab{display:none!important}
   #staff-badge{padding:2px 7px!important;font-size:.6rem!important}
   #map-banner{display:none!important}
   #orientation-strip{display:none!important}
-  /* Reports: always respect left safe-area (notch/speaker) on any landscape phone */
+  /* Reports: shrink left column + safe-area in landscape */
   #rpt-left{
-    padding-left:max(44px, env(safe-area-inset-left, 0px) + 12px)!important
+    width:200px!important;
+    padding-left:max(44px, env(safe-area-inset-left, 0px) + 12px)!important;
+    overflow-y:auto!important
   }
+  /* Compress step headings and form elements to fit narrow column */
+  #rpt-left [style*='font-size:.65rem']{ font-size:.55rem!important }
+  #rpt-left select, #rpt-left input{ font-size:.72rem!important;padding:5px 8px!important }
+  #rpt-left [style*='padding:14px']{ padding:8px 10px!important }
+  #rpt-left [style*='margin-bottom:10px']{ margin-bottom:5px!important }
+  #rpt-run-btn{ font-size:.78rem!important;padding:9px!important }
 }
 
 /* ── Landscape phone: aggressive space recovery (viewport ≤620px tall) ── */
