@@ -2026,12 +2026,19 @@ function startFirestoreListener() {
         _recordsReady = true;
         tryInitialRender('firestore-changed-ready');
         refreshMapPins('firestore-changed-full-render');
-        /* Rebuild open card so photo appears without refresh */
+        /* Rebuild open card so photo appears without refresh.
+           Use _photoCache as source — save() strips r.photo before this runs. */
         if (window._openPinId) {
           var _openRec = reports.find(function(r){ return String(r.id) === String(window._openPinId); });
-          if (_openRec && _openRec.photo) {
+          if (_openRec) {
+            var _cachedPhoto = _photoCache[String(_openRec.id)];
+            if (_cachedPhoto && !_openRec.photo) _openRec.photo = _cachedPhoto;
             var _body = document.getElementById('pin-card-body');
-            if (_body) _body.innerHTML = cardHTML(_openRec);
+            var _existingImg = _body ? _body.querySelector('.pc-img') : null;
+            /* Only rebuild if photo just became available and card shows no-img */
+            if (_body && _openRec.photo && !_existingImg) {
+              _body.innerHTML = cardHTML(_openRec);
+            }
           }
         }
         renderIncareView();
