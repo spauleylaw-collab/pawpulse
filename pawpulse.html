@@ -10,7 +10,7 @@
 <!-- Open Graph -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://pawpulse.net">
-<meta property="og:title" content="PawPulse — Lost &amp; Found Pets · Hastings, NE">
+<meta property="og:title" content="PawPulse — Lost, Found &amp; Adoptable Pets · Hastings, NE">
 <meta property="og:description" content="Live lost pet map for Hastings, NE. See lost pets, found animals, and shelter intake in real time.">
 <meta property="og:site_name" content="PawPulse">
 <!-- Twitter Card -->
@@ -1883,6 +1883,24 @@ function tryInitialRender(reason) {
     _initialRenderDone = true;
     refreshMapPins('initial-ready-' + reason);
     setTimeout(function(){ refreshMapPins('initial-confirm-500'); }, 500);
+    /* Deep link: open card if ?pet=ID in URL — fires once after data is ready */
+    setTimeout(function() {
+      try {
+        var _params = new URLSearchParams(window.location.search);
+        var _petId = _params.get('pet') || _params.get('card') || _params.get('report');
+        if (_petId && !window._deepLinkOpened) {
+          window._deepLinkOpened = true;
+          var _petRec = reports.find(function(r){ return String(r.id) === String(_petId); });
+          if (_petRec && isPublicVisible(_petRec)) {
+            /* Pan map to pin location if available */
+            if (_petRec.lat && _petRec.lng) {
+              try { map.setView([_petRec.lat, _petRec.lng], 14); } catch(e) {}
+            }
+            openCard(_petRec, null);
+          }
+        }
+      } catch(e) { console.warn('[DEEP LINK] error:', e.message); }
+    }, 800);
     setTimeout(function(){
       if (Array.isArray(reports) && reports.length > 0 && Array.isArray(lMarkers) && lMarkers.length === 0) {
         _initialRenderDone = false;
@@ -4574,7 +4592,7 @@ function shareShelterAnimal(id) {
   if (!r) return;
   var name = r.name || r.species || 'This pet';
   var title = '🌟 ' + name + ' is looking for a forever home!';
-  var url = 'https://pawpulse.net';
+  var url = 'https://pawpulse.net/?pet=' + r.id;
   var text = title + '\n'
     + [r.species, r.breed, r.color, r.sex].filter(Boolean).join(' · ') + '\n'
     + (r.shelterName || activeShelter) + ' — Hastings, NE\n'
@@ -4995,7 +5013,7 @@ function shareRecord(id) {
   if (r.color)   desc.push(r.color);
   if (r.sex)     desc.push(r.sex);
   var area = r.address || (r.lat && r.lng ? 'Hastings, NE area' : 'Adams County, NE');
-  var url  = 'https://pawpulse.net';
+  var url  = 'https://pawpulse.net/?pet=' + r.id;
   var text = status + ' — ' + name + '\n'
     + (desc.length ? desc.join(' · ') + '\n' : '')
     + 'Last seen near: ' + area + '\n'
