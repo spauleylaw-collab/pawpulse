@@ -4507,6 +4507,17 @@ function daysSince(iso) {
 function setAdoptionStatus(id, status) {
   var r = reports.find(function(x){ return x.id===id; });
   if (!r) return;
+  /* HOLD ENFORCEMENT: block available if animal is in mandatory hold */
+  if (status === 'available') {
+    var _holdWait = daysUntilAdoptEligible(r);
+    if (_holdWait > 0) {
+      var _isBite = r.intakeType === 'hold' && r.holdType === 'bite';
+      alert(_isBite
+        ? '⛔ Bite quarantine in progress — ' + _holdWait + ' day' + (_holdWait!==1?'s':'') + ' remaining. Cannot list for adoption until quarantine is complete.'
+        : '⛔ Hold period — ' + _holdWait + ' day' + (_holdWait!==1?'s':'') + ' remaining before this animal is eligible for adoption.');
+      return;
+    }
+  }
   r.adoptionStatus = status;
   if (status === 'available' && !r.dateAvailable) r.dateAvailable = new Date().toISOString();
   if (!r.shelterLog) r.shelterLog = [];
@@ -6591,6 +6602,16 @@ function validateRecordWrite(existing, incoming, source) {
   if (existing && existing.resolved === true && incoming.resolved === false) {
     throw new Error('DOCTRINE VIOLATION: cannot unset resolved');
   }
+  /* HOLD ENFORCEMENT: adoptionStatus cannot be set to available during active hold.
+     This is the universal source-of-truth gate — applies to ALL write paths,
+     ALL intake types, ALL staff panels, cross-device and on reload. */
+  if (incoming.adoptionStatus === 'available' && typeof daysUntilAdoptEligible === 'function') {
+    var _holdDays = daysUntilAdoptEligible(incoming);
+    if (_holdDays > 0) {
+      throw new Error('HOLD VIOLATION: Animal cannot be marked adoptable while hold is active. '
+        + _holdDays + ' day' + (_holdDays !== 1 ? 's' : '') + ' remaining.');
+    }
+  }
   return true;
 }
 
@@ -6634,6 +6655,15 @@ function compressDataUrl(dataUrl, callback) {
 
 function writeAnimalRecord(r, source) {
   /* The only entry point for animal record persistence */
+  /* HOLD SAFETY NET: strip adoptable status silently if hold is still active.
+     Belt-and-suspenders behind validateRecordWrite — prevents any future UI path
+     from accidentally persisting available during hold. */
+  if (r.adoptionStatus === 'available' && typeof daysUntilAdoptEligible === 'function') {
+    if (daysUntilAdoptEligible(r) > 0) {
+      console.warn('[HOLD SAFETY NET] Stripped adoptionStatus=available during active hold for id:', r.id);
+      r = Object.assign({}, r, { adoptionStatus: '' });
+    }
+  }
   var existing = reports.find(function(x){ return String(x.id) === String(r.id); });
   try {
     validateRecordWrite(existing, r, source || r.source || 'staff');
@@ -7721,7 +7751,9 @@ function selectIntake(id) {
     + '</div>'
     + (!r.reunited ? '<div class="sh-sec" style="margin-top:14px">Adoption Status</div>'
       + '<div class="sh-action-btns" style="margin-bottom:4px">'
-      + '<button class="sh-btn' + (r.adoptionStatus==='available'?' primary':'') + '" onclick="setAdoptionStatus(' + r.id + ',\'available\')">🏠 Available</button>'
+      + '<button class="sh-btn' + (r.adoptionStatus==='available'?' primary':'') + '"'
+        + (daysUntilAdoptEligible(r) > 0 ? ' disabled title="Hold active — cannot mark adoptable until hold expires"' : '')
+        + ' onclick="setAdoptionStatus(' + r.id + ',\'available\')">🏠 Available</button>'
       + '<button class="sh-btn' + (r.adoptionStatus==='pending'?' primary':'') + '"   onclick="setAdoptionStatus(' + r.id + ',\'pending\')">⏳ Pending</button>'
       + '<button class="sh-btn' + (r.adoptionStatus==='adopted'?' primary':'') + '"   onclick="setAdoptionStatus(' + r.id + ',\'adopted\')">🎉 Adopted</button>'
       + '</div>'
