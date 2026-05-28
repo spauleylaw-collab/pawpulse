@@ -4596,14 +4596,29 @@ function shareShelterAnimal(id) {
   var text = title + '\n'
     + [r.species, r.breed, r.color, r.sex].filter(Boolean).join(' · ') + '\n'
     + (r.shelterName || activeShelter) + ' — Hastings, NE\n'
-    + 'View profile → ' + url;
+    + 'Adopt from Heartland Pet Connection — Hastings, NE';
+  var shareData = { title: title, text: text, url: url };
+  /* Attempt native photo sharing if photo available */
+  var photo = r.photo || _photoCache[String(r.id)] || null;
+  if (photo && navigator.share && navigator.canShare) {
+    var imgFile = _photoToFile(photo, (name).replace(/\s+/g, '-').toLowerCase());
+    if (imgFile) {
+      var dataWithFile = Object.assign({}, shareData, { files: [imgFile] });
+      try {
+        if (navigator.canShare(dataWithFile)) {
+          navigator.share(dataWithFile)
+            .catch(function(e){ if (e.name !== 'AbortError') console.warn('Share error:', e); });
+          return;
+        }
+      } catch(e) { /* canShare threw — fall through */ }
+    }
+  }
   if (navigator.share) {
-    navigator.share({ title: title, text: text, url: url })
+    navigator.share(shareData)
       .catch(function(e){ if (e.name !== 'AbortError') console.warn('Share error:', e); });
   } else {
-    navigator.clipboard.writeText(text).then(function(){
-      showToast('✅ Copied — paste to Facebook, Nextdoor, or social media');
-    });
+    (navigator.clipboard ? navigator.clipboard.writeText(text + '\n' + url) : Promise.resolve())
+      .then(function(){ showToast('✅ Copied — paste to Facebook, Nextdoor, or social media'); });
   }
 }
 
@@ -5002,6 +5017,20 @@ function cardHTML(r) {
     + '</div>';
 }
 
+/* Convert a base64 dataURL to a File object for native photo sharing.
+   Returns null safely if conversion fails — callers fall back to text-only. */
+function _photoToFile(dataUrl, filename) {
+  try {
+    var parts = dataUrl.split(',');
+    var mime  = (parts[0].match(/:(.*?);/) || ['','image/jpeg'])[1];
+    var ext   = mime === 'image/png' ? '.png' : '.jpg';
+    var bytes = atob(parts[1]);
+    var arr   = new Uint8Array(bytes.length);
+    for (var i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+    return new File([arr], (filename || 'pet') + ext, { type: mime });
+  } catch(e) { console.warn('[SHARE] photo conversion failed:', e.message); return null; }
+}
+
 function shareRecord(id) {
   var r = reports.find(function(x){ return String(x.id) === String(id); });
   if (!r) return;
@@ -5018,17 +5047,33 @@ function shareRecord(id) {
     + (desc.length ? desc.join(' · ') + '\n' : '')
     + 'Last seen near: ' + area + '\n'
     + (r.notes ? r.notes.slice(0, 120) + (r.notes.length > 120 ? '…' : '') + '\n' : '')
-    + '\nView live report → ' + url
-    + '\n(Posted on PawPulse — Adams County, NE)';
+    + '\nPosted on PawPulse — Adams County, NE';
+  var shareData = { title: status + ' — ' + name, text: text, url: url };
+  /* Attempt native photo sharing if photo available and browser supports file sharing */
+  var photo = r.photo || _photoCache[String(r.id)] || null;
+  if (photo && navigator.share && navigator.canShare) {
+    var imgFile = _photoToFile(photo, (r.name || r.species || 'pet').replace(/\s+/g, '-').toLowerCase());
+    if (imgFile) {
+      var dataWithFile = Object.assign({}, shareData, { files: [imgFile] });
+      try {
+        if (navigator.canShare(dataWithFile)) {
+          navigator.share(dataWithFile)
+            .catch(function(e){ if (e.name !== 'AbortError') console.warn('Share error:', e); });
+          return;
+        }
+      } catch(e) { /* canShare threw — fall through to text share */ }
+    }
+  }
+  /* Text + link share (no photo, or file sharing not supported) */
   if (navigator.share) {
-    navigator.share({ title: status + ' — ' + name, text: text, url: url })
+    navigator.share(shareData)
       .catch(function(e){ if (e.name !== 'AbortError') console.warn('Share error:', e); });
   } else {
-    navigator.clipboard ? navigator.clipboard.writeText(text).then(function(){
+    navigator.clipboard ? navigator.clipboard.writeText(text + '\n' + url).then(function(){
       showToast('✅ Copied to clipboard — paste to share');
     }) : (function(){
       var ta = document.createElement('textarea');
-      ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      ta.value = text + '\n' + url; ta.style.position = 'fixed'; ta.style.opacity = '0';
       document.body.appendChild(ta); ta.select();
       document.execCommand('copy'); document.body.removeChild(ta);
       showToast('✅ Copied to clipboard — paste to share');
