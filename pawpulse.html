@@ -3285,6 +3285,20 @@ function openAnimalEdit(id) {
 
     /* ── Save (buttons in static footer, set id) ── */
     + '';
+  /* ── Adoption shortcuts: inject after body if animal is available ── */
+  if (r.adoptionStatus === 'available') {
+    var _shareDiv = document.createElement('div');
+    _shareDiv.style.cssText = 'margin-top:16px;padding:14px;background:var(--cream-2);border-radius:10px;border:1px solid var(--cream-3)';
+    _shareDiv.innerHTML = '<div style="font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--amber);margin-bottom:10px">📤 Share &amp; Post</div>'
+      + '<div style="display:flex;flex-direction:column;gap:8px">'
+      + '<button class="sh-btn" onclick="copyAdoptBio(' + r.id + ')" style="width:100%;text-align:left">📋 Copy Adoption Bio</button>'
+      + '<button class="sh-btn" onclick="shareShelterAnimal(' + r.id + ')" style="width:100%;text-align:left">📲 Share on Social / Copy Link</button>'
+      + '<a href="https://www.petfinder.com/add-your-pets/" target="_blank" class="sh-btn" style="display:block;text-align:left;text-decoration:none">🐾 Open Petfinder</a>'
+      + '<a href="https://www.adoptapet.com/add-pet" target="_blank" class="sh-btn" style="display:block;text-align:left;text-decoration:none">🏠 Open Adopt-a-Pet</a>'
+      + '</div>';
+    var _aeBody = document.getElementById('animal-edit-body');
+    if (_aeBody) _aeBody.appendChild(_shareDiv);
+  }
   /* Store id for footer button and show footer */
   window._aeEditId = r.id;
   var aeFooter = document.getElementById('animal-edit-footer');
