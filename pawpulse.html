@@ -4563,7 +4563,7 @@ function daysSince(iso) {
 }
 
 function copyAdoptBio(id) {
-  var r = reports.find(function(x){ return x.id === id; });
+  var r = reports.find(function(x){ return String(x.id) === String(id); });
   if (!r) return;
   var name = r.name || r.species || 'This pet';
   var desc = [r.species, r.breed, r.sex, r.color].filter(Boolean).join(' · ');
@@ -4588,7 +4588,7 @@ function copyAdoptBio(id) {
 }
 
 function shareShelterAnimal(id) {
-  var r = reports.find(function(x){ return x.id === id; });
+  var r = reports.find(function(x){ return String(x.id) === String(id); });
   if (!r) return;
   var name = r.name || r.species || 'This pet';
   var title = '🌟 ' + name + ' is looking for a forever home!';
@@ -8858,7 +8858,7 @@ function getAdoptable() {
   var q = ((document.getElementById('adopt-search')||{}).value||'').toLowerCase().trim();
   var sort = ((document.getElementById('adopt-sort')||{}).value) || 'longest';
   var list = getShelterData({ includeHolds: true })
-    .filter(function(r){ return r.adoptionStatus === 'available' || r.intakeType === 'hold'; })
+    .filter(function(r){ return r.adoptionStatus === 'available' && daysUntilAdoptEligible(r) === 0; })
     .sort(function(a,b){
       if (sort === 'alpha')   return (a.name||'').localeCompare(b.name||'');
       if (sort === 'newest')  return new Date(b.dateAvailable||b.date) - new Date(a.dateAvailable||a.date);
